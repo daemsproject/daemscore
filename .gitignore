@@ -1,12 +1,24 @@
 *.tar.gz
 
 *.exe
+src/bitcoin
+src/bitcoind
+src/bitcoin-cli
+src/bitcoin-tx
+src/test/test_bitcoin
+src/qt/test/test_bitcoin-qt
 src/litecoin
 src/litecoind
 src/litecoin-cli
 src/litecoin-tx
 src/test/test_litecoin
 src/qt/test/test_litecoin-qt
+src/cccoin
+src/cccoind
+src/cccoin-cli
+src/cccoin-tx
+src/test/test_cccoin
+src/qt/test/test_cccoin-qt
 
 # autoreconf
 Makefile.in
@@ -74,12 +86,18 @@ src/qt/test/moc*.cpp
 # Compilation and Qt preprocessor part
 *.qm
 Makefile
+bitcoin-qt
+Bitcoin-Qt.app
 litecoin-qt
 Litecoin-Qt.app
+cccoin-qt
+Cccoin-Qt.app
 
 # Unit-tests
 Makefile.test
+bitcoin-qt_test
 litecoin-qt_test
+cccoin-qt_test
 src/test/buildenv.py
 
 # Resources cpp
