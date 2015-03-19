@@ -147,8 +147,8 @@
         <translation>&amp;Opsies</translation>
     </message>
     <message>
-        <source>Litecoin</source>
-        <translation>Litecoin</translation>
+        <source>Cccoin</source>
+        <translation>Cccoin</translation>
     </message>
     <message>
         <source>Wallet</source>

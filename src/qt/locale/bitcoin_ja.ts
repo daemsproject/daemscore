@@ -66,11 +66,11 @@
         <translation>アドレス受信中</translation>
     </message>
     <message>
-        <source>These are your Litecoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation>これらは支払いを送信するためのあなたの Litecoin アドレスです。コインを送信する前に、常に額と受信アドレスを確認してください。</translation>
+        <source>These are your Cccoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <translation>これらは支払いを送信するためのあなたの Cccoin アドレスです。コインを送信する前に、常に額と受信アドレスを確認してください。</translation>
     </message>
     <message>
-        <source>These are your Litecoin addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
+        <source>These are your Cccoin addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
         <translation>これらは支払いを受け取るためのビットコインアドレスです。トランザクションごとに新しい受け取り用アドレスを作成することが推奨されます。</translation>
     </message>
     <message>
@@ -165,7 +165,7 @@
     </message>
     <message>
         <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR LITECOINS&lt;/b&gt;!</source>
-        <translation>警告: もしもあなたのウォレットを暗号化してパスフレーズを失ってしまったなら、&lt;b&gt;あなたの Litecoin はすべて失われます&lt;/b&gt;!</translation>
+        <translation>警告: もしもあなたのウォレットを暗号化してパスフレーズを失ってしまったなら、&lt;b&gt;あなたの Cccoin はすべて失われます&lt;/b&gt;!</translation>
     </message>
     <message>
         <source>Are you sure you wish to encrypt your wallet?</source>
@@ -188,8 +188,8 @@
         <translation>ウォレットの新しいパスフレーズを入力してください。&lt;br/&gt;&lt;b&gt;10文字以上のランダムな文字&lt;/b&gt;で構成されたものか、&lt;b&gt;8単語以上の単語&lt;/b&gt;で構成されたパスフレーズを使用してください。</translation>
     </message>
     <message>
-        <source>Litecoin will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your litecoins from being stolen by malware infecting your computer.</source>
-        <translation>Litecoin は暗号化プロセスを終了するために今すぐ終了します。あなたのコンピュータがマルウェアに感染してコインを盗まれることもあるので、暗号化してもあなたのウォレットを完全に保護できないことを覚えていてください。</translation>
+        <source>Cccoin will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your cccoins from being stolen by malware infecting your computer.</source>
+        <translation>Cccoin は暗号化プロセスを終了するために今すぐ終了します。あなたのコンピュータがマルウェアに感染してコインを盗まれることもあるので、暗号化してもあなたのウォレットを完全に保護できないことを覚えていてください。</translation>
     </message>
     <message>
         <source>Wallet encryption failed</source>
@@ -295,8 +295,8 @@
         <translation>URI を開く (&amp;U)...</translation>
     </message>
     <message>
-        <source>Litecoin Core client</source>
-        <translation>Litecoinコア クライアント</translation>
+        <source>Cccoin Core client</source>
+        <translation>Cccoinコア クライアント</translation>
     </message>
     <message>
         <source>Importing blocks from disk...</source>
@@ -307,12 +307,12 @@
         <translation>ディスク上のブロックのインデックスを再作成中...</translation>
     </message>
     <message>
-        <source>Send coins to a Litecoin address</source>
-        <translation>Litecoin アドレスにコインを送る</translation>
+        <source>Send coins to a Cccoin address</source>
+        <translation>Cccoin アドレスにコインを送る</translation>
     </message>
     <message>
-        <source>Modify configuration options for Litecoin</source>
-        <translation>Litecoin の設定を変更する</translation>
+        <source>Modify configuration options for Cccoin</source>
+        <translation>Cccoin の設定を変更する</translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -335,8 +335,8 @@
         <translation>メッセージの検証... (&amp;V)</translation>
     </message>
     <message>
-        <source>Litecoin</source>
-        <translation>Litecoin</translation>
+        <source>Cccoin</source>
+        <translation>Cccoin</translation>
     </message>
     <message>
         <source>Wallet</source>
@@ -351,8 +351,8 @@
         <translation>受信 (&amp;R)</translation>
     </message>
     <message>
-        <source>Show information about Litecoin Core</source>
-        <translation>Litecoinコアに関する情報を表示</translation>
+        <source>Show information about Cccoin Core</source>
+        <translation>Cccoinコアに関する情報を表示</translation>
     </message>
     <message>
         <source>&amp;Show / Hide</source>
@@ -367,12 +367,12 @@
         <translation>あなたのウォレットの秘密鍵を暗号化します</translation>
     </message>
     <message>
-        <source>Sign messages with your Litecoin addresses to prove you own them</source>
-        <translation>あなたが所有していることを証明するために、あなたの Litecoin アドレスでメッセージに署名してください</translation>
+        <source>Sign messages with your Cccoin addresses to prove you own them</source>
+        <translation>あなたが所有していることを証明するために、あなたの Cccoin アドレスでメッセージに署名してください</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Litecoin addresses</source>
-        <translation>指定された Litecoin アドレスで署名されたことを確認するためにメッセージを検証します</translation>
+        <source>Verify messages to ensure they were signed with specified Cccoin addresses</source>
+        <translation>指定された Cccoin アドレスで署名されたことを確認するためにメッセージを検証します</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -391,15 +391,15 @@
         <translation>タブツールバー</translation>
     </message>
     <message>
-        <source>Litecoin Core</source>
-        <translation>Litecoin のコア</translation>
+        <source>Cccoin Core</source>
+        <translation>Cccoin のコア</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and litecoin: URIs)</source>
-        <translation>支払いを要求する (QRコードとlitecoin:ではじまるURIを生成する)</translation>
+        <source>Request payments (generates QR codes and cccoin: URIs)</source>
+        <translation>支払いを要求する (QRコードとcccoin:ではじまるURIを生成する)</translation>
     </message>
     <message>
-        <source>&amp;About Litecoin Core</source>
+        <source>&amp;About Cccoin Core</source>
         <translation>ビットコインコアについて (&amp;A)</translation>
     </message>
     <message>
@@ -415,8 +415,8 @@
         <translation>コマンドラインオプション (&amp;C)</translation>
     </message>
     <message numerus="yes">
-        <source>%n active connection(s) to Litecoin network</source>
-        <translation><numerusform>%n の Litecoin ネットワークへのアクティブな接続</numerusform></translation>
+        <source>%n active connection(s) to Cccoin network</source>
+        <translation><numerusform>%n の Cccoin ネットワークへのアクティブな接続</numerusform></translation>
     </message>
     <message>
         <source>No block source available...</source>
@@ -671,8 +671,8 @@ Address: %4
         <translation>入力されたアドレス "%1" は既にアドレス帳にあります。</translation>
     </message>
     <message>
-        <source>The entered address "%1" is not a valid Litecoin address.</source>
-        <translation>入力されたアドレス "%1" は無効な Litecoin アドレスです。</translation>
+        <source>The entered address "%1" is not a valid Cccoin address.</source>
+        <translation>入力されたアドレス "%1" は無効な Cccoin アドレスです。</translation>
     </message>
     <message>
         <source>Could not unlock wallet.</source>
@@ -709,16 +709,16 @@ Address: %4
 <context>
     <name>HelpMessageDialog</name>
     <message>
-        <source>Litecoin Core</source>
-        <translation>Litecoin のコア</translation>
+        <source>Cccoin Core</source>
+        <translation>Cccoin のコア</translation>
     </message>
     <message>
         <source>version</source>
         <translation>バージョン</translation>
     </message>
     <message>
-        <source>About Litecoin Core</source>
-        <translation>Litecoinコアについて</translation>
+        <source>About Cccoin Core</source>
+        <translation>Cccoinコアについて</translation>
     </message>
     <message>
         <source>Command-line options</source>
@@ -760,7 +760,7 @@ Address: %4
         <translation>ようこそ</translation>
     </message>
     <message>
-        <source>Welcome to Litecoin Core.</source>
+        <source>Welcome to Cccoin Core.</source>
         <translation>ようこそ！</translation>
     </message>
     <message>
@@ -772,8 +772,8 @@ Address: %4
         <translation>任意のデータ ディレクトリを使用:</translation>
     </message>
     <message>
-        <source>Litecoin Core</source>
-        <translation>Litecoin のコア</translation>
+        <source>Cccoin Core</source>
+        <translation>Cccoin のコア</translation>
     </message>
     <message>
         <source>Error</source>
@@ -822,12 +822,12 @@ Address: %4
         <translation>メイン (&amp;M)</translation>
     </message>
     <message>
-        <source>Automatically start Litecoin after logging in to the system.</source>
-        <translation>システムにログインした時に自動的に Litecoin を起動します。</translation>
+        <source>Automatically start Cccoin after logging in to the system.</source>
+        <translation>システムにログインした時に自動的に Cccoin を起動します。</translation>
     </message>
     <message>
-        <source>&amp;Start Litecoin on system login</source>
-        <translation>システムにログインした時に Litecoin を起動 (&amp;S)</translation>
+        <source>&amp;Start Cccoin on system login</source>
+        <translation>システムにログインした時に Cccoin を起動 (&amp;S)</translation>
     </message>
     <message>
         <source>Size of &amp;database cache</source>
@@ -874,8 +874,8 @@ Address: %4
         <translation>コインコントロール機能を有効化する (&amp;C)</translation>
     </message>
     <message>
-        <source>Automatically open the Litecoin client port on the router. This only works when your router supports UPnP and it is enabled.</source>
-        <translation>自動的にルーター上の Litecoin クライアントのポートを開きます。あなたのルーターが UPnP に対応していて、それが有効になっている場合に作動します。</translation>
+        <source>Automatically open the Cccoin client port on the router. This only works when your router supports UPnP and it is enabled.</source>
+        <translation>自動的にルーター上の Cccoin クライアントのポートを開きます。あなたのルーターが UPnP に対応していて、それが有効になっている場合に作動します。</translation>
     </message>
     <message>
         <source>Map port using &amp;UPnP</source>
@@ -922,8 +922,8 @@ Address: %4
         <translation>ユーザインターフェースの言語 (&amp;l) :</translation>
     </message>
     <message>
-        <source>The user interface language can be set here. This setting will take effect after restarting Litecoin.</source>
-        <translation>ここでユーザインターフェースの言語を設定できます。設定を反映するには Litecoin を再起動します。</translation>
+        <source>The user interface language can be set here. This setting will take effect after restarting Cccoin.</source>
+        <translation>ここでユーザインターフェースの言語を設定できます。設定を反映するには Cccoin を再起動します。</translation>
     </message>
     <message>
         <source>&amp;Unit to show amounts in:</source>
@@ -965,8 +965,8 @@ Address: %4
         <translation>フォーム</translation>
     </message>
     <message>
-        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Litecoin network after a connection is established, but this process has not completed yet.</source>
-        <translation>表示された情報は古いかもしれません。接続が確立されると、あなたのウォレットは Litecoin ネットワークと自動的に同期しますが、このプロセスはまだ完了していません。</translation>
+        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Cccoin network after a connection is established, but this process has not completed yet.</source>
+        <translation>表示された情報は古いかもしれません。接続が確立されると、あなたのウォレットは Cccoin ネットワークと自動的に同期しますが、このプロセスはまだ完了していません。</translation>
     </message>
     <message>
         <source>Your current spendable balance</source>
@@ -1028,8 +1028,8 @@ Address: %4
         <translation>支払いのリクエストのエラーです</translation>
     </message>
     <message>
-        <source>Cannot start litecoin: click-to-pay handler</source>
-        <translation>Litecoin を起動できません: click-to-pay handler</translation>
+        <source>Cannot start cccoin: click-to-pay handler</source>
+        <translation>Cccoin を起動できません: click-to-pay handler</translation>
     </message>
     <message>
         <source>Error communicating with %1: %2</source>
@@ -1188,16 +1188,16 @@ Address: %4
         <translation>デバッグ用ログファイル</translation>
     </message>
     <message>
-        <source>Open the Litecoin debug log file from the current data directory. This can take a few seconds for large log files.</source>
-        <translation>現在のデータ ディレクトリから Litecoin のデバッグ用ログファイルを開きます。ログファイルが大規模な場合には数秒かかることがあります。</translation>
+        <source>Open the Cccoin debug log file from the current data directory. This can take a few seconds for large log files.</source>
+        <translation>現在のデータ ディレクトリから Cccoin のデバッグ用ログファイルを開きます。ログファイルが大規模な場合には数秒かかることがあります。</translation>
     </message>
     <message>
         <source>Clear console</source>
         <translation>コンソールをクリア</translation>
     </message>
     <message>
-        <source>Welcome to the Litecoin RPC console.</source>
-        <translation>Litecoin RPC コンソールへようこそ。</translation>
+        <source>Welcome to the Cccoin RPC console.</source>
+        <translation>Cccoin RPC コンソールへようこそ。</translation>
     </message>
     <message>
         <source>Use up and down arrows to navigate history, and &lt;b&gt;Ctrl-L&lt;/b&gt; to clear screen.</source>
@@ -1530,8 +1530,8 @@ Address: %4
 <context>
     <name>ShutdownWindow</name>
     <message>
-        <source>Litecoin Core is shutting down...</source>
-        <translation>Litecoin Coreをシャットダウンしています。</translation>
+        <source>Cccoin Core is shutting down...</source>
+        <translation>Cccoin Coreをシャットダウンしています。</translation>
     </message>
     <message>
         <source>Do not shut down the computer until this window disappears.</source>
@@ -1581,8 +1581,8 @@ Address: %4
         <translation>現在の署名をシステムのクリップボードにコピーする</translation>
     </message>
     <message>
-        <source>Sign the message to prove you own this Litecoin address</source>
-        <translation>この Litecoin アドレスを所有していることを証明するためにメッセージに署名</translation>
+        <source>Sign the message to prove you own this Cccoin address</source>
+        <translation>この Cccoin アドレスを所有していることを証明するためにメッセージに署名</translation>
     </message>
     <message>
         <source>Sign &amp;Message</source>
@@ -1605,8 +1605,8 @@ Address: %4
         <translation>メッセージを検証するために、署名するアドレスとメッセージ(改行、スペース、タブなどを正確にコピーしてください)、そして署名を入力します。中間者攻撃によってだまされることを避けるために、署名されたメッセージそのものよりも、署名を読み取られないように注意してください。</translation>
     </message>
     <message>
-        <source>Verify the message to ensure it was signed with the specified Litecoin address</source>
-        <translation>指定された Litecoin アドレスで署名されたことを保証するメッセージを検証</translation>
+        <source>Verify the message to ensure it was signed with the specified Cccoin address</source>
+        <translation>指定された Cccoin アドレスで署名されたことを保証するメッセージを検証</translation>
     </message>
     <message>
         <source>Verify &amp;Message</source>
@@ -1672,8 +1672,8 @@ Address: %4
 <context>
     <name>SplashScreen</name>
     <message>
-        <source>Litecoin Core</source>
-        <translation>Litecoin のコア</translation>
+        <source>Cccoin Core</source>
+        <translation>Cccoin のコア</translation>
     </message>
     <message>
         <source>The Bitcoin Core developers</source>
@@ -2137,24 +2137,24 @@ Address: %4
         <source>%s, you must set a rpcpassword in the configuration file:
 %s
 It is recommended you use the following random password:
-rpcuser=litecoinrpc
+rpcuser=cccoinrpc
 rpcpassword=%s
 (you do not need to remember this password)
 The username and password MUST NOT be the same.
 If the file does not exist, create it with owner-readable-only file permissions.
 It is also recommended to set alertnotify so you are notified of problems;
-for example: alertnotify=echo %%s | mail -s "Litecoin Alert" admin@foo.com
+for example: alertnotify=echo %%s | mail -s "Cccoin Alert" admin@foo.com
 </source>
         <translation>%s, rpcpassword を設定ファイルで設定してください:
 %s
 下記のランダムなパスワードの使用を推奨します:
-rpcuser=litecoinrpc
+rpcuser=cccoinrpc
 rpcpassword=%s
 (このパスワードを覚える必要はありません)
 ユーザー名とパスワードが同じであってはいけません。
 もしもファイルが存在しないなら、所有者だけが読み取れる権限で作成してください。
 また、問題が通知されるように alertnotify を設定することをお勧めします;
-例えば: alertnotify=echo %%s | mail -s "Litecoin Alert" admin@foo.com</translation>
+例えば: alertnotify=echo %%s | mail -s "Cccoin Alert" admin@foo.com</translation>
     </message>
     <message>
         <source>Bind to given address and always listen on it. Use [host]:port notation for IPv6</source>
@@ -2314,7 +2314,7 @@ rpcpassword=%s
         <translation>不正な額 -minrelaytxfee=&lt;amount&gt;: '%s'</translation>
     </message>
     <message>
-        <source>RPC SSL options: (see the Litecoin Wiki for SSL setup instructions)</source>
+        <source>RPC SSL options: (see the Cccoin Wiki for SSL setup instructions)</source>
         <translation>RPC SSL オプション: (SSLのセットアップ手順はビットコインWikiを参照してください)</translation>
     </message>
     <message>

@@ -120,8 +120,8 @@
         <translation>Billetera codificada</translation>
     </message>
     <message>
-        <source>Litecoin will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your litecoins from being stolen by malware infecting your computer.</source>
-        <translation>Litecoin se cerrará para finalizar el proceso de encriptación. Recuerde que encriptar su billetera no protegera completatamente sus litecoins de ser robados por malware que infecte su computador</translation>
+        <source>Cccoin will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your cccoins from being stolen by malware infecting your computer.</source>
+        <translation>Cccoin se cerrará para finalizar el proceso de encriptación. Recuerde que encriptar su billetera no protegera completatamente sus cccoins de ser robados por malware que infecte su computador</translation>
     </message>
     <message>
         <source>Wallet encryption failed</source>
@@ -215,12 +215,12 @@
         <translation>Cargando el index de bloques...</translation>
     </message>
     <message>
-        <source>Send coins to a Litecoin address</source>
-        <translation>Enviar monedas a una dirección litecoin</translation>
+        <source>Send coins to a Cccoin address</source>
+        <translation>Enviar monedas a una dirección cccoin</translation>
     </message>
     <message>
-        <source>Modify configuration options for Litecoin</source>
-        <translation>Modifica las opciones de configuración de litecoin</translation>
+        <source>Modify configuration options for Cccoin</source>
+        <translation>Modifica las opciones de configuración de cccoin</translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -239,8 +239,8 @@
         <translation>Abre consola de depuración y diagnóstico</translation>
     </message>
     <message>
-        <source>Litecoin</source>
-        <translation>Litecoin</translation>
+        <source>Cccoin</source>
+        <translation>Cccoin</translation>
     </message>
     <message>
         <source>Wallet</source>
@@ -255,7 +255,7 @@
         <translation>&amp;Mostrar/Ocultar</translation>
     </message>
     <message>
-        <source>Sign messages with your Litecoin addresses to prove you own them</source>
+        <source>Sign messages with your Cccoin addresses to prove you own them</source>
         <translation>Firmar un mensaje para provar que usted es dueño de esta dirección</translation>
     </message>
     <message>
@@ -275,8 +275,8 @@
         <translation>Barra de pestañas</translation>
     </message>
     <message numerus="yes">
-        <source>%n active connection(s) to Litecoin network</source>
-        <translation><numerusform>%n conexión activa hacia la red Litecoin</numerusform><numerusform>%n conexiones activas hacia la red Litecoin</numerusform></translation>
+        <source>%n active connection(s) to Cccoin network</source>
+        <translation><numerusform>%n conexión activa hacia la red Cccoin</numerusform><numerusform>%n conexiones activas hacia la red Cccoin</numerusform></translation>
     </message>
     <message numerus="yes">
         <source>%n hour(s)</source>
@@ -415,8 +415,8 @@ Dirección: %4</translation>
         <translation>La dirección introducida "%1" ya esta guardada en la libreta de direcciones.</translation>
     </message>
     <message>
-        <source>The entered address "%1" is not a valid Litecoin address.</source>
-        <translation>La dirección introducida "%1" no es una dirección Litecoin valida.</translation>
+        <source>The entered address "%1" is not a valid Cccoin address.</source>
+        <translation>La dirección introducida "%1" no es una dirección Cccoin valida.</translation>
     </message>
     <message>
         <source>Could not unlock wallet.</source>
@@ -475,12 +475,12 @@ Dirección: %4</translation>
         <translation>&amp;Principal</translation>
     </message>
     <message>
-        <source>Automatically start Litecoin after logging in to the system.</source>
-        <translation>Inicia Litecoin automáticamente despues de encender el computador</translation>
+        <source>Automatically start Cccoin after logging in to the system.</source>
+        <translation>Inicia Cccoin automáticamente despues de encender el computador</translation>
     </message>
     <message>
-        <source>&amp;Start Litecoin on system login</source>
-        <translation>&amp;Inicia Litecoin al iniciar el sistema</translation>
+        <source>&amp;Start Cccoin on system login</source>
+        <translation>&amp;Inicia Cccoin al iniciar el sistema</translation>
     </message>
     <message>
         <source>Reset all client options to default.</source>
@@ -491,8 +491,8 @@ Dirección: %4</translation>
         <translation>&amp;Red</translation>
     </message>
     <message>
-        <source>Automatically open the Litecoin client port on the router. This only works when your router supports UPnP and it is enabled.</source>
-        <translation>Abre automáticamente el puerto del cliente Litecoin en el router. Esto funciona solo cuando tu router es compatible con UPnP y está habilitado.</translation>
+        <source>Automatically open the Cccoin client port on the router. This only works when your router supports UPnP and it is enabled.</source>
+        <translation>Abre automáticamente el puerto del cliente Cccoin en el router. Esto funciona solo cuando tu router es compatible con UPnP y está habilitado.</translation>
     </message>
     <message>
         <source>Map port using &amp;UPnP</source>
@@ -862,7 +862,7 @@ Dirección: %4</translation>
         <translation>Firma</translation>
     </message>
     <message>
-        <source>Sign the message to prove you own this Litecoin address</source>
+        <source>Sign the message to prove you own this Cccoin address</source>
         <translation>Firmar un mensjage para probar que usted es dueño de esta dirección</translation>
     </message>
     <message>
@@ -887,7 +887,7 @@ Dirección: %4</translation>
     </message>
     <message>
         <source>Please check the address and try again.</source>
-        <translation>Por favor, revise la dirección Litecoin e inténtelo denuevo</translation>
+        <translation>Por favor, revise la dirección Cccoin e inténtelo denuevo</translation>
     </message>
     <message>
         <source>Wallet unlock was cancelled.</source>

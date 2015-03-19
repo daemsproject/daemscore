@@ -66,12 +66,12 @@
         <translation>Adresa za primanje</translation>
     </message>
     <message>
-        <source>These are your Litecoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation>Ovo su vaše Litecoin adrese za slanje uplate. Uvijek provjerite iznos i adresu primatelja prije slanja novca.</translation>
+        <source>These are your Cccoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <translation>Ovo su vaše Cccoin adrese za slanje uplate. Uvijek provjerite iznos i adresu primatelja prije slanja novca.</translation>
     </message>
     <message>
-        <source>These are your Litecoin addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
-        <translation>Ovo su vaše Litecoin adrese za primanje isplate. Preporučamo da koristite novu primateljsku adresu za svaku transakciju.</translation>
+        <source>These are your Cccoin addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
+        <translation>Ovo su vaše Cccoin adrese za primanje isplate. Preporučamo da koristite novu primateljsku adresu za svaku transakciju.</translation>
     </message>
     <message>
         <source>Copy &amp;Label</source>
@@ -188,8 +188,8 @@
         <translation>Unesite novu lozinku za novčanik. &lt;br/&gt;Molimo Vas da koristite zaporku od &lt;b&gt;deset ili više slučajnih znakova&lt;/b&gt;, ili &lt;b&gt;osam ili više riječi.&lt;/b&gt;</translation>
     </message>
     <message>
-        <source>Litecoin will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your litecoins from being stolen by malware infecting your computer.</source>
-        <translation>Litecoin će se sada zatvoriti kako bi dovršio postupak šifriranja. Zapamtite da šifriranje vašeg novčanika ne može u potpunosti zaštititi vaše litecoine od krađe preko zloćudnog softvera koji bi bio na vašem računalu.</translation>
+        <source>Cccoin will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your cccoins from being stolen by malware infecting your computer.</source>
+        <translation>Cccoin će se sada zatvoriti kako bi dovršio postupak šifriranja. Zapamtite da šifriranje vašeg novčanika ne može u potpunosti zaštititi vaše cccoine od krađe preko zloćudnog softvera koji bi bio na vašem računalu.</translation>
     </message>
     <message>
         <source>Wallet encryption failed</source>
@@ -295,8 +295,8 @@
         <translation>Otvori &amp;URI...</translation>
     </message>
     <message>
-        <source>Litecoin Core client</source>
-        <translation>Litecoin Core klijent</translation>
+        <source>Cccoin Core client</source>
+        <translation>Cccoin Core klijent</translation>
     </message>
     <message>
         <source>Importing blocks from disk...</source>
@@ -307,12 +307,12 @@
         <translation>Re-indeksiranje blokova na disku...</translation>
     </message>
     <message>
-        <source>Send coins to a Litecoin address</source>
-        <translation>Slanje novca na litecoin adresu</translation>
+        <source>Send coins to a Cccoin address</source>
+        <translation>Slanje novca na cccoin adresu</translation>
     </message>
     <message>
-        <source>Modify configuration options for Litecoin</source>
-        <translation>Promijeni postavke konfiguracije za litecoin</translation>
+        <source>Modify configuration options for Cccoin</source>
+        <translation>Promijeni postavke konfiguracije za cccoin</translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -335,8 +335,8 @@
         <translation>&amp;Potvrdite poruku...</translation>
     </message>
     <message>
-        <source>Litecoin</source>
-        <translation>Litecoin</translation>
+        <source>Cccoin</source>
+        <translation>Cccoin</translation>
     </message>
     <message>
         <source>Wallet</source>
@@ -351,8 +351,8 @@
         <translation>Pri&amp;miti</translation>
     </message>
     <message>
-        <source>Show information about Litecoin Core</source>
-        <translation>Prikaži informacije o Litecoin Coreu</translation>
+        <source>Show information about Cccoin Core</source>
+        <translation>Prikaži informacije o Cccoin Coreu</translation>
     </message>
     <message>
         <source>&amp;Show / Hide</source>
@@ -367,12 +367,12 @@
         <translation>Šifriraj privatne ključeve koji pripadaju tvom novčaniku</translation>
     </message>
     <message>
-        <source>Sign messages with your Litecoin addresses to prove you own them</source>
-        <translation>Potpiši poruke svojim Litecoin adresama kako bi dokazao da si njihov vlasnik</translation>
+        <source>Sign messages with your Cccoin addresses to prove you own them</source>
+        <translation>Potpiši poruke svojim Cccoin adresama kako bi dokazao da si njihov vlasnik</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Litecoin addresses</source>
-        <translation>Provjerite porkue kako bi se uvjerili da su potpisane navedenim Litecoin adresama</translation>
+        <source>Verify messages to ensure they were signed with specified Cccoin addresses</source>
+        <translation>Provjerite porkue kako bi se uvjerili da su potpisane navedenim Cccoin adresama</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -391,16 +391,16 @@
         <translation>Traka kartica</translation>
     </message>
     <message>
-        <source>Litecoin Core</source>
-        <translation>Litecoin Jezgra</translation>
+        <source>Cccoin Core</source>
+        <translation>Cccoin Jezgra</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and litecoin: URIs)</source>
-        <translation>Zatraži uplate (Stvara QR kodove i litecoin: URIje)</translation>
+        <source>Request payments (generates QR codes and cccoin: URIs)</source>
+        <translation>Zatraži uplate (Stvara QR kodove i cccoin: URIje)</translation>
     </message>
     <message>
-        <source>&amp;About Litecoin Core</source>
-        <translation>&amp;O Litecoin Jezgri</translation>
+        <source>&amp;About Cccoin Core</source>
+        <translation>&amp;O Cccoin Jezgri</translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -411,8 +411,8 @@
         <translation>Prikaži popis korištenih adresa i oznaka za primanje isplate</translation>
     </message>
     <message numerus="yes">
-        <source>%n active connection(s) to Litecoin network</source>
-        <translation><numerusform>%n aktivna veza na Litecoin mrežu</numerusform><numerusform>%n aktivne veze na Litecoin mrežu</numerusform><numerusform>%n aktivnih veza na Litecoin mrežu</numerusform></translation>
+        <source>%n active connection(s) to Cccoin network</source>
+        <translation><numerusform>%n aktivna veza na Cccoin mrežu</numerusform><numerusform>%n aktivne veze na Cccoin mrežu</numerusform><numerusform>%n aktivnih veza na Cccoin mrežu</numerusform></translation>
     </message>
     <message>
         <source>Error</source>
@@ -536,8 +536,8 @@ Adresa:%4
         <translation>Upisana adresa "%1" je već u adresaru.</translation>
     </message>
     <message>
-        <source>The entered address "%1" is not a valid Litecoin address.</source>
-        <translation>Upisana adresa "%1" nije valjana litecoin adresa.</translation>
+        <source>The entered address "%1" is not a valid Cccoin address.</source>
+        <translation>Upisana adresa "%1" nije valjana cccoin adresa.</translation>
     </message>
     <message>
         <source>Could not unlock wallet.</source>
@@ -558,16 +558,16 @@ Adresa:%4
 <context>
     <name>HelpMessageDialog</name>
     <message>
-        <source>Litecoin Core</source>
-        <translation>Litecoin Jezgra</translation>
+        <source>Cccoin Core</source>
+        <translation>Cccoin Jezgra</translation>
     </message>
     <message>
         <source>version</source>
         <translation>verzija</translation>
     </message>
     <message>
-        <source>About Litecoin Core</source>
-        <translation>O Litecoin Jezrgu</translation>
+        <source>About Cccoin Core</source>
+        <translation>O Cccoin Jezrgu</translation>
     </message>
     <message>
         <source>Usage:</source>
@@ -589,8 +589,8 @@ Adresa:%4
         <translation>Dobrodošli</translation>
     </message>
     <message>
-        <source>Litecoin Core</source>
-        <translation>Litecoin Jezgra</translation>
+        <source>Cccoin Core</source>
+        <translation>Cccoin Jezgra</translation>
     </message>
     <message>
         <source>Error</source>
@@ -611,20 +611,20 @@ Adresa:%4
         <translation>&amp;Glavno</translation>
     </message>
     <message>
-        <source>Automatically start Litecoin after logging in to the system.</source>
-        <translation>Automatski pokreni Litecoin kad se uključi računalo</translation>
+        <source>Automatically start Cccoin after logging in to the system.</source>
+        <translation>Automatski pokreni Cccoin kad se uključi računalo</translation>
     </message>
     <message>
-        <source>&amp;Start Litecoin on system login</source>
-        <translation>&amp;Pokreni Litecoin kod pokretanja sustava</translation>
+        <source>&amp;Start Cccoin on system login</source>
+        <translation>&amp;Pokreni Cccoin kod pokretanja sustava</translation>
     </message>
     <message>
         <source>&amp;Network</source>
         <translation>&amp;Mreža</translation>
     </message>
     <message>
-        <source>Automatically open the Litecoin client port on the router. This only works when your router supports UPnP and it is enabled.</source>
-        <translation>Automatski otvori port Litecoin klijenta na ruteru. To radi samo ako ruter podržava UPnP i ako je omogućen.</translation>
+        <source>Automatically open the Cccoin client port on the router. This only works when your router supports UPnP and it is enabled.</source>
+        <translation>Automatski otvori port Cccoin klijenta na ruteru. To radi samo ako ruter podržava UPnP i ako je omogućen.</translation>
     </message>
     <message>
         <source>Map port using &amp;UPnP</source>
@@ -668,7 +668,7 @@ Adresa:%4
     </message>
     <message>
         <source>Choose the default subdivision unit to show in the interface and when sending coins.</source>
-        <translation>Izaberite željeni najmanji dio litecoina koji će biti prikazan u sučelju i koji će se koristiti za plaćanje.</translation>
+        <translation>Izaberite željeni najmanji dio cccoina koji će biti prikazan u sučelju i koji će se koristiti za plaćanje.</translation>
     </message>
     <message>
         <source>&amp;OK</source>
@@ -694,8 +694,8 @@ Adresa:%4
         <translation>Oblik</translation>
     </message>
     <message>
-        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Litecoin network after a connection is established, but this process has not completed yet.</source>
-        <translation>Prikazani podatci mogu biti zastarjeli. Vaš novčanik se automatski sinkronizira s Litecoin mrežom kada je veza uspostavljena, ali taj proces još nije završen.</translation>
+        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Cccoin network after a connection is established, but this process has not completed yet.</source>
+        <translation>Prikazani podatci mogu biti zastarjeli. Vaš novčanik se automatski sinkronizira s Cccoin mrežom kada je veza uspostavljena, ali taj proces još nije završen.</translation>
     </message>
     <message>
         <source>Total:</source>
@@ -793,8 +793,8 @@ Adresa:%4
         <translation>Očisti konzolu</translation>
     </message>
     <message>
-        <source>Welcome to the Litecoin RPC console.</source>
-        <translation>Dobrodošli u Litecoin RPC konzolu.</translation>
+        <source>Welcome to the Cccoin RPC console.</source>
+        <translation>Dobrodošli u Cccoin RPC konzolu.</translation>
     </message>
     <message>
         <source>Use up and down arrows to navigate history, and &lt;b&gt;Ctrl-L&lt;/b&gt; to clear screen.</source>
@@ -1033,8 +1033,8 @@ Adresa:%4
 <context>
     <name>SplashScreen</name>
     <message>
-        <source>Litecoin Core</source>
-        <translation>Litecoin Jezgra</translation>
+        <source>Cccoin Core</source>
+        <translation>Cccoin Jezgra</translation>
     </message>
     <message>
         <source>[testnet]</source>

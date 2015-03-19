@@ -66,12 +66,12 @@
         <translation>Ontvang adressen</translation>
     </message>
     <message>
-        <source>These are your Litecoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation>Dit zijn uw Litecoinadressen om betalingen mee te verzenden. Controleer altijd het bedrag en het ontvang adres voordat u uw litecoins verzendt.</translation>
+        <source>These are your Cccoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <translation>Dit zijn uw Cccoinadressen om betalingen mee te verzenden. Controleer altijd het bedrag en het ontvang adres voordat u uw cccoins verzendt.</translation>
     </message>
     <message>
-        <source>These are your Litecoin addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
-        <translation>Dit zijn uw Litecoin-adressen waarmee u kunt betalen. We raden u aan om een nieuw ontvangstadres voor elke transactie te gebruiken.</translation>
+        <source>These are your Cccoin addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
+        <translation>Dit zijn uw Cccoin-adressen waarmee u kunt betalen. We raden u aan om een nieuw ontvangstadres voor elke transactie te gebruiken.</translation>
     </message>
     <message>
         <source>Copy &amp;Label</source>
@@ -188,8 +188,8 @@
         <translation>Voer een nieuw wachtwoord in voor uw portomonee.&lt;br/&gt;Gebruik een wachtwoord van &lt;b&gt;tien of meer willekeurige karakters&lt;/b&gt;, of &lt;b&gt;acht of meer woorden&lt;/b&gt;.</translation>
     </message>
     <message>
-        <source>Litecoin will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your litecoins from being stolen by malware infecting your computer.</source>
-        <translation>Litecoin zal nu afsluiten om het versleutelingsproces te voltooien. Onthoudt dat het versleutelen van uw portemonnee u niet volledig kan beschermen: Malware kan uw computer infecteren en uw litecoins stelen.</translation>
+        <source>Cccoin will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your cccoins from being stolen by malware infecting your computer.</source>
+        <translation>Cccoin zal nu afsluiten om het versleutelingsproces te voltooien. Onthoudt dat het versleutelen van uw portemonnee u niet volledig kan beschermen: Malware kan uw computer infecteren en uw cccoins stelen.</translation>
     </message>
     <message>
         <source>Wallet encryption failed</source>
@@ -295,8 +295,8 @@
         <translation>Open &amp;URI...</translation>
     </message>
     <message>
-        <source>Litecoin Core client</source>
-        <translation>Litecoin Kern applicatie</translation>
+        <source>Cccoin Core client</source>
+        <translation>Cccoin Kern applicatie</translation>
     </message>
     <message>
         <source>Importing blocks from disk...</source>
@@ -307,12 +307,12 @@
         <translation>Bezig met herindexeren van blokken op harde schijf...</translation>
     </message>
     <message>
-        <source>Send coins to a Litecoin address</source>
-        <translation>Verstuur munten naar een Litecoinadres</translation>
+        <source>Send coins to a Cccoin address</source>
+        <translation>Verstuur munten naar een Cccoinadres</translation>
     </message>
     <message>
-        <source>Modify configuration options for Litecoin</source>
-        <translation>Wijzig instellingen van Litecoin</translation>
+        <source>Modify configuration options for Cccoin</source>
+        <translation>Wijzig instellingen van Cccoin</translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -335,8 +335,8 @@
         <translation>&amp;Verifiëer bericht...</translation>
     </message>
     <message>
-        <source>Litecoin</source>
-        <translation>Litecoin</translation>
+        <source>Cccoin</source>
+        <translation>Cccoin</translation>
     </message>
     <message>
         <source>Wallet</source>
@@ -351,8 +351,8 @@
         <translation>&amp;Ontvangen</translation>
     </message>
     <message>
-        <source>Show information about Litecoin Core</source>
-        <translation>Toon informatie over litecoin kern</translation>
+        <source>Show information about Cccoin Core</source>
+        <translation>Toon informatie over cccoin kern</translation>
     </message>
     <message>
         <source>&amp;Show / Hide</source>
@@ -367,12 +367,12 @@
         <translation>Versleutel de geheime sleutels die bij uw portemonnee horen</translation>
     </message>
     <message>
-        <source>Sign messages with your Litecoin addresses to prove you own them</source>
-        <translation>Onderteken berichten met uw Litecoinadressen om te bewijzen dat u deze adressen bezit</translation>
+        <source>Sign messages with your Cccoin addresses to prove you own them</source>
+        <translation>Onderteken berichten met uw Cccoinadressen om te bewijzen dat u deze adressen bezit</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Litecoin addresses</source>
-        <translation>Verifiëer handtekeningen om zeker te zijn dat de berichten zijn ondertekend met de gespecificeerde Litecoinadressen</translation>
+        <source>Verify messages to ensure they were signed with specified Cccoin addresses</source>
+        <translation>Verifiëer handtekeningen om zeker te zijn dat de berichten zijn ondertekend met de gespecificeerde Cccoinadressen</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -391,16 +391,16 @@
         <translation>Tab-werkbalk</translation>
     </message>
     <message>
-        <source>Litecoin Core</source>
-        <translation>Litecoin Kern</translation>
+        <source>Cccoin Core</source>
+        <translation>Cccoin Kern</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and litecoin: URIs)</source>
-        <translation>Vraag betaling aan (genereert QR codes en litecoin: URIs)</translation>
+        <source>Request payments (generates QR codes and cccoin: URIs)</source>
+        <translation>Vraag betaling aan (genereert QR codes en cccoin: URIs)</translation>
     </message>
     <message>
-        <source>&amp;About Litecoin Core</source>
-        <translation>&amp;Over Litecoin Core</translation>
+        <source>&amp;About Cccoin Core</source>
+        <translation>&amp;Over Cccoin Core</translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -411,20 +411,20 @@
         <translation>Toon de lijst met gebruikte ontvangst adressen en labels</translation>
     </message>
     <message>
-        <source>Open a litecoin: URI or payment request</source>
-        <translation>Open een litecoin: URI of betalingsverzoek</translation>
+        <source>Open a cccoin: URI or payment request</source>
+        <translation>Open een cccoin: URI of betalingsverzoek</translation>
     </message>
     <message>
         <source>&amp;Command-line options</source>
         <translation>&amp;Commandoregel-opties</translation>
     </message>
     <message>
-        <source>Show the Litecoin Core help message to get a list with possible Litecoin command-line options</source>
-        <translation>Toon het Litecoin Core hulpbericht om een lijst te krijgen met mogelijke Litecoin commandoregelopties</translation>
+        <source>Show the Cccoin Core help message to get a list with possible Cccoin command-line options</source>
+        <translation>Toon het Cccoin Core hulpbericht om een lijst te krijgen met mogelijke Cccoin commandoregelopties</translation>
     </message>
     <message numerus="yes">
-        <source>%n active connection(s) to Litecoin network</source>
-        <translation><numerusform>%n actieve connectie naar Litecoin netwerk</numerusform><numerusform>%n actieve connecties naar Litecoin netwerk</numerusform></translation>
+        <source>%n active connection(s) to Cccoin network</source>
+        <translation><numerusform>%n actieve connectie naar Cccoin netwerk</numerusform><numerusform>%n actieve connecties naar Cccoin netwerk</numerusform></translation>
     </message>
     <message>
         <source>No block source available...</source>
@@ -788,8 +788,8 @@ Adres: %4
         <translation>Het opgegeven adres "%1" bestaat al in uw adresboek.</translation>
     </message>
     <message>
-        <source>The entered address "%1" is not a valid Litecoin address.</source>
-        <translation>Het opgegeven adres "%1" is een ongeldig Litecoinadres</translation>
+        <source>The entered address "%1" is not a valid Cccoin address.</source>
+        <translation>Het opgegeven adres "%1" is een ongeldig Cccoinadres</translation>
     </message>
     <message>
         <source>Could not unlock wallet.</source>
@@ -826,8 +826,8 @@ Adres: %4
 <context>
     <name>HelpMessageDialog</name>
     <message>
-        <source>Litecoin Core</source>
-        <translation>Litecoin Kern</translation>
+        <source>Cccoin Core</source>
+        <translation>Cccoin Kern</translation>
     </message>
     <message>
         <source>version</source>
@@ -838,8 +838,8 @@ Adres: %4
         <translation>(%1-bit)</translation>
     </message>
     <message>
-        <source>About Litecoin Core</source>
-        <translation>Over Litecoin Core</translation>
+        <source>About Cccoin Core</source>
+        <translation>Over Cccoin Core</translation>
     </message>
     <message>
         <source>Command-line options</source>
@@ -885,16 +885,16 @@ Adres: %4
         <translation>Welkom</translation>
     </message>
     <message>
-        <source>Welcome to Litecoin Core.</source>
-        <translation>Welkom bij Litecoin Core</translation>
+        <source>Welcome to Cccoin Core.</source>
+        <translation>Welkom bij Cccoin Core</translation>
     </message>
     <message>
-        <source>As this is the first time the program is launched, you can choose where Litecoin Core will store its data.</source>
-        <translation>Omdat dit de eerste keer is dat het programma gestart is, kunt u nu kiezen waar Litecoin Core de data moet opslaan.</translation>
+        <source>As this is the first time the program is launched, you can choose where Cccoin Core will store its data.</source>
+        <translation>Omdat dit de eerste keer is dat het programma gestart is, kunt u nu kiezen waar Cccoin Core de data moet opslaan.</translation>
     </message>
     <message>
-        <source>Litecoin Core will download and store a copy of the Litecoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
-        <translation>Litecoin Core zal een kopie van de Litecoin blokketen downloaden en opslaan. Tenminste %1 GB aan data wordt opgeslagen in deze map en het zal groeien in de tijd. De portemonnee wordt ook in deze map opgeslagen.</translation>
+        <source>Cccoin Core will download and store a copy of the Cccoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
+        <translation>Cccoin Core zal een kopie van de Cccoin blokketen downloaden en opslaan. Tenminste %1 GB aan data wordt opgeslagen in deze map en het zal groeien in de tijd. De portemonnee wordt ook in deze map opgeslagen.</translation>
     </message>
     <message>
         <source>Use the default data directory</source>
@@ -905,8 +905,8 @@ Adres: %4
         <translation>Gebruik een persoonlijke gegevensmap:</translation>
     </message>
     <message>
-        <source>Litecoin Core</source>
-        <translation>Litecoin Kern</translation>
+        <source>Cccoin Core</source>
+        <translation>Cccoin Kern</translation>
     </message>
     <message>
         <source>Error: Specified data directory "%1" cannot be created.</source>
@@ -959,12 +959,12 @@ Adres: %4
         <translation>&amp;Algemeen</translation>
     </message>
     <message>
-        <source>Automatically start Litecoin after logging in to the system.</source>
-        <translation>Start Litecoin automatisch na inloggen in het systeem</translation>
+        <source>Automatically start Cccoin after logging in to the system.</source>
+        <translation>Start Cccoin automatisch na inloggen in het systeem</translation>
     </message>
     <message>
-        <source>&amp;Start Litecoin on system login</source>
-        <translation>Start &amp;Litecoin bij het inloggen in het systeem</translation>
+        <source>&amp;Start Cccoin on system login</source>
+        <translation>Start &amp;Cccoin bij het inloggen in het systeem</translation>
     </message>
     <message>
         <source>Size of &amp;database cache</source>
@@ -1039,16 +1039,16 @@ Adres: %4
         <translation>&amp;Spendeer onbevestigd wisselgeld</translation>
     </message>
     <message>
-        <source>Automatically open the Litecoin client port on the router. This only works when your router supports UPnP and it is enabled.</source>
-        <translation>Open de Litecoin-poort automatisch op de router. Dit werkt alleen als de router UPnP ondersteunt en het aanstaat.</translation>
+        <source>Automatically open the Cccoin client port on the router. This only works when your router supports UPnP and it is enabled.</source>
+        <translation>Open de Cccoin-poort automatisch op de router. Dit werkt alleen als de router UPnP ondersteunt en het aanstaat.</translation>
     </message>
     <message>
         <source>Map port using &amp;UPnP</source>
         <translation>Portmapping via &amp;UPnP</translation>
     </message>
     <message>
-        <source>Connect to the Litecoin network through a SOCKS5 proxy.</source>
-        <translation>Verbind met het Litecoin netwerk via een SOCKS5 proxy.</translation>
+        <source>Connect to the Cccoin network through a SOCKS5 proxy.</source>
+        <translation>Verbind met het Cccoin netwerk via een SOCKS5 proxy.</translation>
     </message>
     <message>
         <source>&amp;Connect through SOCKS5 proxy (default proxy):</source>
@@ -1095,8 +1095,8 @@ Adres: %4
         <translation>Taal &amp;Gebruikersinterface:</translation>
     </message>
     <message>
-        <source>The user interface language can be set here. This setting will take effect after restarting Litecoin.</source>
-        <translation>De taal van de gebruikersinterface kan hier ingesteld worden. Deze instelling zal pas van kracht worden nadat Litecoin herstart wordt.</translation>
+        <source>The user interface language can be set here. This setting will take effect after restarting Cccoin.</source>
+        <translation>De taal van de gebruikersinterface kan hier ingesteld worden. Deze instelling zal pas van kracht worden nadat Cccoin herstart wordt.</translation>
     </message>
     <message>
         <source>&amp;Unit to show amounts in:</source>
@@ -1154,8 +1154,8 @@ Adres: %4
         <translation>Vorm</translation>
     </message>
     <message>
-        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Litecoin network after a connection is established, but this process has not completed yet.</source>
-        <translation>De weergegeven informatie kan verouderd zijn. Uw portemonnee synchroniseert automaticsh met het Litecoinnetwerk nadat een verbinding is gelegd, maar dit proces is nog niet voltooid.</translation>
+        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Cccoin network after a connection is established, but this process has not completed yet.</source>
+        <translation>De weergegeven informatie kan verouderd zijn. Uw portemonnee synchroniseert automaticsh met het Cccoinnetwerk nadat een verbinding is gelegd, maar dit proces is nog niet voltooid.</translation>
     </message>
     <message>
         <source>Watch-only:</source>
@@ -1261,16 +1261,16 @@ Adres: %4
         <translation>Fout bij betalingsverzoek</translation>
     </message>
     <message>
-        <source>Cannot start litecoin: click-to-pay handler</source>
-        <translation>Kan litecoin niet starten: click-to-pay handler</translation>
+        <source>Cannot start cccoin: click-to-pay handler</source>
+        <translation>Kan cccoin niet starten: click-to-pay handler</translation>
     </message>
     <message>
         <source>Payment request fetch URL is invalid: %1</source>
         <translation>URL om betalingsverzoek te verkrijgen is ongeldig: %1</translation>
     </message>
     <message>
-        <source>URI cannot be parsed! This can be caused by an invalid Litecoin address or malformed URI parameters.</source>
-        <translation>URI kan niet verwerkt worden! Dit kan het gevolg zijn van een ongeldig Litecoin adres of misvormde URI parameters.</translation>
+        <source>URI cannot be parsed! This can be caused by an invalid Cccoin address or malformed URI parameters.</source>
+        <translation>URI kan niet verwerkt worden! Dit kan het gevolg zijn van een ongeldig Cccoin adres of misvormde URI parameters.</translation>
     </message>
     <message>
         <source>Payment request file handling</source>
@@ -1331,8 +1331,8 @@ Adres: %4
         <translation>Bedrag</translation>
     </message>
     <message>
-        <source>Enter a Litecoin address (e.g. %1)</source>
-        <translation>Voer een Litecoin-adres in (bijv. %1)</translation>
+        <source>Enter a Cccoin address (e.g. %1)</source>
+        <translation>Voer een Cccoin-adres in (bijv. %1)</translation>
     </message>
     <message>
         <source>%1 d</source>
@@ -1557,16 +1557,16 @@ Adres: %4
         <translation>Debug-logbestand</translation>
     </message>
     <message>
-        <source>Open the Litecoin debug log file from the current data directory. This can take a few seconds for large log files.</source>
-        <translation>Open het Litecoindebug-logbestand van de huidige datamap. Dit kan een aantal seconden duren voor grote logbestanden.</translation>
+        <source>Open the Cccoin debug log file from the current data directory. This can take a few seconds for large log files.</source>
+        <translation>Open het Cccoindebug-logbestand van de huidige datamap. Dit kan een aantal seconden duren voor grote logbestanden.</translation>
     </message>
     <message>
         <source>Clear console</source>
         <translation>Maak console leeg</translation>
     </message>
     <message>
-        <source>Welcome to the Litecoin RPC console.</source>
-        <translation>Welkom bij de Litecoin RPC-console.</translation>
+        <source>Welcome to the Cccoin RPC console.</source>
+        <translation>Welkom bij de Cccoin RPC-console.</translation>
     </message>
     <message>
         <source>Use up and down arrows to navigate history, and &lt;b&gt;Ctrl-L&lt;/b&gt; to clear screen.</source>
@@ -1640,8 +1640,8 @@ Adres: %4
         <translation>H&amp;ergebruik en bestaand ontvangstadres (niet aanbevolen)</translation>
     </message>
     <message>
-        <source>An optional message to attach to the payment request, which will be displayed when the request is opened. Note: The message will not be sent with the payment over the Litecoin network.</source>
-        <translation>Een optioneel bericht om bij te voegen aan het betalingsverzoek, dewelke zal getoond worden wanneer het verzoek is geopend. Opermerking: Het bericht zal niet worden verzonden met de betaling over het Litecoin netwerk.</translation>
+        <source>An optional message to attach to the payment request, which will be displayed when the request is opened. Note: The message will not be sent with the payment over the Cccoin network.</source>
+        <translation>Een optioneel bericht om bij te voegen aan het betalingsverzoek, dewelke zal getoond worden wanneer het verzoek is geopend. Opermerking: Het bericht zal niet worden verzonden met de betaling over het Cccoin netwerk.</translation>
     </message>
     <message>
         <source>An optional label to associate with the new receiving address.</source>
@@ -2017,8 +2017,8 @@ Adres: %4
         <translation>Beginnen van bevesting geschat binnen %1 blok(ken).</translation>
     </message>
     <message>
-        <source>Warning: Invalid Litecoin address</source>
-        <translation>Waarschuwing: Ongeldig Litecoin adres</translation>
+        <source>Warning: Invalid Cccoin address</source>
+        <translation>Waarschuwing: Ongeldig Cccoin adres</translation>
     </message>
     <message>
         <source>(no label)</source>
@@ -2068,8 +2068,8 @@ Adres: %4
         <translation>Dit is een normale betaling.</translation>
     </message>
     <message>
-        <source>The Litecoin address to send the payment to</source>
-        <translation>Het Litecoin adres om betaling aan te voldoen</translation>
+        <source>The Cccoin address to send the payment to</source>
+        <translation>Het Cccoin adres om betaling aan te voldoen</translation>
     </message>
     <message>
         <source>Alt+A</source>
@@ -2100,8 +2100,8 @@ Adres: %4
         <translation>Vul een label voor dit adres in om het aan de lijst met gebruikte adressen toe te voegen</translation>
     </message>
     <message>
-        <source>A message that was attached to the litecoin: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the Litecoin network.</source>
-        <translation>Een bericht dat werd toegevoegd aan de litecoin: URI dewelke wordt opgeslagen met de transactie ter referentie. Opmerking: Dit bericht zal niet worden verzonden over het Litecoin netwerk.</translation>
+        <source>A message that was attached to the cccoin: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the Cccoin network.</source>
+        <translation>Een bericht dat werd toegevoegd aan de cccoin: URI dewelke wordt opgeslagen met de transactie ter referentie. Opmerking: Dit bericht zal niet worden verzonden over het Cccoin netwerk.</translation>
     </message>
     <message>
         <source>This is an unverified payment request.</source>
@@ -2119,8 +2119,8 @@ Adres: %4
 <context>
     <name>ShutdownWindow</name>
     <message>
-        <source>Litecoin Core is shutting down...</source>
-        <translation>Litecoin Core is aan het afsluiten...</translation>
+        <source>Cccoin Core is shutting down...</source>
+        <translation>Cccoin Core is aan het afsluiten...</translation>
     </message>
     <message>
         <source>Do not shut down the computer until this window disappears.</source>
@@ -2142,8 +2142,8 @@ Adres: %4
         <translation>U kunt berichten ondertekenen met een van uw adressen om te bewijzen dat u dit adres bezit. Pas op dat u geen onduidelijke dingen ondertekent, want phishingaanvallen zouden u kunnen misleiden om zo uw identiteit te stelen. Onderteken alleen berichten waarmee u het volledig eens bent.</translation>
     </message>
     <message>
-        <source>The Litecoin address to sign the message with</source>
-        <translation>Het Litecoin adres om bericht mee te ondertekenen</translation>
+        <source>The Cccoin address to sign the message with</source>
+        <translation>Het Cccoin adres om bericht mee te ondertekenen</translation>
     </message>
     <message>
         <source>Choose previously used address</source>
@@ -2174,8 +2174,8 @@ Adres: %4
         <translation>Kopieer de huidige handtekening naar het systeemklembord</translation>
     </message>
     <message>
-        <source>Sign the message to prove you own this Litecoin address</source>
-        <translation>Onderteken een bericht om te bewijzen dat u een bepaald Litecoinadres bezit</translation>
+        <source>Sign the message to prove you own this Cccoin address</source>
+        <translation>Onderteken een bericht om te bewijzen dat u een bepaald Cccoinadres bezit</translation>
     </message>
     <message>
         <source>Sign &amp;Message</source>
@@ -2198,12 +2198,12 @@ Adres: %4
         <translation>Voer het ondertekenende adres, bericht en handtekening hieronder in (let erop dat u nieuwe regels, spaties en tabs juist overneemt) om de handtekening te verifiëren. Let erop dat u niet meer uit het bericht interpreteert dan er daadwerkelijk staat,  om te voorkomen dat u wordt misleid in een man-in-the-middle-aanval.</translation>
     </message>
     <message>
-        <source>The Litecoin address the message was signed with</source>
-        <translation>Het Litecoin adres waarmee het bericht ondertekend is</translation>
+        <source>The Cccoin address the message was signed with</source>
+        <translation>Het Cccoin adres waarmee het bericht ondertekend is</translation>
     </message>
     <message>
-        <source>Verify the message to ensure it was signed with the specified Litecoin address</source>
-        <translation>Controleer een bericht om te verifiëren dat het gespecificeerde Litecoinadres het bericht heeft ondertekend.</translation>
+        <source>Verify the message to ensure it was signed with the specified Cccoin address</source>
+        <translation>Controleer een bericht om te verifiëren dat het gespecificeerde Cccoinadres het bericht heeft ondertekend.</translation>
     </message>
     <message>
         <source>Verify &amp;Message</source>
@@ -2269,12 +2269,12 @@ Adres: %4
 <context>
     <name>SplashScreen</name>
     <message>
-        <source>Litecoin Core</source>
-        <translation>Litecoin Kern</translation>
+        <source>Cccoin Core</source>
+        <translation>Cccoin Kern</translation>
     </message>
     <message>
         <source>The Bitcoin Core developers</source>
-        <translation>De Litecoin Core ontwikkelaars</translation>
+        <translation>De Cccoin Core ontwikkelaars</translation>
     </message>
     <message>
         <source>[testnet]</source>
@@ -2794,23 +2794,23 @@ Adres: %4
         <source>%s, you must set a rpcpassword in the configuration file:
 %s
 It is recommended you use the following random password:
-rpcuser=litecoinrpc
+rpcuser=cccoinrpc
 rpcpassword=%s
 (you do not need to remember this password)
 The username and password MUST NOT be the same.
 If the file does not exist, create it with owner-readable-only file permissions.
 It is also recommended to set alertnotify so you are notified of problems;
-for example: alertnotify=echo %%s | mail -s "Litecoin Alert" admin@foo.com
+for example: alertnotify=echo %%s | mail -s "Cccoin Alert" admin@foo.com
 </source>
         <translation>%s, u moet een RPC-wachtwoord instellen in het configuratiebestand: %s
 U wordt aangeraden het volgende willekeurige wachtwoord te gebruiken:
-rpcuser=litecoinrpc
+rpcuser=cccoinrpc
 rpcpassword=%s
 (u hoeft dit wachtwoord niet te onthouden)
 De gebruikersnaam en wachtwoord mogen niet hetzelfde zijn.
 Als het bestand niet bestaat, make hem dan aan met leesrechten voor enkel de eigenaar.
 Het is ook aan te bevelen "alertnotify" in te stellen zodat u op de hoogte gesteld wordt van problemen;
-bijvoorbeeld: alertnotify=echo %%s | mail -s "Litecoin Alert" admin@foo.com</translation>
+bijvoorbeeld: alertnotify=echo %%s | mail -s "Cccoin Alert" admin@foo.com</translation>
     </message>
     <message>
         <source>Bind to given address and always listen on it. Use [host]:port notation for IPv6</source>
@@ -2853,8 +2853,8 @@ bijvoorbeeld: alertnotify=echo %%s | mail -s "Litecoin Alert" admin@foo.com</tra
         <translation>Dit is een pre-release testversie - gebruik op eigen risico! Gebruik deze niet voor het delven van munten of handelsdoeleinden</translation>
     </message>
     <message>
-        <source>Unable to bind to %s on this computer. Litecoin Core is probably already running.</source>
-        <translation>Niet in staat om %s te verbinden op deze computer. Litecoin Core draait waarschijnlijk al.</translation>
+        <source>Unable to bind to %s on this computer. Cccoin Core is probably already running.</source>
+        <translation>Niet in staat om %s te verbinden op deze computer. Cccoin Core draait waarschijnlijk al.</translation>
     </message>
     <message>
         <source>Warning: -paytxfee is set very high! This is the transaction fee you will pay if you send a transaction.</source>
@@ -3045,8 +3045,8 @@ bijvoorbeeld: alertnotify=echo %%s | mail -s "Litecoin Alert" admin@foo.com</tra
         <translation>Bind aan gegeven adres om te luisteren voor JSON-RPC verbindingen. Gebruik [host]:poort notatie voor IPv6. Deze optie kan meerdere keren gespecificeerd worden (standaard: bind aan alle interfaces.</translation>
     </message>
     <message>
-        <source>Cannot obtain a lock on data directory %s. Litecoin Core is probably already running.</source>
-        <translation>Kan geen lock verkrijgen op gegevensmap %s. Litecoin Core draait waarschijnlijk al.</translation>
+        <source>Cannot obtain a lock on data directory %s. Cccoin Core is probably already running.</source>
+        <translation>Kan geen lock verkrijgen op gegevensmap %s. Cccoin Core draait waarschijnlijk al.</translation>
     </message>
     <message>
         <source>Continuously rate-limit free transactions to &lt;n&gt;*1000 bytes per minute (default:%u)</source>
@@ -3077,8 +3077,8 @@ bijvoorbeeld: alertnotify=echo %%s | mail -s "Litecoin Alert" admin@foo.com</tra
         <translation>Dit product bevat software dat ontwikkeld is door het OpenSSL Project voor gebruik in de OpenSSL Toolkit &lt;https://www.openssl.org/&gt; en cryptografische software geschreven door Eric Young en UPnP software geschreven door Thomas Bernard.</translation>
     </message>
     <message>
-        <source>Warning: Please check that your computer's date and time are correct! If your clock is wrong Litecoin Core will not work properly.</source>
-        <translation>Waarschuwing: Controleer dat de datum en tijd van uw computer correct zijn ingesteld! Bij een onjuist ingestelde klok zal Litecoin Core niet goed werken.</translation>
+        <source>Warning: Please check that your computer's date and time are correct! If your clock is wrong Cccoin Core will not work properly.</source>
+        <translation>Waarschuwing: Controleer dat de datum en tijd van uw computer correct zijn ingesteld! Bij een onjuist ingestelde klok zal Cccoin Core niet goed werken.</translation>
     </message>
     <message>
         <source>Whitelisted peers cannot be DoS banned and their transactions are always relayed, even if they are already in the mempool, useful e.g. for a gateway</source>
@@ -3093,16 +3093,16 @@ bijvoorbeeld: alertnotify=echo %%s | mail -s "Litecoin Alert" admin@foo.com</tra
         <translation>Verbind door SOCKS5 proxy</translation>
     </message>
     <message>
-        <source>Copyright (C) 2009-%i The Litecoin Core Developers</source>
-        <translation>Auteursrecht (C) 2009-%i De Litecoin Core Ontwikkelaars</translation>
+        <source>Copyright (C) 2009-%i The Cccoin Core Developers</source>
+        <translation>Auteursrecht (C) 2009-%i De Cccoin Core Ontwikkelaars</translation>
     </message>
     <message>
         <source>Could not parse -rpcbind value %s as network address</source>
         <translation>Niet mogelijk om -rpcbind waarde %s te verwerken als netwerk adres</translation>
     </message>
     <message>
-        <source>Error loading wallet.dat: Wallet requires newer version of Litecoin Core</source>
-        <translation>Fout bij laden wallet.dat: Portemonnee vereist een nieuwere versie van Litecoin Core</translation>
+        <source>Error loading wallet.dat: Wallet requires newer version of Cccoin Core</source>
+        <translation>Fout bij laden wallet.dat: Portemonnee vereist een nieuwere versie van Cccoin Core</translation>
     </message>
     <message>
         <source>Error: Unsupported argument -tor found, use -onion.</source>
@@ -3117,8 +3117,8 @@ bijvoorbeeld: alertnotify=echo %%s | mail -s "Litecoin Alert" admin@foo.com</tra
         <translation>Informatie</translation>
     </message>
     <message>
-        <source>Initialization sanity check failed. Litecoin Core is shutting down.</source>
-        <translation>Initialisatie sanity check mislukt. Litecoin Core is aan het afsluiten.</translation>
+        <source>Initialization sanity check failed. Cccoin Core is shutting down.</source>
+        <translation>Initialisatie sanity check mislukt. Cccoin Core is aan het afsluiten.</translation>
     </message>
     <message>
         <source>Invalid amount for -minrelaytxfee=&lt;amount&gt;: '%s'</source>
@@ -3157,8 +3157,8 @@ bijvoorbeeld: alertnotify=echo %%s | mail -s "Litecoin Alert" admin@foo.com</tra
         <translation>Toon block bij opstarten, wanneer gevonden in block index</translation>
     </message>
     <message>
-        <source>RPC SSL options: (see the Litecoin Wiki for SSL setup instructions)</source>
-        <translation>RPC SSL opties: (zie de Litecoin Wiki voor SSL installatie-instructies)</translation>
+        <source>RPC SSL options: (see the Cccoin Wiki for SSL setup instructions)</source>
+        <translation>RPC SSL opties: (zie de Cccoin Wiki voor SSL installatie-instructies)</translation>
     </message>
     <message>
         <source>RPC server options:</source>
@@ -3221,8 +3221,8 @@ bijvoorbeeld: alertnotify=echo %%s | mail -s "Litecoin Alert" admin@foo.com</tra
         <translation>Gebruikersnaam voor JSON-RPC-verbindingen</translation>
     </message>
     <message>
-        <source>Wallet needed to be rewritten: restart Litecoin Core to complete</source>
-        <translation>Portemonnee moest herschreven worden: Herstart Litecoin Core om te voltooien</translation>
+        <source>Wallet needed to be rewritten: restart Cccoin Core to complete</source>
+        <translation>Portemonnee moest herschreven worden: Herstart Cccoin Core om te voltooien</translation>
     </message>
     <message>
         <source>Warning</source>
