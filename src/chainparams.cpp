@@ -117,7 +117,7 @@ public:
         pchMessageStart[3] = 0xdb;
         vAlertPubKey = ParseHex("040184710fa689ad5023690c80f3a49c8f13f8d45b8c857fbcbc8bc4a8e4d3eb4b10f4d4604fa08dce601aaf0f470216fe1b51850b4acf21b179c45070ac7b03a9");
         nDefaultPort = 7333;
-        bnProofOfWorkLimit = ~uint256(0) >> 20;
+        bnProofOfWorkLimit = ~uint256(0) >> 8;
         nSubsidyHalvingInterval = 840000;
         nEnforceBlockUpgradeMajority = 750;
         nRejectBlockOutdatedMajority = 950;
@@ -149,19 +149,19 @@ public:
         genesis.nVersion = 1;
         genesis.nTime    = 1426780097;
         genesis.nBits    = 0x1e0ffff0;
-        genesis.nNonce   = 2084524493;
+        genesis.nNonce   = 2084524494;
 
         hashGenesisBlock = genesis.GetHash();
-        std::cout << "g hash: \n" << hashGenesisBlock.ToString() << "\n";
-        std::cout << "g mroot: \n" << genesis.hashMerkleRoot.ToString() << "\n";
-        assert(hashGenesisBlock == uint256("0x12a765e31ffd4059bada1e25190f6e98c99d9714d334efa41a195a7e7e04bfe2"));
-        assert(genesis.hashMerkleRoot == uint256("0x97ddfbbae6be97fd6cdf3e7ca13232a3afff2353e29badfab7f73011edd4ced9"));
+//        std::cout << "g hash: \n" << hashGenesisBlock.ToString() << "\n";
+//        std::cout << "g mroot: \n" << genesis.hashMerkleRoot.ToString() << "\n";
+        assert(hashGenesisBlock == uint256("0x370cb47d9880fade9a9fd8c781c9da08b7cc50b35a97ea850943706d21a74e67"));
+        assert(genesis.hashMerkleRoot == uint256("0x13598b4b8bb3b5ee189e50e122443e8af32feb23e5b830bad5e4818e8d299d92"));
 
         vSeeds.push_back(CDNSSeedData("cccointools.com", "dnsseed.cccointools.com"));
-        vSeeds.push_back(CDNSSeedData("cccoinpool.org", "dnsseed.cccoinpool.org"));
-        vSeeds.push_back(CDNSSeedData("xurious.com", "dnsseed.ltc.xurious.com"));
-        vSeeds.push_back(CDNSSeedData("koin-project.com", "dnsseed.koin-project.com"));
-        vSeeds.push_back(CDNSSeedData("weminemnc.com", "dnsseed.weminemnc.com"));
+//        vSeeds.push_back(CDNSSeedData("cccoinpool.org", "dnsseed.cccoinpool.org"));
+//        vSeeds.push_back(CDNSSeedData("xurious.com", "dnsseed.ltc.xurious.com"));
+//        vSeeds.push_back(CDNSSeedData("koin-project.com", "dnsseed.koin-project.com"));
+//        vSeeds.push_back(CDNSSeedData("weminemnc.com", "dnsseed.weminemnc.com"));
 
         base58Prefixes[PUBKEY_ADDRESS] = list_of(48);
         base58Prefixes[SCRIPT_ADDRESS] = list_of(5);
@@ -216,8 +216,8 @@ public:
         genesis.nTime = 1317798646;
         genesis.nNonce = 385270584;
         hashGenesisBlock = genesis.GetHash();
-        std::cout << "t g hash: \n" << hashGenesisBlock.ToString() << "\n";
-        assert(hashGenesisBlock == uint256("0xf5ae71e26c74beacc88382716aced69cddf3dffff24f384e1808905e0188f68f"));
+//        std::cout << "t g hash: \n" << hashGenesisBlock.ToString() << "\n";
+        assert(hashGenesisBlock == uint256("0x2d8907ffe290d95c1006604b46e54fa55819af1b9bc8b93009afcb79621ed170"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
@@ -276,8 +276,8 @@ public:
         genesis.nNonce = 0;
         hashGenesisBlock = genesis.GetHash();
         nDefaultPort = 19444;
-        std::cout << "rt g hash: \n" << hashGenesisBlock.ToString() << "\n";
-        assert(hashGenesisBlock == uint256("0x530827f38f93b43ed12af0b3ad25a288dc02ed74d6d7857862df51fc56c416f9"));
+//        std::cout << "rt g hash: \n" << hashGenesisBlock.ToString() << "\n";
+        assert(hashGenesisBlock == uint256("0x36ab5ffcbe7ebdb846758bdf486d40db5712be0aa2fc9483ee1014150725d98a"));
 
         vFixedSeeds.clear(); //! Regtest mode doesn't have any fixed seeds.
         vSeeds.clear();  //! Regtest mode doesn't have any DNS seeds.
