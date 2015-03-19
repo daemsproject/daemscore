@@ -117,7 +117,7 @@ public:
         pchMessageStart[3] = 0xdb;
         vAlertPubKey = ParseHex("040184710fa689ad5023690c80f3a49c8f13f8d45b8c857fbcbc8bc4a8e4d3eb4b10f4d4604fa08dce601aaf0f470216fe1b51850b4acf21b179c45070ac7b03a9");
         nDefaultPort = 7333;
-        bnProofOfWorkLimit = ~uint256(0) >> 8;
+        bnProofOfWorkLimit = ~uint256(0) >> 0;
         nSubsidyHalvingInterval = 840000;
         nEnforceBlockUpgradeMajority = 750;
         nRejectBlockOutdatedMajority = 950;
@@ -148,13 +148,13 @@ public:
         genesis.hashMerkleRoot = genesis.BuildMerkleTree();
         genesis.nVersion = 1;
         genesis.nTime    = 1426780097;
-        genesis.nBits    = 0x1e0ffff0;
+        genesis.nBits    = 0x2100ffff;
         genesis.nNonce   = 2084524494;
 
         hashGenesisBlock = genesis.GetHash();
 //        std::cout << "g hash: \n" << hashGenesisBlock.ToString() << "\n";
 //        std::cout << "g mroot: \n" << genesis.hashMerkleRoot.ToString() << "\n";
-        assert(hashGenesisBlock == uint256("0x370cb47d9880fade9a9fd8c781c9da08b7cc50b35a97ea850943706d21a74e67"));
+        assert(hashGenesisBlock == uint256("0x58b0e4a0b355fddcb9bb610d8aaefd5776144980ccbdea077e315574bfd6ce54"));
         assert(genesis.hashMerkleRoot == uint256("0x13598b4b8bb3b5ee189e50e122443e8af32feb23e5b830bad5e4818e8d299d92"));
 
         vSeeds.push_back(CDNSSeedData("cccointools.com", "dnsseed.cccointools.com"));
@@ -217,7 +217,7 @@ public:
         genesis.nNonce = 385270584;
         hashGenesisBlock = genesis.GetHash();
 //        std::cout << "t g hash: \n" << hashGenesisBlock.ToString() << "\n";
-        assert(hashGenesisBlock == uint256("0x2d8907ffe290d95c1006604b46e54fa55819af1b9bc8b93009afcb79621ed170"));
+        assert(hashGenesisBlock == uint256("0xc499442b40856fe276ba7f88f4692f65856b25259494915e28664208d3690e6f"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
