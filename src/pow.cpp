@@ -11,7 +11,8 @@
 #include "uint256.h"
 #include "util.h"
 
-unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock) {
+unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock)
+{
     unsigned int nProofOfWorkLimit = Params().ProofOfWorkLimit().GetCompact();
 
     // Genesis block
@@ -19,14 +20,17 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         return nProofOfWorkLimit;
 
     // Only change once per interval
-    if ((pindexLast->nHeight + 1) % Params().Interval() != 0) {
-        if (Params().AllowMinDifficultyBlocks()) {
+    if ((pindexLast->nHeight+1) % Params().Interval() != 0)
+    {
+        if (Params().AllowMinDifficultyBlocks())
+        {
             // Special difficulty rule for testnet:
             // If the new block's timestamp is more than 2* 10 minutes
             // then allow mining of a min-difficulty block.
             if (pblock->GetBlockTime() > pindexLast->GetBlockTime() + Params().TargetSpacing()*2)
                 return nProofOfWorkLimit;
-            else {
+            else
+            {
                 // Return the last non-special-min-difficulty-rules-block
                 const CBlockIndex* pindex = pindexLast;
                 while (pindex->pprev && pindex->nHeight % Params().Interval() != 0 && pindex->nBits == nProofOfWorkLimit)
@@ -39,8 +43,8 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
 
     // Cccoin: This fixes an issue where a 51% attack can change difficulty at will.
     // Go back the full period unless it's the first retarget after genesis. Code courtesy of Art Forz
-    int blockstogoback = Params().Interval() - 1;
-    if ((pindexLast->nHeight + 1) != Params().Interval())
+    int blockstogoback = Params().Interval()-1;
+    if ((pindexLast->nHeight+1) != Params().Interval())
         blockstogoback = Params().Interval();
 
     // Go back by what we want to be 14 days worth of blocks
@@ -52,8 +56,8 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     // Limit adjustment step
     int64_t nActualTimespan = pindexLast->GetBlockTime() - pindexFirst->GetBlockTime();
     LogPrintf("  nActualTimespan = %d  before bounds\n", nActualTimespan);
-    if (nActualTimespan < Params().TargetTimespan() / 4)
-        nActualTimespan = Params().TargetTimespan() / 4;
+    if (nActualTimespan < Params().TargetTimespan()/4)
+        nActualTimespan = Params().TargetTimespan()/4;
     if (nActualTimespan > Params().TargetTimespan()*4)
         nActualTimespan = Params().TargetTimespan()*4;
 
@@ -83,36 +87,35 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     return bnNew.GetCompact();
 }
 
-bool CheckProofOfWork(uint256 hash, unsigned int nBits) {
+bool CheckProofOfWork(uint256 hash, unsigned int nBits)
+{
     bool fNegative;
     bool fOverflow;
     uint256 bnTarget;
 
     if (Params().SkipProofOfWorkCheck())
-        return true;
+       return true;
 
     bnTarget.SetCompact(nBits, &fNegative, &fOverflow);
 
     // Check range
-    if (fNegative || bnTarget == 0 || fOverflow || bnTarget > Params().ProofOfWorkLimit()) {
-        LogPrintf("\n\n\n\n");
-
-        LogPrintf("bnTarget: %s\n", Params().ProofOfWorkLimit().ToString());
-        LogPrintf("\n\n\n\n");
+    if (fNegative || bnTarget == 0 || fOverflow || bnTarget > Params().ProofOfWorkLimit())
         return error("CheckProofOfWork() : nBits below minimum work");
-    }
 
     // Check proof of work matches claimed amount
-    if (hash > bnTarget) {
-        std::cout << "bnTarget: \n" << bnTarget.ToString() << "\n";
-        std::cout << "nBits: \n" << nBits << "\n";
+    if (hash > bnTarget)
+    {
+//        std::cout << "hash: \n" << hash.ToString() << "\n";
+//        std::cout << "bnTarget: \n" << bnTarget.ToString() << "\n";
+//        std::cout << "nBits: \n" << nBits << "\n";
         return error("CheckProofOfWork() : hash doesn't match nBits");
     }
 
     return true;
 }
 
-uint256 GetBlockProof(const CBlockIndex& block) {
+uint256 GetBlockProof(const CBlockIndex& block)
+{
     uint256 bnTarget;
     bool fNegative;
     bool fOverflow;

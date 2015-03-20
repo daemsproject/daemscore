@@ -147,14 +147,15 @@ public:
         genesis.hashPrevBlock = 0;
         genesis.hashMerkleRoot = genesis.BuildMerkleTree();
         genesis.nVersion = 1;
-        genesis.nTime    = 1426780097;
-        genesis.nBits    = 0x2100ffff;
-        genesis.nNonce   = 2084524494;
+        genesis.nTime    = 1426857997;
+        genesis.nBits    = 0x1f0fffff;
+        genesis.nNonce   = 105;
 
         hashGenesisBlock = genesis.GetHash();
 //        std::cout << "g hash: \n" << hashGenesisBlock.ToString() << "\n";
+//        std::cout << "g hash: \n" << genesis.GetPoWHash().ToString() << "\n";
 //        std::cout << "g mroot: \n" << genesis.hashMerkleRoot.ToString() << "\n";
-        assert(hashGenesisBlock == uint256("0x58b0e4a0b355fddcb9bb610d8aaefd5776144980ccbdea077e315574bfd6ce54"));
+        assert(hashGenesisBlock == uint256("0x3ddea0ff570669110e7ecee49f6e62c41323d6e26f49c85932f1b1f01b064bde"));
         assert(genesis.hashMerkleRoot == uint256("0x13598b4b8bb3b5ee189e50e122443e8af32feb23e5b830bad5e4818e8d299d92"));
 
         vSeeds.push_back(CDNSSeedData("cccointools.com", "dnsseed.cccointools.com"));
@@ -213,11 +214,11 @@ public:
         nTargetSpacing = 2.5 * 60; // 2.5 minutes
 
         //! Modify the testnet genesis block so the timestamp is valid for a later start.
-        genesis.nTime = 1317798646;
-        genesis.nNonce = 385270584;
+        genesis.nTime = 1426857997;
+        genesis.nNonce = 3947;
         hashGenesisBlock = genesis.GetHash();
 //        std::cout << "t g hash: \n" << hashGenesisBlock.ToString() << "\n";
-        assert(hashGenesisBlock == uint256("0xc499442b40856fe276ba7f88f4692f65856b25259494915e28664208d3690e6f"));
+        assert(hashGenesisBlock == uint256("0x0004b430ecfa8fd76dca5884d8c23ce60e9e2f0764a81b499078e313857a3900"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
