@@ -12,6 +12,30 @@
 
 uint256 CBlockHeader::GetHash() const
 {
+     std::stringstream s;
+//     s << strprintf("CBlock( ver=%d, hashPrevBlock=%s, hashMerkleRoot=%s, nBlockHeight=%d, nTime=%u, nBits=%08x, nNonce=%u)\n",
+//        nVersion,
+//        hashPrevBlock.ToString(),
+//        hashMerkleRoot.ToString(),
+//        nBlockHeight,
+//        nTime, nBits, nNonce
+//        );
+//     
+//     s << strprintf("%08x%s%s%08x%08x%08x%08x)\n",
+//        nVersion,
+//        hashPrevBlock.ToString(),
+//        hashMerkleRoot.ToString(),
+//        nBlockHeight,
+//        nTime, nBits, nNonce
+//        );
+//    
+//    std::cout << "g header(in block.cpp): \n"  << s.str() << "\n";
+//   
+//    
+////    CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
+////    ssTx << tx;
+////     
+//     std::cout << "test: \n"  << HexStr(BEGIN(nVersion), END(nNonce)) << "\n";
     return Hash(BEGIN(nVersion), END(nNonce));
 }
 

@@ -147,15 +147,16 @@ public:
         genesis.hashPrevBlock = 0;
         genesis.hashMerkleRoot = genesis.BuildMerkleTree();
         genesis.nVersion = 1;
+        genesis.nBlockHeight = 0;
         genesis.nTime    = 1426857997;
         genesis.nBits    = 0x1f0fffff;
-        genesis.nNonce   = 105;
+        genesis.nNonce   = 9297;
 
         hashGenesisBlock = genesis.GetHash();
 //        std::cout << "g hash: \n" << hashGenesisBlock.ToString() << "\n";
-//        std::cout << "g hash: \n" << genesis.GetPoWHash().ToString() << "\n";
+//        std::cout << "g powh: \n" << genesis.GetPoWHash().ToString() << "\n";
 //        std::cout << "g mroot: \n" << genesis.hashMerkleRoot.ToString() << "\n";
-        assert(hashGenesisBlock == uint256("0x3ddea0ff570669110e7ecee49f6e62c41323d6e26f49c85932f1b1f01b064bde"));
+        assert(hashGenesisBlock == uint256("0xd2dd0a0b9eba71f08f00e60ec12aaf20d82dbfc6424311f690ffae8bdf8f3827"));
         assert(genesis.hashMerkleRoot == uint256("0x13598b4b8bb3b5ee189e50e122443e8af32feb23e5b830bad5e4818e8d299d92"));
 
         vSeeds.push_back(CDNSSeedData("cccointools.com", "dnsseed.cccointools.com"));
@@ -215,10 +216,10 @@ public:
 
         //! Modify the testnet genesis block so the timestamp is valid for a later start.
         genesis.nTime = 1426857997;
-        genesis.nNonce = 3947;
+        genesis.nNonce = 9297;
         hashGenesisBlock = genesis.GetHash();
 //        std::cout << "t g hash: \n" << hashGenesisBlock.ToString() << "\n";
-        assert(hashGenesisBlock == uint256("0x0004b430ecfa8fd76dca5884d8c23ce60e9e2f0764a81b499078e313857a3900"));
+        assert(hashGenesisBlock == uint256("0xd2dd0a0b9eba71f08f00e60ec12aaf20d82dbfc6424311f690ffae8bdf8f3827"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
@@ -278,7 +279,7 @@ public:
         hashGenesisBlock = genesis.GetHash();
         nDefaultPort = 19444;
 //        std::cout << "rt g hash: \n" << hashGenesisBlock.ToString() << "\n";
-        assert(hashGenesisBlock == uint256("0x36ab5ffcbe7ebdb846758bdf486d40db5712be0aa2fc9483ee1014150725d98a"));
+        assert(hashGenesisBlock == uint256("0xc3ed112776ce0022baf6d955d3d241a4c3ec19f49ed38f664e6bcde9c5004394"));
 
         vFixedSeeds.clear(); //! Regtest mode doesn't have any fixed seeds.
         vSeeds.clear();  //! Regtest mode doesn't have any DNS seeds.
