@@ -12,7 +12,7 @@
 
 uint256 CBlockHeader::GetHash() const
 {
-     std::stringstream s;
+//     std::stringstream s;
 //     s << strprintf("CBlock( ver=%d, hashPrevBlock=%s, hashMerkleRoot=%s, nBlockHeight=%d, nTime=%u, nBits=%08x, nNonce=%u)\n",
 //        nVersion,
 //        hashPrevBlock.ToString(),

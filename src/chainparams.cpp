@@ -150,13 +150,13 @@ public:
         genesis.nBlockHeight = 0;
         genesis.nTime    = 1426857997;
         genesis.nBits    = 0x1f0fffff;
-        genesis.nNonce   = 9297;
+        genesis.nNonce   = 3102;
 
         hashGenesisBlock = genesis.GetHash();
-//        std::cout << "g hash: \n" << hashGenesisBlock.ToString() << "\n";
-//        std::cout << "g powh: \n" << genesis.GetPoWHash().ToString() << "\n";
-//        std::cout << "g mroot: \n" << genesis.hashMerkleRoot.ToString() << "\n";
-        assert(hashGenesisBlock == uint256("0xd2dd0a0b9eba71f08f00e60ec12aaf20d82dbfc6424311f690ffae8bdf8f3827"));
+        std::cout << "g hash: \n" << hashGenesisBlock.ToString() << "\n";
+        std::cout << "g powh: \n" << genesis.GetPoWHash().ToString() << "\n";
+        std::cout << "g mroot: \n" << genesis.hashMerkleRoot.ToString() << "\n";
+        assert(hashGenesisBlock == uint256("0x0348a2106ddbe1f7e78f1ca9f4751c349b61d59e4ddc311acfa7513c80505cd0"));
         assert(genesis.hashMerkleRoot == uint256("0x13598b4b8bb3b5ee189e50e122443e8af32feb23e5b830bad5e4818e8d299d92"));
 
         vSeeds.push_back(CDNSSeedData("cccointools.com", "dnsseed.cccointools.com"));

@@ -105,9 +105,9 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits)
     // Check proof of work matches claimed amount
     if (hash > bnTarget)
     {
-//        std::cout << "hash: \n" << hash.ToString() << "\n";
-//        std::cout << "bnTarget: \n" << bnTarget.ToString() << "\n";
-//        std::cout << "nBits: \n" << nBits << "\n";
+        std::cout << "hash: \n" << hash.ToString() << "\n";
+        std::cout << "bnTarget: \n" << bnTarget.ToString() << "\n";
+        std::cout << "nBits: \n" << nBits << "\n";
         return error("CheckProofOfWork() : hash doesn't match nBits");
     }
 
