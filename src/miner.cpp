@@ -457,6 +457,7 @@ void static BitcoinMiner(CWallet *pwallet)
                 while(true)
                 {
                     //scrypt_1024_1_1_256_sp(BEGIN(pblock->nVersion), BEGIN(thash), scratchpad);
+                    thash=pblock->GetHash();
                     mixHash(&thash,(unsigned int)pblock->nBlockHeight);
                     if (thash <= hashTarget)
                     {
