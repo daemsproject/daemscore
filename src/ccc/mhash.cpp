@@ -18,16 +18,29 @@
 #endif
 #endif
 
+/*How mixed Hash works
+ * First, get a normal sha256d hash of the block header
+ * rolling for nBlockHeight times, occuping memory.
+ * each roll,xor with a random number, and self mix add.cache to array.
+ * Then roll for another nBlockHeight times
+ * each roll, add with a random memory cache ,then xor with a random number, and self mix add.
+ * Finally, attach to the block header hash, and calc a sha256d hash.
+ * This design enables ultra fast computing with huge rams, with changing rolling times, so as to disable mining machine.
+ * 
+ */
+
 void mixHash(uint256* input, const unsigned int height) {
     uint256 mHashRnd[8];
     getRandom(mHashRnd);
     //getRandom(&rnd);
     uint256 roller;
     roller = *input;
-    std::cout << "roller: \n" << roller.ToString() << "\n";
-    std::cout << "height: \n" << height<< "\n";
+
+    //std::cout << "roller: \n" << roller.ToString() << "\n";
+   // std::cout << "height: \n" << height<< "\n";
     int r;
-    uint256 mixer[height];
+    uint256 *mixer;
+    mixer=new uint256[height];
     for (unsigned int i = 0; i < height; i++) {
         roller ^=mHashRnd[i&7];        
         mixAdd(&roller);        
@@ -43,11 +56,14 @@ void mixHash(uint256* input, const unsigned int height) {
         //std::cout << "roller: \n" << roller.ToString() << "\n";
     }
     //delete[] mixer;
-    std::cout << "roller: \n" << roller.ToString() << "\n";
-    std::cout << "input: \n"  << HexStr(BEGIN(*input), END(*input)) << "\n";
+
+    //std::cout << "roller: \n" << roller.ToString() << "\n";
+   // std::cout << "input: \n"  << HexStr(BEGIN(*input), END(*input)) << "\n";
     *input = Hash(BEGIN(roller), END(roller), BEGIN(*input), END(*input));
-    std::cout << "roller beginend: \n"  << HexStr(BEGIN(roller), END(roller)) << "\n";    
-    std::cout << "result: \n" << input->ToString() << "\n";
+    //std::cout << "roller beginend: \n"  << HexStr(BEGIN(roller), END(roller)) << "\n";    
+    //std::cout << "result: \n" << input->ToString() << "\n";
+    delete[] mixer;
+
 }
 void getRandom(uint256* mHashRnd)
 {
