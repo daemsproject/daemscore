@@ -289,7 +289,7 @@ void UpdatePreferredDownload(CNode* node, CNodeState* state)
     nPreferredDownload -= state->fPreferredDownload;
 
     // Whether this node should be marked as a preferred download node.
-    state->fPreferredDownload = (!node->fInbound || node->fWhitelisted) && !node->fOneShot && !node->fClient;
+    state->fPreferredDownload = true;     // (!node->fInbound || node->fWhitelisted) && !node->fOneShot && !node->fClient;
 
     nPreferredDownload += state->fPreferredDownload;
 }
@@ -4391,6 +4391,7 @@ bool ProcessMessages(CNode* pfrom)
 
 bool SendMessages(CNode* pto, bool fSendTrickle)
 {
+    LogPrintf("SendMessages() working\n");
     {
         // Don't send anything until we get their version message
         if (pto->nVersion == 0)
@@ -4452,6 +4453,7 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
         //
         if (fSendTrickle)
         {
+            LogPrintf("fSendTrickle!\n");
             vector<CAddress> vAddr;
             vAddr.reserve(pto->vAddrToSend.size());
             BOOST_FOREACH(const CAddress& addr, pto->vAddrToSend)
@@ -4522,6 +4524,7 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
         vector<CInv> vInv;
         vector<CInv> vInvWait;
         {
+            LogPrintf("vInv!\n");
             LOCK(pto->cs_inventory);
             vInv.reserve(pto->vInventoryToSend.size());
             vInvWait.reserve(pto->vInventoryToSend.size());
