@@ -17,6 +17,7 @@
 #include <cpuid.h>
 #endif
 #endif
+
 /*How mixed Hash works
  * First, get a normal sha256d hash of the block header
  * rolling for nBlockHeight times, occuping memory.
@@ -34,53 +35,54 @@ void mixHash(uint256* input, const unsigned int height) {
     uint256 roller;
     roller = *input;
     //std::cout << "roller: \n" << roller.ToString() << "\n";
-   // std::cout << "height: \n" << height<< "\n";
+    // std::cout << "height: \n" << height<< "\n";
     int r;
     uint256 *mixer;
-    mixer=new uint256[height];
+    mixer = new uint256[height];
     for (unsigned int i = 0; i < height; i++) {
-        roller ^=mHashRnd[i&7];        
-        mixAdd(&roller);        
+        roller ^= mHashRnd[i & 7];
+        mixAdd(&roller);
         mixer[i] = roller;
-        
+
     }
     for (unsigned int i = 0; i < height; i++) {
-        r =(unsigned int)(roller.GetLow64() & 0xffffffff) % height;
+        r = (unsigned int) (roller.GetLow64() & 0xffffffff) % height;
         //std::cout << "roller: \n" << r << "\n";
-        roller+=mixer[r];
-        roller^=mHashRnd[i&7];        
-        mixAdd(&roller);      
+        roller += mixer[r];
+        roller ^= mHashRnd[i & 7];
+        mixAdd(&roller);
         //std::cout << "roller: \n" << roller.ToString() << "\n";
     }
     //delete[] mixer;
     //std::cout << "roller: \n" << roller.ToString() << "\n";
-   // std::cout << "input: \n"  << HexStr(BEGIN(*input), END(*input)) << "\n";
+    // std::cout << "input: \n"  << HexStr(BEGIN(*input), END(*input)) << "\n";
     *input = Hash(BEGIN(roller), END(roller), BEGIN(*input), END(*input));
     //std::cout << "roller beginend: \n"  << HexStr(BEGIN(roller), END(roller)) << "\n";    
     //std::cout << "result: \n" << input->ToString() << "\n";
     delete[] mixer;
 }
-void getRandom(uint256* mHashRnd)
-{
-mHashRnd[0].SetHex("0x95faaa7b5ccde209b9cdebd1de254102795a295a883354449555f5a4e8f7493e");
+
+void getRandom(uint256* mHashRnd) {
+    mHashRnd[0].SetHex("0x95faaa7b5ccde209b9cdebd1de254102795a295a883354449555f5a4e8f7493e");
     mHashRnd[1].SetHex("0xd89d9124591df8a0e45fe616535627a61302f599c882f4aa622c2a9223661937");
-   mHashRnd[2].SetHex("0xc9a7798889ffe05159c37b769a1b914ddd5e94610463d029acf288f37649c772");
+    mHashRnd[2].SetHex("0xc9a7798889ffe05159c37b769a1b914ddd5e94610463d029acf288f37649c772");
     mHashRnd[3].SetHex("0x0c362798f117ebc70aff6afc7d49b3982132e3244702fc417b22fcfcbb0cd230");
     mHashRnd[4].SetHex("0xf648c988f4f5e6e2f9d6b292a622c8cfe5016acd63dcafcf2f26002743b90d35");
     mHashRnd[5].SetHex("0x059140f332690e0c6d37160d4444056a3f4135614bc93f2243f8c6118a69edd1");
     mHashRnd[6].SetHex("0x59b7c70950352b733d074b5bad162c9d3b732f1acbcf29e4b2c47eab5a5615c5");
     mHashRnd[7].SetHex("0x61dcfeae08c1d458ee5e6a65bb26c6419f64a15c169a94a9de34a11ab3753b39");
-    
+
     //std::cout << "rnd: \n" << mHashRnd[1].ToString() << "\n";
     //std::cout << "rnd: \n" << mHashRnd[7].ToString() << "\n";
-    }
-void mixAdd(uint256* roller){
-    unsigned int shift=roller->GetLow64()&0xff;
+}
+
+void mixAdd(uint256* roller) {
+    unsigned int shift = roller->GetLow64()&0xff;
     //std::cout << "shift: \n" << shift << "\n";
-    uint256 lchunk=*roller>>shift;
-    uint256 r1=*roller<<(unsigned int)(256-shift);
-    r1|=lchunk;
-    *roller+=r1;
+    uint256 lchunk = *roller>>shift;
+    uint256 r1 = *roller << (unsigned int) (256 - shift);
+    r1 |= lchunk;
+    *roller += r1;
 }
 
 
