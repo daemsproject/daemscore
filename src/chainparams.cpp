@@ -150,15 +150,32 @@ public:
         genesis.nBlockHeight = 0;
         genesis.nTime    = 1426857997;
         genesis.nBits    = 0x1f0fffff;
-        genesis.nNonce   = 3102;
-
+        genesis.nNonce   = 9702;
         hashGenesisBlock = genesis.GetHash();
-//        std::cout << "g hash: \n" << hashGenesisBlock.ToString() << "\n";
-//        std::cout << "g powh: \n" << genesis.GetPoWHash().ToString() << "\n";
-//        std::cout << "g mroot: \n" << genesis.hashMerkleRoot.ToString() << "\n";
-        assert(hashGenesisBlock == uint256("0x0348a2106ddbe1f7e78f1ca9f4751c349b61d59e4ddc311acfa7513c80505cd0"));
-        assert(genesis.hashMerkleRoot == uint256("0x13598b4b8bb3b5ee189e50e122443e8af32feb23e5b830bad5e4818e8d299d92"));
+        std::cout << "g hash: \n" << hashGenesisBlock.ToString() << "\n";
+        int64_t tStart = GetTimeMillis();
+        //std::cout << "PowHashStart: \n" << tStart << "\n";
+        std::cout << "g powh: \n" << genesis.GetPoWHash().ToString() << "\n";
+        std::cout << "PowHashTime: \n" << GetTimeMillis()-tStart << "\n";
+        std::cout << "g mroot: \n" << genesis.hashMerkleRoot.ToString() << "\n";
+        //assert(hashGenesisBlock == uint256("0x0348a2106ddbe1f7e78f1ca9f4751c349b61d59e4ddc311acfa7513c80505cd0"));
+        //assert(genesis.hashMerkleRoot == uint256("0x13598b4b8bb3b5ee189e50e122443e8af32feb23e5b830bad5e4818e8d299d92"));
+        
 
+//        uint256 xor0=Hash(BEGIN(hashGenesisBlock),END(hashGenesisBlock));;
+//        //for (int i=0;i<10;i++){
+//            for (int j=0;j<1000000;j++){
+//            //xor0=Hash(BEGIN(xor0),END(xor0));
+//                xor0+=hashGenesisBlock;
+//            //std::cout << "xor1000000End: \n" << xor0.ToString() << "\n";
+//            }
+//            std::cout << "xor1000000End: \n" << xor0.ToString() << "\n";
+//            //std::cout << "xor1000000End: \n"<< GetTimeMillis() << "\n";
+//        //}        
+//        int64_t tEnd=GetTimeMillis();
+//        std::cout << "xor1000000End: \n" << tEnd << "\n";
+//        int64_t tSpent=tEnd-tStart;
+//        std::cout << "xor1000000Time: \n" << tSpent << "\n";
         vSeeds.push_back(CDNSSeedData("cccointools.com", "dnsseed.cccointools.com"));
 //        vSeeds.push_back(CDNSSeedData("cccoinpool.org", "dnsseed.cccoinpool.org"));
 //        vSeeds.push_back(CDNSSeedData("xurious.com", "dnsseed.ltc.xurious.com"));
