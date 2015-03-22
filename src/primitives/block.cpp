@@ -45,8 +45,8 @@ uint256 CBlockHeader::GetPoWHash() const
     //scrypt_1024_1_1_256(BEGIN(nVersion), BEGIN(thash));
     thash=Hash(BEGIN(nVersion), END(nNonce));   
     //std::cout << "test: \n"  << HexStr(BEGIN(nVersion), END(nNonce)) << "\n";
-    std::cout << "thash: \n"<<  thash.ToString() << "\n";
-    //mixHash(&thash,3);
+    //std::cout << "thash: \n"<<  thash.ToString() << "\n";
+    //mixHash(&thash,1000000);
     mixHash(&thash,(unsigned int)nBlockHeight);
     return thash;
 }
