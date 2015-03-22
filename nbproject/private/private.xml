@@ -7,4 +7,29 @@
         <activeConfTypeElem>0</activeConfTypeElem>
         <activeConfIndexElem>0</activeConfIndexElem>
     </data>
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/home/alan/projects/ccc/src/main.h</file>
+            <file>file:/home/alan/projects/ccc/src/addrman.h</file>
+            <file>file:/home/alan/projects/ccc/src/crypto/sha256.h</file>
+            <file>file:/home/alan/projects/ccc/src/netbase.h</file>
+            <file>file:/home/alan/projects/ccc/src/miner.cpp</file>
+            <file>file:/home/alan/projects/ccc/src/ccc/mhash.h</file>
+            <file>file:/home/alan/projects/ccc/src/hash.cpp</file>
+            <file>file:/home/alan/projects/ccc/src/chainparams.cpp</file>
+            <file>file:/home/alan/projects/ccc/src/crypto/scrypt.h</file>
+            <file>file:/home/alan/projects/ccc/src/crypto/sha256.cpp</file>
+            <file>file:/home/alan/projects/ccc/src/netbase.cpp</file>
+            <file>file:/home/alan/projects/ccc/src/net.cpp</file>
+            <file>file:/home/alan/projects/ccc/src/primitives/block.h</file>
+            <file>file:/home/alan/projects/ccc/src/uint256.cpp</file>
+            <file>file:/home/alan/projects/ccc/src/hash.h</file>
+            <file>file:/home/alan/projects/ccc/src/uint256.h</file>
+            <file>file:/home/alan/projects/ccc/src/primitives/block.cpp</file>
+            <file>file:/home/alan/projects/ccc/src/ccc/mhash.cpp</file>
+            <file>file:/home/alan/projects/ccc/src/chainparams.h</file>
+            <file>file:/home/alan/projects/ccc/src/main.cpp</file>
+        </group>
+    </open-files>
 </project-private>

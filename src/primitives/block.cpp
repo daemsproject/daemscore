@@ -4,9 +4,9 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "primitives/block.h"
-
+#include "ccc/mhash.h"
 #include "hash.h"
-#include "crypto/scrypt.h"
+//#include "crypto/scrypt.h"
 #include "tinyformat.h"
 #include "utilstrencodings.h"
 
@@ -42,7 +42,12 @@ uint256 CBlockHeader::GetHash() const
 uint256 CBlockHeader::GetPoWHash() const
 {
     uint256 thash;
-    scrypt_1024_1_1_256(BEGIN(nVersion), BEGIN(thash));
+    //scrypt_1024_1_1_256(BEGIN(nVersion), BEGIN(thash));
+    thash=Hash(BEGIN(nVersion), END(nNonce));   
+    //std::cout << "test: \n"  << HexStr(BEGIN(nVersion), END(nNonce)) << "\n";
+    std::cout << "thash: \n"<<  thash.ToString() << "\n";
+    //mixHash(&thash,3);
+    mixHash(&thash,(unsigned int)nBlockHeight);
     return thash;
 }
 

@@ -6,7 +6,7 @@
             <name>ccc</name>
             <c-extensions>c</c-extensions>
             <cpp-extensions>cc,cpp,mm</cpp-extensions>
-            <header-extensions>h</header-extensions>
+            <header-extensions>h,moc</header-extensions>
             <sourceEncoding>UTF-8</sourceEncoding>
             <make-dep-projects/>
             <sourceRootList>

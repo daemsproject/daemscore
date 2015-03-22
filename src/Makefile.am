@@ -220,7 +220,11 @@ crypto_libbitcoin_crypto_a_SOURCES = \
   crypto/hmac_sha512.h \
   crypto/scrypt.h \
   crypto/sha1.h \
-  crypto/ripemd160.h
+  crypto/ripemd160.h\
+    ccc/mhash.h \
+    ccc/mhash.cpp
+
+
 
 # univalue JSON library
 univalue_libbitcoin_univalue_a_SOURCES = \
