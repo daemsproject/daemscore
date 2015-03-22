@@ -2172,6 +2172,8 @@ bool ActivateBestChain(CValidationState &state, CBlock *pblock) {
                 return false;
 
             pindexNewTip = chainActive.Tip();
+            CBlockHeader bh=pindexNewTip->GetBlockHeader();
+            std::cout << "chain tip block header: \n"  << HexStr(BEGIN(bh.nVersion), END(bh.nNonce)) << "\n";
             fInitialDownload = IsInitialBlockDownload();
         }
         // When we reach this point, we switched to a new tip (stored in pindexNewTip).
@@ -2768,6 +2770,8 @@ bool ProcessNewBlock(CValidationState &state, CNode* pfrom, CBlock* pblock, CDis
         // Store to disk
         CBlockIndex *pindex = NULL;
         bool ret = AcceptBlock(*pblock, state, &pindex, dbp);
+        CBlockHeader bh=pindex->GetBlockHeader();
+        std::cout << "block header: \n"  << HexStr(BEGIN(bh.nVersion), END(bh.nNonce)) << "\n";
         if (pindex && pfrom) {
             mapBlockSource[pindex->GetBlockHash()] = pfrom->GetId();
         }
@@ -3841,7 +3845,8 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         int nLimit = MAX_HEADERS_RESULTS;
         LogPrint("net", "getheaders %d to %s from peer=%d\n", (pindex ? pindex->nHeight : -1), hashStop.ToString(), pfrom->id);
         for (; pindex; pindex = chainActive.Next(pindex))
-        {
+        {CBlockHeader bh=pindex->GetBlockHeader();
+            std::cout << "block header: \n"  << HexStr(BEGIN(bh.nVersion), END(bh.nNonce)) << "\n";
             vHeaders.push_back(pindex->GetBlockHeader());
             if (--nLimit <= 0 || pindex->GetBlockHash() == hashStop)
                 break;

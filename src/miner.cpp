@@ -439,9 +439,9 @@ void static BitcoinMiner(CWallet *pwallet)
                 return;
             }
             CBlock *pblock = &pblocktemplate->block;
-            pblock->nBlockHeight=pindexPrev->nHeight+1;
+            
             IncrementExtraNonce(pblock, pindexPrev, nExtraNonce);
-
+pblock->nBlockHeight=pindexPrev->nHeight+1;
             LogPrintf("Running CccoinMiner with %u transactions in block (%u bytes)\n", pblock->vtx.size(),
                 ::GetSerializeSize(*pblock, SER_NETWORK, PROTOCOL_VERSION));
 
@@ -450,6 +450,7 @@ void static BitcoinMiner(CWallet *pwallet)
             //
             int64_t nStart = GetTime();
             uint256 hashTarget = uint256().SetCompact(pblock->nBits);
+            std::cout << "mining block: \n"  << pblock->ToString() << "\n";
             uint256 thash;
             while (true) {
                 unsigned int nHashesDone = 0;
@@ -465,6 +466,9 @@ void static BitcoinMiner(CWallet *pwallet)
                         SetThreadPriority(THREAD_PRIORITY_NORMAL);
                         LogPrintf("CccoinMiner:\n");
                         LogPrintf("proof-of-work found  \n  powhash: %s  \ntarget: %s\n", thash.GetHex(), hashTarget.GetHex());
+                        
+
+                        //CheckProofOfWork(pblock->GetPoWHash(),pblock->nBits);
                         ProcessBlockFound(pblock, *pwallet, reservekey);
                         SetThreadPriority(THREAD_PRIORITY_LOWEST);
 
