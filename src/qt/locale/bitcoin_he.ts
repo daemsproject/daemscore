@@ -66,11 +66,11 @@
         <translation>כתובות לקבלה</translation>
     </message>
     <message>
-        <source>These are your Litecoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <source>These are your Cccoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
         <translation>אלה כתובת הלייטקוין שלך לצורך שליחת תשלומים. תמיד יש לבדוק את הכמות ואת כתובות מקבלי התשלומים לפני שליחת מטבעות.</translation>
     </message>
     <message>
-        <source>These are your Litecoin addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
+        <source>These are your Cccoin addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
         <translation>אלה כתובות הלייטקוין שלך לצורך קבלת תשלומים. מומלץ להשתמש בכתובת קבלה חדשה לכל העברה.</translation>
     </message>
     <message>
@@ -188,7 +188,7 @@
         <translation>נא להזין את מילת הצופן החדשה לארנק.&lt;br/&gt;כדאי להשתמש במילת צופן המורכבת מ&lt;b&gt;עשרה תווים אקראיים ומעלה&lt;/b&gt;, או &lt;b&gt;שמונה מילים ומעלה&lt;/b&gt;.</translation>
     </message>
     <message>
-        <source>Litecoin will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your litecoins from being stolen by malware infecting your computer.</source>
+        <source>Cccoin will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your cccoins from being stolen by malware infecting your computer.</source>
         <translation>לייטקוין ייסגר כעת כדי להשלים את תהליך ההצפנה. עליך לזכור שהצפנת הארנק שלך אינה מגנה באופן מלא על הלייטקוינים שלך מתכניות זדוניות המושתלות על המחשב.</translation>
     </message>
     <message>
@@ -295,7 +295,7 @@
         <translation>פתיחת &amp;כתובת משאב…</translation>
     </message>
     <message>
-        <source>Litecoin Core client</source>
+        <source>Cccoin Core client</source>
         <translation>לקוח ליבה של לייטקוין</translation>
     </message>
     <message>
@@ -307,11 +307,11 @@
         <translation>המקטעים נוספים למפתח בכונן…</translation>
     </message>
     <message>
-        <source>Send coins to a Litecoin address</source>
+        <source>Send coins to a Cccoin address</source>
         <translation>שליחת מטבעות לכתובת לייטקוין</translation>
     </message>
     <message>
-        <source>Modify configuration options for Litecoin</source>
+        <source>Modify configuration options for Cccoin</source>
         <translation>שינוי התצורה של לייטקוין</translation>
     </message>
     <message>
@@ -335,7 +335,7 @@
         <translation>&amp;אימות הודעה…</translation>
     </message>
     <message>
-        <source>Litecoin</source>
+        <source>Cccoin</source>
         <translation>לייטקוין</translation>
     </message>
     <message>
@@ -351,7 +351,7 @@
         <translation>&amp;קבלה</translation>
     </message>
     <message>
-        <source>Show information about Litecoin Core</source>
+        <source>Show information about Cccoin Core</source>
         <translation>הצגת מידע על ליבת לייטקוין</translation>
     </message>
     <message>
@@ -367,11 +367,11 @@
         <translation>הצפנת המפתחות הפרטיים ששייכים לארנק שלך</translation>
     </message>
     <message>
-        <source>Sign messages with your Litecoin addresses to prove you own them</source>
+        <source>Sign messages with your Cccoin addresses to prove you own them</source>
         <translation>חתום על הודעות עם כתובות הלייטקוין שלך כדי להוכיח שהן בבעלותך</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Litecoin addresses</source>
+        <source>Verify messages to ensure they were signed with specified Cccoin addresses</source>
         <translation>אמת הודעות כדי להבטיח שהן נחתמו עם כתובת לייטקוין מסוימות</translation>
     </message>
     <message>
@@ -391,15 +391,15 @@
         <translation>סרגל כלים לשוניות</translation>
     </message>
     <message>
-        <source>Litecoin Core</source>
+        <source>Cccoin Core</source>
         <translation>ליבת לייטקוין</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and litecoin: URIs)</source>
-        <translation>בקשת תשלומים (יצירה של קודים מסוג QR וסכימות כתובות משאב של :litecoin)</translation>
+        <source>Request payments (generates QR codes and cccoin: URIs)</source>
+        <translation>בקשת תשלומים (יצירה של קודים מסוג QR וסכימות כתובות משאב של :cccoin)</translation>
     </message>
     <message>
-        <source>&amp;About Litecoin Core</source>
+        <source>&amp;About Cccoin Core</source>
         <translation>על &amp;אודות ליבת לייטקוין</translation>
     </message>
     <message>
@@ -411,7 +411,7 @@
         <translation>הצגת רשימת הכתובות והתוויות הנמצאות בשימוש</translation>
     </message>
     <message>
-        <source>Open a litecoin: URI or payment request</source>
+        <source>Open a cccoin: URI or payment request</source>
         <translation>פתיחת לייטקוין: כתובת משאב או בקשת תשלום</translation>
     </message>
     <message>
@@ -419,7 +419,7 @@
         <translation>אפשרויות &amp;שורת הפקודה</translation>
     </message>
     <message>
-        <source>Show the Litecoin Core help message to get a list with possible Litecoin command-line options</source>
+        <source>Show the Cccoin Core help message to get a list with possible Cccoin command-line options</source>
         <translation>הצגת הודעות העזרה של ליבת לייטקוין כדי לקבל רשימה עם אפשרויות שורת הפקודה האפשריות של לייטקוין</translation>
     </message>
     <message>
@@ -751,7 +751,7 @@ Address: %4
         <translation>הכתובת שהוכנסה „%1“ כבר נמצאת בפנקס הכתובות.</translation>
     </message>
     <message>
-        <source>The entered address "%1" is not a valid Litecoin address.</source>
+        <source>The entered address "%1" is not a valid Cccoin address.</source>
         <translation>הכתובת שהוכנסה „%1“ אינה כתובת לייטקוין תקנית.</translation>
     </message>
     <message>
@@ -789,7 +789,7 @@ Address: %4
 <context>
     <name>HelpMessageDialog</name>
     <message>
-        <source>Litecoin Core</source>
+        <source>Cccoin Core</source>
         <translation>ליבת לייטקוין</translation>
     </message>
     <message>
@@ -801,7 +801,7 @@ Address: %4
         <translation>(%1-סיביות)</translation>
     </message>
     <message>
-        <source>About Litecoin Core</source>
+        <source>About Cccoin Core</source>
         <translation>על אודות ליבת לייטקוין</translation>
     </message>
     <message>
@@ -848,15 +848,15 @@ Address: %4
         <translation>ברוך בואך</translation>
     </message>
     <message>
-        <source>Welcome to Litecoin Core.</source>
+        <source>Welcome to Cccoin Core.</source>
         <translation>ברוך בואך לליבת לייטקוין</translation>
     </message>
     <message>
-        <source>As this is the first time the program is launched, you can choose where Litecoin Core will store its data.</source>
+        <source>As this is the first time the program is launched, you can choose where Cccoin Core will store its data.</source>
         <translation>מכיוון שזאת הפעם הראשונה שהתכנית פועלת ניתן לבחור איפה ליבת לייטקוין תאחסן את הנתונים שלה.</translation>
     </message>
     <message>
-        <source>Litecoin Core will download and store a copy of the Litecoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
+        <source>Cccoin Core will download and store a copy of the Cccoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
         <translation>לקוח לייטקוין יוריד וישמור העתק של שרשרת המקטעים של לייטקוין. לפחות %1 ג״ב מהנתונים יאוחסנו בתיקייה זו, והיא תגדל עם הזמן. הארנק גם יאוחסן בתיקייה הזו.</translation>
     </message>
     <message>
@@ -868,7 +868,7 @@ Address: %4
         <translation>שימוש בתיקיית נתונים מותאמת אישית:</translation>
     </message>
     <message>
-        <source>Litecoin Core</source>
+        <source>Cccoin Core</source>
         <translation>ליבת לייטקוין</translation>
     </message>
     <message>
@@ -914,11 +914,11 @@ Address: %4
         <translation>&amp;ראשי</translation>
     </message>
     <message>
-        <source>Automatically start Litecoin after logging in to the system.</source>
+        <source>Automatically start Cccoin after logging in to the system.</source>
         <translation>הפעלת לייטקוין אוטומטית לאחר כניסה למערכת.</translation>
     </message>
     <message>
-        <source>&amp;Start Litecoin on system login</source>
+        <source>&amp;Start Cccoin on system login</source>
         <translation>ה&amp;פעלת לייטקוין בעת הכניסה למערכת</translation>
     </message>
     <message>
@@ -994,7 +994,7 @@ Address: %4
         <translation>עודף &amp;בלתי מאושר מההשקעה</translation>
     </message>
     <message>
-        <source>Automatically open the Litecoin client port on the router. This only works when your router supports UPnP and it is enabled.</source>
+        <source>Automatically open the Cccoin client port on the router. This only works when your router supports UPnP and it is enabled.</source>
         <translation>פתיחת הפתחה של לייטקוין בנתב באופן אוטומטי. עובד רק אם UPnP מופעל ונתמך בנתב.</translation>
     </message>
     <message>
@@ -1042,7 +1042,7 @@ Address: %4
         <translation>&amp;שפת מנשק המשתמש:</translation>
     </message>
     <message>
-        <source>The user interface language can be set here. This setting will take effect after restarting Litecoin.</source>
+        <source>The user interface language can be set here. This setting will take effect after restarting Cccoin.</source>
         <translation>להלן ניתן לקבוע את שפת מנשק המשתמש. הגדרה זו תיכנס לתוקף לאחר הפעלה מחדש של לייטקוין.</translation>
     </message>
     <message>
@@ -1101,7 +1101,7 @@ Address: %4
         <translation>טופס</translation>
     </message>
     <message>
-        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Litecoin network after a connection is established, but this process has not completed yet.</source>
+        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Cccoin network after a connection is established, but this process has not completed yet.</source>
         <translation>המידע המוצג עשוי להיות מיושן. הארנק שלך מסתנכרן באופן אוטומטי עם רשת הלייטקוין לאחר יצירת החיבור, אך התהליך טרם הסתיים.</translation>
     </message>
     <message>
@@ -1204,7 +1204,7 @@ Address: %4
         <translation>שגיאה בבקשת תשלום</translation>
     </message>
     <message>
-        <source>Cannot start litecoin: click-to-pay handler</source>
+        <source>Cannot start cccoin: click-to-pay handler</source>
         <translation>לא ניתן להתחיל את לייטקוין: טיפול בלחיצה–לתשלום </translation>
     </message>
     <message>
@@ -1212,7 +1212,7 @@ Address: %4
         <translation>כתובת אחזור בקשת התשלום שגויה: %1</translation>
     </message>
     <message>
-        <source>URI cannot be parsed! This can be caused by an invalid Litecoin address or malformed URI parameters.</source>
+        <source>URI cannot be parsed! This can be caused by an invalid Cccoin address or malformed URI parameters.</source>
         <translation>לא ניתן לנתח את כתובת המשאב! מצב זה יכול לקרות עקב כתובת לייטקוין שגויה או פרמטרים שגויים בכתובת המשאב.</translation>
     </message>
     <message>
@@ -1274,7 +1274,7 @@ Address: %4
         <translation>כמות</translation>
     </message>
     <message>
-        <source>Enter a Litecoin address (e.g. %1)</source>
+        <source>Enter a Cccoin address (e.g. %1)</source>
         <translation>נא להזין כתובת לייטקוין (למשל: %1)</translation>
     </message>
     <message>
@@ -1500,7 +1500,7 @@ Address: %4
         <translation>קובץ יומן ניפוי</translation>
     </message>
     <message>
-        <source>Open the Litecoin debug log file from the current data directory. This can take a few seconds for large log files.</source>
+        <source>Open the Cccoin debug log file from the current data directory. This can take a few seconds for large log files.</source>
         <translation>פתיחת קובץ יומן הניפוי מתיקיית הנתונים הנוכחית. פעולה זו עשויה להימשך מספר שניות עבור קובצי יומן גדולים.</translation>
     </message>
     <message>
@@ -1508,7 +1508,7 @@ Address: %4
         <translation>ניקוי מסוף הבקרה</translation>
     </message>
     <message>
-        <source>Welcome to the Litecoin RPC console.</source>
+        <source>Welcome to the Cccoin RPC console.</source>
         <translation>ברוכים הבאים למסוף ה־RPC של לייטקוין.</translation>
     </message>
     <message>
@@ -1583,7 +1583,7 @@ Address: %4
         <translation>ש&amp;ימוש &amp;חוזר בכתובת קבלה קיימת (לא מומלץ)</translation>
     </message>
     <message>
-        <source>An optional message to attach to the payment request, which will be displayed when the request is opened. Note: The message will not be sent with the payment over the Litecoin network.</source>
+        <source>An optional message to attach to the payment request, which will be displayed when the request is opened. Note: The message will not be sent with the payment over the Cccoin network.</source>
         <translation>הודעת רשות לצירוף לבקשת התשלום שתוצג בעת פתיחת הבקשה. לתשומת לבך: ההודעה לא תישלח עם התשלום ברשת לייטקוין.</translation>
     </message>
     <message>
@@ -1892,7 +1892,7 @@ Address: %4
         <translation>ההעברה נדחתה! מצב כזה עשוי לקרות אם חלק מהמטבעות בארנק שלך כבר הושקעו, כמו למשל עקב שימוש בעותק של wallet.dat והמטבעות הושקעו בעותק אבל לא סומנו כאילו הושקעו דרך כאן.</translation>
     </message>
     <message>
-        <source>Warning: Invalid Litecoin address</source>
+        <source>Warning: Invalid Cccoin address</source>
         <translation>אזהרה: כתובת לייטקוין שגויה</translation>
     </message>
     <message>
@@ -1943,7 +1943,7 @@ Address: %4
         <translation>זהו תשלום רגיל.</translation>
     </message>
     <message>
-        <source>The Litecoin address to send the payment to</source>
+        <source>The Cccoin address to send the payment to</source>
         <translation>כתובת הלייטקוין של המוטב</translation>
     </message>
     <message>
@@ -1975,7 +1975,7 @@ Address: %4
         <translation>יש להזין תווית עבור כתובת זו כדי להוסיף אותה לרשימת הכתובות בשימוש</translation>
     </message>
     <message>
-        <source>A message that was attached to the litecoin: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the Litecoin network.</source>
+        <source>A message that was attached to the cccoin: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the Cccoin network.</source>
         <translation>הודעה שצורפה ללייטקוין: כתובת שתאוחסן בהעברה לצורך מעקב מצדך. לתשומת לבך: הודעה זו לא תישלח ברשת הלייטקוין.</translation>
     </message>
     <message>
@@ -1994,7 +1994,7 @@ Address: %4
 <context>
     <name>ShutdownWindow</name>
     <message>
-        <source>Litecoin Core is shutting down...</source>
+        <source>Cccoin Core is shutting down...</source>
         <translation>ליבת לייטקוין נסגרת…</translation>
     </message>
     <message>
@@ -2017,7 +2017,7 @@ Address: %4
         <translation>ניתן לחתום על הודעות עם הכתובות שלך כדי להוכיח שהן בבעלותך. מומלץ להיזהר לא לחתום על משהו מפוקפק, שכן התקפות דיוג עשויות לגרום לך בעורמה למסור את זהותך. רצוי לחתום רק על הצהרות מפורטות לחלוטין שהסכמת עמן.</translation>
     </message>
     <message>
-        <source>The Litecoin address to sign the message with</source>
+        <source>The Cccoin address to sign the message with</source>
         <translation>כתובת הלייטקוין אתה לחתום אתה את ההודעה</translation>
     </message>
     <message>
@@ -2049,7 +2049,7 @@ Address: %4
         <translation>העתקת החתימה הנוכחית ללוח הגזירים</translation>
     </message>
     <message>
-        <source>Sign the message to prove you own this Litecoin address</source>
+        <source>Sign the message to prove you own this Cccoin address</source>
         <translation>ניתן לחתום על ההודעה כדי להוכיח שכתובת הלייטקוין הזו בבעלותך.</translation>
     </message>
     <message>
@@ -2073,11 +2073,11 @@ Address: %4
         <translation>הכנס למטה את הכתובת החותמת, ההודעה (ודא שאתה מעתיק מעברי שורה, רווחים, טאבים וכו' באופן מדויק) והחתימה כדי לאמת את ההודעה. היזהר לא לפרש את החתימה כיותר ממה שמופיע בהודעה החתומה בעצמה, כדי להימנע מליפול קורבן למתקפת איש-באמצע.</translation>
     </message>
     <message>
-        <source>The Litecoin address the message was signed with</source>
+        <source>The Cccoin address the message was signed with</source>
         <translation>כתובת הלייטקוין שאתה נחתמה ההודעה</translation>
     </message>
     <message>
-        <source>Verify the message to ensure it was signed with the specified Litecoin address</source>
+        <source>Verify the message to ensure it was signed with the specified Cccoin address</source>
         <translation>ניתן לאמת את ההודעה כדי להבטיח שהיא נחתמה עם כתובת הלייטקוין הנתונה</translation>
     </message>
     <message>
@@ -2144,7 +2144,7 @@ Address: %4
 <context>
     <name>SplashScreen</name>
     <message>
-        <source>Litecoin Core</source>
+        <source>Cccoin Core</source>
         <translation>ליבת לייטקוין</translation>
     </message>
     <message>
@@ -2661,24 +2661,24 @@ Address: %4
         <source>%s, you must set a rpcpassword in the configuration file:
 %s
 It is recommended you use the following random password:
-rpcuser=litecoinrpc
+rpcuser=cccoinrpc
 rpcpassword=%s
 (you do not need to remember this password)
 The username and password MUST NOT be the same.
 If the file does not exist, create it with owner-readable-only file permissions.
 It is also recommended to set alertnotify so you are notified of problems;
-for example: alertnotify=echo %%s | mail -s "Litecoin Alert" admin@foo.com
+for example: alertnotify=echo %%s | mail -s "Cccoin Alert" admin@foo.com
 </source>
         <translation>%s, עליך להגדיר את ססמת ה־RPC בקובץ התצורה:
  %s
 מומלץ להשתמש בססמה האקראית הבאה:
-rpcuser=litecoinrpc
+rpcuser=cccoinrpc
 rpcpassword=%s
 (אין צורך לזכור את הססמה)
 אסור ששם המשתמש והססמה יהיו זהים.
 אם הקובץ אינו קיים, יש ליצור אותו עם הרשאות קריאה לבעלים בלבד.
 כמו כן, מומלץ להגדיר את alertnotify כדי לקבל דיווח על תקלות;
-למשל: alertnotify=echo %%s | mail -s "Litecoin Alert" admin@foo.com 
+למשל: alertnotify=echo %%s | mail -s "Cccoin Alert" admin@foo.com 
 </translation>
     </message>
     <message>
@@ -2710,7 +2710,7 @@ rpcpassword=%s
         <translation>זוהי בניית ניסיון טרום-שחרור - השימוש בה על אחריותך - אין להשתמש לצורך כריה או יישומי מסחר</translation>
     </message>
     <message>
-        <source>Unable to bind to %s on this computer. Litecoin Core is probably already running.</source>
+        <source>Unable to bind to %s on this computer. Cccoin Core is probably already running.</source>
         <translation>לא ניתן להתאגד אל %s במחשב זה. כנראה שליבת לייטקוין כבר פועלת.</translation>
     </message>
     <message>
@@ -2882,7 +2882,7 @@ rpcpassword=%s
         <translation>העמלות (ב־BTC/ק״ב) הנמוכות מהסכום הזה נחשבות לעמלות אפס ליצירת העברה (בררת מחדל: %s)</translation>
     </message>
     <message>
-        <source>Warning: Please check that your computer's date and time are correct! If your clock is wrong Litecoin Core will not work properly.</source>
+        <source>Warning: Please check that your computer's date and time are correct! If your clock is wrong Cccoin Core will not work properly.</source>
         <translation>אזהרה: נא לבדוק שהתאריך והשעה של המחשב שלך נכונים! אם השעון שלך שגוי ליבת לייטקוין לא תעבוד כראוי.</translation>
     </message>
     <message>
@@ -2894,7 +2894,7 @@ rpcpassword=%s
         <translation>התחברות דרך מתווך SOCKS5</translation>
     </message>
     <message>
-        <source>Copyright (C) 2009-%i The Litecoin Core Developers</source>
+        <source>Copyright (C) 2009-%i The Cccoin Core Developers</source>
         <translation>כל הזכויות שמורות (C)‏ 2009‏-%i מתכנתי ליבת לייטקוין</translation>
     </message>
     <message>
@@ -2902,7 +2902,7 @@ rpcpassword=%s
         <translation>לא ניתן לנתח את הערך של ‎-rpcbind שצוין בתור %s ככתובת רשת</translation>
     </message>
     <message>
-        <source>Error loading wallet.dat: Wallet requires newer version of Litecoin Core</source>
+        <source>Error loading wallet.dat: Wallet requires newer version of Cccoin Core</source>
         <translation>אירעה שגיאה בטעינת wallet.dat: הארנק דורש גרסה חדשה יותר של ליבת לייטקוין</translation>
     </message>
     <message>
@@ -2918,7 +2918,7 @@ rpcpassword=%s
         <translation>מידע</translation>
     </message>
     <message>
-        <source>Initialization sanity check failed. Litecoin Core is shutting down.</source>
+        <source>Initialization sanity check failed. Cccoin Core is shutting down.</source>
         <translation>בדיקת התקינות ההתחלתית נכשלה. ליבת לייטקוין תיסגר כעת.</translation>
     </message>
     <message>
@@ -2950,7 +2950,7 @@ rpcpassword=%s
         <translation>הצגת מקטע בהפעלה, אם נמצא במפתח המקטעים</translation>
     </message>
     <message>
-        <source>RPC SSL options: (see the Litecoin Wiki for SSL setup instructions)</source>
+        <source>RPC SSL options: (see the Cccoin Wiki for SSL setup instructions)</source>
         <translation>אפשרויות RPC SSL: (נא לעיין בוויקי של לייטקוין לקבלת הנחיות על הגדרת SSL)</translation>
     </message>
     <message>
@@ -3006,7 +3006,7 @@ rpcpassword=%s
         <translation>שם משתמש לחיבורי JSON-RPC</translation>
     </message>
     <message>
-        <source>Wallet needed to be rewritten: restart Litecoin Core to complete</source>
+        <source>Wallet needed to be rewritten: restart Cccoin Core to complete</source>
         <translation>יש לכתוב את הארנק מחדש: נא להפעיל את ליבת לייטקוין מחדש כדי להשלים את הפעולה</translation>
     </message>
     <message>

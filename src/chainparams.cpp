@@ -116,8 +116,8 @@ public:
         pchMessageStart[2] = 0xb6;
         pchMessageStart[3] = 0xdb;
         vAlertPubKey = ParseHex("040184710fa689ad5023690c80f3a49c8f13f8d45b8c857fbcbc8bc4a8e4d3eb4b10f4d4604fa08dce601aaf0f470216fe1b51850b4acf21b179c45070ac7b03a9");
-        nDefaultPort = 9333;
-        bnProofOfWorkLimit = ~uint256(0) >> 20;
+        nDefaultPort = 7333;
+        bnProofOfWorkLimit = ~uint256(0) >> 0;
         nSubsidyHalvingInterval = 840000;
         nEnforceBlockUpgradeMajority = 750;
         nRejectBlockOutdatedMajority = 950;
@@ -136,7 +136,7 @@ public:
          *     CTxOut(nValue=50.00000000, scriptPubKey=0x5F1DF16B2B704C8A578D0B)
          *   vMerkleTree: 4a5e1e
          */
-        const char* pszTimestamp = "NY Times 05/Oct/2011 Steve Jobs, Apple’s Visionary, Dies at 56";
+        const char* pszTimestamp = "now 2015-03-19";
         CMutableTransaction txNew;
         txNew.vin.resize(1);
         txNew.vout.resize(1);
@@ -147,19 +147,40 @@ public:
         genesis.hashPrevBlock = 0;
         genesis.hashMerkleRoot = genesis.BuildMerkleTree();
         genesis.nVersion = 1;
-        genesis.nTime    = 1317972665;
-        genesis.nBits    = 0x1e0ffff0;
-        genesis.nNonce   = 2084524493;
-
+        genesis.nBlockHeight = 0;
+        genesis.nTime    = 1426857997;
+        genesis.nBits    = 0x1f0fffff;
+        genesis.nNonce   = 9702;
         hashGenesisBlock = genesis.GetHash();
-        assert(hashGenesisBlock == uint256("0x12a765e31ffd4059bada1e25190f6e98c99d9714d334efa41a195a7e7e04bfe2"));
-        assert(genesis.hashMerkleRoot == uint256("0x97ddfbbae6be97fd6cdf3e7ca13232a3afff2353e29badfab7f73011edd4ced9"));
+        //std::cout << "g hash: \n" << hashGenesisBlock.ToString() << "\n";
+        int64_t tStart = GetTimeMillis();
+        //std::cout << "PowHashStart: \n" << tStart << "\n";
+        //std::cout << "g powh: \n" << genesis.GetPoWHash().ToString() << "\n";
+        //std::cout << "PowHashTime: \n" << GetTimeMillis()-tStart << "\n";
+        //std::cout << "g mroot: \n" << genesis.hashMerkleRoot.ToString() << "\n";
+        //assert(hashGenesisBlock == uint256("0x0348a2106ddbe1f7e78f1ca9f4751c349b61d59e4ddc311acfa7513c80505cd0"));
+        //assert(genesis.hashMerkleRoot == uint256("0x13598b4b8bb3b5ee189e50e122443e8af32feb23e5b830bad5e4818e8d299d92"));
+        
 
-        vSeeds.push_back(CDNSSeedData("litecointools.com", "dnsseed.litecointools.com"));
-        vSeeds.push_back(CDNSSeedData("litecoinpool.org", "dnsseed.litecoinpool.org"));
-        vSeeds.push_back(CDNSSeedData("xurious.com", "dnsseed.ltc.xurious.com"));
-        vSeeds.push_back(CDNSSeedData("koin-project.com", "dnsseed.koin-project.com"));
-        vSeeds.push_back(CDNSSeedData("weminemnc.com", "dnsseed.weminemnc.com"));
+//        uint256 xor0=Hash(BEGIN(hashGenesisBlock),END(hashGenesisBlock));;
+//        //for (int i=0;i<10;i++){
+//            for (int j=0;j<1000000;j++){
+//            //xor0=Hash(BEGIN(xor0),END(xor0));
+//                xor0+=hashGenesisBlock;
+//            //std::cout << "xor1000000End: \n" << xor0.ToString() << "\n";
+//            }
+//            std::cout << "xor1000000End: \n" << xor0.ToString() << "\n";
+//            //std::cout << "xor1000000End: \n"<< GetTimeMillis() << "\n";
+//        //}        
+//        int64_t tEnd=GetTimeMillis();
+//        std::cout << "xor1000000End: \n" << tEnd << "\n";
+//        int64_t tSpent=tEnd-tStart;
+//        std::cout << "xor1000000Time: \n" << tSpent << "\n";
+        vSeeds.push_back(CDNSSeedData("cccointools.com", "dnsseed.cccointools.com"));
+//        vSeeds.push_back(CDNSSeedData("cccoinpool.org", "dnsseed.cccoinpool.org"));
+//        vSeeds.push_back(CDNSSeedData("xurious.com", "dnsseed.ltc.xurious.com"));
+//        vSeeds.push_back(CDNSSeedData("koin-project.com", "dnsseed.koin-project.com"));
+//        vSeeds.push_back(CDNSSeedData("weminemnc.com", "dnsseed.weminemnc.com"));
 
         base58Prefixes[PUBKEY_ADDRESS] = list_of(48);
         base58Prefixes[SCRIPT_ADDRESS] = list_of(5);
@@ -178,7 +199,7 @@ public:
         fSkipProofOfWorkCheck = false;
         fTestnetToBeDeprecatedFieldRPC = false;
 
-        // Litecoin: Mainnet v2 enforced as of block 710k
+        // Cccoin: Mainnet v2 enforced as of block 710k
         nEnforceV2AfterHeight = 710000;
     }
 
@@ -202,7 +223,7 @@ public:
         pchMessageStart[2] = 0xb7;
         pchMessageStart[3] = 0xdc;
         vAlertPubKey = ParseHex("04302390343f91cc401d56d68b123028bf52e5fca1939df127f63c6467cdf9c8e2c14b61104cf817d0b780da337893ecc4aaff1309e536162dabbdb45200ca2b0a");
-        nDefaultPort = 19333;
+        nDefaultPort = 17333;
         nEnforceBlockUpgradeMajority = 51;
         nRejectBlockOutdatedMajority = 75;
         nToCheckBlockUpgradeMajority = 100;
@@ -211,14 +232,15 @@ public:
         nTargetSpacing = 2.5 * 60; // 2.5 minutes
 
         //! Modify the testnet genesis block so the timestamp is valid for a later start.
-        genesis.nTime = 1317798646;
-        genesis.nNonce = 385270584;
+        genesis.nTime = 1426857997;
+        genesis.nNonce = 9297;
         hashGenesisBlock = genesis.GetHash();
-        assert(hashGenesisBlock == uint256("0xf5ae71e26c74beacc88382716aced69cddf3dffff24f384e1808905e0188f68f"));
+//        std::cout << "t g hash: \n" << hashGenesisBlock.ToString() << "\n";
+        assert(hashGenesisBlock == uint256("0xd2dd0a0b9eba71f08f00e60ec12aaf20d82dbfc6424311f690ffae8bdf8f3827"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
-        vSeeds.push_back(CDNSSeedData("litecointools.com", "testnet-seed.litecointools.com"));
+        vSeeds.push_back(CDNSSeedData("cccointools.com", "testnet-seed.cccointools.com"));
         vSeeds.push_back(CDNSSeedData("xurious.com", "testnet-seed.ltc.xurious.com"));
         vSeeds.push_back(CDNSSeedData("wemine-testnet.com", "dnsseed.wemine-testnet.com"));
 
@@ -238,7 +260,7 @@ public:
         fMineBlocksOnDemand = false;
         fTestnetToBeDeprecatedFieldRPC = true;
 
-        // Litecoin: Testnet v2 enforced as of block 400k
+        // Cccoin: Testnet v2 enforced as of block 400k
         nEnforceV2AfterHeight = 400000;
     }
     const Checkpoints::CCheckpointData& Checkpoints() const 
@@ -273,7 +295,8 @@ public:
         genesis.nNonce = 0;
         hashGenesisBlock = genesis.GetHash();
         nDefaultPort = 19444;
-        assert(hashGenesisBlock == uint256("0x530827f38f93b43ed12af0b3ad25a288dc02ed74d6d7857862df51fc56c416f9"));
+//        std::cout << "rt g hash: \n" << hashGenesisBlock.ToString() << "\n";
+        assert(hashGenesisBlock == uint256("0xc3ed112776ce0022baf6d955d3d241a4c3ec19f49ed38f664e6bcde9c5004394"));
 
         vFixedSeeds.clear(); //! Regtest mode doesn't have any fixed seeds.
         vSeeds.clear();  //! Regtest mode doesn't have any DNS seeds.
@@ -286,7 +309,7 @@ public:
         fMineBlocksOnDemand = true;
         fTestnetToBeDeprecatedFieldRPC = false;
 
-        // Litecoin: v2 enforced using Bitcoin's supermajority rule
+        // Cccoin: v2 enforced using Bitcoin's supermajority rule
         nEnforceV2AfterHeight = -1;
     }
     const Checkpoints::CCheckpointData& Checkpoints() const 
@@ -314,7 +337,7 @@ public:
         fAllowMinDifficultyBlocks = false;
         fMineBlocksOnDemand = true;
 
-        // Litecoin: v2 enforced using Bitcoin's supermajority rule
+        // Cccoin: v2 enforced using Bitcoin's supermajority rule
         nEnforceV2AfterHeight = -1;
     }
 

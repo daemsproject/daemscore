@@ -11,7 +11,7 @@
 #include "primitives/block.h"
 #include "protocol.h"
 #include "uint256.h"
-
+#include "hash.h"
 #include <vector>
 
 typedef unsigned char MessageStartChars[MESSAGE_START_SIZE];
@@ -80,7 +80,7 @@ public:
     const std::vector<CAddress>& FixedSeeds() const { return vFixedSeeds; }
     virtual const Checkpoints::CCheckpointData& Checkpoints() const = 0;
 
-    // Litecoin: Height to enforce v2 block
+    // Cccoin: Height to enforce v2 block
     int EnforceV2AfterHeight() const { return nEnforceV2AfterHeight; }
 protected:
     CChainParams() {}
@@ -113,7 +113,7 @@ protected:
     bool fSkipProofOfWorkCheck;
     bool fTestnetToBeDeprecatedFieldRPC;
 
-    // Litecoin: Height to enforce v2 blocks
+    // Cccoin: Height to enforce v2 blocks
     int nEnforceV2AfterHeight;
 };
 

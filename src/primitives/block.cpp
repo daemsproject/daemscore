@@ -4,21 +4,50 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "primitives/block.h"
-
+#include "ccc/mhash.h"
 #include "hash.h"
-#include "crypto/scrypt.h"
+//#include "crypto/scrypt.h"
 #include "tinyformat.h"
 #include "utilstrencodings.h"
 
 uint256 CBlockHeader::GetHash() const
 {
+//     std::stringstream s;
+//     s << strprintf("CBlock( ver=%d, hashPrevBlock=%s, hashMerkleRoot=%s, nBlockHeight=%d, nTime=%u, nBits=%08x, nNonce=%u)\n",
+//        nVersion,
+//        hashPrevBlock.ToString(),
+//        hashMerkleRoot.ToString(),
+//        nBlockHeight,
+//        nTime, nBits, nNonce
+//        );
+//     
+//     s << strprintf("%08x%s%s%08x%08x%08x%08x)\n",
+//        nVersion,
+//        hashPrevBlock.ToString(),
+//        hashMerkleRoot.ToString(),
+//        nBlockHeight,
+//        nTime, nBits, nNonce
+//        );
+//    
+//    std::cout << "g header(in block.cpp): \n"  << s.str() << "\n";
+//   
+//    
+////    CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
+////    ssTx << tx;
+////     
+//     std::cout << "test: \n"  << HexStr(BEGIN(nVersion), END(nNonce)) << "\n";
     return Hash(BEGIN(nVersion), END(nNonce));
 }
 
 uint256 CBlockHeader::GetPoWHash() const
 {
     uint256 thash;
-    scrypt_1024_1_1_256(BEGIN(nVersion), BEGIN(thash));
+    //scrypt_1024_1_1_256(BEGIN(nVersion), BEGIN(thash));
+    thash=Hash(BEGIN(nVersion), END(nNonce));   
+    //std::cout << "test: \n"  << HexStr(BEGIN(nVersion), END(nNonce)) << "\n";
+    //std::cout << "thash: \n"<<  thash.ToString() << "\n";
+    //mixHash(&thash,1000000);
+    mixHash(&thash,(unsigned int)nBlockHeight);
     return thash;
 }
 
@@ -119,11 +148,12 @@ uint256 CBlock::CheckMerkleBranch(uint256 hash, const std::vector<uint256>& vMer
 std::string CBlock::ToString() const
 {
     std::stringstream s;
-    s << strprintf("CBlock(hash=%s, ver=%d, hashPrevBlock=%s, hashMerkleRoot=%s, nTime=%u, nBits=%08x, nNonce=%u, vtx=%u)\n",
+    s << strprintf("CBlock(hash=%s, ver=%d, hashPrevBlock=%s, hashMerkleRoot=%s, nBlockHeight=%d, nTime=%u, nBits=%08x, nNonce=%u, vtx=%u)\n",
         GetHash().ToString(),
         nVersion,
         hashPrevBlock.ToString(),
         hashMerkleRoot.ToString(),
+        nBlockHeight,
         nTime, nBits, nNonce,
         vtx.size());
     for (unsigned int i = 0; i < vtx.size(); i++)

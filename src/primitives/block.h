@@ -28,6 +28,7 @@ public:
     int32_t nVersion;
     uint256 hashPrevBlock;
     uint256 hashMerkleRoot;
+    uint32_t nBlockHeight;
     uint32_t nTime;
     uint32_t nBits;
     uint32_t nNonce;
@@ -45,6 +46,7 @@ public:
         nVersion = this->nVersion;
         READWRITE(hashPrevBlock);
         READWRITE(hashMerkleRoot);
+        READWRITE(nBlockHeight);
         READWRITE(nTime);
         READWRITE(nBits);
         READWRITE(nNonce);
@@ -55,6 +57,7 @@ public:
         nVersion = CBlockHeader::CURRENT_VERSION;
         hashPrevBlock = 0;
         hashMerkleRoot = 0;
+        nBlockHeight = 0;
         nTime = 0;
         nBits = 0;
         nNonce = 0;
@@ -117,6 +120,7 @@ public:
         block.nVersion       = nVersion;
         block.hashPrevBlock  = hashPrevBlock;
         block.hashMerkleRoot = hashMerkleRoot;
+        block.nBlockHeight   = nBlockHeight;
         block.nTime          = nTime;
         block.nBits          = nBits;
         block.nNonce         = nNonce;

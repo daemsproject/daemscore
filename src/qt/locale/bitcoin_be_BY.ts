@@ -156,8 +156,8 @@
         <translation>Гаманец зашыфраваны</translation>
     </message>
     <message>
-        <source>Litecoin will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your litecoins from being stolen by malware infecting your computer.</source>
-        <translation>Litecoin зачыняецца дзеля завяршэння працэсса шыфравання. Памятайце, што шыфраванне гаманца цалкам абараняе вашыя сродкі ад скрадання шкоднымі праграмамі якія могуць пранікнуць у ваш камп'ютар.</translation>
+        <source>Cccoin will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your cccoins from being stolen by malware infecting your computer.</source>
+        <translation>Cccoin зачыняецца дзеля завяршэння працэсса шыфравання. Памятайце, што шыфраванне гаманца цалкам абараняе вашыя сродкі ад скрадання шкоднымі праграмамі якія могуць пранікнуць у ваш камп'ютар.</translation>
     </message>
     <message>
         <source>Wallet encryption failed</source>
@@ -295,8 +295,8 @@
         <translation>Дапамога</translation>
     </message>
     <message numerus="yes">
-        <source>%n active connection(s) to Litecoin network</source>
-        <translation><numerusform>%n актыўнае злучэнне з Litecoin-сецівам</numerusform><numerusform>%n актыўных злучэнняў з Litecoin-сецівам</numerusform></translation>
+        <source>%n active connection(s) to Cccoin network</source>
+        <translation><numerusform>%n актыўнае злучэнне з Cccoin-сецівам</numerusform><numerusform>%n актыўных злучэнняў з Cccoin-сецівам</numerusform></translation>
     </message>
     <message>
         <source>Error</source>
@@ -434,8 +434,8 @@ Address: %4
         <translation>(%1-біт)</translation>
     </message>
     <message>
-        <source>About Litecoin Core</source>
-        <translation>Аб Litecoin Core</translation>
+        <source>About Cccoin Core</source>
+        <translation>Аб Cccoin Core</translation>
     </message>
     <message>
         <source>Usage:</source>
@@ -626,7 +626,7 @@ Address: %4
     <name>SplashScreen</name>
     <message>
         <source>The Bitcoin Core developers</source>
-        <translation>Распрацоўнікі Litecoin Core</translation>
+        <translation>Распрацоўнікі Cccoin Core</translation>
     </message>
     <message>
         <source>[testnet]</source>
