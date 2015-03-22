@@ -4,7 +4,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "miner.h"
-
+#include "ccc/mhash.h"
 #include "amount.h"
 #include "primitives/block.h"
 #include "primitives/transaction.h"
@@ -439,6 +439,7 @@ void static BitcoinMiner(CWallet *pwallet)
                 return;
             }
             CBlock *pblock = &pblocktemplate->block;
+            pblock->nBlockHeight=pindexPrev->nHeight+1;
             IncrementExtraNonce(pblock, pindexPrev, nExtraNonce);
 
             LogPrintf("Running CccoinMiner with %u transactions in block (%u bytes)\n", pblock->vtx.size(),
@@ -452,10 +453,11 @@ void static BitcoinMiner(CWallet *pwallet)
             uint256 thash;
             while (true) {
                 unsigned int nHashesDone = 0;
-                char scratchpad[SCRYPT_SCRATCHPAD_SIZE];
+                //char scratchpad[SCRYPT_SCRATCHPAD_SIZE];
                 while(true)
                 {
-                    scrypt_1024_1_1_256_sp(BEGIN(pblock->nVersion), BEGIN(thash), scratchpad);
+                    //scrypt_1024_1_1_256_sp(BEGIN(pblock->nVersion), BEGIN(thash), scratchpad);
+                    mixHash(&thash,(unsigned int)pblock->nBlockHeight);
                     if (thash <= hashTarget)
                     {
                         // Found a solution
