@@ -17,7 +17,6 @@
 #include <cpuid.h>
 #endif
 #endif
-
 /*How mixed Hash works
  * First, get a normal sha256d hash of the block header
  * rolling for nBlockHeight times, occuping memory.
@@ -28,14 +27,12 @@
  * This design enables ultra fast computing with huge rams, with changing rolling times, so as to disable mining machine.
  * 
  */
-
 void mixHash(uint256* input, const unsigned int height) {
     uint256 mHashRnd[8];
     getRandom(mHashRnd);
     //getRandom(&rnd);
     uint256 roller;
     roller = *input;
-
     //std::cout << "roller: \n" << roller.ToString() << "\n";
    // std::cout << "height: \n" << height<< "\n";
     int r;
@@ -56,14 +53,12 @@ void mixHash(uint256* input, const unsigned int height) {
         //std::cout << "roller: \n" << roller.ToString() << "\n";
     }
     //delete[] mixer;
-
     //std::cout << "roller: \n" << roller.ToString() << "\n";
    // std::cout << "input: \n"  << HexStr(BEGIN(*input), END(*input)) << "\n";
     *input = Hash(BEGIN(roller), END(roller), BEGIN(*input), END(*input));
     //std::cout << "roller beginend: \n"  << HexStr(BEGIN(roller), END(roller)) << "\n";    
     //std::cout << "result: \n" << input->ToString() << "\n";
     delete[] mixer;
-
 }
 void getRandom(uint256* mHashRnd)
 {
@@ -81,6 +76,7 @@ mHashRnd[0].SetHex("0x95faaa7b5ccde209b9cdebd1de254102795a295a883354449555f5a4e8
     }
 void mixAdd(uint256* roller){
     unsigned int shift=roller->GetLow64()&0xff;
+    //std::cout << "shift: \n" << shift << "\n";
     uint256 lchunk=*roller>>shift;
     uint256 r1=*roller<<(unsigned int)(256-shift);
     r1|=lchunk;
