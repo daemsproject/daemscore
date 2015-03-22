@@ -4391,7 +4391,7 @@ bool ProcessMessages(CNode* pfrom)
 
 bool SendMessages(CNode* pto, bool fSendTrickle)
 {
-    LogPrintf("SendMessages() working\n");
+//    LogPrintf("SendMessages() working\n");
     {
         // Don't send anything until we get their version message
         if (pto->nVersion == 0)
@@ -4453,7 +4453,7 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
         //
         if (fSendTrickle)
         {
-            LogPrintf("fSendTrickle!\n");
+//            LogPrintf("fSendTrickle!\n");
             vector<CAddress> vAddr;
             vAddr.reserve(pto->vAddrToSend.size());
             BOOST_FOREACH(const CAddress& addr, pto->vAddrToSend)
@@ -4498,17 +4498,17 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
         // Start block sync
         if (pindexBestHeader == NULL)
             pindexBestHeader = chainActive.Tip();
-        bool fFetch = state.fPreferredDownload || (nPreferredDownload == 0 && !pto->fClient && !pto->fOneShot); // Download if this is a nice peer, or we have no nice peers and this one might do.
-        if (!state.fSyncStarted && !pto->fClient && fFetch && !fImporting && !fReindex) {
-            // Only actively request headers from a single peer, unless we're close to today.
-            if (nSyncStarted == 0 || pindexBestHeader->GetBlockTime() > GetAdjustedTime() -  60 ) {
+//        bool fFetch = state.fPreferredDownload || (nPreferredDownload == 0 && !pto->fClient && !pto->fOneShot); // Download if this is a nice peer, or we have no nice peers and this one might do.
+//        if (!state.fSyncStarted && !pto->fClient && fFetch && !fImporting && !fReindex) {
+//            // Only actively request headers from a single peer, unless we're close to today.
+//            if (nSyncStarted == 0 || pindexBestHeader->GetBlockTime() > GetAdjustedTime() -  60 ) {
                 state.fSyncStarted = true;
                 nSyncStarted++;
                 CBlockIndex *pindexStart = pindexBestHeader->pprev ? pindexBestHeader->pprev : pindexBestHeader;
                 LogPrint("net", "initial getheaders (%d) to peer=%d (startheight:%d)\n", pindexStart->nHeight, pto->id, pto->nStartingHeight);
                 pto->PushMessage("getheaders", chainActive.GetLocator(pindexStart), uint256(0));
-            }
-        }
+//            }
+//        }
 
         // Resend wallet transactions that haven't gotten in a block yet
         // Except during reindex, importing and IBD, when old wallet
@@ -4524,7 +4524,7 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
         vector<CInv> vInv;
         vector<CInv> vInvWait;
         {
-            LogPrintf("vInv!\n");
+//            LogPrintf("vInv!\n");
             LOCK(pto->cs_inventory);
             vInv.reserve(pto->vInventoryToSend.size());
             vInvWait.reserve(pto->vInventoryToSend.size());
