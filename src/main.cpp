@@ -2172,8 +2172,6 @@ bool ActivateBestChain(CValidationState &state, CBlock *pblock) {
                 return false;
 
             pindexNewTip = chainActive.Tip();
-            CBlockHeader bh=pindexNewTip->GetBlockHeader();
-            std::cout << "chain tip block header: \n"  << HexStr(BEGIN(bh.nVersion), END(bh.nNonce)) << "\n";
             fInitialDownload = IsInitialBlockDownload();
         }
         // When we reach this point, we switched to a new tip (stored in pindexNewTip).
@@ -2770,8 +2768,6 @@ bool ProcessNewBlock(CValidationState &state, CNode* pfrom, CBlock* pblock, CDis
         // Store to disk
         CBlockIndex *pindex = NULL;
         bool ret = AcceptBlock(*pblock, state, &pindex, dbp);
-        CBlockHeader bh=pindex->GetBlockHeader();
-        std::cout << "block header: \n"  << HexStr(BEGIN(bh.nVersion), END(bh.nNonce)) << "\n";
         if (pindex && pfrom) {
             mapBlockSource[pindex->GetBlockHash()] = pfrom->GetId();
         }
@@ -3845,8 +3841,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         int nLimit = MAX_HEADERS_RESULTS;
         LogPrint("net", "getheaders %d to %s from peer=%d\n", (pindex ? pindex->nHeight : -1), hashStop.ToString(), pfrom->id);
         for (; pindex; pindex = chainActive.Next(pindex))
-        {CBlockHeader bh=pindex->GetBlockHeader();
-            std::cout << "block header: \n"  << HexStr(BEGIN(bh.nVersion), END(bh.nNonce)) << "\n";
+        {
             vHeaders.push_back(pindex->GetBlockHeader());
             if (--nLimit <= 0 || pindex->GetBlockHash() == hashStop)
                 break;
@@ -4396,7 +4391,6 @@ bool ProcessMessages(CNode* pfrom)
 
 bool SendMessages(CNode* pto, bool fSendTrickle)
 {
-//    LogPrintf("SendMessages() working\n");
     {
         // Don't send anything until we get their version message
         if (pto->nVersion == 0)
@@ -4458,7 +4452,6 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
         //
         if (fSendTrickle)
         {
-//            LogPrintf("fSendTrickle!\n");
             vector<CAddress> vAddr;
             vAddr.reserve(pto->vAddrToSend.size());
             BOOST_FOREACH(const CAddress& addr, pto->vAddrToSend)
@@ -4531,7 +4524,6 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
         vector<CInv> vInv;
         vector<CInv> vInvWait;
         {
-//            LogPrintf("vInv!\n");
             LOCK(pto->cs_inventory);
             vInv.reserve(pto->vInventoryToSend.size());
             vInvWait.reserve(pto->vInventoryToSend.size());

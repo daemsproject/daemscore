@@ -54,22 +54,23 @@ static void convertSeed6(std::vector<CAddress> &vSeedsOut, const SeedSpec6 *data
  */
 static Checkpoints::MapCheckpoints mapCheckpoints =
         boost::assign::map_list_of
-        (  1500, uint256("0x841a2965955dd288cfa707a755d05a54e45f8bd476835ec9af4402a2b59a2967"))
-        (  4032, uint256("0x9ce90e427198fc0ef05e5905ce3503725b80e26afd35a987965fd7e3d9cf0846"))
-        (  8064, uint256("0xeb984353fc5190f210651f150c40b8a4bab9eeeff0b729fcb3987da694430d70"))
-        ( 16128, uint256("0x602edf1859b7f9a6af809f1d9b0e6cb66fdc1d4d9dcd7a4bec03e12a1ccd153d"))
-        ( 23420, uint256("0xd80fdf9ca81afd0bd2b2a90ac3a9fe547da58f2530ec874e978fce0b5101b507"))
-        ( 50000, uint256("0x69dc37eb029b68f075a5012dcc0419c127672adb4f3a32882b2b3e71d07a20a6"))
-        ( 80000, uint256("0x4fcb7c02f676a300503f49c764a89955a8f920b46a8cbecb4867182ecdb2e90a"))
-        (120000, uint256("0xbd9d26924f05f6daa7f0155f32828ec89e8e29cee9e7121b026a7a3552ac6131"))
-        (161500, uint256("0xdbe89880474f4bb4f75c227c77ba1cdc024991123b28b8418dbbf7798471ff43"))
-        (179620, uint256("0x2ad9c65c990ac00426d18e446e0fd7be2ffa69e9a7dcb28358a50b2b78b9f709"))
-        (240000, uint256("0x7140d1c4b4c2157ca217ee7636f24c9c73db39c4590c4e6eab2e3ea1555088aa"))
-        (383640, uint256("0x2b6809f094a9215bafc65eb3f110a35127a34be94b7d0590a096c3f126c6f364"))
-        (409004, uint256("0x487518d663d9f1fa08611d9395ad74d982b667fbdc0e77e9cf39b4f1355908a3"))
-        (456000, uint256("0xbf34f71cc6366cd487930d06be22f897e34ca6a40501ac7d401be32456372004"))
-        (638902, uint256("0x15238656e8ec63d28de29a8c75fcf3a5819afc953dcd9cc45cecc53baec74f38"))
-        (721000, uint256("0x198a7b4de1df9478e2463bd99d75b714eab235a2e63e741641dc8a759a9840e5"))
+        (  0, uint256("0x0348a2106ddbe1f7e78f1ca9f4751c349b61d59e4ddc311acfa7513c80505cd0"))
+//        (  1500, uint256("0x841a2965955dd288cfa707a755d05a54e45f8bd476835ec9af4402a2b59a2967"))
+//        (  4032, uint256("0x9ce90e427198fc0ef05e5905ce3503725b80e26afd35a987965fd7e3d9cf0846"))
+//        (  8064, uint256("0xeb984353fc5190f210651f150c40b8a4bab9eeeff0b729fcb3987da694430d70"))
+//        ( 16128, uint256("0x602edf1859b7f9a6af809f1d9b0e6cb66fdc1d4d9dcd7a4bec03e12a1ccd153d"))
+//        ( 23420, uint256("0xd80fdf9ca81afd0bd2b2a90ac3a9fe547da58f2530ec874e978fce0b5101b507"))
+//        ( 50000, uint256("0x69dc37eb029b68f075a5012dcc0419c127672adb4f3a32882b2b3e71d07a20a6"))
+//        ( 80000, uint256("0x4fcb7c02f676a300503f49c764a89955a8f920b46a8cbecb4867182ecdb2e90a"))
+//        (120000, uint256("0xbd9d26924f05f6daa7f0155f32828ec89e8e29cee9e7121b026a7a3552ac6131"))
+//        (161500, uint256("0xdbe89880474f4bb4f75c227c77ba1cdc024991123b28b8418dbbf7798471ff43"))
+//        (179620, uint256("0x2ad9c65c990ac00426d18e446e0fd7be2ffa69e9a7dcb28358a50b2b78b9f709"))
+//        (240000, uint256("0x7140d1c4b4c2157ca217ee7636f24c9c73db39c4590c4e6eab2e3ea1555088aa"))
+//        (383640, uint256("0x2b6809f094a9215bafc65eb3f110a35127a34be94b7d0590a096c3f126c6f364"))
+//        (409004, uint256("0x487518d663d9f1fa08611d9395ad74d982b667fbdc0e77e9cf39b4f1355908a3"))
+//        (456000, uint256("0xbf34f71cc6366cd487930d06be22f897e34ca6a40501ac7d401be32456372004"))
+//        (638902, uint256("0x15238656e8ec63d28de29a8c75fcf3a5819afc953dcd9cc45cecc53baec74f38"))
+//        (721000, uint256("0x198a7b4de1df9478e2463bd99d75b714eab235a2e63e741641dc8a759a9840e5"))
         ;
 static const Checkpoints::CCheckpointData data = {
         &mapCheckpoints,
@@ -153,29 +154,11 @@ public:
         genesis.nNonce   = 9702;
         hashGenesisBlock = genesis.GetHash();
         //std::cout << "g hash: \n" << hashGenesisBlock.ToString() << "\n";
-        int64_t tStart = GetTimeMillis();
-        //std::cout << "PowHashStart: \n" << tStart << "\n";
         //std::cout << "g powh: \n" << genesis.GetPoWHash().ToString() << "\n";
-        //std::cout << "PowHashTime: \n" << GetTimeMillis()-tStart << "\n";
         //std::cout << "g mroot: \n" << genesis.hashMerkleRoot.ToString() << "\n";
-        //assert(hashGenesisBlock == uint256("0x0348a2106ddbe1f7e78f1ca9f4751c349b61d59e4ddc311acfa7513c80505cd0"));
-        //assert(genesis.hashMerkleRoot == uint256("0x13598b4b8bb3b5ee189e50e122443e8af32feb23e5b830bad5e4818e8d299d92"));
+        assert(hashGenesisBlock == uint256("0xe05b34f32cfbc7cde4c7fbae2f7288e4f975470120b7a9598b697d4d4c194060"));
+        assert(genesis.hashMerkleRoot == uint256("0x13598b4b8bb3b5ee189e50e122443e8af32feb23e5b830bad5e4818e8d299d92"));
         
-
-//        uint256 xor0=Hash(BEGIN(hashGenesisBlock),END(hashGenesisBlock));;
-//        //for (int i=0;i<10;i++){
-//            for (int j=0;j<1000000;j++){
-//            //xor0=Hash(BEGIN(xor0),END(xor0));
-//                xor0+=hashGenesisBlock;
-//            //std::cout << "xor1000000End: \n" << xor0.ToString() << "\n";
-//            }
-//            std::cout << "xor1000000End: \n" << xor0.ToString() << "\n";
-//            //std::cout << "xor1000000End: \n"<< GetTimeMillis() << "\n";
-//        //}        
-//        int64_t tEnd=GetTimeMillis();
-//        std::cout << "xor1000000End: \n" << tEnd << "\n";
-//        int64_t tSpent=tEnd-tStart;
-//        std::cout << "xor1000000Time: \n" << tSpent << "\n";
         vSeeds.push_back(CDNSSeedData("cccointools.com", "dnsseed.cccointools.com"));
 //        vSeeds.push_back(CDNSSeedData("cccoinpool.org", "dnsseed.cccoinpool.org"));
 //        vSeeds.push_back(CDNSSeedData("xurious.com", "dnsseed.ltc.xurious.com"));
