@@ -28,7 +28,7 @@ using namespace std;
 CFeeRate payTxFee(DEFAULT_TRANSACTION_FEE);
 CAmount maxTxFee = DEFAULT_TRANSACTION_MAXFEE;
 unsigned int nTxConfirmTarget = 1;
-bool bSpendZeroConfChange = true;
+bool bSpendZeroConfChange = false;
 bool fSendFreeTransactions = false;
 bool fPayAtLeastCustomFee = true;
 
@@ -1404,10 +1404,6 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
                         strFailReason = _("Transaction amount too small");
                         return false;
                     }
-//                    if (txout.nValue < DUST_THRESHOLD)
-//                    {
-//                        nBytesPenalty += 1000;
-//                    }
                     txNew.vout.push_back(txout);
                 }
 

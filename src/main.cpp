@@ -1021,10 +1021,6 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
         CAmount nFees = nValueIn-nValueOut;
         double dPriority = view.GetPriority(tx, chainActive.Height());
 
-        if(dPriority == 0.0)
-            return state.DoS(0, error("AcceptToMemoryPool : not enough fees (0 dPriority) %s, %d",
-                                      hash.ToString(), nFees),
-                             REJECT_INSUFFICIENTFEE, "insufficient fee");
         CTxMemPoolEntry entry(tx, nFees, GetTime(), dPriority, chainActive.Height());
         unsigned int nSize = entry.GetTxSize();
 

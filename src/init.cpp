@@ -740,7 +740,7 @@ bool AppInit2(boost::thread_group& threadGroup)
         }
     }
     nTxConfirmTarget = GetArg("-txconfirmtarget", 1);
-    bSpendZeroConfChange = GetArg("-spendzeroconfchange", true);
+    bSpendZeroConfChange = GetArg("-spendzeroconfchange", false);
     fSendFreeTransactions = GetArg("-sendfreetransactions", false);
 
     std::string strWalletFile = GetArg("-wallet", "wallet.dat");
