@@ -36,8 +36,6 @@ extern bool bSpendZeroConfChange;
 extern bool fSendFreeTransactions;
 extern bool fPayAtLeastCustomFee;
 
-extern CAmount nMinimumInputThreshold;
-
 //! -paytxfee default
 static const CAmount DEFAULT_TRANSACTION_FEE = 0;
 //! -paytxfee will warn if called with a higher fee than this amount (in satoshis) per KB
@@ -47,7 +45,7 @@ static const CAmount DEFAULT_TRANSACTION_MAXFEE = 0.1 * COIN;
 //! -maxtxfee will warn if called with a higher fee than this amount (in satoshis)
 static const CAmount nHighTransactionMaxFeeWarning = 100 * nHighTransactionFeeWarning;
 //! Largest (in bytes) free transaction we're willing to create
-static const unsigned int MAX_FREE_TRANSACTION_CREATE_SIZE = 5000;
+static const unsigned int MAX_FREE_TRANSACTION_CREATE_SIZE = 1;
 
 class CAccountingEntry;
 class CCoinControl;
@@ -335,7 +333,7 @@ public:
     bool IsMine(const CTransaction& tx) const
     {
         BOOST_FOREACH(const CTxOut& txout, tx.vout)
-            if (IsMine(txout) && txout.nValue >= nMinimumInputThreshold)
+            if (IsMine(txout))
                 return true;
         return false;
     }

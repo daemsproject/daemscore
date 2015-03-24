@@ -9,7 +9,6 @@
 #include "primitives/block.h"
 #include "primitives/transaction.h"
 #include "hash.h"
-#include "crypto/scrypt.h"
 #include "main.h"
 #include "net.h"
 #include "pow.h"
@@ -256,8 +255,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
 
             // Prioritise by fee once past the priority size or we run out of high-priority
             // transactions:
-            if (!fSortedByFee &&
-                ((nBlockSize + nTxSize >= nBlockPrioritySize) || !AllowFree()))
+            if (!fSortedByFee)
             {
                 fSortedByFee = true;
                 comparer = TxPriorityCompare(fSortedByFee);

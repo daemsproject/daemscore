@@ -32,13 +32,11 @@ bool bSpendZeroConfChange = true;
 bool fSendFreeTransactions = false;
 bool fPayAtLeastCustomFee = true;
 
-CAmount nMinimumInputThreshold = DEFAULT_MINIMUM_INPUT_THRESHOLD;
-
 /** 
  * Fees smaller than this (in satoshi) are considered zero fee (for transaction creation) 
  * Override with -mintxfee
  */
-CFeeRate CWallet::minTxFee = CFeeRate(DUST_THRESHOLD);
+CFeeRate CWallet::minTxFee = CFeeRate(1000);
 
 /** @defgroup mapWallet
  *
@@ -1181,7 +1179,7 @@ void CWallet::AvailableCoins(vector<COutput>& vCoins, bool fOnlyConfirmed, const
             for (unsigned int i = 0; i < pcoin->vout.size(); i++) {
                 isminetype mine = IsMine(pcoin->vout[i]);
                 if (!(IsSpent(wtxid, i)) && mine != ISMINE_NO &&
-                    !IsLockedCoin((*it).first, i) && pcoin->vout[i].nValue >= nMinimumInputThreshold &&
+                    !IsLockedCoin((*it).first, i) && pcoin->vout[i].nValue > 0 &&
                     (!coinControl || !coinControl->HasSelected() || coinControl->IsSelected((*it).first, i)))
                         vCoins.push_back(COutput(pcoin, i, nDepth, (mine & ISMINE_SPENDABLE) != ISMINE_NO));
             }
@@ -1397,7 +1395,6 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
 
                 CAmount nTotalValue = nValue + nFeeRet;
                 double dPriority = 0;
-                unsigned int nBytesPenalty = 0;
                 // vouts to the payees
                 BOOST_FOREACH (const PAIRTYPE(CScript, CAmount)& s, vecSend)
                 {
@@ -1407,10 +1404,10 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
                         strFailReason = _("Transaction amount too small");
                         return false;
                     }
-                    if (txout.nValue < DUST_THRESHOLD)
-                    {
-                        nBytesPenalty += 1000;
-                    }
+//                    if (txout.nValue < DUST_THRESHOLD)
+//                    {
+//                        nBytesPenalty += 1000;
+//                    }
                     txNew.vout.push_back(txout);
                 }
 
@@ -1471,17 +1468,17 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
 
                     // Never create dust outputs; if we would, just
                     // add the dust to the fee.
-                    if (newTxOut.nValue < DUST_THRESHOLD)
-                    {
-                        nFeeRet += nChange;
-                        reservekey.ReturnKey();
-                    }
-                    else
-                    {
+//                    if (newTxOut.nValue < DUST_THRESHOLD)
+//                    {
+//                        nFeeRet += nChange;
+//                        reservekey.ReturnKey();
+//                    }
+//                    else
+//                    {
                         // Insert change txn at random position:
                         vector<CTxOut>::iterator position = txNew.vout.begin()+GetRandInt(txNew.vout.size()+1);
                         txNew.vout.insert(position, newTxOut);
-                    }
+//                    }
                 }
                 else
                     reservekey.ReturnKey();
@@ -1512,7 +1509,7 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
                 dPriority = wtxNew.ComputePriority(dPriority, nBytes);
 
                 // Can we complete this as a free transaction?
-                if (!nBytesPenalty && fSendFreeTransactions && nBytes <= MAX_FREE_TRANSACTION_CREATE_SIZE)
+                if (fSendFreeTransactions && nBytes <= MAX_FREE_TRANSACTION_CREATE_SIZE)
                 {
                     // Not enough fee: enough priority?
                     double dPriorityNeeded = mempool.estimatePriority(nTxConfirmTarget);
@@ -1525,7 +1522,7 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
                         break;
                 }
 
-                CAmount nFeeNeeded = GetMinimumFee(nBytes + nBytesPenalty, nTxConfirmTarget, mempool);
+                CAmount nFeeNeeded = GetMinimumFee(nBytes, nTxConfirmTarget, mempool);
 
                 // If we made it here and we aren't even able to meet the relay fee on the next pass, give up
                 // because we must be at the maximum allowed fee.
