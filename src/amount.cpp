@@ -10,26 +10,27 @@
 CFeeRate::CFeeRate(const CAmount& nFeePaid, size_t nSize)
 {
     if (nSize > 0)
-        nSatoshisPerK = nFeePaid*1000/nSize;
+//        nSatoshisPerK = nFeePaid*1000/nSize;
+        nSatoshisPerB = nFeePaid/nSize;
     else
-        nSatoshisPerK = 0;
+        nSatoshisPerB = 0;
 }
 
 CAmount CFeeRate::GetFee(size_t nSize) const
 {
-    // Round up nSize to the nearest 1000
-    CAmount mod = nSize % 1000;
-    if (mod > 0)
-        nSize = nSize - mod + 1000;
-    CAmount nFee = nSatoshisPerK*nSize / 1000;
+//    // Round up nSize to the nearest 1000
+//    CAmount mod = nSize % 1000;
+//    if (mod > 0)
+//        nSize = nSize - mod + 1000;
+    CAmount nFee = nSatoshisPerB*nSize;
 
-    if (nFee == 0 && nSatoshisPerK > 0)
-        nFee = nSatoshisPerK;
+    if (nFee == 0 && nSatoshisPerB > 0)
+        nFee = nSatoshisPerB;
 
     return nFee;
 }
 
 std::string CFeeRate::ToString() const
 {
-    return strprintf("%d.%06d CCC/kB", nSatoshisPerK / COIN, nSatoshisPerK % COIN);
+    return strprintf("%d.%06d CCC/B", nSatoshisPerB / COIN, nSatoshisPerB % COIN);
 }

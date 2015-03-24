@@ -890,36 +890,30 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state)
 
 CAmount GetMinRelayFee(const CTransaction& tx, unsigned int nBytes, bool fAllowFree)
 {
-    {
-        LOCK(mempool.cs);
-        uint256 hash = tx.GetHash();
-        double dPriorityDelta = 0;
-        CAmount nFeeDelta = 0;
-        mempool.ApplyDeltas(hash, dPriorityDelta, nFeeDelta);
-        if (dPriorityDelta > 0 || nFeeDelta > 0)
-            return 0;
-    }
+//    {
+//        LOCK(mempool.cs);
+//        uint256 hash = tx.GetHash();
+//        double dPriorityDelta = 0;
+//        CAmount nFeeDelta = 0;
+//        mempool.ApplyDeltas(hash, dPriorityDelta, nFeeDelta);
+//        if (dPriorityDelta > 0 || nFeeDelta > 0)
+//            return 0;
+//    }
 
     // Cccoin
-    // To limit dust spam, add 1000 byte penalty for each output smaller than DUST_THRESHOLD
-    BOOST_FOREACH(const CTxOut& txout, tx.vout)
-        if (txout.nValue < DUST_THRESHOLD)
-        {
-            nBytes += 1000;
-            fAllowFree = false;
-        }
+//    fAllowFree = false;
 
     CAmount nMinFee = ::minRelayTxFee.GetFee(nBytes);
 
-    if (fAllowFree)
-    {
-        // There is a free transaction area in blocks created by most miners,
-        // * If we are relaying we allow transactions up to DEFAULT_BLOCK_PRIORITY_SIZE - 1000
-        //   to be considered to fall into this category. We don't want to encourage sending
-        //   multiple transactions instead of one big transaction to avoid fees.
-        if (nBytes < (DEFAULT_BLOCK_PRIORITY_SIZE - 5000))
-            nMinFee = 0;
-    }
+//    if (fAllowFree)
+//    {
+//        // There is a free transaction area in blocks created by most miners,
+//        // * If we are relaying we allow transactions up to DEFAULT_BLOCK_PRIORITY_SIZE - 1000
+//        //   to be considered to fall into this category. We don't want to encourage sending
+//        //   multiple transactions instead of one big transaction to avoid fees.
+//        if (nBytes < (DEFAULT_BLOCK_PRIORITY_SIZE - 5000))
+//            nMinFee = 0;
+//    }
 
     if (!MoneyRange(nMinFee))
         nMinFee = MAX_MONEY;
@@ -1028,6 +1022,10 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
         CAmount nFees = nValueIn-nValueOut;
         double dPriority = view.GetPriority(tx, chainActive.Height());
 
+        if(dPriority == 0.0)
+            return state.DoS(0, error("AcceptToMemoryPool : not enough fees (0 dPriority) %s, %d",
+                                      hash.ToString(), nFees),
+                             REJECT_INSUFFICIENTFEE, "insufficient fee");
         CTxMemPoolEntry entry(tx, nFees, GetTime(), dPriority, chainActive.Height());
         unsigned int nSize = entry.GetTxSize();
 
@@ -1039,7 +1037,7 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
                              REJECT_INSUFFICIENTFEE, "insufficient fee");
 
         // Require that free transactions have sufficient priority to be mined in the next block.
-        if (GetBoolArg("-relaypriority", true) && nFees < ::minRelayTxFee.GetFee(nSize) && !AllowFree(view.GetPriority(tx, chainActive.Height() + 1))) {
+        if (GetBoolArg("-relaypriority", true) && nFees < ::minRelayTxFee.GetFee(nSize) ) {
             return state.DoS(0, false, REJECT_INSUFFICIENTFEE, "insufficient priority");
         }
 

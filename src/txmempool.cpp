@@ -175,7 +175,7 @@ private:
         // We need to guess why the transaction was included in a block-- either
         // because it is high-priority or because it has sufficient fees.
         bool sufficientFee = (feeRate > minRelayFee);
-        bool sufficientPriority = AllowFree(dPriority);
+        bool sufficientPriority = AllowFree();
         const char* assignedTo = "unassigned";
         if (sufficientFee && !sufficientPriority && CBlockAverage::AreSane(feeRate, minRelayFee))
         {

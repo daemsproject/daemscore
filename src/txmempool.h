@@ -17,14 +17,13 @@ class CAutoFile;
 
 inline double AllowFreeThreshold()
 {
-    return COIN * 576 / 250;
+    return 0; // COIN * 576 / 250;
 }
 
-inline bool AllowFree(double dPriority)
+inline bool AllowFree()
 {
-    // Large (in bytes) low-priority (new, small-coin) transactions
-    // need a fee.
-    return dPriority > AllowFreeThreshold();
+    // Always need a fee
+    return  false; // dPriority > AllowFreeThreshold();
 }
 
 /** Fake height value used in CCoins to signify they are only in the memory pool (since 0.8) */
