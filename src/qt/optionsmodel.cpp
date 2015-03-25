@@ -89,12 +89,12 @@ void OptionsModel::Init()
         addOverriddenOption("-par");
 
     // Wallet
-#ifdef ENABLE_WALLET
-    if (!settings.contains("bSpendZeroConfChange"))
-        settings.setValue("bSpendZeroConfChange", false);
-    if (!SoftSetBoolArg("-spendzeroconfchange", settings.value("bSpendZeroConfChange").toBool()))
-        addOverriddenOption("-spendzeroconfchange");
-#endif
+//#ifdef ENABLE_WALLET
+//    if (!settings.contains("bSpendZeroConfChange"))
+//        settings.setValue("bSpendZeroConfChange", false);
+//    if (!SoftSetBoolArg("-spendzeroconfchange", settings.value("bSpendZeroConfChange").toBool()))
+//        addOverriddenOption("-spendzeroconfchange");
+//#endif
 
     // Network
     if (!settings.contains("fUseUPnP"))
