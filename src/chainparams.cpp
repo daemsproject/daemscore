@@ -125,7 +125,7 @@ public:
         nToCheckBlockUpgradeMajority = 1000;
         nMinerThreads = 0;
         nTargetTimespan = 5 * 60; // 12 hr
-        nTargetSpacing = 30; // 3 minutes
+        nTargetSpacing = 10; // 3 minutes
 
         /**
          * Build the genesis block. Note that the output of the genesis coinbase cannot
