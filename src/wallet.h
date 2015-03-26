@@ -548,7 +548,7 @@ public:
     int GetDepthInMainChain() const { const CBlockIndex *pindexRet; return GetDepthInMainChain(pindexRet); }
     bool IsInMainChain() const { const CBlockIndex *pindexRet; return GetDepthInMainChainINTERNAL(pindexRet) > 0; }
     int GetBlocksToMaturity() const;
-    bool AcceptToMemoryPool(bool fLimitFree=true, bool fRejectInsaneFee=false);
+    bool AcceptToMemoryPool(bool fLimitFree=true, bool fRejectInsaneFee=true);
 };
 
 /** 
@@ -739,8 +739,8 @@ public:
     CAmount GetCredit(const isminefilter& filter) const
     {
         // Must wait until coinbase is safely deep enough in the chain before valuing it
-        if (IsCoinBase() && GetBlocksToMaturity() > 0)
-            return 0;
+//        if (IsCoinBase() && GetBlocksToMaturity() > 0)
+//            return 0;
 
         int64_t credit = 0;
         if (filter & ISMINE_SPENDABLE)
@@ -771,7 +771,7 @@ public:
 
     CAmount GetImmatureCredit(bool fUseCache=true) const
     {
-        if (IsCoinBase() && GetBlocksToMaturity() > 0 && IsInMainChain())
+            if (GetBlocksToMaturity() > 0 && IsInMainChain())
         {
             if (fUseCache && fImmatureCreditCached)
                 return nImmatureCreditCached;
@@ -789,7 +789,7 @@ public:
             return 0;
 
         // Must wait until coinbase is safely deep enough in the chain before valuing it
-        if (IsCoinBase() && GetBlocksToMaturity() > 0)
+        if (GetBlocksToMaturity() > 0)
             return 0;
 
         if (fUseCache && fAvailableCreditCached)
@@ -815,7 +815,7 @@ public:
 
     CAmount GetImmatureWatchOnlyCredit(const bool& fUseCache=true) const
     {
-        if (IsCoinBase() && GetBlocksToMaturity() > 0 && IsInMainChain())
+        if (GetBlocksToMaturity() > 0 && IsInMainChain())
         {
             if (fUseCache && fImmatureWatchCreditCached)
                 return nImmatureWatchCreditCached;
@@ -833,7 +833,7 @@ public:
             return 0;
 
         // Must wait until coinbase is safely deep enough in the chain before valuing it
-        if (IsCoinBase() && GetBlocksToMaturity() > 0)
+        if (GetBlocksToMaturity() > 0)
             return 0;
 
         if (fUseCache && fAvailableWatchCreditCached)

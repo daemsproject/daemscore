@@ -646,10 +646,10 @@ bool IsStandardTx(const CTransaction& tx, string& reason)
     // Timestamps on the other hand don't get any special treatment, because we
     // can't know what timestamp the next block will have, and there aren't
     // timestamp applications where it matters.
-    if (!IsFinalTx(tx, chainActive.Height() + 1)) {
-        reason = "non-final";
-        return false;
-    }
+//    if (!IsFinalTx(tx, chainActive.Height() + 1)) {
+//        reason = "non-final";
+//        return false;
+//    }
 
     // Extremely large transactions with lots of inputs can cost the network
     // almost as much to process as they cost the sender in fees, because
@@ -712,17 +712,36 @@ bool IsFinalTx(const CTransaction &tx, int nBlockHeight, int64_t nBlockTime)
 {
     AssertLockHeld(cs_main);
     // Time based nLockTime implemented in 0.1.6
-    if (tx.nLockTime == 0)
-        return true;
-    if (nBlockHeight == 0)
-        nBlockHeight = chainActive.Height();
-    if (nBlockTime == 0)
-        nBlockTime = GetAdjustedTime();
-    if ((int64_t)tx.nLockTime < ((int64_t)tx.nLockTime < LOCKTIME_THRESHOLD ? (int64_t)nBlockHeight : nBlockTime))
-        return true;
     BOOST_FOREACH(const CTxIn& txin, tx.vin)
         if (!txin.IsFinal())
             return false;
+    return true;
+}
+bool IsFrozen(const CTransaction &tx, int nBlockHeight, int64_t nBlockTime){
+    AssertLockHeld(cs_main);
+      //Time based nLockTime implemented in 0.1.6
+    if (tx.nLockTime == 0)
+        return false;
+    if (nBlockHeight == 0)
+        nBlockHeight = chainActive.Height();
+    if (nBlockTime == 0)
+        nBlockTime = chainActive.Tip()->nTime;
+    if ((int64_t)tx.nLockTime < ((int64_t)tx.nLockTime < LOCKTIME_THRESHOLD ? (int64_t)nBlockHeight : nBlockTime))
+        return false;
+        return true;
+
+}
+bool IsFrozen(const CCoins &tx){
+    AssertLockHeld(cs_main);
+      //Time based nLockTime implemented in 0.1.6
+    if (tx.nLockTime == 0)
+            return false;
+    
+        int nBlockHeight = chainActive.Height();
+    
+        int64_t nBlockTime = chainActive.Tip()->nTime;
+    if ((int64_t)tx.nLockTime < ((int64_t)tx.nLockTime < LOCKTIME_THRESHOLD ? (int64_t)nBlockHeight : nBlockTime))
+        return false;
     return true;
 }
 
@@ -1025,40 +1044,40 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
         unsigned int nSize = entry.GetTxSize();
 
         // Don't accept it if it can't get into a block
-        CAmount txMinFee = GetMinRelayFee(tx, nSize, false);
-        if (fLimitFree && nFees < txMinFee)
+        CAmount txMinFee = ::minRelayTxFee.GetFee(nSize);
+        if (nFees < txMinFee)
             return state.DoS(0, error("AcceptToMemoryPool : not enough fees %s, %d < %d",
                                       hash.ToString(), nFees, txMinFee),
                              REJECT_INSUFFICIENTFEE, "insufficient fee");
 
         // Require that free transactions have sufficient priority to be mined in the next block.
-        if (GetBoolArg("-relaypriority", true) && nFees < ::minRelayTxFee.GetFee(nSize) ) {
-            return state.DoS(0, false, REJECT_INSUFFICIENTFEE, "insufficient priority");
-        }
+//        if (GetBoolArg("-relaypriority", true) && nFees < ::minRelayTxFee.GetFee(nSize) ) {
+//            return state.DoS(0, false, REJECT_INSUFFICIENTFEE, "insufficient priority");
+//        }
 
         // Continuously rate-limit free (really, very-low-fee) transactions
         // This mitigates 'penny-flooding' -- sending thousands of free transactions just to
         // be annoying or make others' transactions take longer to confirm.
-        if (fLimitFree && nFees < ::minRelayTxFee.GetFee(nSize))
-        {
-            static CCriticalSection csFreeLimiter;
-            static double dFreeCount;
-            static int64_t nLastTime;
-            int64_t nNow = GetTime();
-
-            LOCK(csFreeLimiter);
-
-            // Use an exponentially decaying ~10-minute window:
-            dFreeCount *= pow(1.0 - 1.0/600.0, (double)(nNow - nLastTime));
-            nLastTime = nNow;
-            // -limitfreerelay unit is thousand-bytes-per-minute
-            // At default rate it would take over a month to fill 1GB
-            if (dFreeCount >= GetArg("-limitfreerelay", 15)*10*1000)
-                return state.DoS(0, error("AcceptToMemoryPool : free transaction rejected by rate limiter"),
-                                 REJECT_INSUFFICIENTFEE, "rate limited free transaction");
-            LogPrint("mempool", "Rate limit dFreeCount: %g => %g\n", dFreeCount, dFreeCount+nSize);
-            dFreeCount += nSize;
-        }
+//        if (fLimitFree && nFees < ::minRelayTxFee.GetFee(nSize))
+//        {
+//            static CCriticalSection csFreeLimiter;
+//            static double dFreeCount;
+//            static int64_t nLastTime;
+//            int64_t nNow = GetTime();
+//
+//            LOCK(csFreeLimiter);
+//
+//            // Use an exponentially decaying ~10-minute window:
+//            dFreeCount *= pow(1.0 - 1.0/600.0, (double)(nNow - nLastTime));
+//            nLastTime = nNow;
+//            // -limitfreerelay unit is thousand-bytes-per-minute
+//            // At default rate it would take over a month to fill 1GB
+//            if (dFreeCount >= GetArg("-limitfreerelay", 15)*10*1000)
+//                return state.DoS(0, error("AcceptToMemoryPool : free transaction rejected by rate limiter"),
+//                                 REJECT_INSUFFICIENTFEE, "rate limited free transaction");
+//            LogPrint("mempool", "Rate limit dFreeCount: %g => %g\n", dFreeCount, dFreeCount+nSize);
+//            dFreeCount += nSize;
+//        }
 
         if (fRejectInsaneFee && nFees > ::minRelayTxFee.GetFee(nSize) * 10000)
             return error("AcceptToMemoryPool: : insane fees %s, %d > %d",
@@ -1432,12 +1451,19 @@ bool CheckInputs(const CTransaction& tx, CValidationState &state, const CCoinsVi
             const CCoins *coins = inputs.AccessCoins(prevout.hash);
             assert(coins);
 
-            // If prev is coinbase, check that it's matured
-            if (coins->IsCoinBase()) {
-                if (nSpendHeight - coins->nHeight < COINBASE_MATURITY)
+            //check that it's from mempool
+            if (coins->nHeight<=0){
                     return state.Invalid(
-                        error("CheckInputs() : tried to spend coinbase at depth %d", nSpendHeight - coins->nHeight),
-                        REJECT_INVALID, "bad-txns-premature-spend-of-coinbase");
+                        error("CheckInputs() : tried to spend mempool coins, not allowed"),
+                        REJECT_INVALID, "bad-txns-spend-of-mempool");
+            }
+            // check that it's matured
+            //if (coins->IsCoinBase()) {
+            if (IsFrozen(*coins)){
+                //if (nSpendHeight - coins->nHeight < COINBASE_MATURITY)
+                    return state.Invalid(
+                        error("CheckInputs() : tried to spend frozen coins at depth %d", nSpendHeight - coins->nHeight),
+                        REJECT_INVALID, "bad-txns-premature-spend-of-frozen");
             }
 
             // Check for negative or overflow input values
@@ -1455,9 +1481,9 @@ bool CheckInputs(const CTransaction& tx, CValidationState &state, const CCoinsVi
 
         // Tally transaction fees
         CAmount nTxFee = nValueIn - tx.GetValueOut();
-        if (nTxFee < 0)
-            return state.DoS(100, error("CheckInputs() : %s nTxFee < 0", tx.GetHash().ToString()),
-                             REJECT_INVALID, "bad-txns-fee-negative");
+        if (nTxFee < ::minRelayTxFee.GetFee(tx.GetSerializeSize(SER_NETWORK, CTransaction::CURRENT_VERSION)))
+            return state.DoS(100, error("CheckInputs() : %s nTxFee < minFee", tx.GetHash().ToString()),
+                             REJECT_INVALID, "bad-txns-fee-insufficient");
         nFees += nTxFee;
         if (!MoneyRange(nFees))
             return state.DoS(100, error("CheckInputs() : nFees out of range"),
@@ -1575,6 +1601,7 @@ bool DisconnectBlock(CBlock& block, CValidationState& state, CBlockIndex* pindex
                     coins->fCoinBase = undo.fCoinBase;
                     coins->nHeight = undo.nHeight;
                     coins->nVersion = undo.nVersion;
+                    coins->nLockTime = undo.nLockTime;
                 } else {
                     if (coins->IsPruned())
                         fClean = fClean && error("DisconnectBlock() : undo data adding output to missing transaction");
@@ -2056,8 +2083,41 @@ static CBlockIndex* FindMostWorkChain() {
             }
             pindexTest = pindexTest->pprev;
         }
+        
         if (!fInvalidAncestor)
+        {
+            //if fallback very long, be careful for long chain attack, compare total hashed of the 2 forks
+            
+            if (pindexTest!=NULL&& (pindexNew->nHeight-pindexTest->nHeight)>1000)
+            {
+                //LogPrintf("FindMostWorkChain3\n");
+                uint256 tHashesMain;
+                uint256 tHashesFork;
+                CBlockIndex *pindexFork=pindexNew;
+                CBlockIndex *pindexMain=chainActive.Tip();
+                while(pindexFork->nHeight>pindexMain->nHeight){
+                   pindexFork=pindexFork->pprev;
+                }
+                while(pindexFork!=pindexMain){
+                    tHashesMain+=~uint256(0)/uint256().SetCompact(pindexMain->nBits);
+                    tHashesFork+=~uint256(0)/uint256().SetCompact(pindexFork->nBits);
+                    pindexMain=pindexMain->pprev;
+                    pindexFork=pindexFork->pprev;
+                }
+                if (tHashesMain>tHashesFork){
+                    CBlockIndex *pindexFailed = pindexNew;
+                  while (pindexTest != pindexFailed) {
+                    pindexFailed->nStatus |= BLOCK_FAILED_CHILD;
+                    setBlockIndexCandidates.erase(pindexFailed);
+                    pindexFailed = pindexFailed->pprev;
+                  }
+                  setBlockIndexCandidates.erase(pindexTest);
+                    continue;
+                }
+             }
+        
             return pindexNew;
+        }
     } while(true);
 }
 
@@ -2473,6 +2533,11 @@ bool CheckBlock(const CBlock& block, CValidationState& state, bool fCheckPOW, bo
                              REJECT_INVALID, "bad-cb-multiple");
 
     // Check transactions
+    // Coinbase locktime only allow blockheight, lock by time is not allowed
+    if ((block.vtx[0].nLockTime<block.nBlockHeight+COINBASE_MATURITY)||(block.vtx[0].nLockTime>LOCKTIME_THRESHOLD)){
+            return state.DoS(100, error("CheckBlock()  : coinbase locktime, expected blockheight to spend: %i", block.nBlockHeight+COINBASE_MATURITY),
+                             REJECT_INVALID, "bad-coinbase-locktime");
+        }
     BOOST_FOREACH(const CTransaction& tx, block.vtx)
         if (!CheckTransaction(tx, state))
             return error("CheckBlock() : CheckTransaction failed");
@@ -2521,28 +2586,28 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
         return state.DoS(100, error("%s : forked chain older than last checkpoint (height %d)", __func__, nHeight));
 
     // Cccoin: Reject block.nVersion=1 blocks (mainnet >= 710000, testnet >= 400000, regtest uses supermajority)
-    bool enforceV2 = false;
-    if (block.nVersion < 2)
-    {
-        if (Params().EnforceV2AfterHeight() != -1)
-        {
-            // Mainnet 710k, Testnet 400k
-            if (nHeight >= Params().EnforceV2AfterHeight())
-                enforceV2 = true;
-        }
-        else
-        {
-            // Regtest and Unittest: use Bitcoin's supermajority rule
-            if (CBlockIndex::IsSuperMajority(2, pindexPrev, Params().RejectBlockOutdatedMajority()))
-                enforceV2 = true;
-        }
-    }
-
-    if (enforceV2)
-    {
-        return state.Invalid(error("%s : rejected nVersion=1 block", __func__),
-                             REJECT_OBSOLETE, "bad-version");
-    }
+//    bool enforceV2 = false;
+//    if (block.nVersion < 2)
+//    {
+//        if (Params().EnforceV2AfterHeight() != -1)
+//        {
+//            // Mainnet 710k, Testnet 400k
+//            if (nHeight >= Params().EnforceV2AfterHeight())
+//                enforceV2 = true;
+//        }
+//        else
+//        {
+//            // Regtest and Unittest: use Bitcoin's supermajority rule
+//            if (CBlockIndex::IsSuperMajority(2, pindexPrev, Params().RejectBlockOutdatedMajority()))
+//                enforceV2 = true;
+//        }
+//    }
+//
+//    if (enforceV2)
+//    {
+//        return state.Invalid(error("%s : rejected nVersion=1 block", __func__),
+//                             REJECT_OBSOLETE, "bad-version");
+//    }
 
     // Reject block.nVersion=2 blocks when 95% (75% on testnet) of the network has upgraded:
     if (block.nVersion < 3 && CBlockIndex::IsSuperMajority(3, pindexPrev, Params().RejectBlockOutdatedMajority()))
@@ -2567,24 +2632,24 @@ bool ContextualCheckBlock(const CBlock& block, CValidationState& state, CBlockIn
     // Cccoin: (mainnet >= 710000, testnet >= 400000, regtest uses supermajority)
     // Enforce block.nVersion=2 rule that the coinbase starts with serialized block height
     // if 750 of the last 1,000 blocks are version 2 or greater (51/100 if testnet):
-    bool checkHeightMismatch = false;
-    if (block.nVersion >= 2)
-    {
-        if (Params().EnforceV2AfterHeight() != -1)
-        {
-            // Mainnet 710k, Testnet 400k
-            if (nHeight >= Params().EnforceV2AfterHeight())
-                checkHeightMismatch = true;
-        }
-        else
-        {
-            // Regtest and Unittest: use Bitcoin's supermajority rule
-            if (CBlockIndex::IsSuperMajority(2, pindexPrev, Params().EnforceBlockUpgradeMajority()))
-                checkHeightMismatch = true;
-        }
-    }
-
-    if (checkHeightMismatch)
+//    bool checkHeightMismatch = false;
+//    if (block.nVersion >= 2)
+//    {
+//        if (Params().EnforceV2AfterHeight() != -1)
+//        {
+//            // Mainnet 710k, Testnet 400k
+//            if (nHeight >= Params().EnforceV2AfterHeight())
+//                checkHeightMismatch = true;
+//        }
+//        else
+//        {
+//            // Regtest and Unittest: use Bitcoin's supermajority rule
+//            if (CBlockIndex::IsSuperMajority(2, pindexPrev, Params().EnforceBlockUpgradeMajority()))
+//                checkHeightMismatch = true;
+//        }
+//    }
+//
+//    if (checkHeightMismatch)
     {
         CScript expect = CScript() << nHeight;
         if (block.vtx[0].vin[0].scriptSig.size() < expect.size() ||

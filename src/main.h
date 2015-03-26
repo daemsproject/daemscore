@@ -301,7 +301,8 @@ bool CheckTransaction(const CTransaction& tx, CValidationState& state);
 bool IsStandardTx(const CTransaction& tx, std::string& reason);
 
 bool IsFinalTx(const CTransaction &tx, int nBlockHeight = 0, int64_t nBlockTime = 0);
-
+//cccoin: Check if tx is in frozen period
+bool IsFrozen(const CTransaction &tx, int nBlockHeight, int64_t nBlockTime);
 /** Undo information for a CBlock */
 class CBlockUndo
 {

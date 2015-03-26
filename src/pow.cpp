@@ -76,7 +76,6 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         bnNew <<= 1;
 
     if (bnNew > Params().ProofOfWorkLimit()){
-        
         LogPrintf("New Target bigger than limit:  %08x  limit: %s\n", bnNew.GetCompact(), Params().ProofOfWorkLimit().ToString() );
         bnNew = Params().ProofOfWorkLimit();
     }

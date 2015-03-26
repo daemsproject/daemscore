@@ -84,12 +84,14 @@ public:
     //! version of the CTransaction; accesses to this value should probably check for nHeight as well,
     //! as new tx version will probably only be introduced at certain heights
     int nVersion;
+    unsigned int nLockTime;
 
     void FromTx(const CTransaction &tx, int nHeightIn) {
         fCoinBase = tx.IsCoinBase();
         vout = tx.vout;
         nHeight = nHeightIn;
         nVersion = tx.nVersion;
+        nLockTime=tx.nLockTime;
         ClearUnspendable();
     }
 
@@ -103,10 +105,11 @@ public:
         std::vector<CTxOut>().swap(vout);
         nHeight = 0;
         nVersion = 0;
+        nLockTime=0;
     }
 
     //! empty constructor
-    CCoins() : fCoinBase(false), vout(0), nHeight(0), nVersion(0) { }
+    CCoins() : fCoinBase(false), vout(0), nHeight(0), nVersion(0),nLockTime(0){ }
 
     //!remove spent outputs at the end of vout
     void Cleanup() {
@@ -128,6 +131,7 @@ public:
         std::swap(to.fCoinBase, fCoinBase);
         to.vout.swap(vout);
         std::swap(to.nHeight, nHeight);
+        std::swap(to.nLockTime, nLockTime);
         std::swap(to.nVersion, nVersion);
     }
 
@@ -139,6 +143,7 @@ public:
          return a.fCoinBase == b.fCoinBase &&
                 a.nHeight == b.nHeight &&
                 a.nVersion == b.nVersion &&
+                a.nLockTime==b.nLockTime &&
                 a.vout == b.vout;
     }
     friend bool operator!=(const CCoins &a, const CCoins &b) {
@@ -171,6 +176,8 @@ public:
                 nSize += ::GetSerializeSize(CTxOutCompressor(REF(vout[i])), nType, nVersion);
         // height
         nSize += ::GetSerializeSize(VARINT(nHeight), nType, nVersion);
+        //locktime
+        nSize += ::GetSerializeSize(VARINT(nLockTime), nType, nVersion);
         return nSize;
     }
 
@@ -201,6 +208,8 @@ public:
         }
         // coinbase height
         ::Serialize(s, VARINT(nHeight), nType, nVersion);
+        //locktime
+        ::Serialize(s, VARINT(nLockTime), nType, nVersion);
     }
 
     template<typename Stream>
@@ -234,6 +243,7 @@ public:
         }
         // coinbase height
         ::Unserialize(s, VARINT(nHeight), nType, nVersion);
+        ::Unserialize(s, VARINT(nLockTime), nType, nVersion);
         Cleanup();
     }
 
@@ -247,6 +257,8 @@ public:
     bool IsAvailable(unsigned int nPos) const {
         return (nPos < vout.size() && !vout[nPos].IsNull());
     }
+    //cccoin:check whether a particular output is still in locktime
+    //bool IsFrozen() const;
 
     //! check whether the entire CCoins is spent
     //! note that only !IsPruned() CCoins can be serialized

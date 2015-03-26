@@ -586,7 +586,7 @@ void SendCoinsDialog::updateGlobalFeeVariables()
     else
     {
         nTxConfirmTarget = 25;
-        payTxFee = CFeeRate(ui->customFee->value());
+        payTxFee = CFeeRate(ui->customFee->value()/1000);
         fPayAtLeastCustomFee = ui->radioCustomAtLeast->isChecked();
     }
 

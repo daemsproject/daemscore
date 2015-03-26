@@ -186,22 +186,36 @@ void TransactionRecord::updateStatus(const CWalletTx &wtx)
 
     if (!IsFinalTx(wtx, chainActive.Height() + 1))
     {
-        if (wtx.nLockTime < LOCKTIME_THRESHOLD)
-        {
-            status.status = TransactionStatus::OpenUntilBlock;
-            status.open_for = wtx.nLockTime - chainActive.Height();
+//        if (wtx.nLockTime < LOCKTIME_THRESHOLD)
+//        {
+//            status.status = TransactionStatus::OpenUntilBlock;
+//            status.open_for = wtx.nLockTime - chainActive.Height();
+//        }
+//        else
+//        {
+//            status.status = TransactionStatus::OpenUntilDate;
+//            status.open_for = wtx.nLockTime;
+//        }
         }
+    
         else
         {
-            status.status = TransactionStatus::OpenUntilDate;
-            status.open_for = wtx.nLockTime;
-        }
-    }
-    // For generated transactions, determine maturity
-    else if(type == TransactionRecord::Generated)
-    {
-        if (wtx.GetBlocksToMaturity() > 0)
+        if (status.depth < 0)
         {
+            status.status = TransactionStatus::Conflicted;
+        }
+        else if (GetAdjustedTime() - wtx.nTimeReceived > 2 * 60 && wtx.GetRequestCount() == 0)
+        {
+            status.status = TransactionStatus::Offline;
+    }
+        else if (status.depth == 0)
+        {
+            status.status = TransactionStatus::Unconfirmed;
+        }
+        
+    // For generated transactions, determine maturity
+    else if (wtx.GetBlocksToMaturity() > 0)
+    {
             status.status = TransactionStatus::Immature;
 
             if (wtx.IsInMainChain())
@@ -216,25 +230,6 @@ void TransactionRecord::updateStatus(const CWalletTx &wtx)
             {
                 status.status = TransactionStatus::NotAccepted;
             }
-        }
-        else
-        {
-            status.status = TransactionStatus::Confirmed;
-        }
-    }
-    else
-    {
-        if (status.depth < 0)
-        {
-            status.status = TransactionStatus::Conflicted;
-        }
-        else if (GetAdjustedTime() - wtx.nTimeReceived > 2 * 60 && wtx.GetRequestCount() == 0)
-        {
-            status.status = TransactionStatus::Offline;
-        }
-        else if (status.depth == 0)
-        {
-            status.status = TransactionStatus::Unconfirmed;
         }
         else if (status.depth < RecommendedNumConfirmations)
         {

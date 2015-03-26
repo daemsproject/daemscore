@@ -95,7 +95,8 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
     if(!pblocktemplate.get())
         return NULL;
     CBlock *pblock = &pblocktemplate->block; // pointer for convenience
-
+    CBlockIndex* pindexPrev = chainActive.Tip();
+    const int nHeight = pindexPrev->nHeight + 1;
     // -regtest only: allow overriding block.nVersion with
     // -blockversion=N to test forking scenarios
     if (Params().MineBlocksOnDemand())
@@ -105,8 +106,10 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
     CMutableTransaction txNew;
     txNew.vin.resize(1);
     txNew.vin[0].prevout.SetNull();
+    txNew.vin[0].scriptSig<<nHeight;
     txNew.vout.resize(1);
     txNew.vout[0].scriptPubKey = scriptPubKeyIn;
+    txNew.nLockTime=nHeight +COINBASE_MATURITY;
 
     // Add dummy coinbase tx as first transaction
     pblock->vtx.push_back(CTransaction());
@@ -133,8 +136,8 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
 
     {
         LOCK2(cs_main, mempool.cs);
-        CBlockIndex* pindexPrev = chainActive.Tip();
-        const int nHeight = pindexPrev->nHeight + 1;
+        
+        
         CCoinsViewCache view(pcoinsTip);
 
         // Priority order to process transactions

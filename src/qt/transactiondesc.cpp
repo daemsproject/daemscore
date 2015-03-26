@@ -26,25 +26,17 @@ using namespace std;
 QString TransactionDesc::FormatTxStatus(const CWalletTx& wtx)
 {
     AssertLockHeld(cs_main);
-    if (!IsFinalTx(wtx, chainActive.Height() + 1))
-    {
-        if (wtx.nLockTime < LOCKTIME_THRESHOLD)
-            return tr("Open for %n more block(s)", "", wtx.nLockTime - chainActive.Height());
-        else
-            return tr("Open until %1").arg(GUIUtil::dateTimeStr(wtx.nLockTime));
-    }
+
+    int nDepth = wtx.GetDepthInMainChain();
+    if (nDepth < 0)
+        return tr("conflicted");
+    else if (GetAdjustedTime() - wtx.nTimeReceived > 2 * 60 && wtx.GetRequestCount() == 0)
+        return tr("%1/offline").arg(nDepth);
+    else if (nDepth < 6)
+        return tr("%1/unconfirmed").arg(nDepth);
     else
-    {
-        int nDepth = wtx.GetDepthInMainChain();
-        if (nDepth < 0)
-            return tr("conflicted");
-        else if (GetAdjustedTime() - wtx.nTimeReceived > 2 * 60 && wtx.GetRequestCount() == 0)
-            return tr("%1/offline").arg(nDepth);
-        else if (nDepth < 6)
-            return tr("%1/unconfirmed").arg(nDepth);
-        else
-            return tr("%1 confirmations").arg(nDepth);
-    }
+        return tr("%1 confirmations").arg(nDepth);
+    
 }
 
 QString TransactionDesc::toHTML(CWallet *wallet, CWalletTx &wtx, TransactionRecord *rec, int unit)

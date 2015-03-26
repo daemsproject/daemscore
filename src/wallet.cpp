@@ -1083,8 +1083,9 @@ CAmount CWallet::GetUnconfirmedBalance() const
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it)
         {
             const CWalletTx* pcoin = &(*it).second;
-            if (!IsFinalTx(*pcoin) || (!pcoin->IsTrusted() && pcoin->GetDepthInMainChain() == 0))
-                nTotal += pcoin->GetAvailableCredit();
+            //if (!IsFinalTx(*pcoin) || (!pcoin->IsTrusted() && pcoin->GetDepthInMainChain() == 0))
+            if (pcoin->GetDepthInMainChain() == 0)
+                nTotal += pcoin->GetCredit(ISMINE_SPENDABLE|ISMINE_WATCH_ONLY);
         }
     }
     return nTotal;
@@ -1169,7 +1170,7 @@ void CWallet::AvailableCoins(vector<COutput>& vCoins, bool fOnlyConfirmed, const
             if (fOnlyConfirmed && !pcoin->IsTrusted())
                 continue;
 
-            if (pcoin->IsCoinBase() && pcoin->GetBlocksToMaturity() > 0)
+            if (pcoin->GetBlocksToMaturity() > 0)
                 continue;
 
             int nDepth = pcoin->GetDepthInMainChain();
@@ -1353,8 +1354,8 @@ bool CWallet::SelectCoins(const CAmount& nTargetValue, set<pair<const CWalletTx*
     }
 
     return (SelectCoinsMinConf(nTargetValue, 1, 6, vCoins, setCoinsRet, nValueRet) ||
-            SelectCoinsMinConf(nTargetValue, 1, 1, vCoins, setCoinsRet, nValueRet) ||
-            (bSpendZeroConfChange && SelectCoinsMinConf(nTargetValue, 0, 1, vCoins, setCoinsRet, nValueRet)));
+            SelectCoinsMinConf(nTargetValue, 1, 1, vCoins, setCoinsRet, nValueRet));
+            //(bSpendZeroConfChange && SelectCoinsMinConf(nTargetValue, 0, 1, vCoins, setCoinsRet, nValueRet)));
 }
 
 
@@ -1382,7 +1383,8 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
     wtxNew.fTimeReceivedIsTxTime = true;
     wtxNew.BindWallet(this);
     CMutableTransaction txNew;
-
+    //cccoin:for test
+//    txNew.nLockTime=chainActive.Height()+10;
     {
         LOCK2(cs_main, cs_wallet);
         {
@@ -1415,18 +1417,18 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
                     strFailReason = _("Insufficient funds");
                     return false;
                 }
-                BOOST_FOREACH(PAIRTYPE(const CWalletTx*, unsigned int) pcoin, setCoins)
-                {
-                    CAmount nCredit = pcoin.first->vout[pcoin.second].nValue;
-                    //The coin age after the next block (depth+1) is used instead of the current,
-                    //reflecting an assumption the user would accept a bit more delay for
-                    //a chance at a free transaction.
-                    //But mempool inputs might still be in the mempool, so their age stays 0
-                    int age = pcoin.first->GetDepthInMainChain();
-                    if (age != 0)
-                        age += 1;
-                    dPriority += (double)nCredit * age;
-                }
+//                BOOST_FOREACH(/(const CWalletTx*, unsigned int) pcoin, setCoins)
+//                {
+//                    CAmount nCredit = pcoin.first->vout[pcoin.second].nValue;
+//                    //The coin age after the next block (depth+1) is used instead of the current,
+//                    //reflecting an assumption the user would accept a bit more delay for
+//                    //a chance at a free transaction.
+//                    //But mempool inputs might still be in the mempool, so their age stays 0
+//                    int age = pcoin.first->GetDepthInMainChain();
+//                    if (age != 0)
+//                        age += 1;
+//                    dPriority += (double)nCredit * age;
+                //}
 
                 CAmount nChange = nValueIn - nValue - nFeeRet;
 
@@ -1505,18 +1507,18 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
                 dPriority = wtxNew.ComputePriority(dPriority, nBytes);
 
                 // Can we complete this as a free transaction?
-                if (fSendFreeTransactions && nBytes <= MAX_FREE_TRANSACTION_CREATE_SIZE)
-                {
-                    // Not enough fee: enough priority?
-                    double dPriorityNeeded = mempool.estimatePriority(nTxConfirmTarget);
-                    // Not enough mempool history to estimate: use hard-coded AllowFree.
-                    if (dPriorityNeeded <= 0 && AllowFree())
-                        break;
-
-                    // Small enough, and priority high enough, to send for free
-                    if (dPriorityNeeded > 0 && dPriority >= dPriorityNeeded)
-                        break;
-                }
+//                if (fSendFreeTransactions && nBytes <= MAX_FREE_TRANSACTION_CREATE_SIZE)
+//                {
+//                    // Not enough fee: enough priority?
+//                    double dPriorityNeeded = mempool.estimatePriority(nTxConfirmTarget);
+//                    // Not enough mempool history to estimate: use hard-coded AllowFree.
+//                    if (dPriorityNeeded <= 0 && AllowFree())
+//                        break;
+//
+//                    // Small enough, and priority high enough, to send for free
+//                    if (dPriorityNeeded > 0 && dPriority >= dPriorityNeeded)
+//                        break;
+//                }
 
                 CAmount nFeeNeeded = GetMinimumFee(nBytes, nTxConfirmTarget, mempool);
 
@@ -1881,7 +1883,7 @@ std::map<CTxDestination, CAmount> CWallet::GetAddressBalances()
             if (!IsFinalTx(*pcoin) || !pcoin->IsTrusted())
                 continue;
 
-            if (pcoin->IsCoinBase() && pcoin->GetBlocksToMaturity() > 0)
+            if (pcoin->GetBlocksToMaturity() > 0)
                 continue;
 
             int nDepth = pcoin->GetDepthInMainChain();
@@ -2332,9 +2334,16 @@ int CMerkleTx::GetDepthInMainChain(const CBlockIndex* &pindexRet) const
 
 int CMerkleTx::GetBlocksToMaturity() const
 {
-    if (!IsCoinBase())
+    if (nLockTime!=0){        
+        if ((int64_t)nLockTime < LOCKTIME_THRESHOLD )
+            return max(0, (int)((int)nLockTime+1 - (int)chainActive.Height()));  
+        else{
+            int lockBlocks;
+            lockBlocks=(int)(((int64_t)nLockTime-GetAdjustedTime())/Params().TargetSpacing());
+            return max(0, lockBlocks);
+        }
+    }
         return 0;
-    return max(0, (COINBASE_MATURITY+1) - GetDepthInMainChain());
 }
 
 

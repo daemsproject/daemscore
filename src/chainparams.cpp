@@ -4,7 +4,6 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "chainparams.h"
-
 #include "random.h"
 #include "util.h"
 #include "utilstrencodings.h"
@@ -141,17 +140,18 @@ public:
         CMutableTransaction txNew;
         txNew.vin.resize(1);
         txNew.vout.resize(1);
-        txNew.vin[0].scriptSig = CScript() << 486604799 << CScriptNum(4) << vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
+        txNew.vin[0].scriptSig = CScript() << (int)0 << CScriptNum(4) << vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
         txNew.vout[0].nValue = 0;
         txNew.vout[0].scriptPubKey = CScript() << ParseHex("03968502fe538a31c883493c47ed169bc74a68b7051c85afeeb05783163b6c173e") << OP_CHECKSIG;
+        txNew.nLockTime=40;
         genesis.vtx.push_back(txNew);
         genesis.hashPrevBlock = 0;
         genesis.hashMerkleRoot = genesis.BuildMerkleTree();
-        genesis.nVersion = 1;
+        genesis.nVersion = 3;
         genesis.nBlockHeight = 0;
         genesis.nTime    = 1427227400;
         genesis.nBits    = 0x1e0fffff;
-        genesis.nNonce   = 899769;
+        genesis.nNonce   = 607439;
         
 //        uint256 powHash;
 //        powHash = genesis.GetPoWHash();
@@ -168,12 +168,13 @@ public:
 //        std::cout << "g rtx: \n" << EncodeHexTx(gtx) << "\n";
 //        std::cout << "g tx: \n" << gtx.ToString() << "\n";
 //        std::cout << "g blk: \n" << genesis.ToString() << "\n";
+//        std::cout << "blockheader: \n" << HexStr(BEGIN(genesis.nVersion),END(genesis.nNonce)) << "\n";
 //        std::cout << "g hash: \n" << hashGenesisBlock.ToString() << "\n";
 //        std::cout << "g powh: \n" << genesis.GetPoWHash().ToString() << "\n";
 //        std::cout << "g mroot: \n" << genesis.hashMerkleRoot.ToString() << "\n";
         
-        assert(hashGenesisBlock == uint256("0x0f830afc54c7715159ff56afec69594395c39d69e49d502adae80c0fc3c9ae71"));
-        assert(genesis.hashMerkleRoot == uint256("0xc2de90673dd6937ce3a1e45619d9282c5301ca1b805f6b4dfcc1a406853eaa30"));
+        assert(hashGenesisBlock == uint256("58662ddab59f6972f737f27ed4ce2ad0bb90d98cf67422d770ad7eb97bd08651"));
+        assert(genesis.hashMerkleRoot == uint256("fa546b917bf6e1546573083be2cdf9749473ff03941097a770bf3c8d0254b88f"));
         
         vSeeds.push_back(CDNSSeedData("cccointools.com", "dnsseed.cccointools.com"));
 //        vSeeds.push_back(CDNSSeedData("cccoinpool.org", "dnsseed.cccoinpool.org"));
@@ -199,7 +200,7 @@ public:
         fTestnetToBeDeprecatedFieldRPC = false;
 
         // Cccoin: Mainnet v2 enforced as of block 710k
-        nEnforceV2AfterHeight = 710000;
+       // nEnforceV2AfterHeight = 710000;
     }
 
     const Checkpoints::CCheckpointData& Checkpoints() const 
@@ -232,10 +233,10 @@ public:
 
         //! Modify the testnet genesis block so the timestamp is valid for a later start.
         genesis.nTime = 1427227400;
-        genesis.nNonce = 899769;
+        genesis.nNonce = 607439;
         hashGenesisBlock = genesis.GetHash();
 //        std::cout << "t g hash: \n" << hashGenesisBlock.ToString() << "\n";
-        assert(hashGenesisBlock == uint256("0x0f830afc54c7715159ff56afec69594395c39d69e49d502adae80c0fc3c9ae71"));
+        assert(hashGenesisBlock == uint256("58662ddab59f6972f737f27ed4ce2ad0bb90d98cf67422d770ad7eb97bd08651"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
@@ -291,11 +292,11 @@ public:
         bnProofOfWorkLimit = ~uint256(0) >> 1;
         genesis.nTime = 1296688602;
         genesis.nBits = 0x207fffff;
-        genesis.nNonce = 0;
+        genesis.nNonce = 607439;
         hashGenesisBlock = genesis.GetHash();
         nDefaultPort = 19444;
 //        std::cout << "rt g hash: \n" << hashGenesisBlock.ToString() << "\n";
-        assert(hashGenesisBlock == uint256("0x93aeb2ddbb208059594fd21c6e651d78b7bdb91184f55c949f0de4daba411788"));
+        assert(hashGenesisBlock == uint256("0x0f25e051587196b05fc7608b09981b0af360ff91b97e88bded51aea1c9c641a0"));
 
         vFixedSeeds.clear(); //! Regtest mode doesn't have any fixed seeds.
         vSeeds.clear();  //! Regtest mode doesn't have any DNS seeds.
