@@ -762,7 +762,7 @@
       </df>
     </df>
   </logicalFolder>
-  <projectmakefile>Makefile.am</projectmakefile>
+  <projectmakefile>Makefile</projectmakefile>
   <confs>
     <conf name="Default" type="0">
       <toolsSet>
