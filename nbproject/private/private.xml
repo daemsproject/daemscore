@@ -12,28 +12,21 @@
             <url>src/main.cpp</url>
             <bookmark id="1">
                 <name/>
-                <line>2679</line>
+                <line>2745</line>
                 <key/>
             </bookmark>
             <bookmark id="2">
                 <name/>
-                <line>4384</line>
+                <line>4450</line>
                 <key/>
             </bookmark>
         </file>
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/tong/projects/ccc/src/init.cpp</file>
-            <file>file:/home/tong/projects/ccc/src/ccc/mhash.cpp</file>
-            <file>file:/home/tong/projects/ccc/src/qt/optionsmodel.cpp</file>
-            <file>file:/home/tong/projects/ccc/src/qt/sendcoinsdialog.cpp</file>
-            <file>file:/home/tong/projects/ccc/src/ccc/mhash.h</file>
-            <file>file:/home/tong/projects/ccc/src/pow.cpp</file>
+            <file>file:/home/tong/projects/ccc/src/primitives/transaction.h</file>
             <file>file:/home/tong/projects/ccc/src/main.cpp</file>
             <file>file:/home/tong/projects/ccc/src/chainparams.cpp</file>
-            <file>file:/home/tong/projects/ccc/src/chainparams.h</file>
-            <file>file:/home/tong/projects/ccc/src/qt/optionsdialog.cpp</file>
         </group>
     </open-files>
 </project-private>

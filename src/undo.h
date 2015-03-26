@@ -52,6 +52,7 @@ public:
         if (nHeight > 0)
             ::Unserialize(s, VARINT(this->nVersion), nType, nVersion);
         ::Unserialize(s, REF(CTxOutCompressor(REF(txout))), nType, nVersion);
+        ::Unserialize(s, VARINT(nLockTime), nType, nVersion);
     }
 };
 

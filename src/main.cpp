@@ -2088,7 +2088,7 @@ static CBlockIndex* FindMostWorkChain() {
         {
             //if fallback very long, be careful for long chain attack, compare total hashed of the 2 forks
             
-            if (pindexTest!=NULL&& (pindexNew->nHeight-pindexTest->nHeight)>1000)
+            if (pindexTest!=NULL&& (pindexNew->nHeight-pindexTest->nHeight)>100)
             {
                 //LogPrintf("FindMostWorkChain3\n");
                 uint256 tHashesMain;
@@ -2096,6 +2096,7 @@ static CBlockIndex* FindMostWorkChain() {
                 CBlockIndex *pindexFork=pindexNew;
                 CBlockIndex *pindexMain=chainActive.Tip();
                 while(pindexFork->nHeight>pindexMain->nHeight){
+                   tHashesFork+=~uint256(0)/uint256().SetCompact(pindexFork->nBits);
                    pindexFork=pindexFork->pprev;
                 }
                 while(pindexFork!=pindexMain){
