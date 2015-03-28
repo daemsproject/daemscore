@@ -82,6 +82,10 @@ public:
         return false;
     }
 
+    virtual bool CheckSigByPubKeyHash(const std::vector<unsigned char>& scriptSig, const std::vector<unsigned char>& vchPubKeyHash, const CScript& scriptCode) const
+    {
+        return false;
+    }
     virtual ~BaseSignatureChecker() {}
 };
 
@@ -93,10 +97,13 @@ private:
 
 protected:
     virtual bool VerifySignature(const std::vector<unsigned char>& vchSig, const CPubKey& vchPubKey, const uint256& sighash) const;
+    virtual bool VerifySignature(const std::vector<unsigned char>& vchSig, const std::vector<unsigned char>& pubkeyhash, const uint256& sighash) const;
 
 public:
     TransactionSignatureChecker(const CTransaction* txToIn, unsigned int nInIn) : txTo(txToIn), nIn(nInIn) {}
     bool CheckSig(const std::vector<unsigned char>& scriptSig, const std::vector<unsigned char>& vchPubKey, const CScript& scriptCode) const;
+    bool CheckSigByPubKeyHash(const std::vector<unsigned char>& scriptSig, const std::vector<unsigned char>& vchPubKeyHash, const CScript& scriptCode) const;
+    
 };
 
 class MutableTransactionSignatureChecker : public TransactionSignatureChecker

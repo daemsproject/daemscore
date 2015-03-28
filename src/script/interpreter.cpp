@@ -14,6 +14,12 @@
 #include "script/script.h"
 #include "uint256.h"
 
+#ifdef USE_SECP256K1
+#include <secp256k1.h>
+#else
+#include "ecwrapper.h"
+#endif
+
 using namespace std;
 
 typedef vector<unsigned char> valtype;
@@ -790,7 +796,8 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                         return set_error(serror, SCRIPT_ERR_INVALID_STACK_OPERATION);
 
                     valtype& vchSig    = stacktop(-2);
-                    valtype& vchPubKey = stacktop(-1);
+//                    valtype& vchPubKey = stacktop(-1);
+                    valtype& vchPubKeyHash = stacktop(-1);
 
                     // Subset of script starting at the most recent codeseparator
                     CScript scriptCode(pbegincodehash, pend);
@@ -798,11 +805,13 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                     // Drop the signature, since there's no way for a signature to sign itself
                     scriptCode.FindAndDelete(CScript(vchSig));
 
-                    if (!CheckSignatureEncoding(vchSig, flags, serror) || !CheckPubKeyEncoding(vchPubKey, flags, serror)) {
+//                    if (!CheckSignatureEncoding(vchSig, flags, serror) || !CheckPubKeyEncoding(vchPubKey, flags, serror)) {
+                    if (!CheckSignatureEncoding(vchSig, flags, serror)) {
                         //serror is set
                         return false;
                     }
-                    bool fSuccess = checker.CheckSig(vchSig, vchPubKey, scriptCode);
+//                    bool fSuccess = checker.CheckSig(vchSig, vchPubKey, scriptCode);
+                    bool fSuccess = checker.CheckSigByPubKeyHash(vchSig, vchPubKeyHash, scriptCode);
 
                     popstack(stack);
                     popstack(stack);
@@ -1062,6 +1071,25 @@ bool TransactionSignatureChecker::VerifySignature(const std::vector<unsigned cha
     return pubkey.Verify(sighash, vchSig);
 }
 
+bool TransactionSignatureChecker::VerifySignature(const std::vector<unsigned char>& vchSig, const std::vector<unsigned char>& pubkeyhash, const uint256& sighash) const
+{
+    #ifdef USE_SECP256K1
+       const CPubKey rPubKey;
+       int recid = (vchSig[0] - 27) & 3;
+       if(!secp256k1_ecdsa_recover_compact(sighash, 32, &vchSig[0], rPubKey, 33, true, recid))
+           return false;
+       if(rPubKey.GetID() != pubkeyhash)
+           return false;
+//    #else
+//        CECKey key;
+//        if (!key.SetPubKey(begin(), size()))
+//            return false;
+//        if (!key.Verify(hash, vchSig))
+//            return false;
+    #endif
+        return true;
+}
+
 bool TransactionSignatureChecker::CheckSig(const vector<unsigned char>& vchSigIn, const vector<unsigned char>& vchPubKey, const CScript& scriptCode) const
 {
     CPubKey pubkey(vchPubKey);
@@ -1081,6 +1109,24 @@ bool TransactionSignatureChecker::CheckSig(const vector<unsigned char>& vchSigIn
         return false;
 
     return true;
+}
+
+bool TransactionSignatureChecker::CheckSigByPubKeyHash(const std::vector<unsigned char>& vchSigIn, const std::vector<unsigned char>& vchPubKeyHash, const CScript& scriptCode) const
+{
+    // Hash type is one byte tacked on to the end of the signature
+    vector<unsigned char> vchSig(vchSigIn);
+    if (vchSig.empty())
+        return false;
+    int nHashType = vchSig.back();
+    vchSig.pop_back();
+
+    uint256 sighash = SignatureHash(scriptCode, *txTo, nIn, nHashType);
+
+    if (!VerifySignature(vchSig, vchPubKeyHash, sighash))
+        return false;
+
+    return true;
+
 }
 
 bool VerifyScript(const CScript& scriptSig, const CScript& scriptPubKey, unsigned int flags, const BaseSignatureChecker& checker, ScriptError* serror)
