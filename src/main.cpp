@@ -2083,42 +2083,8 @@ static CBlockIndex* FindMostWorkChain() {
             }
             pindexTest = pindexTest->pprev;
         }
-        
         if (!fInvalidAncestor)
-        {
-            //if fallback very long, be careful for long chain attack, compare total hashed of the 2 forks
-            
-            if (pindexTest!=NULL&& (pindexNew->nHeight-pindexTest->nHeight)>100)
-            {
-                //LogPrintf("FindMostWorkChain3\n");
-                uint256 tHashesMain;
-                uint256 tHashesFork;
-                CBlockIndex *pindexFork=pindexNew;
-                CBlockIndex *pindexMain=chainActive.Tip();
-                while(pindexFork->nHeight>pindexMain->nHeight){
-                   tHashesFork+=~uint256(0)/uint256().SetCompact(pindexFork->nBits);
-                   pindexFork=pindexFork->pprev;
-                }
-                while(pindexFork!=pindexMain){
-                    tHashesMain+=~uint256(0)/uint256().SetCompact(pindexMain->nBits);
-                    tHashesFork+=~uint256(0)/uint256().SetCompact(pindexFork->nBits);
-                    pindexMain=pindexMain->pprev;
-                    pindexFork=pindexFork->pprev;
-                }
-                if (tHashesMain>tHashesFork){
-                    CBlockIndex *pindexFailed = pindexNew;
-                  while (pindexTest != pindexFailed) {
-                    pindexFailed->nStatus |= BLOCK_FAILED_CHILD;
-                    setBlockIndexCandidates.erase(pindexFailed);
-                    pindexFailed = pindexFailed->pprev;
-                  }
-                  setBlockIndexCandidates.erase(pindexTest);
-                    continue;
-                }
-             }
-        
             return pindexNew;
-        }
     } while(true);
 }
 
