@@ -13,6 +13,9 @@
 #include "pubkey.h"
 #include "script/script.h"
 #include "uint256.h"
+#include <iostream>
+
+#include "utilstrencodings.h"
 
 #ifdef USE_SECP256K1
 #include <secp256k1.h>
@@ -1073,21 +1076,16 @@ bool TransactionSignatureChecker::VerifySignature(const std::vector<unsigned cha
 
 bool TransactionSignatureChecker::VerifySignature(const std::vector<unsigned char>& vchSig, const std::vector<unsigned char>& pubkeyhash, const uint256& sighash) const
 {
-    #ifdef USE_SECP256K1
-       const CPubKey rPubKey;
-       int recid = (vchSig[0] - 27) & 3;
-       if(!secp256k1_ecdsa_recover_compact(sighash, 32, &vchSig[0], rPubKey, 33, true, recid))
-           return false;
-       if(rPubKey.GetID() != pubkeyhash)
-           return false;
-//    #else
-//        CECKey key;
-//        if (!key.SetPubKey(begin(), size()))
-//            return false;
-//        if (!key.Verify(hash, vchSig))
-//            return false;
-    #endif
-        return true;
+    valtype vchHash(20);
+    CHash160().Write(begin_ptr(pubkeyhash), pubkeyhash.size()).Finalize(begin_ptr(vchHash));
+    std::cout << "pubkeyhash "<< HexStr(pubkeyhash) << "\n";
+    CPubKey rPubKey;
+    if(!rPubKey.RecoverCompact(sighash,vchSig))
+        return false;
+//    std::cout << "rp "<< rPubKey.GetID().GetHex() << "\n";
+    if(HexStr(pubkeyhash) != rPubKey.GetID().GetHex())
+        return false;
+    return true;
 }
 
 bool TransactionSignatureChecker::CheckSig(const vector<unsigned char>& vchSigIn, const vector<unsigned char>& vchPubKey, const CScript& scriptCode) const
