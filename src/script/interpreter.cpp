@@ -1085,6 +1085,10 @@ bool TransactionSignatureChecker::VerifySignatureByPubKeyHash(const std::vector<
     valtype vchHash(20);
     CHash160().Write(begin_ptr(pubkeyhash), pubkeyhash.size()).Finalize(begin_ptr(vchHash));
     std::cout << "interpreter.cpp 1087: pubkeyhash "<< HexStr(pubkeyhash) << "\n";
+    std::vector<unsigned char> pubkeyhash2;
+    pubkeyhash2=pubkeyhash;
+    std::reverse( pubkeyhash2.begin(),pubkeyhash2.end());
+    std::cout << "interpreter.cpp 1088: pubkeyhashR "<< HexStr(pubkeyhash2) << "\n";
     CPubKey rPubKey;
     std::cout << "interpreter.cpp 1089: sighash "<< sighash.GetHex() << "\n";
     std::cout << "interpreter.cpp 1090: vchSig "<< HexStr(vchSig) << "\n";
@@ -1096,7 +1100,7 @@ bool TransactionSignatureChecker::VerifySignatureByPubKeyHash(const std::vector<
         return false;
     std::cout << "interpreter.cpp 1097:rp "<< rPubKey.GetID().GetHex() << "\n";
     std::cout << "interpreter.cpp 1098:rp "<< rPubKey.GetID().ToString() << "\n";
-    if(HexStr(pubkeyhash) != rPubKey.GetID().GetHex())
+    if(HexStr(pubkeyhash2) != rPubKey.GetID().GetHex())
         return false;
     
     std::cout << "interpreter.cpp 1101: verifysig successful\n";
