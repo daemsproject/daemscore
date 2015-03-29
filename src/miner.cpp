@@ -15,6 +15,7 @@
 #include "timedata.h"
 #include "util.h"
 #include "utilmoneystr.h"
+#include "base58.h"
 #ifdef ENABLE_WALLET
 #include "wallet.h"
 #endif
@@ -375,7 +376,9 @@ CBlockTemplate* CreateNewBlockWithKey(CReserveKey& reservekey)
     if (!reservekey.GetReservedKey(pubkey))
         return NULL;
 
-    CScript scriptPubKey = CScript() << ToByteVector(pubkey) << OP_CHECKSIG;
+    CBitcoinAddress address;
+    address.Set(pubkey.GetID());
+    CScript scriptPubKey = GetScriptForDestination(address.Get());
     return CreateNewBlock(scriptPubKey);
 }
 

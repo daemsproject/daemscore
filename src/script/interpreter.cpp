@@ -809,12 +809,18 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                     scriptCode.FindAndDelete(CScript(vchSig));
 
 //                    if (!CheckSignatureEncoding(vchSig, flags, serror) || !CheckPubKeyEncoding(vchPubKey, flags, serror)) {
-                    if (!CheckSignatureEncoding(vchSig, flags, serror)) {
-                        //serror is set
-                        return false;
-                    }
+//                    if (!CheckSignatureEncoding(vchSig, flags, serror)) {
+//                        //serror is set
+//                        return false;
+//                    }
 //                    bool fSuccess = checker.CheckSig(vchSig, vchPubKey, scriptCode);
+                      std::cout << "interpreter.cpp: 817: vchSig: " <<  HexStr(vchSig.begin().base(),vchSig.end().base() )  << "\n";
+                      std::cout << "interpreter.cpp: 818: vchPubKeyHash: " <<  HexStr(vchPubKeyHash.begin().base(), vchPubKeyHash.end().base()) << "\n";
                     bool fSuccess = checker.CheckSigByPubKeyHash(vchSig, vchPubKeyHash, scriptCode);
+                    if(fSuccess)
+                      std::cout << "interpreter.cpp: 821: success "  << "\n";
+                    else
+                      std::cout << "interpreter.cpp: 823: fail "  << "\n";
 
                     popstack(stack);
                     popstack(stack);
@@ -1074,17 +1080,26 @@ bool TransactionSignatureChecker::VerifySignature(const std::vector<unsigned cha
     return pubkey.Verify(sighash, vchSig);
 }
 
-bool TransactionSignatureChecker::VerifySignature(const std::vector<unsigned char>& vchSig, const std::vector<unsigned char>& pubkeyhash, const uint256& sighash) const
+bool TransactionSignatureChecker::VerifySignatureByPubKeyHash(const std::vector<unsigned char>& vchSig, const std::vector<unsigned char>& pubkeyhash, const uint256& sighash) const
 {
     valtype vchHash(20);
     CHash160().Write(begin_ptr(pubkeyhash), pubkeyhash.size()).Finalize(begin_ptr(vchHash));
-    std::cout << "pubkeyhash "<< HexStr(pubkeyhash) << "\n";
+    std::cout << "interpreter.cpp 1087: pubkeyhash "<< HexStr(pubkeyhash) << "\n";
     CPubKey rPubKey;
-    if(!rPubKey.RecoverCompact(sighash,vchSig))
+    std::cout << "interpreter.cpp 1089: sighash "<< sighash.GetHex() << "\n";
+    std::cout << "interpreter.cpp 1090: vchSig "<< HexStr(vchSig) << "\n";
+    std::vector<unsigned char> vchSigCompact;
+    vchSigCompact = vchSig;
+    vchSigCompact.resize(65);
+    std::cout << "interpreter.cpp 1094: vchSigCompact "<< HexStr(vchSigCompact) << "\n";
+    if(!rPubKey.RecoverCompact(sighash,vchSigCompact))
         return false;
-//    std::cout << "rp "<< rPubKey.GetID().GetHex() << "\n";
+    std::cout << "interpreter.cpp 1097:rp "<< rPubKey.GetID().GetHex() << "\n";
+    std::cout << "interpreter.cpp 1098:rp "<< rPubKey.GetID().ToString() << "\n";
     if(HexStr(pubkeyhash) != rPubKey.GetID().GetHex())
         return false;
+    
+    std::cout << "interpreter.cpp 1101: verifysig successful\n";
     return true;
 }
 
@@ -1113,14 +1128,15 @@ bool TransactionSignatureChecker::CheckSigByPubKeyHash(const std::vector<unsigne
 {
     // Hash type is one byte tacked on to the end of the signature
     vector<unsigned char> vchSig(vchSigIn);
+    std::cout << "interpreter.cpp 1126:  " << HexStr(vchSig) << "\n";
     if (vchSig.empty())
         return false;
     int nHashType = vchSig.back();
     vchSig.pop_back();
 
     uint256 sighash = SignatureHash(scriptCode, *txTo, nIn, nHashType);
-
-    if (!VerifySignature(vchSig, vchPubKeyHash, sighash))
+        std::cout << "interpreter.cpp 1133:  " << HexStr(vchSig) << "\n";
+    if (!VerifySignatureByPubKeyHash(vchSig, vchPubKeyHash, sighash))
         return false;
 
     return true;
@@ -1136,20 +1152,34 @@ bool VerifyScript(const CScript& scriptSig, const CScript& scriptPubKey, unsigne
     }
 
     vector<vector<unsigned char> > stack, stackCopy;
+    std::cout << "b1 \n";
+    
+      std::cout << "1143: scriptSig " <<  scriptSig.ToString() << "\n";
     if (!EvalScript(stack, scriptSig, flags, checker, serror))
         // serror is set
         return false;
+     std::cout << "b2 \n";
     if (flags & SCRIPT_VERIFY_P2SH)
         stackCopy = stack;
+      std::cout << "1050: stack " <<  HexStr(stackCopy.data()->begin(),stackCopy.data()->end()) << "\n";
+      std::cout << "b3 \n";
     if (!EvalScript(stack, scriptPubKey, flags, checker, serror))
         // serror is set
         return false;
+      std::cout << "scriptPubKey " <<  scriptPubKey.ToString() << "\n";
+      std::cout << "1156: stack " <<  HexStr(stackCopy.data()->begin(),stackCopy.data()->end()) << "\n";
+       std::cout << "b4 \n";
     if (stack.empty())
         return set_error(serror, SCRIPT_ERR_EVAL_FALSE);
 
-    if (CastToBool(stack.back()) == false)
+        std::cout << "b5 \n";
+        std::cout << "stack.back() " << HexStr(stack.back().begin(),stack.back().end()) << "\n";
+    if (CastToBool(stack.back()) == false){
+        std::cout << "stack.back() is false\n";
         return set_error(serror, SCRIPT_ERR_EVAL_FALSE);
+    }
 
+         std::cout << "b6 \n";
     // Additional validation for spend-to-script-hash transactions:
     if ((flags & SCRIPT_VERIFY_P2SH) && scriptPubKey.IsPayToScriptHash())
     {

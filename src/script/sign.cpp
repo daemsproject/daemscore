@@ -24,7 +24,7 @@ bool Sign1(const CKeyID& address, const CKeyStore& keystore, uint256 hash, int n
         return false;
 
     vector<unsigned char> vchSig;
-    if (!key.Sign(hash, vchSig))
+    if (!key.SignCompact(hash, vchSig))
         return false;
     vchSig.push_back((unsigned char)nHashType);
     scriptSigRet << vchSig;
@@ -74,12 +74,12 @@ bool Solver(const CKeyStore& keystore, const CScript& scriptPubKey, uint256 hash
         keyID = CKeyID(uint160(vSolutions[0]));
         if (!Sign1(keyID, keystore, hash, nHashType, scriptSigRet))
             return false;
-        else
-        {
-            CPubKey vch;
-            keystore.GetPubKey(keyID, vch);
-            scriptSigRet << ToByteVector(vch);
-        }
+//        else
+//        {
+//            CPubKey vch;
+//            keystore.GetPubKey(keyID, vch);
+//            scriptSigRet << ToByteVector(vch);
+//        }
         return true;
     case TX_SCRIPTHASH:
         return keystore.GetCScript(uint160(vSolutions[0]), scriptSigRet);
@@ -101,8 +101,11 @@ bool SignSignature(const CKeyStore &keystore, const CScript& fromPubKey, CMutabl
     uint256 hash = SignatureHash(fromPubKey, txTo, nIn, nHashType);
 
     txnouttype whichType;
+    
+      std::cout << "sign.cpp: 105: txin.scriptSig(Sc): " <<  txin.scriptSig.ToString() << "\n";
     if (!Solver(keystore, fromPubKey, hash, nHashType, txin.scriptSig, whichType))
         return false;
+      std::cout << "sign.cpp: 108: txin.scriptSig(Sc): " <<  txin.scriptSig.ToString() << "\n";
 
     if (whichType == TX_SCRIPTHASH)
     {

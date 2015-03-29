@@ -97,7 +97,7 @@ private:
 
 protected:
     virtual bool VerifySignature(const std::vector<unsigned char>& vchSig, const CPubKey& vchPubKey, const uint256& sighash) const;
-    virtual bool VerifySignature(const std::vector<unsigned char>& vchSig, const std::vector<unsigned char>& pubkeyhash, const uint256& sighash) const;
+    virtual bool VerifySignatureByPubKeyHash(const std::vector<unsigned char>& vchSig, const std::vector<unsigned char>& pubkeyhash, const uint256& sighash) const;
 
 public:
     TransactionSignatureChecker(const CTransaction* txToIn, unsigned int nInIn) : txTo(txToIn), nIn(nInIn) {}

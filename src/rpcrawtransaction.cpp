@@ -683,7 +683,10 @@ Value signrawtransaction(const Array& params, bool fHelp)
 
         txin.scriptSig.clear();
         // Only sign SIGHASH_SINGLE if there's a corresponding output:
+        
+      std::cout << "rpcrawtx: 687: prevPubKey(Sc): " <<  prevPubKey.ToString() << "\n";
         if (!fHashSingle || (i < mergedTx.vout.size()))
+//            SignSignature(keystore, prevPubKey, mergedTx, i, nHashType);
             SignSignature(keystore, prevPubKey, mergedTx, i, nHashType);
 
         // ... and merge in other signatures:
