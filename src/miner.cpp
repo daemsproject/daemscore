@@ -325,7 +325,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
         CAmount prevCoinbaseFee=prevBlock.vtx[0].GetFee();
         nLastBlockTx = nBlockTx;
         nLastBlockSize = nBlockSize;
-        LogPrintf("CreateNewBlock(): total size %u\n", nBlockSize);
+//        LogPrintf("CreateNewBlock(): total size %u\n", nBlockSize);
 
         // Compute final coinbase transaction.
         CAmount coinbaseInput=GetBlockValue(nHeight, nFees)+prevCoinbaseFee;        
