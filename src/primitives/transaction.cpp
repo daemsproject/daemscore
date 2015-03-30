@@ -11,21 +11,21 @@
 
 std::string COutPoint::ToString() const
 {
-    return strprintf("COutPoint(%s, %u)", hash.ToString().substr(0,10), n);
+    return strprintf("COutPoint(%s, %u,%d.%06d)", hash.ToString().substr(0,10), n,nValue/COIN, nValue % COIN);
 }
 
-CTxIn::CTxIn(COutPoint prevoutIn, CScript scriptSigIn, uint32_t nSequenceIn)
+CTxIn::CTxIn(COutPoint prevoutIn, CScript scriptSigIn)
 {
     prevout = prevoutIn;
     scriptSig = scriptSigIn;
-    nSequence = nSequenceIn;
+    //nSequence = nSequenceIn;
 }
 
-CTxIn::CTxIn(uint256 hashPrevTx, uint32_t nOut, CScript scriptSigIn, uint32_t nSequenceIn)
+CTxIn::CTxIn(uint256 hashPrevTx, uint32_t nOut, CAmount nValueIn,CScript scriptSigIn)
 {
-    prevout = COutPoint(hashPrevTx, nOut);
+    prevout = COutPoint(hashPrevTx, nOut,nValueIn);
     scriptSig = scriptSigIn;
-    nSequence = nSequenceIn;
+    
 }
 
 std::string CTxIn::ToString() const
@@ -37,16 +37,17 @@ std::string CTxIn::ToString() const
         str += strprintf(", coinbase %s", HexStr(scriptSig));
     else
         str += strprintf(", scriptSig=%s", scriptSig.ToString().substr(0,24));
-    if (nSequence != std::numeric_limits<unsigned int>::max())
-        str += strprintf(", nSequence=%u", nSequence);
+//    if (nSequence != std::numeric_limits<unsigned int>::max())
+//        str += strprintf(", nSequence=%u", nSequence);
     str += ")";
     return str;
 }
 
-CTxOut::CTxOut(const CAmount& nValueIn, CScript scriptPubKeyIn)
+CTxOut::CTxOut(const CAmount& nValueIn, CScript scriptPubKeyIn,string strContentIn)
 {
     nValue = nValueIn;
     scriptPubKey = scriptPubKeyIn;
+    strContent=strContentIn;
 }
 
 uint256 CTxOut::GetHash() const
@@ -56,7 +57,7 @@ uint256 CTxOut::GetHash() const
 
 std::string CTxOut::ToString() const
 {
-    return strprintf("CTxOut(nValue=%d.%06d, scriptPubKey=%s)", nValue / COIN, nValue % COIN, scriptPubKey.ToString().substr(0,30));
+    return strprintf("CTxOut(nValue=%d.%06d, scriptPubKey=%s,strContent=%s)", nValue / COIN, nValue % COIN, scriptPubKey.ToString().substr(0,30),strContent);
 }
 
 CMutableTransaction::CMutableTransaction() : nVersion(CTransaction::CURRENT_VERSION), nLockTime(0) {}
@@ -98,31 +99,20 @@ CAmount CTransaction::GetValueOut() const
     }
     return nValueOut;
 }
-
-double CTransaction::ComputePriority(double dPriorityInputs, unsigned int nTxSize) const
+CAmount CTransaction::GetValueIn() const
 {
-    nTxSize = CalculateModifiedSize(nTxSize);
-    if (nTxSize == 0) return 0.0;
-
-    return dPriorityInputs / nTxSize;
-}
-
-unsigned int CTransaction::CalculateModifiedSize(unsigned int nTxSize) const
-{
-    // In order to avoid disincentivizing cleaning up the UTXO set we don't count
-    // the constant overhead for each txin and up to 110 bytes of scriptSig (which
-    // is enough to cover a compressed pubkey p2sh redemption) for priority.
-    // Providing any more cleanup incentive than making additional inputs free would
-    // risk encouraging people to create junk outputs to redeem later.
-    if (nTxSize == 0)
-        nTxSize = ::GetSerializeSize(*this, SER_NETWORK, PROTOCOL_VERSION);
+    CAmount nValueIn = 0;
     for (std::vector<CTxIn>::const_iterator it(vin.begin()); it != vin.end(); ++it)
     {
-        unsigned int offset = 41U + std::min(110U, (unsigned int)it->scriptSig.size());
-        if (nTxSize > offset)
-            nTxSize -= offset;
+        nValueIn += it->prevout.nValue;
+        if (!MoneyRange(it->prevout.nValue) || !MoneyRange(nValueIn))
+            throw std::runtime_error("CTransaction::GetValueIn() : value out of range");
     }
-    return nTxSize;
+    return nValueIn;
+}
+CAmount CTransaction::GetFee() const
+{
+    return GetValueIn()-GetValueOut();
 }
 
 std::string CTransaction::ToString() const

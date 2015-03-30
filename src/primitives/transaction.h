@@ -10,26 +10,31 @@
 #include "script/script.h"
 #include "serialize.h"
 #include "uint256.h"
-
+#include <string>
+using std::string;
 /** An outpoint - a combination of a transaction hash and an index n into its vout */
 class COutPoint
 {
 public:
     uint256 hash;
     uint32_t n;
-
+    CAmount nValue;
     COutPoint() { SetNull(); }
-    COutPoint(uint256 hashIn, uint32_t nIn) { hash = hashIn; n = nIn; }
+    COutPoint(uint256 hashIn, uint32_t nIn,CAmount nValueIn) { hash = hashIn; n = nIn;nValue=nValueIn; }
 
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
-        READWRITE(FLATDATA(*this));
+        //READWRITE(FLATDATA(*this));
+        READWRITE(hash);
+        READWRITE(VARINT(n));
+        READWRITE(VARINT(nValue));
     }
 
-    void SetNull() { hash = 0; n = (uint32_t) -1; }
-    bool IsNull() const { return (hash == 0 && n == (uint32_t) -1); }
+
+    void SetNull() { hash = 0; n = 0;nValue=0; }
+    bool IsNull() const { return (hash == 0 && n == 0); }
 
     friend bool operator<(const COutPoint& a, const COutPoint& b)
     {
@@ -58,15 +63,15 @@ class CTxIn
 public:
     COutPoint prevout;
     CScript scriptSig;
-    uint32_t nSequence;
+    //uint32_t nSequence;
 
     CTxIn()
     {
-        nSequence = std::numeric_limits<unsigned int>::max();
+        //nSequence = std::numeric_limits<unsigned int>::max();
     }
 
-    explicit CTxIn(COutPoint prevoutIn, CScript scriptSigIn=CScript(), uint32_t nSequenceIn=std::numeric_limits<unsigned int>::max());
-    CTxIn(uint256 hashPrevTx, uint32_t nOut, CScript scriptSigIn=CScript(), uint32_t nSequenceIn=std::numeric_limits<uint32_t>::max());
+    explicit CTxIn(COutPoint prevoutIn, CScript scriptSigIn=CScript());//, uint32_t nSequenceIn=std::numeric_limits<unsigned int>::max());
+    CTxIn(uint256 hashPrevTx, uint32_t nOut, CAmount nValueIn,CScript scriptSigIn=CScript());//, uint32_t nSequenceIn=std::numeric_limits<uint32_t>::max());
 
     ADD_SERIALIZE_METHODS;
 
@@ -74,19 +79,19 @@ public:
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
         READWRITE(prevout);
         READWRITE(scriptSig);
-        READWRITE(nSequence);
+        //READWRITE(nSequence);
     }
 
-    bool IsFinal() const
-    {
-        return (nSequence == std::numeric_limits<uint32_t>::max());
-    }
+//    bool IsFinal() const
+//    {
+//        return (nSequence == std::numeric_limits<uint32_t>::max());
+//    }
 
     friend bool operator==(const CTxIn& a, const CTxIn& b)
     {
         return (a.prevout   == b.prevout &&
-                a.scriptSig == b.scriptSig &&
-                a.nSequence == b.nSequence);
+                a.scriptSig == b.scriptSig);
+        //&&                a.nSequence == b.nSequence);
     }
 
     friend bool operator!=(const CTxIn& a, const CTxIn& b)
@@ -105,26 +110,28 @@ class CTxOut
 public:
     CAmount nValue;
     CScript scriptPubKey;
-
+    string strContent;
     CTxOut()
     {
         SetNull();
     }
 
-    CTxOut(const CAmount& nValueIn, CScript scriptPubKeyIn);
+    CTxOut(const CAmount& nValueIn, CScript scriptPubKeyIn,string strContentIn="");
 
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
-        READWRITE(nValue);
+        READWRITE(VARINT(nValue));
         READWRITE(scriptPubKey);
+        READWRITE(LIMITED_STRING(strContent,1050000));
     }
 
     void SetNull()
     {
         nValue = -1;
         scriptPubKey.clear();
+        strContent="";
     }
 
     bool IsNull() const
@@ -144,7 +151,9 @@ public:
     friend bool operator==(const CTxOut& a, const CTxOut& b)
     {
         return (a.nValue       == b.nValue &&
-                a.scriptPubKey == b.scriptPubKey);
+                a.scriptPubKey == b.scriptPubKey
+                && a.strContent == b.strContent
+                );
     }
 
     friend bool operator!=(const CTxOut& a, const CTxOut& b)
@@ -192,11 +201,11 @@ public:
 
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
-        READWRITE(*const_cast<int32_t*>(&this->nVersion));
+        READWRITE(VARINT(this->nVersion));
         nVersion = this->nVersion;
         READWRITE(*const_cast<std::vector<CTxIn>*>(&vin));
         READWRITE(*const_cast<std::vector<CTxOut>*>(&vout));
-        READWRITE(*const_cast<uint32_t*>(&nLockTime));
+        READWRITE(VARINT(nLockTime));
         if (ser_action.ForRead())
             UpdateHash();
     }
@@ -211,8 +220,8 @@ public:
 
     // Return sum of txouts.
     CAmount GetValueOut() const;
-    // GetValueIn() is a method on CCoinsViewCache, because
-    // inputs must be known to compute value in.
+    CAmount GetValueIn() const;
+    CAmount GetFee() const;
 
     // Compute priority, given priority of inputs and (optionally) tx size
     double ComputePriority(double dPriorityInputs, unsigned int nTxSize=0) const;
@@ -222,7 +231,7 @@ public:
 
     bool IsCoinBase() const
     {
-        return (vin.size() == 1 && vin[0].prevout.IsNull());
+        return (vin.size() == 1 && vin[0].prevout.hash==uint256(0));
     }
 
     friend bool operator==(const CTransaction& a, const CTransaction& b)
@@ -253,11 +262,11 @@ struct CMutableTransaction
 
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
-        READWRITE(this->nVersion);
+        READWRITE(VARINT(this->nVersion));
         nVersion = this->nVersion;
         READWRITE(vin);
         READWRITE(vout);
-        READWRITE(nLockTime);
+        READWRITE(VARINT(nLockTime));
     }
 
     /** Compute the hash of this CMutableTransaction. This is computed on the

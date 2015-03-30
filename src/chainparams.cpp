@@ -136,13 +136,16 @@ public:
          *     CTxOut(nValue=50.00000000, scriptPubKey=0x5F1DF16B2B704C8A578D0B)
          *   vMerkleTree: 4a5e1e
          */
-        const char* pszTimestamp = "2015-03-25 CNN:  France crash: Germanwings plane obliterated, data recorder found";
+        const string pszTimestamp = "2015-03-25 CNN:  France crash: Germanwings plane obliterated, data recorder found";
         CMutableTransaction txNew;
         txNew.vin.resize(1);
         txNew.vout.resize(1);
-        txNew.vin[0].scriptSig = CScript() << (int)0 << CScriptNum(4) << vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
+        //txNew.vin[0].scriptSig = CScript() << (int)0 << CScriptNum(4) << vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
+        txNew.vin[0].scriptSig = CScript() << (int)0;
+        txNew.vin[0].prevout.nValue=161000;
         txNew.vout[0].nValue = 0;
         txNew.vout[0].scriptPubKey = CScript() << ParseHex("03968502fe538a31c883493c47ed169bc74a68b7051c85afeeb05783163b6c173e") << OP_CHECKSIG;
+        txNew.vout[0].strContent=pszTimestamp;
         txNew.nLockTime=40;
         genesis.vtx.push_back(txNew);
         genesis.hashPrevBlock = 0;
@@ -151,16 +154,15 @@ public:
         genesis.nBlockHeight = 0;
         genesis.nTime    = 1427227400;
         genesis.nBits    = 0x1e0fffff;
-        genesis.nNonce   = 607439;
-        
-//        uint256 powHash;
-//        powHash = genesis.GetPoWHash();
-//        while (powHash > bnProofOfWorkLimit){
+        genesis.nNonce   = 1662053;
+//        std::cout << "tx size: " << txNew.GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION) << "\n";        
+        uint256 powHash;
+        powHash = genesis.GetPoWHash();
+//        while (powHash > ~uint256(0) >> 20){
 //            if (++genesis.nNonce==0) break;
 //            powHash = genesis.GetPoWHash();
-//            std::cout << "nonce: " << genesis.nNonce << "\n";
 //        }
-        
+//        std::cout << "nonce: " << genesis.nNonce << "\n";
         hashGenesisBlock = genesis.GetHash();
         
 //        CTransaction gtx;
@@ -173,8 +175,8 @@ public:
 //        std::cout << "g powh: \n" << genesis.GetPoWHash().ToString() << "\n";
 //        std::cout << "g mroot: \n" << genesis.hashMerkleRoot.ToString() << "\n";
         
-        assert(hashGenesisBlock == uint256("58662ddab59f6972f737f27ed4ce2ad0bb90d98cf67422d770ad7eb97bd08651"));
-        assert(genesis.hashMerkleRoot == uint256("fa546b917bf6e1546573083be2cdf9749473ff03941097a770bf3c8d0254b88f"));
+        assert(hashGenesisBlock == uint256("e016384eceafef48acc19c10ee78a1d176cd8a15dec416f174e0c2a423798f3b"));
+        assert(genesis.hashMerkleRoot == uint256("def96a419fb4ff050a5bc1b26e1f8bc18168481479865baa8bcdcc7aa847c285"));
         
         vSeeds.push_back(CDNSSeedData("cccointools.com", "dnsseed.cccointools.com"));
 //        vSeeds.push_back(CDNSSeedData("cccoinpool.org", "dnsseed.cccoinpool.org"));
@@ -236,7 +238,7 @@ public:
         genesis.nNonce = 607439;
         hashGenesisBlock = genesis.GetHash();
 //        std::cout << "t g hash: \n" << hashGenesisBlock.ToString() << "\n";
-        assert(hashGenesisBlock == uint256("58662ddab59f6972f737f27ed4ce2ad0bb90d98cf67422d770ad7eb97bd08651"));
+        assert(hashGenesisBlock == uint256("30d5eb8b2d755fba4efc77b951d56c00e30a5000be04c121c4c5c5b873c4d301"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
@@ -296,7 +298,7 @@ public:
         hashGenesisBlock = genesis.GetHash();
         nDefaultPort = 19444;
 //        std::cout << "rt g hash: \n" << hashGenesisBlock.ToString() << "\n";
-        assert(hashGenesisBlock == uint256("0x0f25e051587196b05fc7608b09981b0af360ff91b97e88bded51aea1c9c641a0"));
+        assert(hashGenesisBlock == uint256("0xc3436edf9195531d1dbe2ee3fbda408ce6cbce924a6b0aac3f43439cd264bb80"));
 
         vFixedSeeds.clear(); //! Regtest mode doesn't have any fixed seeds.
         vSeeds.clear();  //! Regtest mode doesn't have any DNS seeds.

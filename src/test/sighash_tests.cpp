@@ -47,9 +47,9 @@ uint256 static SignatureHashOld(CScript scriptCode, const CTransaction& txTo, un
         txTmp.vout.clear();
 
         // Let the others update at will
-        for (unsigned int i = 0; i < txTmp.vin.size(); i++)
-            if (i != nIn)
-                txTmp.vin[i].nSequence = 0;
+//        for (unsigned int i = 0; i < txTmp.vin.size(); i++)
+//            if (i != nIn)
+//                txTmp.vin[i].nSequence = 0;
     }
     else if ((nHashType & 0x1f) == SIGHASH_SINGLE)
     {
@@ -65,9 +65,9 @@ uint256 static SignatureHashOld(CScript scriptCode, const CTransaction& txTo, un
             txTmp.vout[i].SetNull();
 
         // Let the others update at will
-        for (unsigned int i = 0; i < txTmp.vin.size(); i++)
-            if (i != nIn)
-                txTmp.vin[i].nSequence = 0;
+//        for (unsigned int i = 0; i < txTmp.vin.size(); i++)
+//            if (i != nIn)
+//                txTmp.vin[i].nSequence = 0;
     }
 
     // Blank out other inputs completely, not recommended for open transactions
@@ -104,7 +104,7 @@ void static RandomTransaction(CMutableTransaction &tx, bool fSingle) {
         txin.prevout.hash = GetRandHash();
         txin.prevout.n = insecure_rand() % 4;
         RandomScript(txin.scriptSig);
-        txin.nSequence = (insecure_rand() % 2) ? insecure_rand() : (unsigned int)-1;
+        //txin.nSequence = (insecure_rand() % 2) ? insecure_rand() : (unsigned int)-1;
     }
     for (int out = 0; out < outs; out++) {
         tx.vout.push_back(CTxOut());

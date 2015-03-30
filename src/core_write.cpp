@@ -95,17 +95,22 @@ void TxToUniv(const CTransaction& tx, const uint256& hashBlock, UniValue& entry)
     UniValue vin(UniValue::VARR);
     BOOST_FOREACH(const CTxIn& txin, tx.vin) {
         UniValue in(UniValue::VOBJ);
-        if (tx.IsCoinBase())
+        if (tx.IsCoinBase()){
+            UniValue inValue(UniValue::VNUM, FormatMoney(txin.prevout.nValue));
+            in.pushKV("value", inValue); 
             in.pushKV("coinbase", HexStr(txin.scriptSig.begin(), txin.scriptSig.end()));
+        }
         else {
             in.pushKV("txid", txin.prevout.hash.GetHex());
             in.pushKV("vout", (int64_t)txin.prevout.n);
+            UniValue inValue(UniValue::VNUM, FormatMoney(txin.prevout.nValue));
+            in.pushKV("value", inValue);            
             UniValue o(UniValue::VOBJ);
             o.pushKV("asm", txin.scriptSig.ToString());
             o.pushKV("hex", HexStr(txin.scriptSig.begin(), txin.scriptSig.end()));
             in.pushKV("scriptSig", o);
         }
-        in.pushKV("sequence", (int64_t)txin.nSequence);
+        //in.pushKV("sequence", (int64_t)txin.nSequence);
         vin.push_back(in);
     }
     entry.pushKV("vin", vin);
@@ -123,6 +128,7 @@ void TxToUniv(const CTransaction& tx, const uint256& hashBlock, UniValue& entry)
         UniValue o(UniValue::VOBJ);
         ScriptPubKeyToUniv(txout.scriptPubKey, o, true);
         out.pushKV("scriptPubKey", o);
+        out.pushKV("content", HexStr(txout.strContent.begin(), txout.strContent.end()));
         vout.push_back(out);
     }
     entry.pushKV("vout", vout);

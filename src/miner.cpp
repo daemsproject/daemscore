@@ -16,6 +16,8 @@
 #include "util.h"
 #include "utilmoneystr.h"
 #include "base58.h"
+#include "utilstrencodings.h"
+#include "core_io.h"
 #ifdef ENABLE_WALLET
 #include "wallet.h"
 #endif
@@ -107,7 +109,8 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
     CMutableTransaction txNew;
     txNew.vin.resize(1);
     txNew.vin[0].prevout.SetNull();
-    txNew.vin[0].scriptSig<<nHeight;
+    txNew.vin[0].prevout.n=nHeight;    
+    txNew.vin[0].scriptSig=CScript()<<0;
     txNew.vout.resize(1);
     txNew.vout[0].scriptPubKey = scriptPubKeyIn;
     txNew.nLockTime=nHeight +COINBASE_MATURITY;
@@ -204,8 +207,8 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
 
             // Priority is sum(valuein * age) / modified_txsize
             unsigned int nTxSize = ::GetSerializeSize(tx, SER_NETWORK, PROTOCOL_VERSION);
-            dPriority = tx.ComputePriority(dPriority, nTxSize);
-
+            dPriority =0;// tx.ComputePriority(dPriority, nTxSize);
+            //TODO priority by fee rate
             uint256 hash = tx.GetHash();
             mempool.ApplyDeltas(hash, dPriority, nTotalIn);
 
@@ -317,14 +320,22 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
                 }
             }
         }
-
+        CBlock prevBlock;
+        ReadBlockFromDisk(prevBlock, pindexPrev);
+        CAmount prevCoinbaseFee=prevBlock.vtx[0].GetFee();
         nLastBlockTx = nBlockTx;
         nLastBlockSize = nBlockSize;
         LogPrintf("CreateNewBlock(): total size %u\n", nBlockSize);
 
         // Compute final coinbase transaction.
-        txNew.vout[0].nValue = GetBlockValue(nHeight, nFees);
-        txNew.vin[0].scriptSig = CScript() << nHeight << OP_0;
+        CAmount coinbaseInput=GetBlockValue(nHeight, nFees)+prevCoinbaseFee;        
+        txNew.vin[0].prevout.nValue = coinbaseInput;        
+        txNew.vout[0].nValue = 0;
+        CAmount coinbaseFee=payTxFee.GetFee(txNew.GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION)+8);
+        CAmount coinbaseOutput=coinbaseInput-coinbaseFee;
+        //LogPrintf("CreateNewBlock(): value %u\n", coinbaseOutput);
+        if (coinbaseOutput>0)                
+            txNew.vout[0].nValue =coinbaseOutput;
         pblock->vtx[0] = txNew;
         pblocktemplate->vTxFees[0] = -nFees;
 
@@ -353,9 +364,11 @@ void IncrementExtraNonce(CBlock* pblock, CBlockIndex* pindexPrev, unsigned int& 
         hashPrevBlock = pblock->hashPrevBlock;
     }
     ++nExtraNonce;
-    unsigned int nHeight = pindexPrev->nHeight+1; // Height first in coinbase required for block.version=2
+//    unsigned int nHeight = pindexPrev->nHeight+1; // Height first in coinbase required for block.version=2
     CMutableTransaction txCoinbase(pblock->vtx[0]);
-    txCoinbase.vin[0].scriptSig = (CScript() << nHeight << CScriptNum(nExtraNonce)) + COINBASE_FLAGS;
+    
+    txCoinbase.vout[0].strContent = strprintf("%s)",nExtraNonce);
+    //txCoinbase.vin[0].scriptSig = (CScript() << nHeight << CScriptNum(nExtraNonce)) + COINBASE_FLAGS;
     assert(txCoinbase.vin[0].scriptSig.size() <= 100);
 
     pblock->vtx[0] = txCoinbase;
@@ -437,6 +450,11 @@ void static BitcoinMiner(CWallet *pwallet)
             CBlockIndex* pindexPrev = chainActive.Tip();
 
             auto_ptr<CBlockTemplate> pblocktemplate(CreateNewBlockWithKey(reservekey));
+            //if no fee collected
+            if (pblocktemplate->block.vtx[0].vout[0].nValue==0)  {              
+                MilliSleep(10);
+                continue;
+            }
             if (!pblocktemplate.get())
             {
                 LogPrintf("Error in CccoinMiner: Keypool ran out, please call keypoolrefill before restarting the mining thread\n");
@@ -457,6 +475,7 @@ void static BitcoinMiner(CWallet *pwallet)
             uint256 thash;
             while (true) {
                 unsigned int nHashesDone = 0;
+                pblock->nNonce += 1;
                 while(true)
                 {
                     thash=pblock->GetHash();

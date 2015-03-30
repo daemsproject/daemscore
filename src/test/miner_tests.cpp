@@ -214,7 +214,7 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
     // height locked
     tx.vin[0].prevout.hash = txFirst[0]->GetHash();
     tx.vin[0].scriptSig = CScript() << OP_1;
-    tx.vin[0].nSequence = 0;
+    //tx.vin[0].nSequence = 0;
     tx.vout[0].nValue = 4900000000LL;
     tx.vout[0].scriptPubKey = CScript() << OP_1;
     tx.nLockTime = chainActive.Tip()->nHeight+1;
@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
     tx2.vin[0].prevout.hash = txFirst[1]->GetHash();
     tx2.vin[0].prevout.n = 0;
     tx2.vin[0].scriptSig = CScript() << OP_1;
-    tx2.vin[0].nSequence = 0;
+    //tx2.vin[0].nSequence = 0;
     tx2.vout.resize(1);
     tx2.vout[0].nValue = 4900000000LL;
     tx2.vout[0].scriptPubKey = CScript() << OP_1;

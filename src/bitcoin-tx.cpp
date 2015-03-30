@@ -192,18 +192,25 @@ static void MutateTxAddInput(CMutableTransaction& tx, const string& strInput)
     if ((strTxid.size() != 64) || !IsHex(strTxid))
         throw runtime_error("invalid TX input txid");
     uint256 txid(strTxid);
+    // extract and validate vout
+    size_t pos2 = strInput.rfind(':');
+    if ((pos2 == pos) ||        
+        (pos2 == (strInput.size() - 1)))
+        throw runtime_error("TX input missing separator");
 
     static const unsigned int minTxOutSz = 9;
     static const unsigned int maxVout = MAX_BLOCK_SIZE / minTxOutSz;
-
-    // extract and validate vout
-    string strVout = strInput.substr(pos + 1, string::npos);
+    string strVout = strInput.substr(pos + 1, pos2);    
     int vout = atoi(strVout);
     if ((vout < 0) || (vout > (int)maxVout))
         throw runtime_error("invalid TX input vout");
 
+string strValue = strInput.substr(pos2 + 1, string::npos);
+    int value = atoi64(strValue);
+    if ((value < 0) || (value > MAX_MONEY))    
+        throw runtime_error("invalid TX input value");
     // append to transaction input list
-    CTxIn txin(txid, vout);
+    CTxIn txin(txid, vout,value);
     tx.vin.push_back(txin);
 }
 

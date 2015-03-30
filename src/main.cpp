@@ -710,11 +710,11 @@ bool IsStandardTx(const CTransaction& tx, string& reason)
 
 bool IsFinalTx(const CTransaction &tx, int nBlockHeight, int64_t nBlockTime)
 {
-    AssertLockHeld(cs_main);
-    // Time based nLockTime implemented in 0.1.6
-    BOOST_FOREACH(const CTxIn& txin, tx.vin)
-        if (!txin.IsFinal())
-            return false;
+//    AssertLockHeld(cs_main);
+//    // Time based nLockTime implemented in 0.1.6
+//    BOOST_FOREACH(const CTxIn& txin, tx.vin)
+//        if (!txin.IsFinal())
+//            return false;
     return true;
 }
 bool IsFrozen(const CTransaction &tx, int nBlockHeight, int64_t nBlockTime){
@@ -859,7 +859,7 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state)
         return state.DoS(10, error("CheckTransaction() : vout empty"),
                          REJECT_INVALID, "bad-txns-vout-empty");
     // Size limits
-    if (::GetSerializeSize(tx, SER_NETWORK, PROTOCOL_VERSION) > MAX_BLOCK_SIZE)
+    if (::GetSerializeSize(tx, SER_NETWORK, PROTOCOL_VERSION) > MAX_STANDARD_TX_SIZE)
         return state.DoS(100, error("CheckTransaction() : size limits failed"),
                          REJECT_INVALID, "bad-txns-oversize");
 
@@ -891,7 +891,10 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state)
 
     if (tx.IsCoinBase())
     {
-        if (tx.vin[0].scriptSig.size() < 2 || tx.vin[0].scriptSig.size() > 100)
+        if (tx.vin[0].prevout.hash!=uint256(0))
+            return state.DoS(100, error("CheckTransaction() : coinbase prevout hash") ,
+                             REJECT_INVALID, "bad-cb-prevout-hash");
+        if (tx.vin[0].scriptSig!= CScript()<<0)
             return state.DoS(100, error("CheckTransaction() : coinbase script size"),
                              REJECT_INVALID, "bad-cb-length");
     }
@@ -1038,9 +1041,9 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
 
         CAmount nValueOut = tx.GetValueOut();
         CAmount nFees = nValueIn-nValueOut;
-        double dPriority = view.GetPriority(tx, chainActive.Height());
+        //double dPriority = view.GetPriority(tx, chainActive.Height());
 
-        CTxMemPoolEntry entry(tx, nFees, GetTime(), dPriority, chainActive.Height());
+        CTxMemPoolEntry entry(tx, nFees, GetTime(), 0, chainActive.Height());
         unsigned int nSize = entry.GetTxSize();
 
         // Don't accept it if it can't get into a block
@@ -1450,7 +1453,10 @@ bool CheckInputs(const CTransaction& tx, CValidationState &state, const CCoinsVi
             const COutPoint &prevout = tx.vin[i].prevout;
             const CCoins *coins = inputs.AccessCoins(prevout.hash);
             assert(coins);
-
+            //check if input value matches prevout
+            if (coins->vout[prevout.n].nValue!=prevout.nValue)
+                return state.DoS(100, error("CheckInputs() : txin values mismatch with prevout"),
+                                 REJECT_INVALID, "bad-txns-inputvalues-mismatch");
             //check that it's from mempool
             if (coins->nHeight<=0){
                     return state.Invalid(
@@ -1774,13 +1780,24 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     }
     int64_t nTime1 = GetTimeMicros(); nTimeConnect += nTime1 - nTimeStart;
     LogPrint("bench", "      - Connect %u transactions: %.2fms (%.3fms/tx, %.3fms/txin) [%.2fs]\n", (unsigned)block.vtx.size(), 0.001 * (nTime1 - nTimeStart), 0.001 * (nTime1 - nTimeStart) / block.vtx.size(), nInputs <= 1 ? 0 : 0.001 * (nTime1 - nTimeStart) / (nInputs-1), nTimeConnect * 0.000001);
+    if (pindex->pprev != NULL){    
+        CBlock prevBlock;
+        ReadBlockFromDisk(prevBlock, pindex->pprev);
+        nFees+=prevBlock.vtx[0].GetFee();
 
-    if (block.vtx[0].GetValueOut() > GetBlockValue(pindex->nHeight, nFees))
+        CAmount coinbaseFee=::minRelayTxFee.GetFee(block.vtx[0].GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION));  
+        if (block.vtx[0].GetValueIn()!=GetBlockValue(pindex->nHeight, nFees)){
         return state.DoS(100,
-                         error("ConnectBlock() : coinbase pays too much (actual=%d vs limit=%d)",
+                         error("ConnectBlock() : coinbase value error (actual=%d vs standard=%d)",
                                block.vtx[0].GetValueOut(), GetBlockValue(pindex->nHeight, nFees)),
                                REJECT_INVALID, "bad-cb-amount");
-
+        }
+        if (block.vtx[0].GetValueOut() > GetBlockValue(pindex->nHeight, nFees)-coinbaseFee)
+            return state.DoS(100,
+                         error("ConnectBlock() : coinbase pays too much (actual=%d vs limit=%d)",
+                               block.vtx[0].GetValueOut(), GetBlockValue(pindex->nHeight, nFees)-coinbaseFee),
+                               REJECT_INVALID, "bad-cb-amount");
+    }
     if (!control.Wait())
         return state.DoS(100, false);
     int64_t nTime2 = GetTimeMicros(); nTimeVerify += nTime2 - nTimeStart;
@@ -2591,10 +2608,10 @@ bool ContextualCheckBlock(const CBlock& block, CValidationState& state, CBlockIn
     const int nHeight = pindexPrev == NULL ? 0 : pindexPrev->nHeight + 1;
 
     // Check that all transactions are finalized
-    BOOST_FOREACH(const CTransaction& tx, block.vtx)
-        if (!IsFinalTx(tx, nHeight, block.GetBlockTime())) {
-            return state.DoS(10, error("%s : contains a non-final transaction", __func__), REJECT_INVALID, "bad-txns-nonfinal");
-        }
+//    BOOST_FOREACH(const CTransaction& tx, block.vtx)
+//        if (!IsFinalTx(tx, nHeight, block.GetBlockTime())) {
+//            return state.DoS(10, error("%s : contains a non-final transaction", __func__), REJECT_INVALID, "bad-txns-nonfinal");
+//        }
 
     // Cccoin: (mainnet >= 710000, testnet >= 400000, regtest uses supermajority)
     // Enforce block.nVersion=2 rule that the coinbase starts with serialized block height
@@ -2618,9 +2635,8 @@ bool ContextualCheckBlock(const CBlock& block, CValidationState& state, CBlockIn
 //
 //    if (checkHeightMismatch)
     {
-        CScript expect = CScript() << nHeight;
-        if (block.vtx[0].vin[0].scriptSig.size() < expect.size() ||
-            !std::equal(expect.begin(), expect.end(), block.vtx[0].vin[0].scriptSig.begin())) {
+        //CScript expect = CScript() << nHeight;
+        if (block.vtx[0].vin[0].prevout.n!=(unsigned int)nHeight) {
             return state.DoS(100, error("%s : block height mismatch in coinbase", __func__), REJECT_INVALID, "bad-cb-height");
         }
     }
@@ -3601,7 +3617,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
             }
 
             // Get recent addresses
-            if (pfrom->fOneShot || pfrom->nVersion >= CADDR_TIME_VERSION || addrman.size() < 10000)
+            if (pfrom->fOneShot || pfrom->nVersion >= CADDR_TIME_VERSION || addrman.size() < 1000)
             {
                 pfrom->PushMessage("getaddr");
                 pfrom->fGetAddr = true;

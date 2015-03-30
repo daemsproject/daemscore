@@ -62,17 +62,20 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
     Array vin;
     BOOST_FOREACH(const CTxIn& txin, tx.vin) {
         Object in;
-        if (tx.IsCoinBase())
+        if (tx.IsCoinBase()){
             in.push_back(Pair("coinbase", HexStr(txin.scriptSig.begin(), txin.scriptSig.end())));
+            in.push_back(Pair("value", ValueFromAmount(txin.prevout.nValue)));
+        }
         else {
             in.push_back(Pair("txid", txin.prevout.hash.GetHex()));
             in.push_back(Pair("vout", (int64_t)txin.prevout.n));
+            in.push_back(Pair("value", ValueFromAmount(txin.prevout.nValue)));
             Object o;
             o.push_back(Pair("asm", txin.scriptSig.ToString()));
             o.push_back(Pair("hex", HexStr(txin.scriptSig.begin(), txin.scriptSig.end())));
             in.push_back(Pair("scriptSig", o));
         }
-        in.push_back(Pair("sequence", (int64_t)txin.nSequence));
+        //in.push_back(Pair("sequence", (int64_t)txin.nSequence));
         vin.push_back(in);
     }
     entry.push_back(Pair("vin", vin));
@@ -82,6 +85,7 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
         Object out;
         out.push_back(Pair("value", ValueFromAmount(txout.nValue)));
         out.push_back(Pair("n", (int64_t)i));
+        out.push_back(Pair("content", HexStr(txout.strContent.begin(), txout.strContent.end())));
         Object o;
         ScriptPubKeyToJSON(txout.scriptPubKey, o, true);
         out.push_back(Pair("scriptPubKey", o));
@@ -307,7 +311,7 @@ Value createrawtransaction(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 2)
         throw runtime_error(
-            "createrawtransaction [{\"txid\":\"id\",\"vout\":n},...] {\"address\":amount,...}\n"
+            "createrawtransaction [{\"txid\":\"id\",\"vout\":n,\"value\":value},...] {\"address\":amount,...}\n"
             "\nCreate a transaction spending the given inputs and sending to the given addresses.\n"
             "Returns hex-encoded raw transaction.\n"
             "Note that the transaction's inputs are not signed, and\n"
@@ -319,6 +323,7 @@ Value createrawtransaction(const Array& params, bool fHelp)
             "       {\n"
             "         \"txid\":\"id\",  (string, required) The transaction id\n"
             "         \"vout\":n        (numeric, required) The output number\n"
+                "         \"value\":n        (numeric, required) The output value\n"
             "       }\n"
             "       ,...\n"
             "     ]\n"
@@ -332,8 +337,8 @@ Value createrawtransaction(const Array& params, bool fHelp)
             "\"transaction\"            (string) hex string of the transaction\n"
 
             "\nExamples\n"
-            + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"myid\\\",\\\"vout\\\":0}]\" \"{\\\"address\\\":0.01}\"")
-            + HelpExampleRpc("createrawtransaction", "\"[{\\\"txid\\\":\\\"myid\\\",\\\"vout\\\":0}]\", \"{\\\"address\\\":0.01}\"")
+            + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"myid\\\",\\\"vout\\\":0,\\\"value\\\":0}]\" \"{\\\"address\\\":0.01}\"")
+            + HelpExampleRpc("createrawtransaction", "\"[{\\\"txid\\\":\\\"myid\\\",\\\"vout\\\":0,,\\\"value\\\":0}]\", \"{\\\"address\\\":0.01}\"")
         );
 
     RPCTypeCheck(params, list_of(array_type)(obj_type));
@@ -354,8 +359,13 @@ Value createrawtransaction(const Array& params, bool fHelp)
         int nOutput = vout_v.get_int();
         if (nOutput < 0)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, vout must be positive");
-
-        CTxIn in(COutPoint(txid, nOutput));
+        const Value& value = find_value(o, "value");
+        if (value.type() != int_type)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, missing value key");
+        int64_t nValue = value.get_int64();
+        if (nValue < 0)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, value must be positive");
+        CTxIn in(COutPoint(txid, nOutput,nValue));
         rawTx.vin.push_back(in);
     }
 

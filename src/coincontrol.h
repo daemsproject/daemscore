@@ -29,9 +29,9 @@ public:
         return (setSelected.size() > 0);
     }
 
-    bool IsSelected(const uint256& hash, unsigned int n) const
+    bool IsSelected(const uint256& hash, unsigned int n,CAmount nValue) const
     {
-        COutPoint outpt(hash, n);
+        COutPoint outpt(hash, n,nValue);
         return (setSelected.count(outpt) > 0);
     }
 

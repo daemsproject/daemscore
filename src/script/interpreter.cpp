@@ -992,11 +992,11 @@ public:
         else
             SerializeScriptCode(s, nType, nVersion);
         // Serialize the nSequence
-        if (nInput != nIn && (fHashSingle || fHashNone))
-            // let the others update at will
-            ::Serialize(s, (int)0, nType, nVersion);
-        else
-            ::Serialize(s, txTo.vin[nInput].nSequence, nType, nVersion);
+//        if (nInput != nIn && (fHashSingle || fHashNone))
+//            // let the others update at will
+//            ::Serialize(s, (int)0, nType, nVersion);
+//        else
+//            ::Serialize(s, txTo.vin[nInput].nSequence, nType, nVersion);
     }
 
     /** Serialize an output of txTo */

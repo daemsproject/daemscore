@@ -146,14 +146,14 @@ bool CBloomFilter::IsRelevantAndUpdate(const CTransaction& tx)
             {
                 fFound = true;
                 if ((nFlags & BLOOM_UPDATE_MASK) == BLOOM_UPDATE_ALL)
-                    insert(COutPoint(hash, i));
+                    insert(COutPoint(hash, i,tx.vout[i].nValue));
                 else if ((nFlags & BLOOM_UPDATE_MASK) == BLOOM_UPDATE_P2PUBKEY_ONLY)
                 {
                     txnouttype type;
                     vector<vector<unsigned char> > vSolutions;
                     if (Solver(txout.scriptPubKey, type, vSolutions) &&
                             (type == TX_PUBKEY || type == TX_MULTISIG))
-                        insert(COutPoint(hash, i));
+                        insert(COutPoint(hash, i,tx.vout[i].nValue));
                 }
                 break;
             }
