@@ -581,7 +581,7 @@ void SendCoinsDialog::updateGlobalFeeVariables()
     if (ui->radioSmartFee->isChecked())
     {
         nTxConfirmTarget = (int)25 - (int)std::max(0, std::min(24, ui->sliderSmartFee->value()));
-        payTxFee = CFeeRate(0);
+        payTxFee = CFeeRate(DEFAULT_TRANSACTION_FEE);
     }
     else
     {

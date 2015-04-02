@@ -331,7 +331,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
         CAmount coinbaseInput=GetBlockValue(nHeight, nFees)+prevCoinbaseFee;        
         txNew.vin[0].prevout.nValue = coinbaseInput;        
         txNew.vout[0].nValue = 0;
-        CAmount coinbaseFee=payTxFee.GetFee(txNew.GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION)+8);
+        CAmount coinbaseFee=CFeeRate(DEFAULT_TRANSACTION_FEE).GetFee(txNew.GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION)+8);
         CAmount coinbaseOutput=coinbaseInput-coinbaseFee;
         //LogPrintf("CreateNewBlock(): value %u\n", coinbaseOutput);
         if (coinbaseOutput>0)                
