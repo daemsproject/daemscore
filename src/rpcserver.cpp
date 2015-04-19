@@ -583,7 +583,7 @@ void StartRPCThreads()
               "It is also recommended to set alertnotify so you are notified of problems;\n"
               "for example: alertnotify=echo %%s | mail -s \"Cccoin Alert\" admin@foo.com\n"),
                 GetConfigFile().string(),
-                EncodeBase58(&rand_pwd[0],&rand_pwd[0]+32)),
+                EncodeBase32(&rand_pwd[0],&rand_pwd[0]+32)),
                 "", CClientUIInterface::MSG_ERROR | CClientUIInterface::SECURE);
         StartShutdown();
         return;

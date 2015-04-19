@@ -14,9 +14,14 @@
 #include <string>
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/static_visitor.hpp>
+#include <boost/assign/list_of.hpp>
+#include "utilstrencodings.h"
 
 /** All alphanumeric characters except for "0", "I", "O", and "l" */
 static const char* pszBase58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+static const char* pszBase32 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+static const char* pszBase32Vague = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567abcdefghijklmnoporstuvwxyz0189";
+static const char* pszBase32Clear = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567ABCDEFGHIJKLMNOPQRSTUVWXYZOLBG";
 
 bool DecodeBase58(const char* psz, std::vector<unsigned char>& vch)
 {
@@ -64,6 +69,57 @@ bool DecodeBase58(const char* psz, std::vector<unsigned char>& vch)
     return true;
 }
 
+bool DecodeBase32(const char* psz, std::vector<unsigned char>& vch)
+{
+    // Skip leading spaces.
+    while (*psz && isspace(*psz))
+        psz++;
+    
+    const char* v =  strchr(pszBase32Vague, *psz);
+    int c =  v - pszBase32Vague;
+    const char* ch = strchr(pszBase32, *(pszBase32Clear + c));
+    int buffer =  ch - pszBase32;
+
+//    const char* ch = strchr(pszBase32, *psz);
+//    int buffer = ch - pszBase32;;
+    int bufferLen = 5;
+            
+            
+    while (*psz && !isspace(*psz)) {
+        
+//            std::cout << "\nbuffer " <<   buffer << " \n";
+//            std::cout << "bufferLen " <<   bufferLen << " \n";
+        while (bufferLen < 8) {
+//                psz++;
+            if(!*++psz)
+                break;
+            buffer <<= 5;
+//                if (*psz == 0)
+//                    return false;
+            const char* v =  strchr(pszBase32Vague, *psz);
+            c =  v - pszBase32Vague;
+            const char* ch = strchr(pszBase32, *(pszBase32Clear + c));
+            buffer +=  ch - pszBase32;
+            bufferLen +=5;
+               
+        }
+        if(!*psz)
+            break;
+        bufferLen -=8;
+        vch.push_back(buffer >> bufferLen);
+//        std::cout << "decoded " <<   HexStr(vch.begin(),vch.end()) << " \n";
+        buffer -= buffer >> bufferLen << bufferLen;
+            
+        
+    }    // Skip trailing spaces.
+//     std::cout << "decodedLast " <<   HexStr(vch.begin(),vch.end()) << " \n";
+    while (isspace(*psz))
+        psz++;
+    if (*psz != 0)
+        return false;
+    return true;
+}
+
 std::string EncodeBase58(const unsigned char* pbegin, const unsigned char* pend)
 {
     // Skip & count leading zeroes.
@@ -99,14 +155,55 @@ std::string EncodeBase58(const unsigned char* pbegin, const unsigned char* pend)
     return str;
 }
 
+std::string EncodeBase32(const unsigned char* pbegin, const unsigned char* pend)
+{
+    std::string str;
+    int buffer = *pbegin;
+    int bufferLen = 8;
+    
+//    int b32Len = std::ceil((float)(pend - pbegin) * 8 / 5);
+//    std::cout << "b32len " <<  b32Len << " is b32\n";
+//    for (int i = 0; i < b32Len; i++) {
+    while(pbegin!=pend){
+        if(bufferLen < 5){
+//            pbegin++;
+            if(++pbegin == pend)
+                break;
+            buffer <<= 8;
+            buffer += *pbegin;
+//   std::cout << "\nbyte " <<  *pbegin << " \n";
+            bufferLen +=8;
+        }
+        bufferLen -= 5;
+        
+//   std::cout << "buffer " <<  buffer << " \n";
+//   std::cout << "bufferLen " <<  bufferLen << " \n";
+        str += pszBase32[buffer >> bufferLen];
+        buffer -= buffer >> bufferLen << bufferLen;
+        
+//   std::cout << "buffer2 " <<  buffer << " \n";
+    }
+    return str;
+}
+
 std::string EncodeBase58(const std::vector<unsigned char>& vch)
 {
     return EncodeBase58(&vch[0], &vch[0] + vch.size());
 }
 
+std::string EncodeBase32(const std::vector<unsigned char>& vch)
+{
+    return EncodeBase32(&vch[0], &vch[0] + vch.size());
+}
+
 bool DecodeBase58(const std::string& str, std::vector<unsigned char>& vchRet)
 {
     return DecodeBase58(str.c_str(), vchRet);
+}
+
+bool DecodeBase32(const std::string& str, std::vector<unsigned char>& vchRet)
+{
+    return DecodeBase32(str.c_str(), vchRet);
 }
 
 std::string EncodeBase58Check(const std::vector<unsigned char>& vchIn)
@@ -116,6 +213,16 @@ std::string EncodeBase58Check(const std::vector<unsigned char>& vchIn)
     uint256 hash = Hash(vch.begin(), vch.end());
     vch.insert(vch.end(), (unsigned char*)&hash, (unsigned char*)&hash + 4);
     return EncodeBase58(vch);
+}
+
+std::string EncodeBase32Check(const std::vector<unsigned char>& vchIn)
+{
+    // add 4-byte hash check to the end
+    std::vector<unsigned char> vch(vchIn);
+    uint256 hash = Hash(vch.begin(), vch.end());
+    vch.insert(vch.end(), (unsigned char*)&hash, (unsigned char*)&hash + 4);
+//    std::cout << "\nbeforeEncode: " << HexStr(vch.begin(), vch.end()) << "\n";
+    return EncodeBase32(vch);
 }
 
 bool DecodeBase58Check(const char* psz, std::vector<unsigned char>& vchRet)
@@ -135,12 +242,42 @@ bool DecodeBase58Check(const char* psz, std::vector<unsigned char>& vchRet)
     return true;
 }
 
+bool DecodeBase32Check(const char* psz, std::vector<unsigned char>& vchRet)
+{
+    if (!DecodeBase32(psz, vchRet) ||
+        (vchRet.size() < 4)) {
+        vchRet.clear();
+        return false;
+    }
+    
+//     std::cout << "vchRet " <<  HexStr( vchRet.begin(),vchRet.end()) << " \n";
+    // re-calculate the checksum, insure it matches the included 4-byte checksum
+    uint256 hash = Hash(vchRet.begin(), vchRet.end() - 4);
+    if (memcmp(&hash, &vchRet.end()[-4], 4) != 0) {
+        vchRet.clear();
+        return false;
+    }
+    vchRet.resize(vchRet.size() - 4);
+    return true;
+}
+
 bool DecodeBase58Check(const std::string& str, std::vector<unsigned char>& vchRet)
 {
     return DecodeBase58Check(str.c_str(), vchRet);
 }
 
+bool DecodeBase32Check(const std::string& str, std::vector<unsigned char>& vchRet)
+{
+    return DecodeBase32Check(str.c_str(), vchRet);
+}
+
 CBase58Data::CBase58Data()
+{
+    vchVersion.clear();
+    vchData.clear();
+}
+
+CBase32Data::CBase32Data()
 {
     vchVersion.clear();
     vchData.clear();
@@ -154,7 +291,20 @@ void CBase58Data::SetData(const std::vector<unsigned char>& vchVersionIn, const 
         memcpy(&vchData[0], pdata, nSize);
 }
 
+void CBase32Data::SetData(const std::vector<unsigned char>& vchVersionIn, const void* pdata, size_t nSize)
+{
+    vchVersion = vchVersionIn;
+    vchData.resize(nSize);
+    if (!vchData.empty())
+        memcpy(&vchData[0], pdata, nSize);
+}
+
 void CBase58Data::SetData(const std::vector<unsigned char>& vchVersionIn, const unsigned char* pbegin, const unsigned char* pend)
+{
+    SetData(vchVersionIn, (void*)pbegin, pend - pbegin);
+}
+
+void CBase32Data::SetData(const std::vector<unsigned char>& vchVersionIn, const unsigned char* pbegin, const unsigned char* pend)
 {
     SetData(vchVersionIn, (void*)pbegin, pend - pbegin);
 }
@@ -176,8 +326,37 @@ bool CBase58Data::SetString(const char* psz, unsigned int nVersionBytes)
     return true;
 }
 
+bool CBase32Data::SetString(const char* psz, unsigned int nVersionBytes)
+{
+//     std::cout << "\nstring " <<   psz << " \n";
+    std::vector<unsigned char> vchTemp;
+    bool rc32 = DecodeBase32Check(psz, vchTemp);
+//    if(rc32)
+//     std::cout << "vchTemp " <<  HexStr( vchTemp.begin(),vchTemp.end()) << " \n";
+//    else
+//        
+//     std::cout << "Faillllll "  << " \n";
+    if ((!rc32) || (vchTemp.size() < nVersionBytes)) {
+        vchData.clear();
+        vchVersion.clear();
+        return false;
+    }
+    vchVersion.assign(vchTemp.end() - nVersionBytes, vchTemp.end());
+    vchData.resize(vchTemp.size() - nVersionBytes);
+    if (!vchData.empty())
+        memcpy(&vchData[0], &vchTemp[0], vchData.size());
+    OPENSSL_cleanse(&vchTemp[0], vchData.size());
+    return true;
+}
+
 bool CBase58Data::SetString(const std::string& str)
 {
+    return SetString(str.c_str());
+}
+
+bool CBase32Data::SetString(const std::string& str)
+{
+//    std::cout << "\nsetStr1 " <<   str << " \n";
     return SetString(str.c_str());
 }
 
@@ -186,6 +365,15 @@ std::string CBase58Data::ToString() const
     std::vector<unsigned char> vch = vchVersion;
     vch.insert(vch.end(), vchData.begin(), vchData.end());
     return EncodeBase58Check(vch);
+}
+std::string CBase32Data::ToString() const
+{
+    std::vector<unsigned char> vch = vchVersion;
+    vch.insert(vch.begin(), vchData.begin(), vchData.end());
+    
+//    std::cout << "\ntoString1 " <<   HexStr(vch.begin(),vch.end()) << " \n";
+//    vch.insert(vch.end(), <unsigned char> vchVersion);
+    return EncodeBase32Check(vch);
 }
 
 int CBase58Data::CompareTo(const CBase58Data& b58) const
@@ -200,6 +388,20 @@ int CBase58Data::CompareTo(const CBase58Data& b58) const
         return 1;
     return 0;
 }
+
+int CBase32Data::CompareTo(const CBase32Data& b32) const
+{
+    if (vchVersion < b32.vchVersion)
+        return -1;
+    if (vchVersion > b32.vchVersion)
+        return 1;
+    if (vchData < b32.vchData)
+        return -1;
+    if (vchData > b32.vchData)
+        return 1;
+    return 0;
+}
+
 
 namespace
 {
@@ -220,13 +422,13 @@ public:
 
 bool CBitcoinAddress::Set(const CKeyID& id)
 {
-    SetData(Params().Base58Prefix(CChainParams::PUBKEY_ADDRESS), &id, 20);
+    SetData(Params().Base32Prefix(CChainParams::PUBKEY_ADDRESS), &id, 20);
     return true;
 }
 
 bool CBitcoinAddress::Set(const CScriptID& id)
 {
-    SetData(Params().Base58Prefix(CChainParams::SCRIPT_ADDRESS), &id, 20);
+    SetData(Params().Base32Prefix(CChainParams::SCRIPT_ADDRESS), &id, 20);
     return true;
 }
 
@@ -243,8 +445,8 @@ bool CBitcoinAddress::IsValid() const
 bool CBitcoinAddress::IsValid(const CChainParams& params) const
 {
     bool fCorrectSize = vchData.size() == 20;
-    bool fKnownVersion = vchVersion == params.Base58Prefix(CChainParams::PUBKEY_ADDRESS) ||
-                         vchVersion == params.Base58Prefix(CChainParams::SCRIPT_ADDRESS);
+    bool fKnownVersion = vchVersion == params.Base32Prefix(CChainParams::PUBKEY_ADDRESS) ||
+                         vchVersion == params.Base32Prefix(CChainParams::SCRIPT_ADDRESS);
     return fCorrectSize && fKnownVersion;
 }
 
@@ -254,9 +456,9 @@ CTxDestination CBitcoinAddress::Get() const
         return CNoDestination();
     uint160 id;
     memcpy(&id, &vchData[0], 20);
-    if (vchVersion == Params().Base58Prefix(CChainParams::PUBKEY_ADDRESS))
+    if (vchVersion == Params().Base32Prefix(CChainParams::PUBKEY_ADDRESS))
         return CKeyID(id);
-    else if (vchVersion == Params().Base58Prefix(CChainParams::SCRIPT_ADDRESS))
+    else if (vchVersion == Params().Base32Prefix(CChainParams::SCRIPT_ADDRESS))
         return CScriptID(id);
     else
         return CNoDestination();
@@ -264,7 +466,7 @@ CTxDestination CBitcoinAddress::Get() const
 
 bool CBitcoinAddress::GetKeyID(CKeyID& keyID) const
 {
-    if (!IsValid() || vchVersion != Params().Base58Prefix(CChainParams::PUBKEY_ADDRESS))
+    if (!IsValid() || vchVersion != Params().Base32Prefix(CChainParams::PUBKEY_ADDRESS))
         return false;
     uint160 id;
     memcpy(&id, &vchData[0], 20);
@@ -274,13 +476,13 @@ bool CBitcoinAddress::GetKeyID(CKeyID& keyID) const
 
 bool CBitcoinAddress::IsScript() const
 {
-    return IsValid() && vchVersion == Params().Base58Prefix(CChainParams::SCRIPT_ADDRESS);
+    return IsValid() && vchVersion == Params().Base32Prefix(CChainParams::SCRIPT_ADDRESS);
 }
 
 void CBitcoinSecret::SetKey(const CKey& vchSecret)
 {
     assert(vchSecret.IsValid());
-    SetData(Params().Base58Prefix(CChainParams::SECRET_KEY), vchSecret.begin(), vchSecret.size());
+    SetData(Params().Base32Prefix(CChainParams::SECRET_KEY), vchSecret.begin(), vchSecret.size());
     if (vchSecret.IsCompressed())
         vchData.push_back(1);
 }
@@ -296,13 +498,13 @@ CKey CBitcoinSecret::GetKey()
 bool CBitcoinSecret::IsValid() const
 {
     bool fExpectedFormat = vchData.size() == 32 || (vchData.size() == 33 && vchData[32] == 1);
-    bool fCorrectVersion = vchVersion == Params().Base58Prefix(CChainParams::SECRET_KEY);
+    bool fCorrectVersion = vchVersion == Params().Base32Prefix(CChainParams::SECRET_KEY);
     return fExpectedFormat && fCorrectVersion;
 }
 
 bool CBitcoinSecret::SetString(const char* pszSecret)
 {
-    return CBase58Data::SetString(pszSecret) && IsValid();
+    return CBase32Data::SetString(pszSecret) && IsValid();
 }
 
 bool CBitcoinSecret::SetString(const std::string& strSecret)

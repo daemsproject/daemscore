@@ -35,6 +35,17 @@ std::string EncodeBase58(const unsigned char* pbegin, const unsigned char* pend)
 std::string EncodeBase58(const std::vector<unsigned char>& vch);
 
 /**
+ * Encode a byte sequence as a base32-encoded string.
+ * pbegin and pend cannot be NULL, unless both are.
+ */
+std::string EncodeBase32(const unsigned char* pbegin, const unsigned char* pend);
+
+/**
+ * Encode a byte vector as a base32-encoded string
+ */
+std::string EncodeBase32(const std::vector<unsigned char>& vch);
+
+/**
  * Decode a base58-encoded string (psz) into a byte vector (vchRet).
  * return true if decoding is successful.
  * psz cannot be NULL.
@@ -46,6 +57,19 @@ bool DecodeBase58(const char* psz, std::vector<unsigned char>& vchRet);
  * return true if decoding is successful.
  */
 bool DecodeBase58(const std::string& str, std::vector<unsigned char>& vchRet);
+
+/**
+ * Decode a base32-encoded string (psz) into a byte vector (vchRet).
+ * return true if decoding is successful.
+ * psz cannot be NULL.
+ */
+bool DecodeBase32(const char* psz, std::vector<unsigned char>& vchRet);
+
+/**
+ * Decode a base32-encoded string (str) into a byte vector (vchRet).
+ * return true if decoding is successful.
+ */
+bool DecodeBase32(const std::string& str, std::vector<unsigned char>& vchRet);
 
 /**
  * Encode a byte vector into a base58-encoded string, including checksum
@@ -63,6 +87,23 @@ inline bool DecodeBase58Check(const char* psz, std::vector<unsigned char>& vchRe
  * vector (vchRet), return true if decoding is successful
  */
 inline bool DecodeBase58Check(const std::string& str, std::vector<unsigned char>& vchRet);
+
+/**
+ * Encode a byte vector into a base32-encoded string, including checksum
+ */
+std::string EncodeBase32Check(const std::vector<unsigned char>& vchIn);
+
+/**
+ * Decode a base32-encoded string (psz) that includes a checksum into a byte
+ * vector (vchRet), return true if decoding is successful
+ */
+inline bool DecodeBase32Check(const char* psz, std::vector<unsigned char>& vchRet);
+
+/**
+ * Decode a base32-encoded string (str) that includes a checksum into a byte
+ * vector (vchRet), return true if decoding is successful
+ */
+inline bool DecodeBase32Check(const std::string& str, std::vector<unsigned char>& vchRet);
 
 /**
  * Base class for all base58-encoded data
@@ -94,13 +135,43 @@ public:
     bool operator> (const CBase58Data& b58) const { return CompareTo(b58) >  0; }
 };
 
-/** base58-encoded Bitcoin addresses.
- * Public-key-hash-addresses have version 0 (or 111 testnet).
+/**
+ * Base class for all base32-encoded data
+ */
+class CBase32Data
+{
+protected:
+    //! the version byte(s)
+    std::vector<unsigned char> vchVersion;
+
+    //! the actually encoded data
+    typedef std::vector<unsigned char, zero_after_free_allocator<unsigned char> > vector_uchar;
+    vector_uchar vchData;
+
+    CBase32Data();
+    void SetData(const std::vector<unsigned char> &vchVersionIn, const void* pdata, size_t nSize);
+    void SetData(const std::vector<unsigned char> &vchVersionIn, const unsigned char *pbegin, const unsigned char *pend);
+
+public:
+    bool SetString(const char* psz, unsigned int nVersionBytes = 1);
+    bool SetString(const std::string& str);
+    std::string ToString() const;
+    int CompareTo(const CBase32Data& b32) const;
+
+    bool operator==(const CBase32Data& b32) const { return CompareTo(b32) == 0; }
+    bool operator<=(const CBase32Data& b32) const { return CompareTo(b32) <= 0; }
+    bool operator>=(const CBase32Data& b32) const { return CompareTo(b32) >= 0; }
+    bool operator< (const CBase32Data& b32) const { return CompareTo(b32) <  0; }
+    bool operator> (const CBase32Data& b32) const { return CompareTo(b32) >  0; }
+};
+
+/** base32-encoded Bitcoin addresses.
+ * Public-key-hash-addresses have flag 0 (or 111 testnet).
  * The data vector contains RIPEMD160(SHA256(pubkey)), where pubkey is the serialized public key.
- * Script-hash-addresses have version 5 (or 196 testnet).
+ * Script-hash-addresses have flag 0x90 (or 196 testnet).
  * The data vector contains RIPEMD160(SHA256(cscript)), where cscript is the serialized redemption script.
  */
-class CBitcoinAddress : public CBase58Data {
+class CBitcoinAddress : public CBase32Data {
 public:
     bool Set(const CKeyID &id);
     bool Set(const CScriptID &id);
@@ -119,9 +190,9 @@ public:
 };
 
 /**
- * A base58-encoded secret key
+ * A base32-encoded secret key
  */
-class CBitcoinSecret : public CBase58Data
+class CBitcoinSecret : public CBase32Data
 {
 public:
     void SetKey(const CKey& vchSecret);
@@ -134,13 +205,13 @@ public:
     CBitcoinSecret() {}
 };
 
-template<typename K, int Size, CChainParams::Base58Type Type> class CBitcoinExtKeyBase : public CBase58Data
+template<typename K, int Size, CChainParams::Base32Type Type> class CBitcoinExtKeyBase : public CBase32Data
 {
 public:
     void SetKey(const K &key) {
         unsigned char vch[Size];
         key.Encode(vch);
-        SetData(Params().Base58Prefix(Type), vch, vch+Size);
+        SetData(Params().Base32Prefix(Type), vch, vch+Size);
     }
 
     K GetKey() {

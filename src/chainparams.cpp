@@ -184,11 +184,11 @@ public:
 //        vSeeds.push_back(CDNSSeedData("koin-project.com", "dnsseed.koin-project.com"));
 //        vSeeds.push_back(CDNSSeedData("weminemnc.com", "dnsseed.weminemnc.com"));
 
-        base58Prefixes[PUBKEY_ADDRESS] = list_of(1);
-        base58Prefixes[SCRIPT_ADDRESS] = list_of(55);
-        base58Prefixes[SECRET_KEY] =     list_of(128);
-        base58Prefixes[EXT_PUBLIC_KEY] = list_of(0x04)(0x88)(0xB2)(0x1E);
-        base58Prefixes[EXT_SECRET_KEY] = list_of(0x04)(0x88)(0xAD)(0xE4);
+        base32Prefixes[PUBKEY_ADDRESS] = list_of(0x00);
+        base32Prefixes[SCRIPT_ADDRESS] = list_of(0x90);
+        base32Prefixes[SECRET_KEY] =     list_of(0x50);
+        base32Prefixes[EXT_PUBLIC_KEY] = list_of(0x04)(0x88)(0xB2)(0x1E);
+        base32Prefixes[EXT_SECRET_KEY] = list_of(0x04)(0x88)(0xAD)(0xE4);
 
         convertSeed6(vFixedSeeds, pnSeed6_main, ARRAYLEN(pnSeed6_main));
 
@@ -246,11 +246,11 @@ public:
         vSeeds.push_back(CDNSSeedData("xurious.com", "testnet-seed.ltc.xurious.com"));
         vSeeds.push_back(CDNSSeedData("wemine-testnet.com", "dnsseed.wemine-testnet.com"));
 
-        base58Prefixes[PUBKEY_ADDRESS] = list_of(111);
-        base58Prefixes[SCRIPT_ADDRESS] = list_of(196);
-        base58Prefixes[SECRET_KEY]     = list_of(239);
-        base58Prefixes[EXT_PUBLIC_KEY] = list_of(0x04)(0x35)(0x87)(0xCF);
-        base58Prefixes[EXT_SECRET_KEY] = list_of(0x04)(0x35)(0x83)(0x94);
+        base32Prefixes[PUBKEY_ADDRESS] = list_of(111);
+        base32Prefixes[SCRIPT_ADDRESS] = list_of(196);
+        base32Prefixes[SECRET_KEY]     = list_of(239);
+        base32Prefixes[EXT_PUBLIC_KEY] = list_of(0x04)(0x35)(0x87)(0xCF);
+        base32Prefixes[EXT_SECRET_KEY] = list_of(0x04)(0x35)(0x83)(0x94);
 
         convertSeed6(vFixedSeeds, pnSeed6_test, ARRAYLEN(pnSeed6_test));
 
