@@ -79,23 +79,13 @@ bool DecodeBase32(const char* psz, std::vector<unsigned char>& vch)
     int c =  v - pszBase32Vague;
     const char* ch = strchr(pszBase32, *(pszBase32Clear + c));
     int buffer =  ch - pszBase32;
-
-//    const char* ch = strchr(pszBase32, *psz);
-//    int buffer = ch - pszBase32;;
     int bufferLen = 5;
             
-            
     while (*psz && !isspace(*psz)) {
-        
-//            std::cout << "\nbuffer " <<   buffer << " \n";
-//            std::cout << "bufferLen " <<   bufferLen << " \n";
         while (bufferLen < 8) {
-//                psz++;
             if(!*++psz)
                 break;
             buffer <<= 5;
-//                if (*psz == 0)
-//                    return false;
             const char* v =  strchr(pszBase32Vague, *psz);
             c =  v - pszBase32Vague;
             const char* ch = strchr(pszBase32, *(pszBase32Clear + c));
@@ -107,12 +97,8 @@ bool DecodeBase32(const char* psz, std::vector<unsigned char>& vch)
             break;
         bufferLen -=8;
         vch.push_back(buffer >> bufferLen);
-//        std::cout << "decoded " <<   HexStr(vch.begin(),vch.end()) << " \n";
         buffer -= buffer >> bufferLen << bufferLen;
-            
-        
     }    // Skip trailing spaces.
-//     std::cout << "decodedLast " <<   HexStr(vch.begin(),vch.end()) << " \n";
     while (isspace(*psz))
         psz++;
     if (*psz != 0)
@@ -160,28 +146,17 @@ std::string EncodeBase32(const unsigned char* pbegin, const unsigned char* pend)
     std::string str;
     int buffer = *pbegin;
     int bufferLen = 8;
-    
-//    int b32Len = std::ceil((float)(pend - pbegin) * 8 / 5);
-//    std::cout << "b32len " <<  b32Len << " is b32\n";
-//    for (int i = 0; i < b32Len; i++) {
     while(pbegin!=pend){
         if(bufferLen < 5){
-//            pbegin++;
             if(++pbegin == pend)
                 break;
             buffer <<= 8;
             buffer += *pbegin;
-//   std::cout << "\nbyte " <<  *pbegin << " \n";
             bufferLen +=8;
         }
         bufferLen -= 5;
-        
-//   std::cout << "buffer " <<  buffer << " \n";
-//   std::cout << "bufferLen " <<  bufferLen << " \n";
         str += pszBase32[buffer >> bufferLen];
         buffer -= buffer >> bufferLen << bufferLen;
-        
-//   std::cout << "buffer2 " <<  buffer << " \n";
     }
     return str;
 }
@@ -221,7 +196,6 @@ std::string EncodeBase32Check(const std::vector<unsigned char>& vchIn)
     std::vector<unsigned char> vch(vchIn);
     uint256 hash = Hash(vch.begin(), vch.end());
     vch.insert(vch.end(), (unsigned char*)&hash, (unsigned char*)&hash + 4);
-//    std::cout << "\nbeforeEncode: " << HexStr(vch.begin(), vch.end()) << "\n";
     return EncodeBase32(vch);
 }
 
@@ -250,7 +224,6 @@ bool DecodeBase32Check(const char* psz, std::vector<unsigned char>& vchRet)
         return false;
     }
     
-//     std::cout << "vchRet " <<  HexStr( vchRet.begin(),vchRet.end()) << " \n";
     // re-calculate the checksum, insure it matches the included 4-byte checksum
     uint256 hash = Hash(vchRet.begin(), vchRet.end() - 4);
     if (memcmp(&hash, &vchRet.end()[-4], 4) != 0) {
@@ -328,14 +301,8 @@ bool CBase58Data::SetString(const char* psz, unsigned int nVersionBytes)
 
 bool CBase32Data::SetString(const char* psz, unsigned int nVersionBytes)
 {
-//     std::cout << "\nstring " <<   psz << " \n";
     std::vector<unsigned char> vchTemp;
     bool rc32 = DecodeBase32Check(psz, vchTemp);
-//    if(rc32)
-//     std::cout << "vchTemp " <<  HexStr( vchTemp.begin(),vchTemp.end()) << " \n";
-//    else
-//        
-//     std::cout << "Faillllll "  << " \n";
     if ((!rc32) || (vchTemp.size() < nVersionBytes)) {
         vchData.clear();
         vchVersion.clear();
@@ -356,7 +323,6 @@ bool CBase58Data::SetString(const std::string& str)
 
 bool CBase32Data::SetString(const std::string& str)
 {
-//    std::cout << "\nsetStr1 " <<   str << " \n";
     return SetString(str.c_str());
 }
 
@@ -370,9 +336,6 @@ std::string CBase32Data::ToString() const
 {
     std::vector<unsigned char> vch = vchVersion;
     vch.insert(vch.begin(), vchData.begin(), vchData.end());
-    
-//    std::cout << "\ntoString1 " <<   HexStr(vch.begin(),vch.end()) << " \n";
-//    vch.insert(vch.end(), <unsigned char> vchVersion);
     return EncodeBase32Check(vch);
 }
 
