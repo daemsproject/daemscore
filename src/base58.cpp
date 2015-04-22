@@ -148,11 +148,14 @@ std::string EncodeBase32(const unsigned char* pbegin, const unsigned char* pend)
     int bufferLen = 8;
     while(pbegin!=pend){
         if(bufferLen < 5){
-            if(++pbegin == pend)
-                break;
-            buffer <<= 8;
-            buffer += *pbegin;
-            bufferLen +=8;
+            if(++pbegin != pend){
+                buffer <<= 8;
+                buffer += *pbegin;
+                bufferLen +=8;
+            }else{
+                buffer <<= 5 - bufferLen;
+                bufferLen = 5;
+            }
         }
         bufferLen -= 5;
         str += pszBase32[buffer >> bufferLen];
