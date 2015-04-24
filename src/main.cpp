@@ -806,7 +806,7 @@ bool AreInputsStandard(const CTransaction& tx, const CCoinsViewCache& mapInputs)
             }
         }
 
-        if (stack.size() != (unsigned int)nArgsExpected)
+        if (stack.size() != (unsigned int)nArgsExpected && nArgsExpected != 0)
             return false;
     }
 

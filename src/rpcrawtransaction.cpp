@@ -360,12 +360,12 @@ Value createrawtransaction(const Array& params, bool fHelp)
         if (nOutput < 0)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, vout must be positive");
         const Value& value = find_value(o, "value");
-        if (value.type() != int_type)
+        if (value.type() != int_type && value.type() != real_type)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, missing value key");
-        int64_t nValue = value.get_int64();
-        if (nValue < 0)
+        CAmount nAmount = AmountFromValue(value);
+        if(nAmount < 0)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, value must be positive");
-        CTxIn in(COutPoint(txid, nOutput,nValue));
+        CTxIn in(COutPoint(txid, nOutput,nAmount));
         rawTx.vin.push_back(in);
     }
 

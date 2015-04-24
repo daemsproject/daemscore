@@ -442,7 +442,8 @@ bool CBitcoinAddress::IsValid(const CChainParams& params) const
 {
     bool fCorrectSize = vchData.size() == 20;
     bool fKnownVersion = vchVersion == params.Base32Prefix(CChainParams::PUBKEY_ADDRESS) ||
-                         vchVersion == params.Base32Prefix(CChainParams::SCRIPT_ADDRESS);
+                         vchVersion == params.Base32Prefix(CChainParams::SCRIPT_ADDRESS) ||
+                         vchVersion == params.Base32Prefix(CChainParams::SCRIPTHASH_ADDRESS);
     return fCorrectSize && fKnownVersion;
 }
 
@@ -454,7 +455,7 @@ CTxDestination CBitcoinAddress::Get() const
     memcpy(&id, &vchData[0], 20);
     if (vchVersion == Params().Base32Prefix(CChainParams::PUBKEY_ADDRESS))
         return CKeyID(id);
-    else if (vchVersion == Params().Base32Prefix(CChainParams::SCRIPT_ADDRESS))
+    else if (vchVersion == Params().Base32Prefix(CChainParams::SCRIPTHASH_ADDRESS))
         return CScriptID(id);
     else
         return CNoDestination();
@@ -472,7 +473,7 @@ bool CBitcoinAddress::GetKeyID(CKeyID& keyID) const
 
 bool CBitcoinAddress::IsScript() const
 {
-    return IsValid() && vchVersion == Params().Base32Prefix(CChainParams::SCRIPT_ADDRESS);
+    return IsValid() && vchVersion == Params().Base32Prefix(CChainParams::SCRIPTHASH_ADDRESS);
 }
 
 void CBitcoinSecret::SetKey(const CKey& vchSecret)
