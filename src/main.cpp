@@ -670,10 +670,10 @@ bool IsStandardTx(const CTransaction& tx, string& reason)
         // future-proofing. That's also enough to spend a 20-of-20
         // CHECKMULTISIG scriptPubKey, though such a scriptPubKey is not
         // considered standard)
-        if (txin.scriptSig.size() > 1650) {
-            reason = "scriptsig-size";
-            return false;
-        }
+//        if (txin.scriptSig.size() > MAX_STANDARD_TX_SIZE) {
+//            reason = "scriptsig-size";
+//            return false;
+//        }
         if (!txin.scriptSig.IsPushOnly()) {
             reason = "scriptsig-not-pushonly";
             return false;

@@ -820,6 +820,10 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                 {
                     // ([sig ...] num_of_signatures [pubkey ...] num_of_pubkeys -- bool)
 
+                    // [weight] weight_to_spend [pubkeyHash][weightOfHash] ... 
+//                        if(!rPubKey.RecoverCompact(sighash,vchSigCompact))
+//        return false;
+                    
                     int i = 1;
                     if ((int)stack.size() < i)
                         return set_error(serror, SCRIPT_ERR_INVALID_STACK_OPERATION);
@@ -917,7 +921,7 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
             }
 
             // Size limits
-            if (stack.size() + altstack.size() > 1000)
+            if (stack.size() + altstack.size() > MAX_SCRIPT_ELEMENT_SIZE)
                 return set_error(serror, SCRIPT_ERR_STACK_SIZE);
         }
     }
@@ -1126,12 +1130,12 @@ bool VerifyScript(const CScript& scriptSig, const CScript& scriptPubKey, unsigne
     }
 
     vector<vector<unsigned char> > stack, stackCopy;
-    if (!EvalScript(stack, scriptSig, flags, checker, serror))
+    if (!EvalScript(stack, scriptSig, flags, checker, serror))  // Check whether input script is legal
         // serror is set
         return false;
     if (flags & SCRIPT_VERIFY_P2SH)
         stackCopy = stack;
-    if (!EvalScript(stack, scriptPubKey, flags, checker, serror))
+    if (!EvalScript(stack, scriptPubKey, flags, checker, serror))  // Check script against scriptPubkey
         // serror is set
         return false;
     if (stack.empty())
@@ -1152,11 +1156,11 @@ bool VerifyScript(const CScript& scriptSig, const CScript& scriptPubKey, unsigne
         // an empty stack and the EvalScript above would return false.
         assert(!stackCopy.empty());
 
-        const valtype& pubKeySerialized = stackCopy.back();
-        CScript pubKey2(pubKeySerialized.begin(), pubKeySerialized.end());
+        const valtype& scriptPubKeySerialized = stackCopy.back();
+        CScript scriptPubKey2(scriptPubKeySerialized.begin(), scriptPubKeySerialized.end());
         popstack(stackCopy);
 
-        if (!EvalScript(stackCopy, pubKey2, flags, checker, serror))
+        if (!EvalScript(stackCopy, scriptPubKey2, flags, checker, serror)) // Check inside script, the whole script as script + scriptPubkey
             // serror is set
             return false;
         if (stackCopy.empty())

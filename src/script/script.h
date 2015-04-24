@@ -15,7 +15,7 @@
 #include <string>
 #include <vector>
 
-static const unsigned int MAX_SCRIPT_ELEMENT_SIZE = 520; // bytes
+static const unsigned int MAX_SCRIPT_ELEMENT_SIZE = 1050000; // bytes same as main.h MAX_STANDARD_TX_SIZE
 
 template <typename T>
 std::vector<unsigned char> ToByteVector(const T& in)

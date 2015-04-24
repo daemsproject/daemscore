@@ -300,6 +300,8 @@ CScript GetScriptForMultisigByWeight(int nRequired, const std::vector<CTxDestina
         script << EncodeVarInt(weights[i]);
         i++;
     }
+    static const CScriptNum is(i);
+    script << is;
     script << OP_CHECKMULTISIG;
     return script;
 }

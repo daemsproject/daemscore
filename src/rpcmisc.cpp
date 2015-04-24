@@ -217,61 +217,9 @@ CScript _createmultisig_redeemScript(const Array& params)
 //        if (setDest. .count(address))
 //            throw JSONRPCError(RPC_INVALID_PARAMETER, string("Invalid parameter, duplicated address: ")+s.name_);
         setDest.push_back(address.Get());
-
-//        CScript scriptPubKey = GetScriptForDestination(address.Get());
         setWeight.push_back(s.value_.get_int());
 
     }
-     
-     
-     
-    
-//    const Array& keys = params[1].get_array();
-
-    // Gather public keys
-
-//    if ((int)keys.size() < nRequired)
-//        throw runtime_error(
-//            strprintf("not enough keys supplied "
-//                      "(got %u keys, but need at least %d to redeem)", keys.size(), nRequired));
-//    std::vector<CPubKey> pubkeys;
-//    pubkeys.resize(keys.size());
-//    for (unsigned int i = 0; i < keys.size(); i++)
-//    {
-//        const std::string& ks = keys[i].get_str();
-////#ifdef ENABLE_WALLET
-//        // Case 1: Bitcoin address and we have full public key:
-//        CBitcoinAddress address(ks);
-//        if (pwalletMain && address.IsValid())
-//        {
-//            CKeyID keyID;
-//            if (!address.GetKeyID(keyID))
-//                throw runtime_error(
-//                    strprintf("%s does not refer to a key",ks));
-//            CPubKey vchPubKey;
-//            if (!pwalletMain->GetPubKey(keyID, vchPubKey))
-//                throw runtime_error(
-//                    strprintf("no full public key for address %s",ks));
-//            if (!vchPubKey.IsFullyValid())
-//                throw runtime_error(" Invalid public key: "+ks);
-//            pubkeys[i] = vchPubKey;
-//        }
-//
-//        // Case 2: hex public key
-//        else
-//#endif
-//        if (IsHex(ks))
-//        {
-//            CPubKey vchPubKey(ParseHex(ks));
-//            if (!vchPubKey.IsFullyValid())
-//                throw runtime_error(" Invalid public key: "+ks);
-//            pubkeys[i] = vchPubKey;
-//        }
-//        else
-//        {
-//            throw runtime_error(" Invalid public key: "+ks);
-//        }
-//    }
     CScript result = GetScriptForMultisigByWeight(nRequired, setDest, setWeight);
 
     if (result.size() > MAX_SCRIPT_ELEMENT_SIZE)
