@@ -41,7 +41,9 @@ std::string itostr(int n);
 int64_t atoi64(const char* psz);
 int64_t atoi64(const std::string& str);
 int atoi(const std::string& str);
-
+bool EncodeVarInt(std::vector<unsigned char>& sv, int n);
+std::vector<unsigned char> EncodeVarInt(int n);
+int DecodeVarInt(std::vector<unsigned char>& sv);
 /**
  * Convert string to signed 32-bit integer with strict parse error feedback.
  * @returns true if the entire string could be parsed as valid integer,

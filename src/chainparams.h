@@ -34,6 +34,7 @@ public:
     enum Base32Type {
         PUBKEY_ADDRESS,
         SCRIPT_ADDRESS,
+        SCRIPTHASH_ADDRESS,
         SECRET_KEY,
         EXT_PUBLIC_KEY,
         EXT_SECRET_KEY,

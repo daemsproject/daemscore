@@ -204,54 +204,75 @@ Value validateaddress(const Array& params, bool fHelp)
 CScript _createmultisig_redeemScript(const Array& params)
 {
     int nRequired = params[0].get_int();
-    const Array& keys = params[1].get_array();
+    if (nRequired < 1)
+        throw runtime_error("a multisignature address must require at least weight one to redeem");
+    Object sendTo = params[1].get_obj();
+    vector<CTxDestination> setDest;
+    vector<int> setWeight;
+    BOOST_FOREACH(const Pair& s, sendTo) {
+        CBitcoinAddress address(s.name_);
+        if (!address.IsValid())
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, string("Invalid Cccoin address: ")+s.name_);
+
+//        if (setDest. .count(address))
+//            throw JSONRPCError(RPC_INVALID_PARAMETER, string("Invalid parameter, duplicated address: ")+s.name_);
+        setDest.push_back(address.Get());
+
+//        CScript scriptPubKey = GetScriptForDestination(address.Get());
+        setWeight.push_back(s.value_.get_int());
+
+    }
+     
+     
+     
+    
+//    const Array& keys = params[1].get_array();
 
     // Gather public keys
-    if (nRequired < 1)
-        throw runtime_error("a multisignature address must require at least one key to redeem");
-    if ((int)keys.size() < nRequired)
-        throw runtime_error(
-            strprintf("not enough keys supplied "
-                      "(got %u keys, but need at least %d to redeem)", keys.size(), nRequired));
-    std::vector<CPubKey> pubkeys;
-    pubkeys.resize(keys.size());
-    for (unsigned int i = 0; i < keys.size(); i++)
-    {
-        const std::string& ks = keys[i].get_str();
-#ifdef ENABLE_WALLET
-        // Case 1: Bitcoin address and we have full public key:
-        CBitcoinAddress address(ks);
-        if (pwalletMain && address.IsValid())
-        {
-            CKeyID keyID;
-            if (!address.GetKeyID(keyID))
-                throw runtime_error(
-                    strprintf("%s does not refer to a key",ks));
-            CPubKey vchPubKey;
-            if (!pwalletMain->GetPubKey(keyID, vchPubKey))
-                throw runtime_error(
-                    strprintf("no full public key for address %s",ks));
-            if (!vchPubKey.IsFullyValid())
-                throw runtime_error(" Invalid public key: "+ks);
-            pubkeys[i] = vchPubKey;
-        }
 
-        // Case 2: hex public key
-        else
-#endif
-        if (IsHex(ks))
-        {
-            CPubKey vchPubKey(ParseHex(ks));
-            if (!vchPubKey.IsFullyValid())
-                throw runtime_error(" Invalid public key: "+ks);
-            pubkeys[i] = vchPubKey;
-        }
-        else
-        {
-            throw runtime_error(" Invalid public key: "+ks);
-        }
-    }
-    CScript result = GetScriptForMultisig(nRequired, pubkeys);
+//    if ((int)keys.size() < nRequired)
+//        throw runtime_error(
+//            strprintf("not enough keys supplied "
+//                      "(got %u keys, but need at least %d to redeem)", keys.size(), nRequired));
+//    std::vector<CPubKey> pubkeys;
+//    pubkeys.resize(keys.size());
+//    for (unsigned int i = 0; i < keys.size(); i++)
+//    {
+//        const std::string& ks = keys[i].get_str();
+////#ifdef ENABLE_WALLET
+//        // Case 1: Bitcoin address and we have full public key:
+//        CBitcoinAddress address(ks);
+//        if (pwalletMain && address.IsValid())
+//        {
+//            CKeyID keyID;
+//            if (!address.GetKeyID(keyID))
+//                throw runtime_error(
+//                    strprintf("%s does not refer to a key",ks));
+//            CPubKey vchPubKey;
+//            if (!pwalletMain->GetPubKey(keyID, vchPubKey))
+//                throw runtime_error(
+//                    strprintf("no full public key for address %s",ks));
+//            if (!vchPubKey.IsFullyValid())
+//                throw runtime_error(" Invalid public key: "+ks);
+//            pubkeys[i] = vchPubKey;
+//        }
+//
+//        // Case 2: hex public key
+//        else
+//#endif
+//        if (IsHex(ks))
+//        {
+//            CPubKey vchPubKey(ParseHex(ks));
+//            if (!vchPubKey.IsFullyValid())
+//                throw runtime_error(" Invalid public key: "+ks);
+//            pubkeys[i] = vchPubKey;
+//        }
+//        else
+//        {
+//            throw runtime_error(" Invalid public key: "+ks);
+//        }
+//    }
+    CScript result = GetScriptForMultisigByWeight(nRequired, setDest, setWeight);
 
     if (result.size() > MAX_SCRIPT_ELEMENT_SIZE)
         throw runtime_error(
@@ -262,6 +283,7 @@ CScript _createmultisig_redeemScript(const Array& params)
 
 Value createmultisig(const Array& params, bool fHelp)
 {
+//    RPCTypeCheck(params, list_of(array_type)(obj_type));
     if (fHelp || params.size() < 2 || params.size() > 2)
     {
         string msg = "createmultisig nrequired [\"key\",...]\n"
@@ -290,14 +312,17 @@ Value createmultisig(const Array& params, bool fHelp)
         ;
         throw runtime_error(msg);
     }
-
+    
     // Construct using pay-to-script-hash:
     CScript inner = _createmultisig_redeemScript(params);
     CScriptID innerID(inner);
-    CBitcoinAddress address(innerID);
+    CBitcoinAddress saddress(inner);
+    CBitcoinAddress shaddress(innerID);
 
+//    std::cout << "inner: " << HexStr(inner.begin(),inner.end()) << "\n";
     Object result;
-    result.push_back(Pair("address", address.ToString()));
+    result.push_back(Pair("scriptAddress", saddress.ToString()));
+    result.push_back(Pair("scriptHashAddress", shaddress.ToString()));
     result.push_back(Pair("redeemScript", HexStr(inner.begin(), inner.end())));
 
     return result;

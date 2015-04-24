@@ -497,3 +497,44 @@ int atoi(const std::string& str)
 {
     return atoi(str.c_str());
 }
+
+bool EncodeVarInt(std::vector<unsigned char>& sv, int n) 
+{
+
+
+    unsigned char tmp[(sizeof (n)*8 + 6) / 7];
+    int len = 0;
+    while (true) {
+        tmp[len] = (n & 0x7F) | (len ? 0x80 : 0x00);
+        if (n <= 0x7F)
+            break;
+        n = (n >> 7) - 1;
+        len++;
+    }
+    do {
+        sv.push_back(tmp[len]);
+    } while (len--);
+    return true;
+}
+
+
+std::vector<unsigned char> EncodeVarInt(int n)
+{
+    std::vector<unsigned char> sv;
+    EncodeVarInt(sv,n);
+    return sv;
+}
+
+int DecodeVarInt(std::vector<unsigned char>& sv)
+{
+    unsigned int n = 0;
+    while(true) {
+        unsigned char chData;
+        chData = sv.at(n);
+        n = (n << 7) | (chData & 0x7F);
+        if (chData & 0x80)
+            n++;
+        else
+            return n;
+    }
+}

@@ -18,7 +18,6 @@ CTxIn::CTxIn(COutPoint prevoutIn, CScript scriptSigIn)
 {
     prevout = prevoutIn;
     scriptSig = scriptSigIn;
-    //nSequence = nSequenceIn;
 }
 
 CTxIn::CTxIn(uint256 hashPrevTx, uint32_t nOut, CAmount nValueIn,CScript scriptSigIn)
@@ -37,8 +36,6 @@ std::string CTxIn::ToString() const
         str += strprintf(", coinbase %s", HexStr(scriptSig));
     else
         str += strprintf(", scriptSig=%s", scriptSig.ToString().substr(0,24));
-//    if (nSequence != std::numeric_limits<unsigned int>::max())
-//        str += strprintf(", nSequence=%u", nSequence);
     str += ")";
     return str;
 }

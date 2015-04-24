@@ -17,6 +17,8 @@
 #include <boost/assign/list_of.hpp>
 #include "utilstrencodings.h"
 
+using namespace std;
+
 /** All alphanumeric characters except for "0", "I", "O", and "l" */
 static const char* pszBase58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 static const char* pszBase32 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
@@ -87,6 +89,8 @@ bool DecodeBase32(const char* psz, std::vector<unsigned char>& vch)
                 break;
             buffer <<= 5;
             const char* v =  strchr(pszBase32Vague, *psz);
+            if(v == NULL)
+                return false;
             c =  v - pszBase32Vague;
             const char* ch = strchr(pszBase32, *(pszBase32Clear + c));
             buffer +=  ch - pszBase32;
@@ -152,14 +156,16 @@ std::string EncodeBase32(const unsigned char* pbegin, const unsigned char* pend)
                 buffer <<= 8;
                 buffer += *pbegin;
                 bufferLen +=8;
-            }else{
+            }else if(bufferLen != 0){
                 buffer <<= 5 - bufferLen;
                 bufferLen = 5;
             }
         }
-        bufferLen -= 5;
-        str += pszBase32[buffer >> bufferLen];
-        buffer -= buffer >> bufferLen << bufferLen;
+        if(bufferLen != 0){
+            bufferLen -= 5;
+            str += pszBase32[buffer >> bufferLen];
+            buffer -= buffer >> bufferLen << bufferLen;
+        }
     }
     return str;
 }
@@ -273,6 +279,9 @@ void CBase32Data::SetData(const std::vector<unsigned char>& vchVersionIn, const 
     vchData.resize(nSize);
     if (!vchData.empty())
         memcpy(&vchData[0], pdata, nSize);
+    
+//    std::cout << "\nsetdata : " << HexStr(vchData.begin(),vchData.end()) << "\n";
+//    std::cout << "nsize   : " << nSize << "\n";
 }
 
 void CBase58Data::SetData(const std::vector<unsigned char>& vchVersionIn, const unsigned char* pbegin, const unsigned char* pend)
@@ -339,6 +348,7 @@ std::string CBase32Data::ToString() const
 {
     std::vector<unsigned char> vch = vchVersion;
     vch.insert(vch.begin(), vchData.begin(), vchData.end());
+//    std::cout << "addstr: " << HexStr(vch.begin(),vch.end()) << "\n";
     return EncodeBase32Check(vch);
 }
 
@@ -394,7 +404,27 @@ bool CBitcoinAddress::Set(const CKeyID& id)
 
 bool CBitcoinAddress::Set(const CScriptID& id)
 {
-    SetData(Params().Base32Prefix(CChainParams::SCRIPT_ADDRESS), &id, 20);
+    SetData(Params().Base32Prefix(CChainParams::SCRIPTHASH_ADDRESS), &id, 20);
+    return true;
+}
+
+bool CBitcoinAddress::Set(const CScript& script)
+{
+    std::string str;
+    std::vector<unsigned char>::const_iterator pc= script.begin();
+    while (pc < script.end())
+    {
+            str += *pc++;
+    }
+    const char* sch = (const char*)str.c_str();;
+//    std::cout << "\nstr     : " << HexStr(str) << "\n";
+//    SetData(Params().Base32Prefix(CChainParams::SCRIPT_ADDRESS), &script, script.size());
+    SetData(Params().Base32Prefix(CChainParams::SCRIPT_ADDRESS),sch,script.size());
+//    delete [] sch;
+//    std::cout << "param   : " << HexStr(Params().Base32Prefix(CChainParams::SCRIPT_ADDRESS)) << "\n";
+//    std::cout << "script  : " << HexStr(script.begin(),script.end()) << "\n";
+//    std::cout << "script2s: " << script.ToString() << "\n";
+//    std::cout << "ssize   : " << script.size() << "\n";
     return true;
 }
 
