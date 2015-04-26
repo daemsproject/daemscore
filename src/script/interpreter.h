@@ -86,6 +86,17 @@ public:
     {
         return false;
     }
+    
+    virtual bool RecoverPubKey(const std::vector<unsigned char>& scriptSig, std::vector<unsigned char>& vchPubKey, const CScript& scriptCode) const
+    {
+        return false;
+    }
+    
+    virtual bool RecoverPubKeyHash(const std::vector<unsigned char>& scriptSig, std::vector<unsigned char>& vchPubKeyHash, const CScript& scriptCode) const
+    {
+        return false;
+    }
+    
     virtual ~BaseSignatureChecker() {}
 };
 
@@ -103,7 +114,8 @@ public:
     TransactionSignatureChecker(const CTransaction* txToIn, unsigned int nInIn) : txTo(txToIn), nIn(nInIn) {}
     bool CheckSig(const std::vector<unsigned char>& scriptSig, const std::vector<unsigned char>& vchPubKey, const CScript& scriptCode) const;
     bool CheckSigByPubKeyHash(const std::vector<unsigned char>& scriptSig, const std::vector<unsigned char>& vchPubKeyHash, const CScript& scriptCode) const;
-    
+    bool RecoverPubKey(const std::vector<unsigned char>& scriptSig, std::vector<unsigned char>& vchPubKey, const CScript& scriptCode) const;
+    bool RecoverPubKeyHash(const std::vector<unsigned char>& scriptSig, std::vector<unsigned char>& vchPubKeyHash, const CScript& scriptCode) const;
 };
 
 class MutableTransactionSignatureChecker : public TransactionSignatureChecker

@@ -11,6 +11,7 @@
 #include "utilstrencodings.h"
 
 #include <boost/foreach.hpp>
+#include <vector>
 
 using namespace std;
 
@@ -41,6 +42,7 @@ const char* GetTxnOutputType(txnouttype t)
 bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, vector<vector<unsigned char> >& vSolutionsRet)
 {
     // Templates
+//    std::cout << "spk: " <<HexStr(scriptPubKey.begin(),scriptPubKey.end()) << "\n";
     static multimap<txnouttype, CScript> mTemplates;
     if (mTemplates.empty())
     {
@@ -48,7 +50,7 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, vector<vector<unsi
         mTemplates.insert(make_pair(TX_PUBKEY, CScript() << OP_PUBKEY << OP_CHECKSIG));
 
         // Cccoin address tx, sender provides hash of pubkey, receiver provides signature
-        mTemplates.insert(make_pair(TX_PUBKEYHASH, CScript() << OP_PUBKEYHASH << OP_CHECKSIG));
+        mTemplates.insert(make_pair(TX_PUBKEYHASH, CScript() << OP_CHECKSIG));
 
         // Sender provides N pubkeys, receivers provides M signatures
         mTemplates.insert(make_pair(TX_MULTISIG, CScript() << OP_SMALLINTEGER << OP_PUBKEYS << OP_SMALLINTEGER << OP_CHECKMULTISIG));
@@ -71,9 +73,13 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, vector<vector<unsi
 
     // Scan templates
     const CScript& script1 = scriptPubKey;
+    
+//    std::cout << "slv1: \n";
     BOOST_FOREACH(const PAIRTYPE(txnouttype, CScript)& tplate, mTemplates)
     {
         const CScript& script2 = tplate.second;
+        
+//    std::cout << "scp2: " <<HexStr(script2.begin(),script2.end()) << "\n";
         vSolutionsRet.clear();
 
         opcodetype opcode1, opcode2;
@@ -91,10 +97,14 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, vector<vector<unsi
                 if (typeRet == TX_MULTISIG)
                 {
                     // Additional checks for TX_MULTISIG:
-                    unsigned char m = vSolutionsRet.front()[0];
+//                    unsigned char w = vSolutionsRet.front()[0];
                     unsigned char n = vSolutionsRet.back()[0];
-                    if (m < 1 || n < 1 || m > n || vSolutionsRet.size()-2 != n)
+                    if(n != (vSolutionsRet.size() - 2) / 2)
                         return false;
+                    
+//                    if (m < 1 || n < 1 || m > n || vSolutionsRet.size()-2 != n)
+//                        break;
+//                        return false;
                 }
                 return true;
             }
@@ -106,21 +116,44 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, vector<vector<unsi
             // Template matching opcodes:
             if (opcode2 == OP_PUBKEYS)
             {
-                while (vch1.size() >= 33 && vch1.size() <= 65)
+                while (vch1.size() <= 65)
                 {
+//                    bool fStop = false;
                     vSolutionsRet.push_back(vch1);
+//                    if(vch1.size() < 20 && fStop)
+//                        break;
                     if (!script1.GetOp(pc1, opcode1, vch1))
                         break;
+//                    if (opcode1 == OP_0 || (opcode1 >= OP_1 && opcode1 <= OP_16))
+//                    {
+//                        char n = (char)CScript::DecodeOP_N(opcode1);
+//                        vSolutionsRet.push_back(valtype(1, n));
+//                    }
+//                    else if (opcode1 < OP_PUSHDATA1)
+//                    {
+//                        vSolutionsRet.push_back(vch1);
+//                    }
+//                    else
+//                        break;
+//                    std::cout << "vch1S: " << vch1.size() << "\n";
+
+                    if(vch1.size() < 1)
+//                        fStop = true;
+                        break;
                 }
-                if (!script2.GetOp(pc2, opcode2, vch2))
+                if (!script2.GetOp(pc2, opcode2, vch2)){
+                    
+//                    std::cout << "debug 141: " << "\n";
                     break;
+                }
+//                std::cout << "debug 144: " << "\n";
                 // Normal situation is to fall through
                 // to other if/else statements
             }
 
             if (opcode2 == OP_PUBKEY)
             {
-                if (vch1.size() < 33 || vch1.size() > 65)
+                if ( vch1.size() > 65)
                     break;
                 vSolutionsRet.push_back(vch1);
             }
@@ -132,11 +165,16 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, vector<vector<unsi
             }
             else if (opcode2 == OP_SMALLINTEGER)
             {   // Single-byte small integer pushed onto vSolutions
-                if (opcode1 == OP_0 ||
-                    (opcode1 >= OP_1 && opcode1 <= OP_16))
+                if (opcode1 == OP_0 || (opcode1 >= OP_1 && opcode1 <= OP_16))
                 {
                     char n = (char)CScript::DecodeOP_N(opcode1);
                     vSolutionsRet.push_back(valtype(1, n));
+                }
+                else if (opcode1 < OP_PUSHDATA1)
+                {
+//                    const CScriptNum is(vch1,true);
+//                    char n = (char)is.getint();
+                    vSolutionsRet.push_back(vch1);
                 }
                 else
                     break;
@@ -153,8 +191,10 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, vector<vector<unsi
                 break;
             }
         }
+        
+//    BOOST_FOREACH(vector<unsigned char>& ch , vSolutionsRet)
+//        std::cout << "vS: " << HexStr(ch.begin(),ch.end()) << "\n";
     }
-
     vSolutionsRet.clear();
     typeRet = TX_NONSTANDARD;
     return false;
@@ -325,7 +365,8 @@ CScript GetScriptForMultisig(int nRequired, const std::vector<CPubKey>& keys)
     return script;
 }
 
-CScript GetScriptForMultisigByWeight(int wRequired, const std::vector<CTxDestination>& dests, const std::vector<int>& weights) {
+CScript GetScriptForMultisigByWeight(int wRequired, const std::vector<CTxDestination>& dests, const std::vector<int>& weights) 
+{
     CScript script;
     std::vector<unsigned char> sv = EncodeVarInt(wRequired);
     script << ToByteVector(sv);
@@ -337,8 +378,14 @@ CScript GetScriptForMultisigByWeight(int wRequired, const std::vector<CTxDestina
         script << EncodeVarInt(weights[i]);
         i++;
     }
-    static const CScriptNum is(i);
-    script << is;
+//    static const CScriptNum is(i);
+    if(i <=16)
+        script <<CScript::EncodeOP_N(i);
+    else
+    {
+        const CScriptNum is(i);
+        script << is;
+    }
     script << OP_CHECKMULTISIG;
     return script;
 }
