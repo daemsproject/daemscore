@@ -681,7 +681,6 @@ Value signrawtransaction(const Array& params, bool fHelp)
 
     bool fHashSingle = ((nHashType & ~SIGHASH_ANYONECANPAY) == SIGHASH_SINGLE);
 
- //       std::cout << "mTx1: " << EncodeHexTx(mergedTx) << "\n";
     // Sign what we can:
     for (unsigned int i = 0; i < mergedTx.vin.size(); i++) {
         CTxIn& txin = mergedTx.vin[i];
@@ -696,16 +695,12 @@ Value signrawtransaction(const Array& params, bool fHelp)
         // Only sign SIGHASH_SINGLE if there's a corresponding output:
         if (!fHashSingle || (i < mergedTx.vout.size()))
             SignSignature(keystore, prevScriptPubKey, mergedTx, i, nHashType);
-//        std::cout << "mTx2  : " << EncodeHexTx(mergedTx) << "\n";
-//        std::cout << "mTxS: " << mergedTx.vin.<< "\n";
 
         // ... and merge in other signatures:
         BOOST_FOREACH(const CMutableTransaction& txv, txVariants) {
             txin.scriptSig = CombineSignatures(prevScriptPubKey, mergedTx, i, txin.scriptSig, txv.vin[i].scriptSig);
-            
         }
         
-//        std::cout << "mTx3  : " << EncodeHexTx(mergedTx) << "\n";
         if (!VerifyScript(txin.scriptSig, prevScriptPubKey, STANDARD_SCRIPT_VERIFY_FLAGS, MutableTransactionSignatureChecker(&mergedTx, i)))
             fComplete = false;
     }

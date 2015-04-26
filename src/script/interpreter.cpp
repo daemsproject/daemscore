@@ -15,7 +15,6 @@
 #include "uint256.h"
 #include "utilstrencodings.h"
 #include "ecwrapper.h"
-#include <iostream>
 
 #include <boost/foreach.hpp>
 using namespace std;
@@ -200,7 +199,6 @@ bool static IsDefinedHashtypeSignature(const valtype &vchSig) {
 //}
 
 bool static CheckMinimalPush(const valtype& data, opcodetype opcode) {
-//    std::cout << "ds: " << data.size() << "op:" << opcode <<"\n";
     if (data.size() == 0) {
         // Could have used OP_0.
         return opcode == OP_0;
@@ -283,8 +281,6 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
 
             if (fExec && 0 <= opcode && opcode <= OP_PUSHDATA4) {
                 if (fRequireMinimal && !CheckMinimalPush(vchPushValue, opcode)) {
-//                    std::cout << "fR: " << fRequireMinimal << " Ck: " << CheckMinimalPush(vchPushValue, opcode) << "\n";
-//                    std::cout << "op: " << opcode << " vl: " << HexStr(vchPushValue.begin(), vchPushValue.end()) << "\n";
                     return set_error(serror, SCRIPT_ERR_MINIMALDATA);
                 }
                 stack.push_back(vchPushValue);
@@ -812,55 +808,33 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
 //                        if(!rPubKey.RecoverCompact(sighash,vchSigCompact))
 //        return false;
                     
-//    std::cout << "cms1: \n";
                     int i = 1;
                     if ((int)stack.size() < i)
                         return set_error(serror, SCRIPT_ERR_INVALID_STACK_OPERATION);
 
- //   std::cout << "cms2: \n";
                     int nKeysCount = CScriptNum(stacktop(-i), fRequireMinimal).getint();
                     if (nKeysCount < 0)
                         return set_error(serror, SCRIPT_ERR_PUBKEY_COUNT);
-                    
-//    std::cout << "cms3: \n";
                     nOpCount += nKeysCount;
-//                    if (nOpCount > 201)
-//                        return set_error(serror, SCRIPT_ERR_OP_COUNT);
                     i += 2;
                     int ikey = i;
                     int ikeyS = i;
                     i += nKeysCount * 2 ;
-//    std::cout << "832: " << " i: "<< i<<"\n";
-                    
                     if ((int)stack.size() < i)
                         return set_error(serror, SCRIPT_ERR_INVALID_STACK_OPERATION);
                     
- //   std::cout << "cms4: \n";
-
                     int wRequired = CScriptNum(stacktop(-i + 1), fRequireMinimal).getint();
                     int nSigsCount = CScriptNum(stacktop(-i), fRequireMinimal).getint();
                     if (nSigsCount < 0 || nSigsCount > nKeysCount)
                         return set_error(serror, SCRIPT_ERR_SIG_COUNT);
-                    
- //   std::cout << "cms5: \n";
                     int isig = ++i;
                     i += nSigsCount -1;
-                    
- //   std::cout << "cmsD: stackSize: "<< (int)stack.size() << " i: "<< i<<"\n";
-//    for(int t=1;t<=stack.size();t++){
-//        valtype& ch = stacktop(-t);
-    //    std::cout << "ch: "<< HexStr(ch.begin(),ch.end()) << " t: "<< t<<"\n";
-//    }
-    
-    
                     if ((int)stack.size() < i)
                         return set_error(serror, SCRIPT_ERR_INVALID_STACK_OPERATION);
 
- //   std::cout << "cms6: \n";
                     // Subset of script starting at the most recent codeseparator
                     CScript scriptCode(pbegincodehash, pend);
 
-  //  std::cout << "cms7: \n";
                     // Drop the signatures, since there's no way for a signature to sign itself
                     for (int k = 0; k < nSigsCount; k++)
                     {
@@ -869,11 +843,6 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                     }
 
                     bool fSuccess = true;
-                    
-  //  std::cout << "cms8: \n";
-                    
-                    
-//                    std::vector<vector><unsigned char>
                     int wSigned = 0;
                     std::vector<vector<unsigned char> > vchPubKeyHashRet;
                         for(int i=0; i< nKeysCount; i++){
@@ -883,26 +852,15 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                         }
                     while ( nSigsCount > 0)
                     {
-
-
-  //                      BOOST_FOREACH(vector<unsigned char>& vchPubKeyHash , vchPubKeyHashRet)
-  //                              std::cout << "pkH: " << HexStr(vchPubKeyHash.begin(),vchPubKeyHash.end()) << "\n";
-                        
-                        
                         valtype& vchSig    = stacktop(-isig);
                         
- //                               std::cout << "vchSig: " << HexStr(vchSig.begin(),vchSig.end()) << "\n";
-                        
                         std::vector<unsigned char> vchRecoveredPubKeyHash;
-//                        bool fOk = checker.CheckSig(vchSig, vchPubKey, scriptCode);
                         if(!checker.RecoverPubKeyHash(vchSig, vchRecoveredPubKeyHash, scriptCode))
                             return false;
-//                        BOOST_FOREACH()
                         isig++;
                         bool fOk = false;
                         int rphIndex = 0;
                         BOOST_FOREACH(vector<unsigned char>& vchPubKeyHash , vchPubKeyHashRet){
- //                               std::cout << "pkH: " << HexStr(vchPubKeyHash.begin(),vchPubKeyHash.end()) << "\n";
                                 if(vchPubKeyHash == vchRecoveredPubKeyHash){
                                     fOk = true;
                                     break;
@@ -910,56 +868,22 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                                 rphIndex++;
                         }
                         if(fOk){
-                            
-//                                std::cout << "sI: " << ikeyS << " rph: " << rphIndex << "\n";
                             wSigned += CScriptNum(stacktop(-ikeyS -rphIndex*2 + 1), fRequireMinimal).getint();
-                            
- //                               std::cout << "wS: " << wSigned << "\n";
-                                    nSigsCount--;
+                            nSigsCount--;
                         }else{
                             break;
                         }
                         
                         
-//                        if (fOk) {
-//                            isig++;
-//                            nSigsCount--;
-//                        }
-//                        ikey++;
-//                        nKeysCount--;
-//
-//                        // If there are more signatures left than keys left,
-//                        // then too many signatures have failed. Exit early,
-//                        // without checking any further signatures.
-//                        if (nSigsCount > nKeysCount)
-//                            fSuccess = false;
                     }
- //                   std::cout << "wR: " << wRequired << "\n";
- //                   std::cout << "sS1: " << stack.size() << "\n";
                     if(wSigned < wRequired)
                         fSuccess = false;
                     // Clean up stack of actual arguments
                     while (i-- > 0)
                         popstack(stack);
 
-                    // A bug causes CHECKMULTISIG to consume one extra argument
-                    // whose contents were not checked in any way.
-                    //
-                    // Unfortunately this is a potential source of mutability,
-                    // so optionally verify it is exactly equal to zero prior
-                    // to removing it from the stack.
-//                    if (stack.size() < 1)
-//                        return set_error(serror, SCRIPT_ERR_INVALID_STACK_OPERATION);
-//                    if ((flags & SCRIPT_VERIFY_NULLDUMMY) && stacktop(-1).size())
-//                        return set_error(serror, SCRIPT_ERR_SIG_NULLDUMMY);
-                    
-    //                std::cout << "sS2: " << stack.size() << "\n";
-//                    popstack(stack);
-
-    //                std::cout << "sS3: " << stack.size() << "\n";
                     stack.push_back(fSuccess ? vchTrue : vchFalse);
 
-    //                std::cout << "sS4: " << stack.size() << "\n";
                     if (opcode == OP_CHECKMULTISIGVERIFY)
                     {
                         if (fSuccess)
@@ -1190,7 +1114,6 @@ bool TransactionSignatureChecker::RecoverPubKeyHash(const std::vector<unsigned c
 {
     int nHashType = vchSigIn.back();
     uint256 sighash = SignatureHash(scriptCode, *txTo, nIn, nHashType);
- //   std::cout << "vchSigIn: " << HexStr(vchSigIn.begin(),vchSigIn.end()) << "\n";
     CPubKey rPubKey;
     std::vector<unsigned char> vchSigCompact;
         vchSigCompact = vchSigIn;
@@ -1199,7 +1122,6 @@ bool TransactionSignatureChecker::RecoverPubKeyHash(const std::vector<unsigned c
         return false;
     
     vchPubKeyHash = ToByteVector(rPubKey.GetID());
- //   std::cout << "vchPkh: " << HexStr(vchPubKeyHash.begin(),vchPubKeyHash.end()) << "\n";
     return true;
 }
     
@@ -1238,22 +1160,15 @@ bool VerifyScript(const CScript& scriptSig, const CScript& scriptPubKey, unsigne
         // an empty stack and the EvalScript above would return false.
         assert(!stackCopy.empty());
 
-        
-//    std::cout << "vrf1: \n";
         const valtype& scriptPubKeySerialized = stackCopy.back();
         CScript scriptPubKey2(scriptPubKeySerialized.begin(), scriptPubKeySerialized.end());
         popstack(stackCopy);
 
-//    std::cout << "vrf2: \n";
         if (!EvalScript(stackCopy, scriptPubKey2, flags, checker, serror)) // Check inside script, the whole script as script + scriptPubkey
             // serror is set
             return false;
-    
-//    std::cout << "vrf3: \n";
         if (stackCopy.empty())
             return set_error(serror, SCRIPT_ERR_EVAL_FALSE);
-    
- //   std::cout << "vrf4: \n";
         if (!CastToBool(stackCopy.back()))
             return set_error(serror, SCRIPT_ERR_EVAL_FALSE);
         else
