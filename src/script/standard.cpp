@@ -127,7 +127,7 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, vector<vector<unsi
 
             if (opcode2 == OP_PUBKEY)
             {
-                if ( vch1.size() > 65)
+                if ( vch1.size() > 65 || vch1.size() < 32 )
                     break;
                 vSolutionsRet.push_back(vch1);
             }
