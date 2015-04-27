@@ -231,7 +231,6 @@ CScript _createmultisig_redeemScript(const Array& params)
 
 Value createmultisig(const Array& params, bool fHelp)
 {
-//    RPCTypeCheck(params, list_of(array_type)(obj_type));
     if (fHelp || params.size() < 2 || params.size() > 2)
     {
         string msg = "createmultisig nrequired [\"key\",...]\n"
@@ -267,7 +266,6 @@ Value createmultisig(const Array& params, bool fHelp)
     CBitcoinAddress saddress(inner);
     CBitcoinAddress shaddress(innerID);
 
-//    std::cout << "inner: " << HexStr(inner.begin(),inner.end()) << "\n";
     Object result;
     result.push_back(Pair("scriptAddress", saddress.ToString()));
     result.push_back(Pair("scriptHashAddress", shaddress.ToString()));

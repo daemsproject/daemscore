@@ -8,6 +8,7 @@
 #include <hash.h>
 #include "mhash.h"
 #include "utilstrencodings.h"
+#include <math.h> 
 #if defined(USE_SSE2) && !defined(USE_SSE2_ALWAYS)
 #ifdef _MSC_VER
 // MSVC 64bit is unable to use inline asm
@@ -31,34 +32,25 @@
 void mixHash(uint256* input, const unsigned int height) {
     uint256 mHashRnd[8];
     getRandom(mHashRnd);
-    //getRandom(&rnd);
     uint256 roller;
     roller = *input;
-    //std::cout << "roller: \n" << roller.ToString() << "\n";
-    // std::cout << "height: \n" << height<< "\n";
     int r;
     uint256 *mixer;
-    mixer = new uint256[height];
-    for (unsigned int i = 0; i < height; i++) {
+    unsigned int rounds=(unsigned int)int(16*sqrt((double)height));
+    mixer = new uint256[rounds];
+    for (unsigned int i = 0; i < rounds; i++) {
         roller ^= mHashRnd[i & 7];
         mixAdd(&roller);
         mixer[i] = roller;
 
     }
-    for (unsigned int i = 0; i < height; i++) {
-        r = (unsigned int) (roller.GetLow64() & 0xffffffff) % height;
-        //std::cout << "roller: \n" << r << "\n";
+    for (unsigned int i = 0; i < rounds; i++) {
+        r = (unsigned int) (roller.GetLow64() & 0xffffffff) % rounds;
         roller += mixer[r];
         roller ^= mHashRnd[i & 7];
         mixAdd(&roller);
-        //std::cout << "roller: \n" << roller.ToString() << "\n";
     }
-    //delete[] mixer;
-    //std::cout << "roller: \n" << roller.ToString() << "\n";
-    // std::cout << "input: \n"  << HexStr(BEGIN(*input), END(*input)) << "\n";
     *input = Hash(BEGIN(roller), END(roller), BEGIN(*input), END(*input));
-    //std::cout << "roller beginend: \n"  << HexStr(BEGIN(roller), END(roller)) << "\n";    
-    //std::cout << "result: \n" << input->ToString() << "\n";
     delete[] mixer;
 }
 
@@ -72,13 +64,10 @@ void getRandom(uint256* mHashRnd) {
     mHashRnd[6].SetHex("0x59b7c70950352b733d074b5bad162c9d3b732f1acbcf29e4b2c47eab5a5615c5");
     mHashRnd[7].SetHex("0x61dcfeae08c1d458ee5e6a65bb26c6419f64a15c169a94a9de34a11ab3753b39");
 
-    //std::cout << "rnd: \n" << mHashRnd[1].ToString() << "\n";
-    //std::cout << "rnd: \n" << mHashRnd[7].ToString() << "\n";
 }
 
 void mixAdd(uint256* roller) {
     unsigned int shift = roller->GetLow64()&0xff;
-    //std::cout << "shift: \n" << shift << "\n";
     uint256 lchunk = *roller>>shift;
     uint256 r1 = *roller << (unsigned int) (256 - shift);
     r1 |= lchunk;

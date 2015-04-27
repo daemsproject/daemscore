@@ -206,7 +206,7 @@ static void MutateTxAddInput(CMutableTransaction& tx, const string& strInput)
         throw runtime_error("invalid TX input vout");
 
 string strValue = strInput.substr(pos2 + 1, string::npos);
-    int value = atoi64(strValue);
+    int64_t value = atoi64(strValue);
     if ((value < 0) || (value > MAX_MONEY))    
         throw runtime_error("invalid TX input value");
     // append to transaction input list

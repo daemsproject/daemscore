@@ -661,8 +661,8 @@ bool IsStandardTx(const CTransaction& tx, string& reason)
         return false;
     }
 
-    BOOST_FOREACH(const CTxIn& txin, tx.vin)
-    {
+    //BOOST_FOREACH(const CTxIn& txin, tx.vin)
+    //{
         // Biggest 'standard' txin is a 15-of-15 P2SH multisig with compressed
         // keys. (remember the 520 byte limit on redeemScript size) That works
         // out to a (15*(33+1))+3=513 byte redeemScript, 513+1+15*(73+1)+3=1627
@@ -674,13 +674,13 @@ bool IsStandardTx(const CTransaction& tx, string& reason)
 //            reason = "scriptsig-size";
 //            return false;
 //        }
-        if (!txin.scriptSig.IsPushOnly()) {
-            reason = "scriptsig-not-pushonly";
-            return false;
-        }
-    }
+//        if (!txin.scriptSig.IsPushOnly()) {
+//            reason = "scriptsig-not-pushonly";
+//            return false;
+//        }
+   // }
 
-    unsigned int nDataOut = 0;
+    //unsigned int nDataOut = 0;
     txnouttype whichType;
     BOOST_FOREACH(const CTxOut& txout, tx.vout) {
         if (!::IsStandard(txout.scriptPubKey, whichType)) {
@@ -688,8 +688,12 @@ bool IsStandardTx(const CTransaction& tx, string& reason)
             return false;
         }
 
-        if (whichType == TX_NULL_DATA)
-            nDataOut++;
+//        if (whichType == TX_NULL_DATA)
+//            nDataOut++;
+        if (txout.scriptPubKey.size()==0&&txout.nValue>0){
+            reason = "nullwithvalue";
+            return false;
+        }
         else if ((whichType == TX_MULTISIG) && (!fIsBareMultisigStd)) {
             reason = "bare-multisig";
             return false;
@@ -700,10 +704,10 @@ bool IsStandardTx(const CTransaction& tx, string& reason)
     }
 
     // only one OP_RETURN txout is permitted
-    if (nDataOut > 1) {
-        reason = "multi-op-return";
-        return false;
-    }
+//    if (nDataOut > 1) {
+//        reason = "multi-op-return";
+//        return false;
+//    }
 
     return true;
 }
@@ -768,10 +772,15 @@ bool AreInputsStandard(const CTransaction& tx, const CCoinsViewCache& mapInputs)
         // get the scriptPubKey corresponding to this input:
         const CScript& prevScript = prev.scriptPubKey;
         if (!Solver(prevScript, whichType, vSolutions))
-            return false;
+        {
+            LogPrintf("Non-standard input: Solver failed\n");
+            return false;}
         int nArgsExpected = ScriptSigArgsExpected(whichType, vSolutions);
         if (nArgsExpected < 0)
+        {
+            LogPrintf("Non-standard input: nArgs < 0\n");
             return false;
+        }
 
         // Transactions with extra stuff in their scriptSigs are
         // non-standard. Note that this EvalScript() call will
@@ -780,21 +789,26 @@ bool AreInputsStandard(const CTransaction& tx, const CCoinsViewCache& mapInputs)
         // IsStandard() will have already returned false
         // and this method isn't called.
         vector<vector<unsigned char> > stack;
-        if (!EvalScript(stack, tx.vin[i].scriptSig, false, BaseSignatureChecker()))
+        if (!EvalScript(stack, tx.vin[i].scriptSig, false, BaseSignatureChecker())){
+            LogPrintf("Non-standard input: EvalScript failed\n");
             return false;
-
+        }
         if (whichType == TX_SCRIPTHASH)
         {
-            if (stack.empty())
+            if (stack.empty()){
+                LogPrintf("Non-standard input: stack empty\n");
                 return false;
+            }
             CScript subscript(stack.back().begin(), stack.back().end());
             vector<vector<unsigned char> > vSolutions2;
             txnouttype whichType2;
             if (Solver(subscript, whichType2, vSolutions2))
             {
                 int tmpExpected = ScriptSigArgsExpected(whichType2, vSolutions2);
-                if (tmpExpected < 0)
+                if (tmpExpected < 0){
+                    LogPrintf("Non-standard input: tmpexpected 0\n");
                     return false;
+                }
                 nArgsExpected += tmpExpected;
             }
             else
@@ -806,8 +820,10 @@ bool AreInputsStandard(const CTransaction& tx, const CCoinsViewCache& mapInputs)
             }
         }
 
-        if (stack.size() != (unsigned int)nArgsExpected && nArgsExpected != 0)
+        if (stack.size() != (unsigned int)nArgsExpected){
+            LogPrintf("Non-standard input: nArgsExpected e\n");
             return false;
+    }
     }
 
     return true;
@@ -969,6 +985,9 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
     if (pool.exists(hash))
         return false;
 
+    bool fTxOverride=false;
+    CTxMemPoolEntry entryOverrided;
+    CTransaction tx4CheckVins;
     // Check for conflicts with in-memory transactions
     {
     LOCK(pool.cs); // protect pool.mapNextTx
@@ -977,10 +996,16 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
         COutPoint outpoint = tx.vin[i].prevout;
         if (pool.mapNextTx.count(outpoint))
         {
-            // Disable replacement feature for now
-            return false;
+            fTxOverride=pool.CheckTxOverride(tx,entryOverrided,tx4CheckVins);
+            if (!fTxOverride){
+                return state.DoS(100, error("AcceptToMemoryPool: : invalid tx override"),
+                     REJECT_INVALID, "txoverride");
+            }
+            break;
         }
     }
+        if (!fTxOverride)
+            tx4CheckVins=tx;
     }
 
     {
@@ -1009,15 +1034,13 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
         }
 
         // are the actual inputs available?
-        if (!view.HaveInputs(tx))
+        if (!view.HaveInputs(tx4CheckVins))           
             return state.Invalid(error("AcceptToMemoryPool : inputs already spent"),
                                  REJECT_DUPLICATE, "bad-txns-inputs-spent");
 
         // Bring the best block into scope
         view.GetBestBlock();
-
         nValueIn = view.GetValueIn(tx);
-
         // we have all inputs cached now, so switch back to dummy, so we don't need to keep lock on mempool
         view.SetBackend(dummy);
         }
@@ -1086,10 +1109,13 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
             return error("AcceptToMemoryPool: : insane fees %s, %d > %d",
                          hash.ToString(),
                          nFees, ::minRelayTxFee.GetFee(nSize) * 10000);
-
+        if (pool.getEntranceFeeRate(TX_ENTRANCE_THRESHOULD)>=tx.GetFeeRate())
+            return error("AcceptToMemoryPool: : fee lower than threshould %s, fee rate %d",
+                         hash.ToString(),tx.GetFeeRate());
         // Check against previous transactions
         // This is done last to help prevent CPU exhaustion denial-of-service attacks.
-        if (!CheckInputs(tx, state, view, true, STANDARD_SCRIPT_VERIFY_FLAGS, true))
+        
+        if (!CheckInputs(tx,tx4CheckVins, state, view, true, STANDARD_SCRIPT_VERIFY_FLAGS, true))
         {
             return error("AcceptToMemoryPool: : ConnectInputs failed %s", hash.ToString());
         }
@@ -1103,17 +1129,19 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
         // There is a similar check in CreateNewBlock() to prevent creating
         // invalid blocks, however allowing such transactions into the mempool
         // can be exploited as a DoS attack.
-        if (!CheckInputs(tx, state, view, true, MANDATORY_SCRIPT_VERIFY_FLAGS, true))
+        if (!CheckInputs(tx,tx4CheckVins, state, view, true, MANDATORY_SCRIPT_VERIFY_FLAGS, true))
         {
             return error("AcceptToMemoryPool: : BUG! PLEASE REPORT THIS! ConnectInputs failed against MANDATORY but not STANDARD flags %s", hash.ToString());
         }
-
         // Store transaction in memory
+        //delete the overidedTx 
+        if (fTxOverride){
+            list<CTransaction> removed;
+            pool.remove(entryOverrided.GetTx(),removed,true);
+        }
         pool.addUnchecked(hash, entry);
     }
-
     SyncWithWallets(tx, NULL);
-
     return true;
 }
 
@@ -1430,7 +1458,7 @@ bool CScriptCheck::operator()() {
     return true;
 }
 
-bool CheckInputs(const CTransaction& tx, CValidationState &state, const CCoinsViewCache &inputs, bool fScriptChecks, unsigned int flags, bool cacheStore, std::vector<CScriptCheck> *pvChecks)
+bool CheckInputs(const CTransaction& tx,const CTransaction& tx4CheckVins,CValidationState &state, const CCoinsViewCache &inputs, bool fScriptChecks, unsigned int flags, bool cacheStore, std::vector<CScriptCheck> *pvChecks)
 {
     if (!tx.IsCoinBase())
     {
@@ -1439,7 +1467,8 @@ bool CheckInputs(const CTransaction& tx, CValidationState &state, const CCoinsVi
 
         // This doesn't trigger the DoS code on purpose; if it did, it would make it easier
         // for an attacker to attempt to split the network.
-        if (!inputs.HaveInputs(tx))
+        //cccoin: modified this to tx4CheckVins to check overriding txs.
+        if (!inputs.HaveInputs(tx4CheckVins))
             return state.Invalid(error("CheckInputs() : %s inputs unavailable", tx.GetHash().ToString()));
 
         // While checking, GetBestBlock() refers to the parent block.
@@ -1764,7 +1793,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
             nFees += view.GetValueIn(tx)-tx.GetValueOut();
 
             std::vector<CScriptCheck> vChecks;
-            if (!CheckInputs(tx, state, view, fScriptChecks, flags, false, nScriptCheckThreads ? &vChecks : NULL))
+            if (!CheckInputs(tx,tx, state, view, fScriptChecks, flags, false, nScriptCheckThreads ? &vChecks : NULL))
                 return false;
             control.Add(vChecks);
         }

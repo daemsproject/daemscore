@@ -52,6 +52,7 @@ public:
     const CTransaction& GetTx() const { return this->tx; }
     double GetPriority(unsigned int currentHeight) const;
     CAmount GetFee() const { return nFee; }
+    double getFeeRate(){ return (double)nFee/nTxSize; } // the fee rate of the tx, for sorting use
     size_t GetTxSize() const { return nTxSize; }
     int64_t GetTime() const { return nTime; }
     unsigned int GetHeight() const { return nHeight; }
@@ -97,6 +98,7 @@ public:
     std::map<uint256, CTxMemPoolEntry> mapTx;
     std::map<COutPoint, CInPoint> mapNextTx;
     std::map<uint256, std::pair<double, CAmount> > mapDeltas;
+    std::vector<uint256> queue;
 
     CTxMemPool(const CFeeRate& _minRelayFee);
     ~CTxMemPool();
@@ -126,7 +128,11 @@ public:
     void PrioritiseTransaction(const uint256 hash, const std::string strHash, double dPriorityDelta, const CAmount& nFeeDelta);
     void ApplyDeltas(const uint256 hash, double &dPriorityDelta, CAmount &nFeeDelta);
     void ClearPrioritisation(const uint256 hash);
-
+    bool CheckTxOverride(const CTransaction &tx,CTxMemPoolEntry &entryOverrided,CTransaction &tx4CheckVins);
+    void addToQueue(uint256 hash);
+    void removeFromQueue(uint256 hash);
+    double getEntranceFeeRate(unsigned int threshould);
+    unsigned int getQueueSizeAfter(int position);
     unsigned long size()
     {
         LOCK(cs);

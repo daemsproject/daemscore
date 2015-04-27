@@ -143,8 +143,11 @@ public:
 
     bool IsDust(CFeeRate minRelayTxFee) const
     {
-        // IsDust() detection disabled, allows any valid dust to be relayed
-        // The fees imposed on each dust txo is considered sufficient spam deterrant.
+        // allow value=0
+        if(nValue==0)
+            return false;
+        if (nValue<minRelayTxFee.GetFee(104))//104 bytes Vin length threshould
+            return true;
         return false;
     }
 
@@ -222,7 +225,7 @@ public:
     CAmount GetValueOut() const;
     CAmount GetValueIn() const;
     CAmount GetFee() const;
-
+    double GetFeeRate() const;
     // Compute priority, given priority of inputs and (optionally) tx size
     double ComputePriority(double dPriorityInputs, unsigned int nTxSize=0) const;
 

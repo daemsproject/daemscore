@@ -121,6 +121,7 @@ public:
 
     void ClearUnspendable() {
         BOOST_FOREACH(CTxOut &txout, vout) {
+            txout.strContent="";
             if (txout.scriptPubKey.IsUnspendable())
                 txout.SetNull();
         }

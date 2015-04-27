@@ -279,9 +279,6 @@ void CBase32Data::SetData(const std::vector<unsigned char>& vchVersionIn, const 
     vchData.resize(nSize);
     if (!vchData.empty())
         memcpy(&vchData[0], pdata, nSize);
-    
-//    std::cout << "\nsetdata : " << HexStr(vchData.begin(),vchData.end()) << "\n";
-//    std::cout << "nsize   : " << nSize << "\n";
 }
 
 void CBase58Data::SetData(const std::vector<unsigned char>& vchVersionIn, const unsigned char* pbegin, const unsigned char* pend)
@@ -348,7 +345,6 @@ std::string CBase32Data::ToString() const
 {
     std::vector<unsigned char> vch = vchVersion;
     vch.insert(vch.begin(), vchData.begin(), vchData.end());
-//    std::cout << "addstr: " << HexStr(vch.begin(),vch.end()) << "\n";
     return EncodeBase32Check(vch);
 }
 
@@ -417,14 +413,7 @@ bool CBitcoinAddress::Set(const CScript& script)
             str += *pc++;
     }
     const char* sch = (const char*)str.c_str();;
-//    std::cout << "\nstr     : " << HexStr(str) << "\n";
-//    SetData(Params().Base32Prefix(CChainParams::SCRIPT_ADDRESS), &script, script.size());
     SetData(Params().Base32Prefix(CChainParams::SCRIPT_ADDRESS),sch,script.size());
-//    delete [] sch;
-//    std::cout << "param   : " << HexStr(Params().Base32Prefix(CChainParams::SCRIPT_ADDRESS)) << "\n";
-//    std::cout << "script  : " << HexStr(script.begin(),script.end()) << "\n";
-//    std::cout << "script2s: " << script.ToString() << "\n";
-//    std::cout << "ssize   : " << script.size() << "\n";
     return true;
 }
 

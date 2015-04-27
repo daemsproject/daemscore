@@ -127,3 +127,6 @@ std::string CTransaction::ToString() const
         str += "    " + vout[i].ToString() + "\n";
     return str;
 }
+double  CTransaction::GetFeeRate() const{
+    return (double)GetFee()/GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION);
+}

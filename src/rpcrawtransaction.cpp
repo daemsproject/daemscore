@@ -15,6 +15,7 @@
 #include "script/sign.h"
 #include "script/standard.h"
 #include "uint256.h"
+#include <string>
 #ifdef ENABLE_WALLET
 #include "wallet.h"
 #endif
@@ -311,7 +312,7 @@ Value createrawtransaction(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 2)
         throw runtime_error(
-            "createrawtransaction [{\"txid\":\"id\",\"vout\":n,\"value\":value},...] {\"address\":amount,...}\n"
+            "createrawtransaction [{\"txid\":\"id\",\"vout\":n,\"value\":value},...] [{\"address\":\"address\",\"value\":amount,\"content\":\"contenthex\"}]\n"
             "\nCreate a transaction spending the given inputs and sending to the given addresses.\n"
             "Returns hex-encoded raw transaction.\n"
             "Note that the transaction's inputs are not signed, and\n"
@@ -328,23 +329,27 @@ Value createrawtransaction(const Array& params, bool fHelp)
             "       ,...\n"
             "     ]\n"
             "2. \"addresses\"           (string, required) a json object with addresses as keys and amounts as values\n"
-            "    {\n"
-            "      \"address\": x.xxx   (numeric, required) The key is the cccoin address, the value is the ltc amount\n"
+            "    [{\n"
+            "      \"address\": \"address\" (string, required) The address to recieve coin\n"
+                    "         \"value\":n        (numeric, required) The output value\n"
+            "      \"content\": \"content\" (string, optional) content in hex format\n"
             "      ,...\n"
             "    }\n"
+            "       ,...\n"
+            "     ]\n"
 
             "\nResult:\n"
             "\"transaction\"            (string) hex string of the transaction\n"
 
             "\nExamples\n"
-            + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"myid\\\",\\\"vout\\\":0,\\\"value\\\":0}]\" \"{\\\"address\\\":0.01}\"")
-            + HelpExampleRpc("createrawtransaction", "\"[{\\\"txid\\\":\\\"myid\\\",\\\"vout\\\":0,,\\\"value\\\":0}]\", \"{\\\"address\\\":0.01}\"")
+            + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\":\\\"myid\\\",\\\"vout\\\":0,\\\"value\\\":0}]\" \"[{\\\"address\\\":\\\"myaddress\\\",\\\"value\\\":0.01}]\"")
+            + HelpExampleRpc("createrawtransaction", "\"[{\\\"txid\\\":\\\"myid\\\",\\\"vout\\\":0,,\\\"value\\\":0}]\", \"[{\\\"address\\\":\\\"myaddress\\\",\\\"value\\\":0.01}]\"")
         );
 
-    RPCTypeCheck(params, list_of(array_type)(obj_type));
+    RPCTypeCheck(params, list_of(array_type)(array_type));
 
     Array inputs = params[0].get_array();
-    Object sendTo = params[1].get_obj();
+    Array sendTo = params[1].get_array();//get_obj();
 
     CMutableTransaction rawTx;
 
@@ -359,30 +364,40 @@ Value createrawtransaction(const Array& params, bool fHelp)
         int nOutput = vout_v.get_int();
         if (nOutput < 0)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, vout must be positive");
-        const Value& value = find_value(o, "value");
-        if (value.type() != int_type && value.type() != real_type)
+        const Value& value_v = find_value(o, "value");
+        if (value_v.type() != int_type && value_v.type() != real_type)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, missing value key");
-        CAmount nAmount = AmountFromValue(value);
-        if(nAmount < 0)
+        CAmount nValue = AmountFromValue(value_v);
+        if (nValue < 0)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, value must be positive");
-        CTxIn in(COutPoint(txid, nOutput,nAmount));
+        CTxIn in(COutPoint(txid, nOutput,nValue));
         rawTx.vin.push_back(in);
     }
 
-    set<CBitcoinAddress> setAddress;
-    BOOST_FOREACH(const Pair& s, sendTo) {
-        CBitcoinAddress address(s.name_);
-        if (!address.IsValid())
-            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, string("Invalid Cccoin address: ")+s.name_);
-
-        if (setAddress.count(address))
-            throw JSONRPCError(RPC_INVALID_PARAMETER, string("Invalid parameter, duplicated address: ")+s.name_);
-        setAddress.insert(address);
-
-        CScript scriptPubKey = GetScriptForDestination(address.Get());
-        CAmount nAmount = AmountFromValue(s.value_);
-
-        CTxOut out(nAmount, scriptPubKey);
+    //set<CBitcoinAddress> setAddress;
+    //BOOST_FOREACH(const Pair& s, sendTo) {
+    BOOST_FOREACH(const Value& output, sendTo) {
+            const Object& o = output.get_obj();
+            const Value& address_v = find_value(o, "address");
+            CScript scriptPubKey =CScript();
+            if (address_v.get_str()!=""){
+                CBitcoinAddress address(address_v.get_str());
+            if (!address.IsValid())
+                throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, string("Invalid Cccoin address: ")+address_v.get_str());
+            scriptPubKey = GetScriptForDestination(address.Get());
+        }
+        const Value& value_v = find_value(o, "value");
+        CAmount nAmount = AmountFromValue(value_v);
+        const Value& content_v = find_value(o, "content");
+        string strContent="";
+        if (!content_v.is_null()){
+            vector<unsigned char> vContent=ParseHexV(content_v,"content");
+            for(vector<unsigned char>::iterator iter = vContent.begin(); iter != vContent.end(); ++iter)
+            {
+                strContent += *iter;
+            }
+        }            
+        CTxOut out(nAmount, scriptPubKey,strContent);
         rawTx.vout.push_back(out);
     }
 

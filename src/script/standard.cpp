@@ -42,6 +42,11 @@ const char* GetTxnOutputType(txnouttype t)
 bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, vector<vector<unsigned char> >& vSolutionsRet)
 {
     // Templates
+    if (scriptPubKey.empty()){
+        typeRet = TX_NULL_DATA;
+        return true;
+    }
+        
     static multimap<txnouttype, CScript> mTemplates;
     if (mTemplates.empty())
     {
@@ -49,7 +54,7 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, vector<vector<unsi
         mTemplates.insert(make_pair(TX_PUBKEY, CScript() << OP_PUBKEY << OP_CHECKSIG));
 
         // Cccoin address tx, sender provides hash of pubkey, receiver provides signature
-        mTemplates.insert(make_pair(TX_PUBKEYHASH, CScript() << OP_CHECKSIG));
+        mTemplates.insert(make_pair(TX_PUBKEYHASH, CScript() << OP_PUBKEYHASH << OP_CHECKSIG));
 
         // Sender provides N pubkeys, receivers provides M signatures
         mTemplates.insert(make_pair(TX_MULTISIG, CScript() << OP_SMALLINTEGER << OP_PUBKEYS << OP_SMALLINTEGER << OP_CHECKMULTISIG));
@@ -183,7 +188,7 @@ int ScriptSigArgsExpected(txnouttype t, const std::vector<std::vector<unsigned c
             return vSolutions[0][0] + 1;
         case TX_SCRIPTHASH:
             return 1; // doesn't include args needed by the script
-        case TX_SCRIPT:
+        case TX_SCRIPT: // Todo return real sig arg count
             return 0;
     }
     return -1;
@@ -306,8 +311,6 @@ class CScriptVisitor : public boost::static_visitor<bool>
             *script << OP_HASH160 << ToByteVector(scriptID) << OP_EQUAL;
             return true;
         }
-        
-       
     };
 }
 
@@ -315,7 +318,6 @@ CScript GetScriptForDestination(const CTxDestination& dest)
 {
     CScript script;
     boost::apply_visitor(CScriptVisitor(&script,1), dest);
-//    std::cout << "\ntype: " << typeid(dest).name() << "\n";
     
     return script;
 }

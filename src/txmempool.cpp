@@ -427,6 +427,7 @@ bool CTxMemPool::addUnchecked(const uint256& hash, const CTxMemPoolEntry &entry)
     LOCK(cs);
     {
         mapTx[hash] = entry;
+        addToQueue(hash);
         const CTransaction& tx = mapTx[hash].GetTx();
         for (unsigned int i = 0; i < tx.vin.size(); i++)
             mapNextTx[tx.vin[i].prevout] = CInPoint(&tx, i);
@@ -435,8 +436,43 @@ bool CTxMemPool::addUnchecked(const uint256& hash, const CTxMemPoolEntry &entry)
     }
     return true;
 }
-
-
+void CTxMemPool::addToQueue(uint256 hash){
+    for(std::vector<uint256>::iterator i=queue.begin();i<queue.end();i++){
+        if (mapTx[hash].getFeeRate()>mapTx[*i].getFeeRate()){
+            queue.insert(i,hash);
+            return;
+        }
+    }
+    queue.push_back(hash);
+}
+void CTxMemPool::removeFromQueue(uint256 hash){
+    for(std::vector<uint256>::iterator i=queue.begin();i<queue.end();i++){
+        if (*i==hash){
+            queue.erase(i);
+            return;
+        }
+    }
+}
+double CTxMemPool::getEntranceFeeRate(unsigned int threshould){
+    unsigned int queueLength=0;    
+    for (unsigned int i=0;i<queue.size();i++){        
+        queueLength+=mapTx[queue[i]].GetTxSize();
+        if (queueLength>threshould)                        
+           return mapTx[queue[i]].getFeeRate();        
+    }
+    return 0;
+}
+unsigned int CTxMemPool::getQueueSizeAfter(int position){
+    unsigned int nQueueSize=0;
+    if (position>=(int)queue.size()||position<-1)
+        return 0;
+    for (int i=position+1;i<(int)queue.size();i++){
+        nQueueSize+=mapTx[queue[i]].GetTxSize();
+        if (nQueueSize>DEFAULT_BLOCK_MAX_SIZE)
+            break;
+    }
+    return nQueueSize;
+}
 void CTxMemPool::remove(const CTransaction &origTx, std::list<CTransaction>& removed, bool fRecursive)
 {
     // Remove transaction from memory pool
@@ -465,6 +501,7 @@ void CTxMemPool::remove(const CTransaction &origTx, std::list<CTransaction>& rem
             removed.push_back(tx);
             totalTxSize -= mapTx[hash].GetTxSize();
             mapTx.erase(hash);
+            removeFromQueue(hash);
             nTransactionsUpdated++;
         }
     }
@@ -586,7 +623,7 @@ void CTxMemPool::check(const CCoinsViewCache *pcoins) const
             waitingOnDependants.push_back(&it->second);
         else {
             CValidationState state; CTxUndo undo;
-            assert(CheckInputs(tx, state, mempoolDuplicate, false, 0, false, NULL));
+            assert(CheckInputs(tx, tx,state, mempoolDuplicate, false, 0, false));
             UpdateCoins(tx, state, mempoolDuplicate, undo, 1000000);
         }
     }
@@ -600,7 +637,7 @@ void CTxMemPool::check(const CCoinsViewCache *pcoins) const
             stepsSinceLastRemove++;
             assert(stepsSinceLastRemove < waitingOnDependants.size());
         } else {
-            assert(CheckInputs(entry->GetTx(), state, mempoolDuplicate, false, 0, false, NULL));
+            assert(CheckInputs(entry->GetTx(), entry->GetTx(),state, mempoolDuplicate, false, 0, false));
             CTxUndo undo;
             UpdateCoins(entry->GetTx(), state, mempoolDuplicate, undo, 1000000);
             stepsSinceLastRemove = 0;
@@ -711,7 +748,108 @@ void CTxMemPool::ClearPrioritisation(const uint256 hash)
     LOCK(cs);
     mapDeltas.erase(hash);
 }
-
+bool CTxMemPool::CheckTxOverride(const CTransaction &tx,CTxMemPoolEntry &entryOverrided,CTransaction &tx4CheckVins)
+{ 
+    //find the Overrided tx
+    BOOST_FOREACH(const CTxIn &txin, tx.vin) {
+        std::map<COutPoint, CInPoint>::iterator it = mapNextTx.find(txin.prevout);
+        if (it != mapNextTx.end()) {
+            entryOverrided = mapTx[it->second.ptx->GetHash()]; 
+            break;
+        }
+    }
+    //do override check.
+    //check if all vins of the Overrided tx exists in the new tx
+    BOOST_FOREACH(const CTxIn &txin, entryOverrided.GetTx().vin) {
+       if(find(tx.vin.begin(),tx.vin.end(),txin)!=tx.vin.end()){
+           LogPrintf("tx override:origin vin not found\n");
+           return false;
+       }
+    }
+     //make tx4checkvins
+    CMutableTransaction tx0 = CMutableTransaction();
+    BOOST_FOREACH(const CTxIn &txin,tx.vin) {
+       if(find(entryOverrided.GetTx().vin.begin(),entryOverrided.GetTx().vin.end(),txin)==entryOverrided.GetTx().vin.end()){
+           tx0.vin.push_back(txin);
+       }           
+    }
+    tx4CheckVins=CTransaction(tx0);
+    //check if there's other conflicts to mempool txs
+    for (unsigned int i = 0; i < tx4CheckVins.vin.size(); i++)
+    {
+        COutPoint outpoint = tx4CheckVins.vin[i].prevout;
+        if (mapNextTx.count(outpoint)){        
+            LogPrintf("tx override:othervin occupied\n");
+                return false;         
+        }
+    }
+    //merge vouts to the same address before comparing
+    std::vector<CTxOut> mergedOverridedVout;
+    std::vector<CTxOut> mergedNewVout;
+    BOOST_FOREACH(const CTxOut &txout, entryOverrided.GetTx().vout) {        
+        bool fMerged=false;
+        BOOST_FOREACH(const CTxOut &txout3, mergedOverridedVout) {        
+                if (txout.scriptPubKey==txout3.scriptPubKey){
+                    fMerged=true;
+                    break;
+                }                    
+        }
+        if (fMerged)
+                continue;
+        CTxOut txoutMerged=CTxOut(0,txout.scriptPubKey,"");
+        BOOST_FOREACH(const CTxOut &txout2, entryOverrided.GetTx().vout) {        
+            if(txout.scriptPubKey==txout2.scriptPubKey)
+                txoutMerged.nValue+=txout2.nValue;
+        }
+        mergedOverridedVout.push_back(txoutMerged);
+    }
+    //merge new tx vouts
+    BOOST_FOREACH(const CTxOut &txout, tx.vout) {        
+        bool fMerged=false;
+        BOOST_FOREACH(const CTxOut &txout3, mergedNewVout) {        
+                if (txout.scriptPubKey==txout3.scriptPubKey){
+                    fMerged=true;
+                    break;
+                }                    
+        }
+        if (fMerged)
+                continue;
+        CTxOut txoutMerged=CTxOut(0,txout.scriptPubKey,"");
+        BOOST_FOREACH(const CTxOut &txout2, tx.vout) {        
+            if(txout.scriptPubKey==txout2.scriptPubKey)
+                txoutMerged.nValue+=txout2.nValue;
+        }
+        mergedNewVout.push_back(txoutMerged);
+    }
+    //check if all vouts with value>0 of the overrided tx exists in the new tx    
+    BOOST_FOREACH(const CTxOut &txout, mergedOverridedVout) {        
+        if (txout.nValue==0)
+            continue;
+        bool voutMatched=false;
+       BOOST_FOREACH(const CTxOut &txout2, mergedNewVout) {
+           if (txout.scriptPubKey==txout2.scriptPubKey&&(txout.nValue<=txout2.nValue))
+           {
+                   voutMatched=true;
+                    break;
+           }
+       }
+       if (!voutMatched){
+           LogPrintf("tx override:vout value not enough\n");
+           return false;
+       }
+    }
+    //check the absolute fee the new tx
+    if(tx.GetFee()<entryOverrided.GetFee()*1.1){
+              LogPrintf("tx override:abs fee not enough\n");
+        return false;
+    }
+    //check the fee rate of the new tx
+    if (tx.GetFeeRate()<entryOverrided.getFeeRate()*1.1){
+        LogPrintf("tx override:rel fee not enough\n");
+        return false;
+    }
+    return true;                
+}
 
 CCoinsViewMemPool::CCoinsViewMemPool(CCoinsView *baseIn, CTxMemPool &mempoolIn) : CCoinsViewBacked(baseIn), mempool(mempoolIn) { }
 
