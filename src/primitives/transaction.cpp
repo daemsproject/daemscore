@@ -54,7 +54,7 @@ uint256 CTxOut::GetHash() const
 
 std::string CTxOut::ToString() const
 {
-    return strprintf("CTxOut(nValue=%d.%06d, scriptPubKey=%s,strContent=%s)", nValue / COIN, nValue % COIN, scriptPubKey.ToString().substr(0,30),strContent);
+    return strprintf("CTxOut(nValue=%d.%06d, scriptPubKey=%s,strContent=%s)", nValue / COIN, nValue % COIN, scriptPubKey.ToString().substr(0,30),strContent.length()>100?strContent.substr(0,100):strContent);
 }
 
 CMutableTransaction::CMutableTransaction() : nVersion(CTransaction::CURRENT_VERSION), nLockTime(0) {}

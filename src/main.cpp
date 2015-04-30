@@ -660,7 +660,10 @@ bool IsStandardTx(const CTransaction& tx, string& reason)
         reason = "tx-size";
         return false;
     }
-
+    if (tx.vout.size()>65536){
+        reason = "vout-count";
+        return false;
+    }
     //BOOST_FOREACH(const CTxIn& txin, tx.vin)
     //{
         // Biggest 'standard' txin is a 15-of-15 P2SH multisig with compressed

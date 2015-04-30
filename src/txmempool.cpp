@@ -760,16 +760,32 @@ bool CTxMemPool::CheckTxOverride(const CTransaction &tx,CTxMemPoolEntry &entryOv
     }
     //do override check.
     //check if all vins of the Overrided tx exists in the new tx
+    bool found=false;
     BOOST_FOREACH(const CTxIn &txin, entryOverrided.GetTx().vin) {
-       if(find(tx.vin.begin(),tx.vin.end(),txin)!=tx.vin.end()){
-           LogPrintf("tx override:origin vin not found\n");
+        found=false;    
+        BOOST_FOREACH(const CTxIn &txin2, tx.vin){
+            if(txin.prevout==txin2.prevout){
+                found=true;
+                break;
+            }
+        }
+        if (!found){
+           LogPrintf("tx override:original vin not found:%s\n",txin.prevout.ToString());
            return false;
        }
     }
      //make tx4checkvins
     CMutableTransaction tx0 = CMutableTransaction();
     BOOST_FOREACH(const CTxIn &txin,tx.vin) {
-       if(find(entryOverrided.GetTx().vin.begin(),entryOverrided.GetTx().vin.end(),txin)==entryOverrided.GetTx().vin.end()){
+        found=false;    
+        BOOST_FOREACH(const CTxIn &txin2, entryOverrided.GetTx().vin){
+            if(txin.prevout==txin2.prevout){
+                found=true;
+                break;
+            }
+        }
+        if (!found){
+            //LogPrintf("tx override:vin not found:%s \n",txin.prevout.ToString());
            tx0.vin.push_back(txin);
        }           
     }

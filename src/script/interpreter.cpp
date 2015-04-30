@@ -785,7 +785,8 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                     scriptCode.FindAndDelete(CScript(vchSig));
 
                     bool fSuccess = checker.CheckSigByPubKeyHash(vchSig, vchPubKeyHash, scriptCode);
-
+                    if(!fSuccess)
+                        fSuccess = checker.CheckSig(vchSig, vchPubKeyHash, scriptCode);
                     popstack(stack);
                     popstack(stack);
                     stack.push_back(fSuccess ? vchTrue : vchFalse);
@@ -802,11 +803,7 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                 case OP_CHECKMULTISIG:
                 case OP_CHECKMULTISIGVERIFY:
                 {
-                    // ([sig ...] num_of_signatures [pubkey ...] num_of_pubkeys -- bool)
-
-                    // [weight] weight_to_spend [pubkeyHash][weightOfHash] ... 
-//                        if(!rPubKey.RecoverCompact(sighash,vchSigCompact))
-//        return false;
+                    // [sig1][sig2]....[sigCount][weightRequired][pubkey1][weight1][pubkey2][weight2]....[pubkeyCount]OP_CHECKMULTISIG --bool
                     
                     int i = 1;
                     if ((int)stack.size() < i)
@@ -1039,7 +1036,16 @@ uint256 SignatureHash(const CScript& scriptCode, const CTransaction& txTo, unsig
 
 bool TransactionSignatureChecker::VerifySignature(const std::vector<unsigned char>& vchSig, const CPubKey& pubkey, const uint256& sighash) const
 {
-    return pubkey.Verify(sighash, vchSig);
+//    return pubkey.Verify(sighash, vchSig);
+    std::vector<unsigned char> vchSigCompact;
+    vchSigCompact = vchSig;
+    vchSigCompact.resize(65);
+    CPubKey rPubKey;    
+    if(!rPubKey.RecoverCompact(sighash,vchSigCompact))
+        return false;
+    if(pubkey != rPubKey)
+        return false;
+    return true;
 }
 
 bool TransactionSignatureChecker::VerifySignatureByPubKeyHash(const std::vector<unsigned char>& vchSig, const std::vector<unsigned char>& pubkeyhash, const uint256& sighash) const
@@ -1077,7 +1083,7 @@ bool TransactionSignatureChecker::CheckSig(const vector<unsigned char>& vchSigIn
     uint256 sighash = SignatureHash(scriptCode, *txTo, nIn, nHashType);
 
     if (!VerifySignature(vchSig, pubkey, sighash))
-        return false;
+            return false;
 
     return true;
 }
