@@ -21,6 +21,7 @@
 #endif
 
 #include <stdint.h>
+#include <cctype>
 
 #include <boost/assign/list_of.hpp>
 #include "json/json_spirit_utils.h"
@@ -55,6 +56,19 @@ void ScriptPubKeyToJSON(const CScript& scriptPubKey, Object& out, bool fIncludeH
     out.push_back(Pair("addresses", a));
 }
 
+std::string getBinaryContent(const std::string& content)
+{
+    bool isprintable = true;
+    BOOST_FOREACH(const unsigned char ch, content) {
+        if(isprint((int)ch) == 0)
+            isprintable = false;
+    }
+    if(isprintable)
+        return std::string(content.begin(),content.end());
+    else
+        return "";
+}
+
 void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
 {
     entry.push_back(Pair("txid", tx.GetHash().GetHex()));
@@ -65,6 +79,7 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
         Object in;
         if (tx.IsCoinBase()){
             in.push_back(Pair("coinbase", HexStr(txin.scriptSig.begin(), txin.scriptSig.end())));
+            in.push_back(Pair("blockHeight", (int64_t)txin.prevout.n));
             in.push_back(Pair("value", ValueFromAmount(txin.prevout.nValue)));
         }
         else {
@@ -76,7 +91,6 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
             o.push_back(Pair("hex", HexStr(txin.scriptSig.begin(), txin.scriptSig.end())));
             in.push_back(Pair("scriptSig", o));
         }
-        //in.push_back(Pair("sequence", (int64_t)txin.nSequence));
         vin.push_back(in);
     }
     entry.push_back(Pair("vin", vin));
@@ -87,6 +101,7 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
         out.push_back(Pair("value", ValueFromAmount(txout.nValue)));
         out.push_back(Pair("n", (int64_t)i));
         out.push_back(Pair("content", HexStr(txout.strContent.begin(), txout.strContent.end())));
+        out.push_back(Pair("contentText", getBinaryContent(txout.strContent)));
         Object o;
         ScriptPubKeyToJSON(txout.scriptPubKey, o, true);
         out.push_back(Pair("scriptPubKey", o));

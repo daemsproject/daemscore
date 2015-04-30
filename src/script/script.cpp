@@ -260,3 +260,17 @@ std::string CScript::ToString() const
     }
     return str;
 }
+
+
+bool CScript::IsProperFormat() const
+{
+    opcodetype opcode;
+    std::vector<unsigned char> vch;
+    const_iterator pc = begin();
+    while (pc < end())
+    {
+        if (!GetOp(pc, opcode, vch))
+            return false;
+    }
+    return true;
+}

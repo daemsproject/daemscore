@@ -228,40 +228,41 @@ static CScript CombineSignatures(const CScript& scriptPubKey, const CTransaction
 {
     switch (txType)
     {
-    case TX_NONSTANDARD:
-    case TX_NULL_DATA:
-        // Don't know anything about this, assume bigger one is correct:
-        if (sigs1.size() >= sigs2.size())
-            return PushAll(sigs1);
-        return PushAll(sigs2);
-    case TX_PUBKEY:
-    case TX_PUBKEYHASH:
-        // Signatures are bigger than placeholders or empty scripts:
-        if (sigs1.empty() || sigs1[0].empty())
+        case TX_NONSTANDARD:
+        case TX_NULL_DATA:
+            // Don't know anything about this, assume bigger one is correct:
+            if (sigs1.size() >= sigs2.size())
+                return PushAll(sigs1);
             return PushAll(sigs2);
-        return PushAll(sigs1);
-    case TX_SCRIPTHASH:
-        if (sigs1.empty() || sigs1.back().empty())
-            return PushAll(sigs2);
-        else if (sigs2.empty() || sigs2.back().empty())
+        case TX_PUBKEY:
+        case TX_PUBKEYHASH:
+            // Signatures are bigger than placeholders or empty scripts:
+            if (sigs1.empty() || sigs1[0].empty())
+                return PushAll(sigs2);
             return PushAll(sigs1);
-        else
-        {
-            // Recur to combine:
-            valtype spk = sigs1.back();
-            CScript pubKey2(spk.begin(), spk.end());
+        case TX_SCRIPT:
+        case TX_SCRIPTHASH:
+            if (sigs1.empty() || sigs1.back().empty())
+                return PushAll(sigs2);
+            else if (sigs2.empty() || sigs2.back().empty())
+                return PushAll(sigs1);
+            else
+            {
+                // Recur to combine:
+                valtype spk = sigs1.back();
+                CScript pubKey2(spk.begin(), spk.end());
 
-            txnouttype txType2;
-            vector<vector<unsigned char> > vSolutions2;
-            Solver(pubKey2, txType2, vSolutions2);
-            sigs1.pop_back();
-            sigs2.pop_back();
-            CScript result = CombineSignatures(pubKey2, txTo, nIn, txType2, vSolutions2, sigs1, sigs2);
-            result << spk;
-            return result;
-        }
-    case TX_MULTISIG:
-        return CombineMultisig(scriptPubKey, txTo, nIn, vSolutions, sigs1, sigs2);
+                txnouttype txType2;
+                vector<vector<unsigned char> > vSolutions2;
+                Solver(pubKey2, txType2, vSolutions2);
+                sigs1.pop_back();
+                sigs2.pop_back();
+                CScript result = CombineSignatures(pubKey2, txTo, nIn, txType2, vSolutions2, sigs1, sigs2);
+                result << spk;
+                return result;
+            }
+        case TX_MULTISIG:
+            return CombineMultisig(scriptPubKey, txTo, nIn, vSolutions, sigs1, sigs2);
     }
 
     return CScript();

@@ -167,7 +167,10 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, vector<vector<unsi
     }
 
     vSolutionsRet.clear();
-    typeRet = TX_NONSTANDARD;
+    if(scriptPubKey.IsProperFormat())
+        typeRet = TX_SCRIPT;
+    else
+        typeRet = TX_NONSTANDARD;
     return false;
 }
 

@@ -593,6 +593,7 @@ public:
     }
 
     std::string ToString() const;
+    bool IsProperFormat() const;
     void clear()
     {
         // The default std::vector::clear() does not release memory.
