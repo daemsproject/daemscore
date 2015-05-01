@@ -314,6 +314,12 @@ class CScriptVisitor : public boost::static_visitor<bool>
             *script << OP_HASH160 << ToByteVector(scriptID) << OP_EQUAL;
             return true;
         }
+        
+        bool operator()(const CScript &scriptIn) const {
+            script->clear();
+            *script += scriptIn;
+            return true;
+        }
     };
 }
 

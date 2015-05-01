@@ -16,6 +16,7 @@
 #include <boost/variant/static_visitor.hpp>
 #include <boost/assign/list_of.hpp>
 #include "utilstrencodings.h"
+#include <boost/foreach.hpp>
 
 using namespace std;
 
@@ -431,15 +432,22 @@ bool CBitcoinAddress::IsValid(const CChainParams& params) const
 {
     bool fCorrectSize = vchData.size() == 20;
     bool fKnownVersion = vchVersion == params.Base32Prefix(CChainParams::PUBKEY_ADDRESS) ||
-                         vchVersion == params.Base32Prefix(CChainParams::SCRIPT_ADDRESS) ||
                          vchVersion == params.Base32Prefix(CChainParams::SCRIPTHASH_ADDRESS);
-    return fCorrectSize && fKnownVersion;
+    bool fCorrectScript = vchVersion == params.Base32Prefix(CChainParams::SCRIPT_ADDRESS);
+    return (fCorrectSize && fKnownVersion) ||  fCorrectScript;
 }
 
 CTxDestination CBitcoinAddress::Get() const
 {
     if (!IsValid())
         return CNoDestination();
+    if (vchVersion == Params().Base32Prefix(CChainParams::SCRIPT_ADDRESS)){
+        std::vector<unsigned char> s;
+        BOOST_FOREACH(const unsigned char & ch, vchData){
+            s.push_back(ch);
+        }
+        return CScript(s.begin(),s.end());
+    }
     uint160 id;
     memcpy(&id, &vchData[0], 20);
     if (vchVersion == Params().Base32Prefix(CChainParams::PUBKEY_ADDRESS))
