@@ -22,6 +22,8 @@
 #include <boost/assign/list_of.hpp>
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_value.h"
+#include "ccc/content.h"
+#include "utilstrencodings.h"
 
 using namespace boost;
 using namespace boost::assign;
@@ -69,7 +71,7 @@ Value getinfo(const Array& params, bool fHelp)
             "\nExamples:\n"
             + HelpExampleCli("getinfo", "")
             + HelpExampleRpc("getinfo", "")
-        );
+            );
 
     proxyType proxy;
     GetProxy(NET_IPV4, proxy);
@@ -140,7 +142,7 @@ public:
             obj.push_back(Pair("hex", HexStr(subscript.begin(), subscript.end())));
             Array a;
             BOOST_FOREACH(const CTxDestination& addr, addresses)
-                a.push_back(CBitcoinAddress(addr).ToString());
+            a.push_back(CBitcoinAddress(addr).ToString());
             obj.push_back(Pair("addresses", a));
             if (whichType == TX_MULTISIG)
                 obj.push_back(Pair("sigsrequired", nRequired));
@@ -171,7 +173,7 @@ Value validateaddress(const Array& params, bool fHelp)
             "\nExamples:\n"
             + HelpExampleCli("validateaddress", "\"Ler4HNAEfwYhBmGXcFP2Po1NpRUEiK8km2\"")
             + HelpExampleRpc("validateaddress", "\"Ler4HNAEfwYhBmGXcFP2Po1NpRUEiK8km2\"")
-        );
+            );
 
     CBitcoinAddress address(params[0].get_str());
     bool isValid = address.IsValid();
@@ -214,8 +216,8 @@ CScript _createmultisig_redeemScript(const Array& params)
         if (!address.IsValid())
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, string("Invalid Cccoin address: ")+s.name_);
 
-//        if (setDest. .count(address))
-//            throw JSONRPCError(RPC_INVALID_PARAMETER, string("Invalid parameter, duplicated address: ")+s.name_);
+        //        if (setDest. .count(address))
+        //            throw JSONRPCError(RPC_INVALID_PARAMETER, string("Invalid parameter, duplicated address: ")+s.name_);
         setDest.push_back(address.Get());
         setWeight.push_back(s.value_.get_int());
 
@@ -224,7 +226,7 @@ CScript _createmultisig_redeemScript(const Array& params)
 
     if (result.size() > MAX_SCRIPT_ELEMENT_SIZE)
         throw runtime_error(
-                strprintf("redeemScript exceeds size limit: %d > %d", result.size(), MAX_SCRIPT_ELEMENT_SIZE));
+            strprintf("redeemScript exceeds size limit: %d > %d", result.size(), MAX_SCRIPT_ELEMENT_SIZE));
 
     return result;
 }
@@ -234,32 +236,32 @@ Value createmultisig(const Array& params, bool fHelp)
     if (fHelp || params.size() < 2 || params.size() > 2)
     {
         string msg = "createmultisig nrequired [\"key\",...]\n"
-            "\nCreates a multi-signature address with n signature of m keys required.\n"
-            "It returns a json object with the address and redeemScript.\n"
+                "\nCreates a multi-signature address with n signature of m keys required.\n"
+                "It returns a json object with the address and redeemScript.\n"
 
-            "\nArguments:\n"
-            "1. nrequired      (numeric, required) The number of required signatures out of the n keys or addresses.\n"
-            "2. \"keys\"       (string, required) A json array of keys which are cccoin addresses or hex-encoded public keys\n"
-            "     [\n"
-            "       \"key\"    (string) cccoin address or hex-encoded public key\n"
-            "       ,...\n"
-            "     ]\n"
+                "\nArguments:\n"
+                "1. nrequired      (numeric, required) The number of required signatures out of the n keys or addresses.\n"
+                "2. \"keys\"       (string, required) A json array of keys which are cccoin addresses or hex-encoded public keys\n"
+                "     [\n"
+                "       \"key\"    (string) cccoin address or hex-encoded public key\n"
+                "       ,...\n"
+                "     ]\n"
 
-            "\nResult:\n"
-            "{\n"
-            "  \"address\":\"multisigaddress\",  (string) The value of the new multisig address.\n"
-            "  \"redeemScript\":\"script\"       (string) The string value of the hex-encoded redemption script.\n"
-            "}\n"
+                "\nResult:\n"
+                "{\n"
+                "  \"address\":\"multisigaddress\",  (string) The value of the new multisig address.\n"
+                "  \"redeemScript\":\"script\"       (string) The string value of the hex-encoded redemption script.\n"
+                "}\n"
 
-            "\nExamples:\n"
-            "\nCreate a multisig address from 2 addresses\n"
-            + HelpExampleCli("createmultisig", "2 \"[\\\"Ler4HNAEfwYhBmGXcFP2Po1NpRUEiK8km2\\\",\\\"LbhhnRHHVfP1eUJp1tDNiyeeVsNhFN9Fcw\\\"]\"") +
-            "\nAs a json rpc call\n"
-            + HelpExampleRpc("createmultisig", "2, \"[\\\"Ler4HNAEfwYhBmGXcFP2Po1NpRUEiK8km2\\\",\\\"LbhhnRHHVfP1eUJp1tDNiyeeVsNhFN9Fcw\\\"]\"")
-        ;
+                "\nExamples:\n"
+                "\nCreate a multisig address from 2 addresses\n"
+                + HelpExampleCli("createmultisig", "2 \"[\\\"Ler4HNAEfwYhBmGXcFP2Po1NpRUEiK8km2\\\",\\\"LbhhnRHHVfP1eUJp1tDNiyeeVsNhFN9Fcw\\\"]\"") +
+                "\nAs a json rpc call\n"
+                + HelpExampleRpc("createmultisig", "2, \"[\\\"Ler4HNAEfwYhBmGXcFP2Po1NpRUEiK8km2\\\",\\\"LbhhnRHHVfP1eUJp1tDNiyeeVsNhFN9Fcw\\\"]\"")
+                ;
         throw runtime_error(msg);
     }
-    
+
     // Construct using pay-to-script-hash:
     CScript inner = _createmultisig_redeemScript(params);
     CScriptID innerID(inner);
@@ -271,6 +273,101 @@ Value createmultisig(const Array& params, bool fHelp)
     result.push_back(Pair("scriptHashAddress", shaddress.ToString()));
     result.push_back(Pair("redeemScript", HexStr(inner.begin(), inner.end())));
 
+    return result;
+}
+
+CContent _create_text_content(std::string str)
+{
+    Array textArray;
+    Object textObj;
+    textObj.push_back(Pair("cc_name", "CC_TEXT"));
+    textObj.push_back(Pair("content", str));
+    textArray.push_back(textObj);
+    Array cttArray;
+    Object cttObj1;
+    Object cttObj2;
+    cttObj1.push_back(Pair("cc_name", "CC_TEXT_P"));
+    cttObj1.push_back(Pair("content", textArray));
+    cttObj2.push_back(Pair("cc_name", "CC_TEXT_ENCODING_UTF8"));
+    cttObj2.push_back(Pair("content", ""));
+    cttArray.push_back(cttObj1);
+    cttArray.push_back(cttObj2);
+    CContent ctt(cttArray);
+    return ctt;
+}
+
+CContent _create_file_content(std::string str)
+{
+    Array fileArray;
+    Object fileObj1;
+    Object fileObj2;
+    fileObj1.push_back(Pair("cc_name", "CC_FILE_NAME"));
+    fileObj1.push_back(Pair("content", basename(str.c_str())));
+    fileObj2.push_back(Pair("cc_name", "CC_FILE_CONTENT"));
+    std::string fileStr;
+    FileToString(str, fileStr);
+    fileObj2.push_back(Pair("content", fileStr));
+    fileArray.push_back(fileObj1);
+    fileArray.push_back(fileObj2);
+
+    Array cttArray;
+    Object cttObj;
+    cttObj.push_back(Pair("cc_name", "CC_FILE_P"));
+    cttObj.push_back(Pair("content", fileArray));
+    cttArray.push_back(cttObj);
+    CContent ctt(cttArray);
+    return ctt;
+}
+
+CContent _create_content(const Array& params)
+{
+    std::string str = params[0].get_str();
+    CContent ctt = FileExists(str) ? _create_file_content(str) : _create_text_content(str);
+    return ctt;
+}
+
+Object _decode_content(const Array& params)
+{
+    Object error;
+    std::string str = params[0].get_str();
+    if (!IsHex(str))
+        return error;
+    vector<unsigned char> str2(ParseHex(str));
+    CContent ctt(str2);
+    Object jsonObj;
+    jsonObj.push_back(Pair("json", ctt.ToJson()));
+    jsonObj.push_back(Pair("string", ctt.ToHumanString()));
+    return jsonObj;
+}
+
+Value createcontent(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() > 2) {
+        string msg = "createcontent \"conntent string\""
+                                + HelpExampleCli("decodecontent", "This is a test") +
+                "\nAs a json rpc call\n"
+                + HelpExampleRpc("decodecontent", "This is a test");
+        throw runtime_error(msg);
+    }
+    CContent ctt = _create_content(params);
+    Object result;
+    result.push_back(Pair("hex", HexStr(ctt)));
+    result.push_back(Pair("human_string", ctt.ToHumanString()));
+
+    return result;
+}
+
+Value decodecontent(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() > 2) {
+        string msg = "decodecontent \"content string\""
+                + HelpExampleCli("decodecontent", "0513040e5468697320697320612074657374890200") +
+                "\nAs a json rpc call\n"
+                + HelpExampleRpc("decodecontent", "0513040e5468697320697320612074657374890200");
+        throw runtime_error(msg);
+    }
+
+    Object result = _decode_content(params);
     return result;
 }
 
@@ -295,7 +392,7 @@ Value verifymessage(const Array& params, bool fHelp)
             + HelpExampleCli("verifymessage", "\"Ler4HNAEfwYhBmGXcFP2Po1NpRUEiK8km2\" \"signature\" \"my message\"") +
             "\nAs json rpc\n"
             + HelpExampleRpc("verifymessage", "\"Ler4HNAEfwYhBmGXcFP2Po1NpRUEiK8km2\", \"signature\", \"my message\"")
-        );
+            );
 
     string strAddress  = params[0].get_str();
     string strSign     = params[1].get_str();
@@ -335,7 +432,7 @@ Value setmocktime(const Array& params, bool fHelp)
             "\nArguments:\n"
             "1. timestamp  (integer, required) Unix seconds-since-epoch timestamp\n"
             "   Pass 0 to go back to using the system time."
-        );
+            );
 
     if (!Params().MineBlocksOnDemand())
         throw runtime_error("setmocktime for regression testing (-regtest mode) only");

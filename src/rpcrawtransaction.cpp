@@ -11,6 +11,7 @@
 #include "main.h"
 #include "net.h"
 #include "rpcserver.h"
+#include "ccc/content.h"
 #include "script/script.h"
 #include "script/sign.h"
 #include "script/standard.h"
@@ -19,9 +20,7 @@
 #ifdef ENABLE_WALLET
 #include "wallet.h"
 #endif
-
-#include <stdint.h>
-#include <cctype>
+#include "util.h"
 
 #include <boost/assign/list_of.hpp>
 #include "json/json_spirit_utils.h"
@@ -56,17 +55,15 @@ void ScriptPubKeyToJSON(const CScript& scriptPubKey, Object& out, bool fIncludeH
     out.push_back(Pair("addresses", a));
 }
 
-std::string getBinaryContent(const std::string& content)
+std::string GetContentCode(const std::string& content)
 {
-    bool isprintable = true;
-    BOOST_FOREACH(const unsigned char ch, content) {
-        if(isprint((int)ch) == 0)
-            isprintable = false;
-    }
-    if(isprintable)
-        return std::string(content.begin(),content.end());
-    else
-        return "";
+    CContent ctt(content);
+    return ctt.ToHumanString();
+}
+
+std::string GetBinaryContent(const std::string& content)
+{
+    return IsStringPrint(content)? std::string(content.begin(), content.end()): "";
 }
 
 void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
@@ -101,7 +98,7 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
         out.push_back(Pair("value", ValueFromAmount(txout.nValue)));
         out.push_back(Pair("n", (int64_t)i));
         out.push_back(Pair("content", HexStr(txout.strContent.begin(), txout.strContent.end())));
-        out.push_back(Pair("contentText", getBinaryContent(txout.strContent)));
+        out.push_back(Pair("contentText", GetBinaryContent(txout.strContent)));
         Object o;
         ScriptPubKeyToJSON(txout.scriptPubKey, o, true);
         out.push_back(Pair("scriptPubKey", o));
@@ -383,7 +380,7 @@ Value createrawtransaction(const Array& params, bool fHelp)
         const Value& value_v = find_value(o, "value");
         if (value_v.type() != int_type)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, missing value key");
-//        std::cout << "value: " << value_v.get_real() <<"\n";
+        //        std::cout << "value: " << value_v.get_real() <<"\n";
         CAmount nValue = value_v.get_int64();
         if (nValue < 0)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, value must be positive");

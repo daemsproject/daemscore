@@ -98,9 +98,9 @@ bool Solver(const CKeyStore& keystore, const CScript& scriptPubKey, uint256 hash
         return true;
     case TX_SCRIPTHASH:
         return keystore.GetCScript(uint160(vSolutions[0]), scriptSigRet);
-
+    case TX_SCRIPT:
     case TX_MULTISIG:
-        return (SignN(vSolutions, keystore, hash, nHashType, scriptSigRet));
+        return SignN(vSolutions, keystore, hash, nHashType, scriptSigRet);
     }
     return false;
 }

@@ -740,3 +740,31 @@ void SetThreadPriority(int nPriority)
 #endif // PRIO_THREAD
 #endif // WIN32
 }
+
+bool FileExists(const std::string& filename)
+{
+    boost::filesystem::ifstream file(filename.c_str());
+    return file.good();
+}
+
+bool FileToString(const std::string& filename, std::string& content)
+{
+    boost::filesystem::ifstream file(filename.c_str());
+    content.assign((std::istreambuf_iterator<char>(file) ), (std::istreambuf_iterator<char>()));
+    return true;
+}
+
+
+bool IsStringPrint(const std::string& str)
+{
+    bool printable = true;
+    for (string::const_iterator i = str.begin(); i != str.end(); ++i)
+    {
+        if (!isprint(*i)){
+            printable = false;
+            break;
+        }
+    }
+    return printable;
+
+}

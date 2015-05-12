@@ -164,6 +164,9 @@ bool SoftSetBoolArg(const std::string& strArg, bool fValue);
 void SetThreadPriority(int nPriority);
 void RenameThread(const char* name);
 
+bool FileExists(const std::string& filename);
+bool FileToString(const std::string& filename, std::string& content);
+bool IsStringPrint(const std::string& str);
 /**
  * Standard wrapper for do-something-forever thread functions.
  * "Forever" really means until the thread is interrupted.
