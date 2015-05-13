@@ -37,6 +37,9 @@ enum Network
     NET_MAX,
 };
 
+
+std::string MaskIPv4(const std::string IPv4);
+
 /** IP address (IPv6, or IPv4 using mapped IPv6 range (::FFFF:0:0/96)) */
 class CNetAddr
 {
@@ -80,7 +83,9 @@ class CNetAddr
         bool IsMulticast() const;
         enum Network GetNetwork() const;
         std::string ToString() const;
+        std::string ToStringMask() const;
         std::string ToStringIP() const;
+        std::string ToStringIPMask() const;
         unsigned int GetByte(int n) const;
         uint64_t GetHash() const;
         bool GetInAddr(struct in_addr* pipv4Addr) const;

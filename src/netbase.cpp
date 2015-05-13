@@ -30,6 +30,10 @@
 #include <boost/algorithm/string/predicate.hpp> // for startswith() and endswith()
 #include <boost/thread.hpp>
 
+#include <string>
+#include <sstream>
+#include <utility>
+
 #if !defined(HAVE_MSG_NOSIGNAL) && !defined(MSG_NOSIGNAL)
 #define MSG_NOSIGNAL 0
 #endif
@@ -846,9 +850,50 @@ std::string CNetAddr::ToStringIP() const
                          GetByte(3) << 8 | GetByte(2), GetByte(1) << 8 | GetByte(0));
 }
 
+
+std::string MaskIPv4(const std::string IPv4)
+{
+    std::string result;
+    std::istringstream iss(IPv4);
+    int i = 0;
+    for (std::string token; std::getline(iss, token, '.'); i++)
+    {
+        if(i == 0)
+            result += "*";
+        else if(i == 1)
+            result += ".*";
+        else if(i > 1)
+            result += "." + token;
+    }
+    return result;
+}
+        
+std::string CNetAddr::ToStringIPMask() const
+{
+    if (IsTor())
+        return EncodeBase32(&ip[6], 10) + ".onion";
+    CService serv(*this, 0);
+    struct sockaddr_storage sockaddr;
+    socklen_t socklen = sizeof(sockaddr);
+    if (serv.GetSockAddr((struct sockaddr*)&sockaddr, &socklen)) {
+        char name[1025] = "";
+        if (!getnameinfo((const struct sockaddr*)&sockaddr, socklen, name, sizeof(name), NULL, 0, NI_NUMERICHOST)){
+            return MaskIPv4(std::string(name));
+        }
+    }
+    if (IsIPv4())
+        return strprintf("*.*.%u.%u", GetByte(1), GetByte(0));
+    else
+        return strprintf("*:*:*:*:*:*:%x:%x", GetByte(3) << 8 | GetByte(2), GetByte(1) << 8 | GetByte(0));
+}
 std::string CNetAddr::ToString() const
 {
     return ToStringIP();
+}
+
+std::string CNetAddr::ToStringMask() const
+{
+    return ToStringIPMask();
 }
 
 bool operator==(const CNetAddr& a, const CNetAddr& b)
@@ -1174,9 +1219,9 @@ std::string CService::ToStringPort() const
 std::string CService::ToStringIPPort() const
 {
     if (IsIPv4() || IsTor()) {
-        return ToStringIP() + ":" + ToStringPort();
+        return ToStringIPMask() + ":" + ToStringPort();
     } else {
-        return "[" + ToStringIP() + "]:" + ToStringPort();
+        return "[" + ToStringIPMask() + "]:" + ToStringPort();
     }
 }
 
