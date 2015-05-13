@@ -44,6 +44,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "getbalance", 1 },
     { "getbalance", 2 },
     { "getblockhash", 0 },
+    { "getblockbyheight", 0 },
     { "move", 2 },
     { "move", 3 },
     { "sendfrom", 2 },

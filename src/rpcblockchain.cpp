@@ -241,6 +241,66 @@ Value getblockhash(const Array& params, bool fHelp)
     return pblockindex->GetBlockHash().GetHex();
 }
 
+Value getblockbyheight(const Array& params, bool fHelp)
+{
+
+
+    if (fHelp || params.size() < 1 || params.size() > 2)
+        throw runtime_error(
+            "getblockbyheight index ( verbose )\n"
+            "\nIf verbose is false, returns a string that is serialized, hex-encoded data for block 'hash'.\n"
+            "If verbose is true, returns an Object with information about block <hash>.\n"
+            "\nArguments:\n"
+            "1. index         (numeric, required) The block index\n"
+            "2. verbose           (boolean, optional, default=true) true for a json object, false for the hex encoded data\n"
+            "\nResult (for verbose = true):\n"
+            "{\n"
+            "  \"hash\" : \"hash\",     (string) the block hash (same as provided)\n"
+            "  \"confirmations\" : n,   (numeric) The number of confirmations, or -1 if the block is not on the main chain\n"
+            "  \"size\" : n,            (numeric) The block size\n"
+            "  \"height\" : n,          (numeric) The block height or index\n"
+            "  \"version\" : n,         (numeric) The block version\n"
+            "  \"merkleroot\" : \"xxxx\", (string) The merkle root\n"
+            "  \"tx\" : [               (array of string) The transaction ids\n"
+            "     \"transactionid\"     (string) The transaction id\n"
+            "     ,...\n"
+            "  ],\n"
+            "  \"time\" : ttt,          (numeric) The block time in seconds since epoch (Jan 1 1970 GMT)\n"
+            "  \"nonce\" : n,           (numeric) The nonce\n"
+            "  \"bits\" : \"1d00ffff\", (string) The bits\n"
+            "  \"difficulty\" : x.xxx,  (numeric) The difficulty\n"
+            "  \"previousblockhash\" : \"hash\",  (string) The hash of the previous block\n"
+            "  \"nextblockhash\" : \"hash\"       (string) The hash of the next block\n"
+            "}\n"
+            "\nResult (for verbose=false):\n"
+            "\"data\"             (string) A string that is serialized, hex-encoded data for block 'hash'.\n"
+            "\nExamples:\n"
+            + HelpExampleCli("getblockbyheight", "1000")
+            + HelpExampleRpc("getblockbyheight", "1000")
+            );
+
+    int nHeight = params[0].get_int();
+    if (nHeight < 0 || nHeight > chainActive.Height())
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Block height out of range");
+
+    CBlockIndex* pblockindex = chainActive[nHeight];
+    bool fVerbose = true;
+    if (params.size() > 1)
+        fVerbose = params[1].get_bool();
+    CBlock block;
+    if (!ReadBlockFromDisk(block, pblockindex))
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "Can't read block from disk");
+
+    if (!fVerbose) {
+        CDataStream ssBlock(SER_NETWORK, PROTOCOL_VERSION);
+        ssBlock << block;
+        std::string strHex = HexStr(ssBlock.begin(), ssBlock.end());
+        return strHex;
+    }
+
+    return blockToJSON(block, pblockindex);
+}
+
 Value getblock(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() < 1 || params.size() > 2)
