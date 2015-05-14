@@ -740,3 +740,10 @@ Value reconsiderblock(const Array& params, bool fHelp)
 
     return Value::null;
 }
+
+Value getcontent(const Array& params, bool fHelp)  // TO DO
+{
+    if (fHelp || params.size() != 1)
+        throw runtime_error("");
+    return Value::null;
+}
