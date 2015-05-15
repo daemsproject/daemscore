@@ -113,12 +113,38 @@ var BrowserAPI = new function () {
         this.call("regnotify", JSON.stringify(data), null, null, true);
     }
     this.getInfo = function () {
-        var data = [];
-        this.call("getinfo", JSON.stringify(data), function (result) {
-            console.log(result);
-            if (success)
-                success(result);
+        var r;
+        this.call("getinfo", "", function (r1) {
+            r = JSON.stringify(r1);
         });
+        return r;
+    }
+    this.getBlockCount = function () {
+        var r;
+        this.call("getblockcount", "", function (r1) {
+            r = JSON.stringify(r1);
+        });
+        return r;
+    }
+    this.decodeContent = function (c) {
+        var r;
+        var d = [c];
+        this.call("decodecontent", JSON.stringify(d), function (r1) {
+            r = JSON.stringify(r1);
+        }, function (e) {
+            r = e;
+        });
+        return r;
+    }
+    this.createContent = function (c) {
+        var r;
+        var d = [c];
+        this.call("createcontent", JSON.stringify(d), function (r1) {
+            r = JSON.stringify(r1);
+        }, function (e) {
+            r = e;
+        });
+        return r;
     }
 
 
