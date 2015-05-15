@@ -86,6 +86,7 @@ BITCOIN_CORE_H = \
   clientversion.h \
   coincontrol.h \
   coins.h \
+  ccc/txaddressmap.h \
   compat.h \
   compressor.h \
   primitives/block.h \
@@ -244,6 +245,7 @@ libbitcoin_common_a_SOURCES = \
   chainparams.cpp \
   ccc/content.cpp \
   coins.cpp \
+  ccc/txaddressmap.cpp \
   compressor.cpp \
   primitives/block.cpp \
   primitives/transaction.cpp \

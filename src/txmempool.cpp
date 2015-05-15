@@ -24,8 +24,8 @@ CTxMemPoolEntry::CTxMemPoolEntry():
 
 CTxMemPoolEntry::CTxMemPoolEntry(const CTransaction& _tx, const CAmount& _nFee,
                                  int64_t _nTime, double _dPriority,
-                                 unsigned int _nHeight):
-    tx(_tx), nFee(_nFee), nTime(_nTime), dPriority(_dPriority), nHeight(_nHeight)
+                                 unsigned int _nHeight,std::vector<CScript> _vAddresses):
+    tx(_tx), nFee(_nFee), nTime(_nTime), dPriority(_dPriority), nHeight(_nHeight),vAddresses(_vAddresses)
 {
     nTxSize = ::GetSerializeSize(tx, SER_NETWORK, PROTOCOL_VERSION);
 
@@ -45,7 +45,13 @@ CTxMemPoolEntry::GetPriority(unsigned int currentHeight) const
     double dResult = dPriority + deltaPriority;
     return dResult;
 }
-
+bool CTxMemPoolEntry::HasAddress(const std::vector<CScript>& vAddr) const{
+    for(std::vector<CScript>::const_iterator it=vAddresses.begin();it!=vAddresses.end();it++){
+        if(find(vAddr.begin(),vAddr.end(),*it)!=vAddr.end())
+            return true;
+    }
+    return false;
+}
 /**
  * Keep track of fee/priority for transactions confirmed within N blocks
  */
@@ -461,6 +467,13 @@ double CTxMemPool::getEntranceFeeRate(unsigned int threshould){
            return mapTx[queue[i]].getFeeRate();        
     }
     return 0;
+}
+bool CTxMemPool::GetUnconfirmedTransactions(const std::vector<CScript>& vIds,std::vector<CTransaction>& vutx){
+    for (std::map<uint256, CTxMemPoolEntry>::const_iterator it = mapTx.begin(); it != mapTx.end(); it++) {
+        if (it->second.HasAddress(vIds))
+                vutx.push_back(it->second.GetTx());                
+    }
+    return true;
 }
 unsigned int CTxMemPool::getQueueSizeAfter(int position){
     unsigned int nQueueSize=0;

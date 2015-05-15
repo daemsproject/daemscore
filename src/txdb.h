@@ -61,5 +61,18 @@ public:
     bool ReadFlag(const std::string &name, bool &fValue);
     bool LoadBlockIndexGuts();
 };
+//ccc:txaddressmap db, because this map is very big, no memory cache is available
+class CTxAddressMapViewDB :public CTxAddressMapView
+{
+protected:
+    CLevelDBWrapper db;
+public:
+    //std::string strtest="db loaded";
+    CTxAddressMapViewDB(size_t nCacheSize, bool fMemory = false, bool fWipe = false);
+    bool GetTxPosList(const CScript scriptPubKey,std::vector<CDiskTxPos> &vTxPos);
+    //bool BatchErase(const std::vector<std::pair<CScript, std::vector<CDiskTxPos> > > &vTamList);
+    bool BatchWrite(const std::map<CScript,std::vector<CDiskTxPos> > &mapTamList);  
+    bool Write(const CScript &scriptPubKey,const std::vector<CDiskTxPos> &vTxPos);
+};
 
 #endif // BITCOIN_TXDB_H

@@ -14,7 +14,7 @@
 #include "sync.h"
 
 class CAutoFile;
-
+class CScript;
 inline double AllowFreeThreshold()
 {
     return 0; // COIN * 576 / 250;
@@ -42,13 +42,13 @@ private:
     int64_t nTime; //! Local time when entering the mempool
     double dPriority; //! Priority when entering the mempool
     unsigned int nHeight; //! Chain height when entering the mempool
-
+    std::vector<CScript> vAddresses;//related addresses
 public:
     CTxMemPoolEntry(const CTransaction& _tx, const CAmount& _nFee,
-                    int64_t _nTime, double _dPriority, unsigned int _nHeight);
+                    int64_t _nTime, double _dPriority, unsigned int _nHeight,std::vector<CScript> _vAddresses);
     CTxMemPoolEntry();
     CTxMemPoolEntry(const CTxMemPoolEntry& other);
-
+    bool HasAddress(const std::vector<CScript>& vAddr) const;
     const CTransaction& GetTx() const { return this->tx; }
     double GetPriority(unsigned int currentHeight) const;
     CAmount GetFee() const { return nFee; }
@@ -123,7 +123,7 @@ public:
     void pruneSpent(const uint256& hash, CCoins &coins);
     unsigned int GetTransactionsUpdated() const;
     void AddTransactionsUpdated(unsigned int n);
-
+    bool GetUnconfirmedTransactions(const std::vector<CScript>& vIds,std::vector<CTransaction>& vutx);
     /** Affect CreateNewBlock prioritisation of transactions */
     void PrioritiseTransaction(const uint256 hash, const std::string strHash, double dPriorityDelta, const CAmount& nFeeDelta);
     void ApplyDeltas(const uint256 hash, double &dPriorityDelta, CAmount &nFeeDelta);

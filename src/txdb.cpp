@@ -233,3 +233,32 @@ bool CBlockTreeDB::LoadBlockIndexGuts()
 
     return true;
 }
+CTxAddressMapViewDB::CTxAddressMapViewDB(size_t nCacheSize, bool fMemory, bool fWipe) : db(GetDataDir() / "txaddressmap", nCacheSize, fMemory, fWipe) {
+}
+
+bool CTxAddressMapViewDB::GetTxPosList(const CScript scriptPubKey,std::vector<CDiskTxPos> &vTxPos)  {
+     LogPrintf("tamdb gettxposlist %s \n",scriptPubKey.ToString());
+    return db.Read(scriptPubKey, vTxPos);
+}
+bool CTxAddressMapViewDB::BatchWrite(const std::map<CScript, std::vector<CDiskTxPos> > &mapTamList) {
+    // LogPrintf("tamdb batchwrite \n");
+    CLevelDBBatch batch;
+    size_t count = 0;
+    //size_t changed = 1;
+    for (std::map<CScript, std::vector<CDiskTxPos> >::const_iterator it = mapTamList.begin(); it != mapTamList.end();it++) {
+        //LogPrintf("%s : script:%s,pos:%u", __func__,it->first.ToString(),it->second.size());
+            //BatchWriteTxAddressMap(batch, it->first, it->second);   
+            batch.Write(it->first, it->second);
+            //LogPrintf("%s : 2", __func__);
+        count++;       
+    }    
+    LogPrint("coindb", "Committing %u changed addresses to tam database...\n", (unsigned int)count);
+    return db.WriteBatch(batch);
+}
+bool CTxAddressMapViewDB::Write(const CScript &scriptPubKey,const std::vector<CDiskTxPos> &vTxPos) {
+    //LogPrintf("tamdb batchwrite \n");
+    return db.Write(scriptPubKey,vTxPos);
+}
+//void static BatchWriteTxAddressMap(CLevelDBBatch &batch, const CScript &scriptPubkey, const std::vector<CDiskTxPos> &vTxPos) {   
+//        batch.Write(scriptPubkey, vTxPos);
+//}

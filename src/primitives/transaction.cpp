@@ -130,3 +130,12 @@ std::string CTransaction::ToString() const
 double  CTransaction::GetFeeRate() const{
     return (double)GetFee()/GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION);
 }
+void CTransaction::ClearContent(CTransaction& newTx) const{
+    CMutableTransaction mtx;
+    mtx.nVersion=nVersion;
+    mtx.vin=vin;
+    mtx.vout=vout;
+    for(unsigned int i = 0; i < mtx.vout.size(); i++)
+        mtx.vout[i].strContent="";
+    newTx=CTransaction(mtx);
+}

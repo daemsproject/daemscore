@@ -14,6 +14,7 @@
 #include "chain.h"
 #include "chainparams.h"
 #include "coins.h"
+#include "ccc/txaddressmap.h"
 #include "primitives/block.h"
 #include "primitives/transaction.h"
 #include "net.h"
@@ -191,6 +192,10 @@ bool IsInitialBlockDownload();
 std::string GetWarnings(std::string strFor);
 /** Retrieve a transaction (from memory pool, or from disk, if possible) */
 bool GetTransaction(const uint256 &hash, CTransaction &tx, uint256 &hashBlock, bool fAllowSlow = false);
+/** Retrieve a transaction by disk position*/
+bool GetTransaction(const CDiskTxPos &postx, CTransaction &txOut, uint256 &hashBlock);
+/**get all transactions related to the id list, with block hash*/
+bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTransaction, uint256> >& vTxs,bool fIncludeUnconfirmed =true,bool fNoContent=false,unsigned int nOffset=0,unsigned int nNumber=1000000);
 /** Find the best known block, and make it the tip of the block chain */
 bool ActivateBestChain(CValidationState &state, CBlock *pblock = NULL);
 CAmount GetBlockValue(int nHeight, const CAmount& nFees);
@@ -219,30 +224,6 @@ struct CNodeStateStats {
     std::vector<int> vHeightInFlight;
 };
 
-struct CDiskTxPos : public CDiskBlockPos
-{
-    unsigned int nTxOffset; // after header
-
-    ADD_SERIALIZE_METHODS;
-
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
-        READWRITE(*(CDiskBlockPos*)this);
-        READWRITE(VARINT(nTxOffset));
-    }
-
-    CDiskTxPos(const CDiskBlockPos &blockIn, unsigned int nTxOffsetIn) : CDiskBlockPos(blockIn.nFile, blockIn.nPos), nTxOffset(nTxOffsetIn) {
-    }
-
-    CDiskTxPos() {
-        SetNull();
-    }
-
-    void SetNull() {
-        CDiskBlockPos::SetNull();
-        nTxOffset = 0;
-    }
-};
 
 
 CAmount GetMinRelayFee(const CTransaction& tx, unsigned int nBytes, bool fAllowFree);
@@ -293,7 +274,8 @@ bool CheckInputs(const CTransaction& tx,const CTransaction& tx4CheckVins, CValid
 
 /** Apply the effects of this transaction on the UTXO set represented by view */
 void UpdateCoins(const CTransaction& tx, CValidationState &state, CCoinsViewCache &inputs, CTxUndo &txundo, int nHeight);
-
+/** Apply tx changes to txaddressmap db*/
+void UpdateTxAddressMap(const CTransaction& tx,const CDiskTxPos& pos,CValidationState &state,const CCoinsViewCache& inputs,bool fErase);
 /** Context-independent validity checks */
 bool CheckTransaction(const CTransaction& tx, CValidationState& state);
 
@@ -531,6 +513,8 @@ extern CChain chainActive;
 
 /** Global variable that points to the active CCoinsView (protected by cs_main) */
 extern CCoinsViewCache *pcoinsTip;
+/** Global variable that points to the active TxAddressMapView (protected by cs_main) */
+extern CTxAddressMap *pTxAddressMap;
 
 /** Global variable that points to the active block tree (protected by cs_main) */
 extern CBlockTreeDB *pblocktree;
