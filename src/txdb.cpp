@@ -7,7 +7,6 @@
 
 #include "pow.h"
 #include "uint256.h"
-
 #include <stdint.h>
 
 #include <boost/thread.hpp>
@@ -237,7 +236,7 @@ CTxAddressMapViewDB::CTxAddressMapViewDB(size_t nCacheSize, bool fMemory, bool f
 }
 
 bool CTxAddressMapViewDB::GetTxPosList(const CScript scriptPubKey,std::vector<CDiskTxPos> &vTxPos)  {
-     LogPrintf("tamdb gettxposlist %s \n",scriptPubKey.ToString());
+     //LogPrintf("tamdb gettxposlist %s \n",scriptPubKey.ToString());
     return db.Read(scriptPubKey, vTxPos);
 }
 bool CTxAddressMapViewDB::BatchWrite(const std::map<CScript, std::vector<CDiskTxPos> > &mapTamList) {
@@ -247,7 +246,6 @@ bool CTxAddressMapViewDB::BatchWrite(const std::map<CScript, std::vector<CDiskTx
     //size_t changed = 1;
     for (std::map<CScript, std::vector<CDiskTxPos> >::const_iterator it = mapTamList.begin(); it != mapTamList.end();it++) {
         //LogPrintf("%s : script:%s,pos:%u", __func__,it->first.ToString(),it->second.size());
-            //BatchWriteTxAddressMap(batch, it->first, it->second);   
             batch.Write(it->first, it->second);
             //LogPrintf("%s : 2", __func__);
         count++;       

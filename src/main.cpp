@@ -1272,10 +1272,11 @@ bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTr
     //sorting
 
     bool fChanged=true;
-    while(fChanged){
+    while(vTxPosAll.size()>1&&fChanged){
         fChanged=false;
-        for (std::vector<CDiskTxPos>::iterator it = vTxPosAll.begin();it <vTxPosAll.end()--; it++) {
-            std::vector<CDiskTxPos>::iterator it2=it++;
+        for (std::vector<CDiskTxPos>::iterator it = vTxPosAll.begin();it <--vTxPosAll.end(); it++) {
+            std::vector<CDiskTxPos>::iterator it2=it;
+            it2++;
             if(it2->nFile>it->nFile||(it2->nFile==it->nFile&&it2->nPos>it->nPos)
                     ||(it2->nFile==it->nFile&&it2->nPos==it->nPos&&it2->nTxOffset>it->nTxOffset)){
                 CDiskTxPos tmp=*it;
@@ -1287,10 +1288,11 @@ bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTr
                 bool fChanged2=true;
                 while(fChanged2&&(it3!=vTxPosAll.begin())){
                     fChanged2=false;
-                    std::vector<CDiskTxPos>::iterator it4=it3--;
+                    std::vector<CDiskTxPos>::iterator it4=it3;
+                    it4--;
                     if(it3->nFile>it4->nFile||(it3->nFile==it4->nFile&&it3->nPos>it4->nPos)
                     ||(it3->nFile==it4->nFile&&it3->nPos==it4->nPos&&it3->nTxOffset>it4->nTxOffset)){
-                        CDiskTxPos tmp=*it3;
+                        CDiskTxPos tmp=*it4;
                         *it4=*it3;
                         *it3=tmp;
                         fChanged2=true;                                            
@@ -1310,13 +1312,13 @@ bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTr
                         txOut.ClearContent(newTx);                
                         vTxs.push_back(make_pair(newTx,hashBlock));
                     }                
-                    vTxs.push_back(make_pair(txOut,hashBlock));
+                    else
+                        vTxs.push_back(make_pair(txOut,hashBlock));
                 }
             nTx++;
         }
     return true;
 }
-
 
 
 
@@ -1557,7 +1559,7 @@ void UpdateCoins(const CTransaction& tx, CValidationState &state, CCoinsViewCach
     // add outputs
     inputs.ModifyCoins(tx.GetHash())->FromTx(tx, nHeight);
 }
-void UpdateTxAddressMap(const CTransaction& tx,const CDiskTxPos& pos,CValidationState &state,const CCoinsViewCache& inputs,bool fErase=false){
+void UpdateTxAddressMap(const CTransaction& tx,const CDiskTxPos& pos,CValidationState &state,const CCoinsViewCache& inputs,bool fErase){
     std::map<CScript,CDiskTxPos> mapTam;//=std::map<CScript,CDiskTxPos>();    
     if(!tx.IsCoinBase()){        
       BOOST_FOREACH(const CTxIn &txin, tx.vin) {                  
@@ -1947,7 +1949,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
             blockundo.vtxundo.push_back(CTxUndo());
         }
         //LogPrintf("%s : 21", __func__);
-        UpdateTxAddressMap(tx,pos,state,view);
+        UpdateTxAddressMap(tx,pos,state,view,false);
         UpdateCoins(tx, state, view, i == 0 ? undoDummy : blockundo.vtxundo.back(), pindex->nHeight);
         //LogPrintf("%s : 22", __func__);
         vPos.push_back(std::make_pair(tx.GetHash(), pos));
@@ -3277,7 +3279,8 @@ bool CVerifyDB::VerifyDB(CCoinsView *coinsview, int nCheckLevel, int nCheckDepth
         return error("VerifyDB() : *** coin database inconsistencies found (last %i blocks, %i good transactions before that)\n", chainActive.Height() - pindexFailure->nHeight + 1, nGoodTransactions);
 
     // check level 4: try reconnecting blocks
-    if (nCheckLevel >= 4) {
+    //cccbrowser:this must be done after check level 3, so it's also level 3
+    if (nCheckLevel >= 3) {
         CBlockIndex *pindex = pindexState;
         while (pindex != chainActive.Tip()) {
             boost::this_thread::interruption_point();
