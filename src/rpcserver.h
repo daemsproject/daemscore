@@ -229,6 +229,9 @@ extern json_spirit::Value invalidateblock(const json_spirit::Array& params, bool
 extern json_spirit::Value reconsiderblock(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getcontent(const json_spirit::Array& params, bool fHelp);
 
+// New
+extern json_spirit::Value getlink(const json_spirit::Array& params, bool fHelp);
+
 // in rest.cpp
 extern bool HTTPReq_REST(AcceptedConnection *conn,
                   std::string& strURI,

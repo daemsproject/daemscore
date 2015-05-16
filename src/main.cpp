@@ -1320,7 +1320,31 @@ bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTr
     return true;
 }
 
+int GetNTx(const uint256 &hashTx) //To Do
+{
+    CTransaction tx;
+    uint256 hashBlock = 0;
+    if (!GetTransaction(hashTx, tx, hashBlock, true))
+        return error("No information available about transaction");
+    CBlock block;
+    CBlockIndex* pblockindex = mapBlockIndex[hashBlock];
+    if (!ReadBlockFromDisk(block, pblockindex))
+        return error("Can't read block from disk");
+    return GetNTx(tx, block);
+}
 
+int GetNTx(const CTransaction &tx, const CBlock &block)
+{
+    int nTx = 0;
+
+    BOOST_FOREACH(const CTransaction&bTx, block.vtx)
+    {
+        if (tx == bTx)
+            return nTx;
+        nTx++;
+    }
+    return -1;
+}
 
 
 //////////////////////////////////////////////////////////////////////////////

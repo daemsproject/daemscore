@@ -196,6 +196,9 @@ bool GetTransaction(const uint256 &hash, CTransaction &tx, uint256 &hashBlock, b
 bool GetTransaction(const CDiskTxPos &postx, CTransaction &txOut, uint256 &hashBlock);
 /**get all transactions related to the id list, with block hash*/
 bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTransaction, uint256> >& vTxs,bool fIncludeUnconfirmed =true,bool fNoContent=false,unsigned int nOffset=0,unsigned int nNumber=1000000);
+/** Get nTx from block*/
+int GetNTx(const uint256 &hashTx);
+int GetNTx(const CTransaction &tx,const CBlock &block);
 /** Find the best known block, and make it the tip of the block chain */
 bool ActivateBestChain(CValidationState &state, CBlock *pblock = NULL);
 CAmount GetBlockValue(int nHeight, const CAmount& nFees);
