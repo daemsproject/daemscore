@@ -784,3 +784,12 @@ std::string IntToHexString(const int i)
     std::string str(stream.str());
     return str;
 }
+
+int HexStringToInt(const std::string& s)
+{
+    int x;
+    std::stringstream ss;
+    ss << std::hex << s;
+    ss >> x;
+    return x;
+}

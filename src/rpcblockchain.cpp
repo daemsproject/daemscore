@@ -8,6 +8,7 @@
 #include "rpcserver.h"
 #include "sync.h"
 #include "util.h"
+#include "ccc/content.h"
 #include "ccc/link.h"
 
 #include <stdint.h>
@@ -242,6 +243,17 @@ Value getblockhash(const Array& params, bool fHelp)
     return pblockindex->GetBlockHash().GetHex();
 }
 
+bool _getBlockByHeight(const int nHeight, CBlock& blockOut, CBlockIndex*& pblockindex)
+{
+    if (nHeight < 0 || nHeight > chainActive.Height())
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Block height out of range");
+    pblockindex = chainActive[nHeight];
+    
+    if (!ReadBlockFromDisk(blockOut, pblockindex))
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "Can't read block from disk");
+    return true;
+}
+
 Value getblockbyheight(const Array& params, bool fHelp)
 {
 
@@ -281,24 +293,19 @@ Value getblockbyheight(const Array& params, bool fHelp)
             );
 
     int nHeight = params[0].get_int();
-    if (nHeight < 0 || nHeight > chainActive.Height())
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "Block height out of range");
-
-    CBlockIndex* pblockindex = chainActive[nHeight];
+    CBlockIndex* pblockindex;
+    CBlock block;
+    if(!_getBlockByHeight(nHeight, block, pblockindex))
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "Get block failed");
     bool fVerbose = true;
     if (params.size() > 1)
         fVerbose = params[1].get_bool();
-    CBlock block;
-    if (!ReadBlockFromDisk(block, pblockindex))
-        throw JSONRPCError(RPC_INTERNAL_ERROR, "Can't read block from disk");
-
     if (!fVerbose) {
         CDataStream ssBlock(SER_NETWORK, PROTOCOL_VERSION);
         ssBlock << block;
         std::string strHex = HexStr(ssBlock.begin(), ssBlock.end());
         return strHex;
     }
-
     return blockToJSON(block, pblockindex);
 }
 
@@ -749,15 +756,7 @@ Value getcontent(const Array& params, bool fHelp)  // TO DO
     return Value::null;
 }
 
-//std::string _test()
-//{
-//    std::string str;
-//    str = "ab1";
-//    int i = -1;
-//    i = atoi(str.c_str());
-//    std::cout << "test: " << i << "\n";
-//    return str;
-//}
+
 
 Value getlink(const json_spirit::Array& params, bool fHelp) // TO DO: Help msg
 {
@@ -785,7 +784,122 @@ Value getlink(const json_spirit::Array& params, bool fHelp) // TO DO: Help msg
         result.push_back(Pair("linkB32", clink.ToString(LINK_FORMAT_B32)));
     }
     return result;
-
-    
-    //    return _test();
 }
+
+bool _getTxFrBlock(const CBlock& block, const int nTx, CTransaction& txOut)
+{
+    if (nTx <= (int)block.vtx.size()) {
+        txOut = block.vtx[nTx];
+        return true;
+    } else
+        return false;
+}
+
+bool _getVoutFrTx(const CTransaction& tx, const int nVout, CTxOut& vout)
+{
+    if (nVout <= (int) tx.vout.size()) {
+        vout = tx.vout[nVout];
+        return true;
+    } else
+        return false;
+}
+
+bool _getContentFrTx(const CTransaction& tx, const int nVout, CContent& content)
+{
+    if (nVout <= (int) tx.vout.size()) {
+        CTxOut vout = tx.vout[nVout];
+        content.SetString(vout.strContent);
+        return true;
+    } else
+        return false;
+}
+
+Object _voutToJson(const CTxOut& txout)
+{
+    Object out;
+    out.push_back(Pair("value", ValueFromAmount(txout.nValue)));
+    out.push_back(Pair("content", HexStr(txout.strContent.begin(), txout.strContent.end())));
+    out.push_back(Pair("contentText", GetBinaryContent(txout.strContent)));
+    Object o;
+    ScriptPubKeyToJSON(txout.scriptPubKey, o, true);
+    out.push_back(Pair("scriptPubKey", o));
+    return out;
+}
+
+Value getvoutbylink(const json_spirit::Array& params, bool fHelp)
+{
+    if (fHelp || params.size() != 1)
+        throw runtime_error("Wrong number of parameters");
+    CLink clink(params[0].get_str());
+
+
+    CBlockIndex* pblockindex;
+    CBlock block;
+    if (!_getBlockByHeight(clink.nHeight, block, pblockindex))
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "Get block failed");
+    CTransaction tx;
+    if (!_getTxFrBlock(block,clink.nTx,tx))
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "Get tx failed");
+    CTxOut vout;
+    if(!_getVoutFrTx(tx, clink.nVout, vout))
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "Get content failed");
+    Object result;
+    result.push_back(Pair("vout", _voutToJson(vout)));
+    result.push_back(Pair("link", clink.ToString()));
+    result.push_back(Pair("linkHex", clink.ToString(LINK_FORMAT_HEX)));
+    result.push_back(Pair("linkB32", clink.ToString(LINK_FORMAT_B32)));
+    return result;
+}
+
+Value getcontentbylink(const json_spirit::Array& params, bool fHelp)
+{
+    if (fHelp || params.size() != 1)
+        throw runtime_error("Wrong number of parameters");
+    CLink clink(params[0].get_str());
+
+
+    CBlockIndex* pblockindex;
+    CBlock block;
+    if (!_getBlockByHeight(clink.nHeight, block, pblockindex))
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "Get block failed");
+    CTransaction tx;
+    if (!_getTxFrBlock(block,clink.nTx,tx))
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "Get tx failed");
+    CContent content;
+    if(!_getContentFrTx(tx, clink.nVout, content))
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "Get content failed");
+    Object result;
+    result.push_back(Pair("contentHex", HexStr(content)));
+    result.push_back(Pair("humanString", content.ToHumanString()));
+    result.push_back(Pair("link", clink.ToString()));
+    result.push_back(Pair("linkHex", clink.ToString(LINK_FORMAT_HEX)));
+    result.push_back(Pair("linkB32", clink.ToString(LINK_FORMAT_B32)));
+    return result;
+}
+
+Value getcontentlist(const json_spirit::Array& params, bool fHelp)
+{
+    Object result;
+    return result;
+}
+
+Value getcontents(const json_spirit::Array& params, bool fHelp)
+{
+    Object result;
+    return result;
+}
+
+std::string _test()
+{
+    std::string str;
+    str = "ab1";
+    int i = -1;
+    i = atoi(str.c_str());
+    std::cout << "test: " << i << "\n";
+    return str;
+}
+
+Value devtest(const json_spirit::Array& params, bool fHelp)
+{
+    return _test();
+} 

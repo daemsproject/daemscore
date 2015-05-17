@@ -273,7 +273,12 @@ static const CRPCCommand vRPCCommands[] =
     { "blockchain",         "invalidateblock",        &invalidateblock,        true,      true,       false },
     { "blockchain",         "reconsiderblock",        &reconsiderblock,        true,      true,       false },
     { "blockchain",         "getcontent",             &getcontent,             true,      false,      false },
+    { "blockchain",         "getvoutbylink",          &getvoutbylink,          true,      false,      false },
+    { "blockchain",         "getcontentbylink",       &getcontentbylink,       true,      false,      false },
     { "blockchain",         "getlink",                &getlink,                true,      false,      false },
+    { "blockchain",         "getcontentlist",         &getcontentlist,         true,      false,      false },
+    { "blockchain",         "getcontents",            &getcontents,            true,      false,      false },
+    { "blockchain",         "devtest",                &devtest,                true,      false,      false },
 
     /* Mining */
     { "mining",             "getblocktemplate",       &getblocktemplate,       true,      false,      false },

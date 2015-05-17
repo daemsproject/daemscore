@@ -11,6 +11,10 @@ using namespace std;
 //using std::string;
 
 static const std::string URI_SCHEME_NAME = "ccc";
+static const std::string URI_HEX_HEADER = "x";
+static const std::string URI_B32_HEADER = "#";
+static const std::string URI_SEPERATOR = ".";
+static const std::string URI_COLON = ":";
 
 enum linkformat
 {
@@ -41,11 +45,6 @@ public:
         SetString(linkVch);
     }
 
-    CLink(const Array& linkJson)
-    {
-        SetJson(linkJson);
-    }
-    
     CLink(const int nHeightIn,const int nTxIn,const int nVoutIn = 0)
     {
         nHeight = nHeightIn;

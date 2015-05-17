@@ -180,6 +180,7 @@ bool FileToString(const std::string& filename, std::string& content);
 bool IsStringPrint(const std::string& str);
 bool IsStringInteger(const std::string & s);
 std::string IntToHexString(const int i);
+int HexStringToInt(const std::string& s);
 /**
  * Standard wrapper for do-something-forever thread functions.
  * "Forever" really means until the thread is interrupted.
