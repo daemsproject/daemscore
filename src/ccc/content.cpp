@@ -15,17 +15,6 @@ static const int TRIM_READABLE_LEN = 1000;
 static const int TRIM_BINARY_LEN = 20;
 
 
-namespace strpatch
-{
-
-    template < typename T > std::string to_string(const T& n)
-    {
-        std::ostringstream stm;
-        stm << n;
-        return stm.str();
-    }
-}
-
 std::string GetCcName(const cctype cc)
 {
     switch (cc) {
@@ -958,13 +947,13 @@ u_int64_t CContent::ReadCompactSize(iterator& pc)
     return nSizeRet;
 }
 
-bool CContent::WriteData(std::string str)
+bool CContent::WriteData(const std::string str)
 {
     append(str);
     return true;
 }
 
-bool CContent::WriteData(std::string str, int len)
+bool CContent::WriteData(const std::string str, int len)
 {
     append(str, 0, len);
     return true;

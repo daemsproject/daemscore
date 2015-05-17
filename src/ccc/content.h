@@ -399,6 +399,6 @@ public:
     std::string ReadDataReverse(iterator & pc, int len);
     std::string TrimToHumanString(const std::string& str);
     bool WriteData(const std::string str);
-    bool WriteData(std::string str, int len);
+    bool WriteData(const std::string str, int len);
     bool IsCcParent(const cctype& cc);
 };

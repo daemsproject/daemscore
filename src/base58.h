@@ -44,6 +44,7 @@ std::string EncodeBase32(const unsigned char* pbegin, const unsigned char* pend)
  * Encode a byte vector as a base32-encoded string
  */
 std::string EncodeBase32(const std::vector<unsigned char>& vch);
+std::string EncodeBase32(const int i);
 
 /**
  * Decode a base58-encoded string (psz) into a byte vector (vchRet).
@@ -70,6 +71,13 @@ bool DecodeBase32(const char* psz, std::vector<unsigned char>& vchRet);
  * return true if decoding is successful.
  */
 bool DecodeBase32(const std::string& str, std::vector<unsigned char>& vchRet);
+
+/**
+ * Decode a base32-encoded string (str) into integer.
+ * return -1 if overflow.
+ */
+int DecodeBase32ToInt(const char* psz);
+int DecodeBase32ToInt(const std::string& str);
 
 /**
  * Encode a byte vector into a base58-encoded string, including checksum

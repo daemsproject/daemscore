@@ -38,6 +38,17 @@ extern bool fLogTimestamps;
 extern bool fLogIPs;
 extern volatile bool fReopenDebugLog;
 
+namespace strpatch
+{
+
+    template < typename T > std::string to_string(const T& n)
+    {
+        std::ostringstream stm;
+        stm << n;
+        return stm.str();
+    }
+}
+
 void SetupEnvironment();
 
 /** Return true if log accepts specified category */
@@ -167,6 +178,8 @@ void RenameThread(const char* name);
 bool FileExists(const std::string& filename);
 bool FileToString(const std::string& filename, std::string& content);
 bool IsStringPrint(const std::string& str);
+bool IsStringInteger(const std::string & s);
+std::string IntToHexString(const int i);
 /**
  * Standard wrapper for do-something-forever thread functions.
  * "Forever" really means until the thread is interrupted.

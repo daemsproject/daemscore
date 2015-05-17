@@ -77,6 +77,7 @@ BITCOIN_CORE_H = \
   base58.h \
   bloom.h \
   ccc/content.h \
+  ccc/link.h \
   chain.h \
   chainparams.h \
   chainparamsbase.h \
@@ -244,6 +245,7 @@ libbitcoin_common_a_SOURCES = \
   base58.cpp \
   chainparams.cpp \
   ccc/content.cpp \
+  ccc/link.cpp \
   coins.cpp \
   ccc/txaddressmap.cpp \
   compressor.cpp \

@@ -768,3 +768,19 @@ bool IsStringPrint(const std::string& str)
     return printable;
 
 }
+
+bool IsStringInteger(const std::string & s)
+{
+   if(s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+'))) return false ;
+   char * p ;
+   strtol(s.c_str(), &p, 10) ;
+   return (*p == 0) ;
+}
+
+std::string IntToHexString(const int i)
+{
+    std::stringstream stream;
+    stream << std::hex << i;
+    std::string str(stream.str());
+    return str;
+}

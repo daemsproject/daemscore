@@ -151,24 +151,68 @@ std::string EncodeBase32(const unsigned char* pbegin, const unsigned char* pend)
     std::string str;
     int buffer = *pbegin;
     int bufferLen = 8;
-    while(pbegin!=pend){
-        if(bufferLen < 5){
-            if(++pbegin != pend){
+    while (pbegin != pend) {
+        if (bufferLen < 5) {
+            if (++pbegin != pend) {
                 buffer <<= 8;
                 buffer += *pbegin;
-                bufferLen +=8;
-            }else if(bufferLen != 0){
+                bufferLen += 8;
+            } else if (bufferLen != 0) {
                 buffer <<= 5 - bufferLen;
                 bufferLen = 5;
             }
         }
-        if(bufferLen != 0){
+        if (bufferLen != 0) {
             bufferLen -= 5;
             str += pszBase32[buffer >> bufferLen];
             buffer -= buffer >> bufferLen << bufferLen;
         }
     }
     return str;
+}
+
+std::string EncodeBase32(const int i)
+{
+    std::string str = "";
+    int t = i;
+    while (t > 0) {
+        str += pszBase32[ t % 32];
+        t = t / 32;
+    }
+    return std::string(str.rbegin(), str.rend());
+}
+
+int DecodeBase32ToInt(const char* psz)
+{
+    while (*psz && isspace(*psz))
+        psz++;
+    const char* v = strchr(pszBase32Vague, *psz);
+    int c = v - pszBase32Vague;
+    const char* ch = strchr(pszBase32, *(pszBase32Clear + c));
+    int r = ch - pszBase32;
+    while (*psz && !isspace(*psz)) {
+        if (!*++psz)
+            break;
+        if ((int64_t)(r * 32) > INT_MAX || r * 32 < r) // overflow
+            return -1;
+        r = r * 32;
+        const char* v = strchr(pszBase32Vague, *psz);
+        if (v == NULL)
+            return false;
+        c = v - pszBase32Vague;
+        const char* ch = strchr(pszBase32, *(pszBase32Clear + c));
+        r += ch - pszBase32;
+    } // Skip trailing spaces.
+    while (isspace(*psz))
+        psz++;
+    if (*psz != 0)
+        return -1;
+    return r;
+}
+
+int DecodeBase32ToInt(const std::string& str)
+{
+    return DecodeBase32ToInt(str.c_str());
 }
 
 std::string EncodeBase58(const std::vector<unsigned char>& vch)

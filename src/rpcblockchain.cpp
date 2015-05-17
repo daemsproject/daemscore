@@ -8,6 +8,7 @@
 #include "rpcserver.h"
 #include "sync.h"
 #include "util.h"
+#include "ccc/link.h"
 
 #include <stdint.h>
 
@@ -748,9 +749,43 @@ Value getcontent(const Array& params, bool fHelp)  // TO DO
     return Value::null;
 }
 
-Value getlink(const json_spirit::Array& params, bool fHelp) // TO DO
+//std::string _test()
+//{
+//    std::string str;
+//    str = "ab1";
+//    int i = -1;
+//    i = atoi(str.c_str());
+//    std::cout << "test: " << i << "\n";
+//    return str;
+//}
+
+Value getlink(const json_spirit::Array& params, bool fHelp) // TO DO: Help msg
 {
-    if (fHelp || params.size() != 1)
+    if (fHelp || params.size() > 2)
         throw runtime_error("");
-    return Value::null;
+    uint256 hash = ParseHashV(params[0], "parameter 1");
+    int nVout = params.size() == 2 ? params[1].get_int() : 0;
+    CTransaction tx;
+    uint256 hashBlock = 0;
+    if (!GetTransaction(hash, tx, hashBlock, true))
+        throw JSONRPCError(RPC_LINK_ERROR, "No information available about transaction");
+    if ((int)tx.vout.size() <= nVout)
+        throw JSONRPCError(RPC_LINK_ERROR, "nVout larger than total vout count");
+    int nTx = 0;
+    nTx = GetNTx(tx.GetHash());
+    if (nTx < 0)
+        throw JSONRPCError(RPC_LINK_ERROR, "Get nTx failed");
+    Object result;
+    BlockMap::iterator mi = mapBlockIndex.find(hashBlock);
+    if (mi != mapBlockIndex.end() && (*mi).second) {
+        CBlockIndex* pindex = (*mi).second;
+        CLink clink(pindex->nHeight, nTx, nVout);
+        result.push_back(Pair("link", clink.ToString(LINK_FORMAT_DEC)));
+        result.push_back(Pair("linkHex", clink.ToString(LINK_FORMAT_HEX)));
+        result.push_back(Pair("linkB32", clink.ToString(LINK_FORMAT_B32)));
+    }
+    return result;
+
+    
+    //    return _test();
 }
