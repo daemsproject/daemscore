@@ -91,6 +91,8 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "prioritisetransaction", 2 },
     
     { "getlink", 1 },
+    { "getcontents", 1 },
+    { "getcontents", 2 },
 };
 
 class CRPCConvertTable

@@ -14,6 +14,8 @@
 #include <stdint.h>
 
 #include "json/json_spirit_value.h"
+#include "base58.h"
+#include "utilstrencodings.h"
 
 using namespace json_spirit;
 using namespace std;
@@ -885,8 +887,53 @@ Value getcontentlist(const json_spirit::Array& params, bool fHelp)
 
 Value getcontents(const json_spirit::Array& params, bool fHelp)
 {
-    Object result;
-    return result;
+    if (fHelp || params.size() < 1 || params.size() > 3)
+        throw runtime_error("Wrong number of parameters");
+    CBitcoinAddress address(params[0].get_str());
+    if (!address.IsValid())
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Address is invalid");
+    int lbh = params.size() > 1 ? params[1].get_int() : 0;
+    int fFormat = params.size() == 3 ? params[2].get_int() : 0;
+    if(fFormat < 0 || fFormat > 3)
+        throw runtime_error("Invalid format code");
+    CScript scriptPubKey = GetScriptForDestination(address.Get());
+    std::vector<CScript> vIds;
+    vIds.push_back(scriptPubKey);
+    std::vector<std::pair<CTransaction, uint256> > vTxs;
+    if (!GetTransactions(vIds, vTxs))
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "Get tx failed");
+    Object o;
+    for (std::vector<std::pair<CTransaction, uint256> >::iterator it = vTxs.begin(); it != vTxs.end(); ++it) {
+        BlockMap::iterator mi = mapBlockIndex.find(it->second);
+        if (mi != mapBlockIndex.end() && (*mi).second) {
+            for (int i = 0; i < (int) it->first.vout.size(); i++) {
+                CBlockIndex* pindex = (*mi).second;
+                if (pindex->nHeight > lbh) {
+                    int nTx = GetNTx(it->first.GetHash()); // Very inefficient
+                    CLink clink(pindex->nHeight, nTx, i);
+                    CContent ctt;
+                    if (_getContentFrTx(it->first, i, ctt)) {
+                        switch (fFormat) {
+                            case 0:
+                                o.push_back(Pair(clink.ToString(), ctt.size()));
+                                break;
+                            case 1:
+                                o.push_back(Pair(clink.ToString(), ctt.ToHumanString()));
+                                break;
+                            case 2:
+                                o.push_back(Pair(clink.ToString(), HexStr(ctt)));
+                                break;
+                            case 3:
+                                o.push_back(Pair(clink.ToString(), EncodeBase64(ctt)));
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return o;
 }
 
 std::string _test()
