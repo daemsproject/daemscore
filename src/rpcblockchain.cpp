@@ -855,23 +855,40 @@ Value getvoutbylink(const json_spirit::Array& params, bool fHelp)
 
 Value getcontentbylink(const json_spirit::Array& params, bool fHelp)
 {
-    if (fHelp || params.size() != 1)
+    if (fHelp || params.size() < 1 || params.size() > 2)
         throw runtime_error("Wrong number of parameters");
     CLink clink(params[0].get_str());
-
 
     CBlockIndex* pblockindex;
     CBlock block;
     if (!_getBlockByHeight(clink.nHeight, block, pblockindex))
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Get block failed");
     CTransaction tx;
-    if (!_getTxFrBlock(block,clink.nTx,tx))
+    if (!_getTxFrBlock(block, clink.nTx, tx))
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Get tx failed");
     CContent content;
-    if(!_getContentFrTx(tx, clink.nVout, content))
+    if (!_getContentFrTx(tx, clink.nVout, content))
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Get content failed");
     Object result;
-    result.push_back(Pair("contentHex", HexStr(content)));
+
+    int fContentType = (params.size() == 2) ? params[1].get_int() : 0; // 0 hex, 1 b64, 2 json, 3 json hex, 4 json b64
+    switch (fContentType) {
+        case 1:
+            result.push_back(Pair("contentBase64", EncodeBase64(content)));
+            break;
+        case 2:
+            result.push_back(Pair("contentJson", content.ToJson(STR_FORMAT_BIN)));
+            break;
+        case 3:
+            result.push_back(Pair("contentJsonHex", content.ToJson(STR_FORMAT_HEX)));
+            break;
+        case 4:
+            result.push_back(Pair("contentJsonB64", content.ToJson(STR_FORMAT_B64)));
+            break;
+        case 0:
+        default:
+            result.push_back(Pair("contentHex", HexStr(content)));
+    }
     result.push_back(Pair("humanString", content.ToHumanString()));
     result.push_back(Pair("link", clink.ToString()));
     result.push_back(Pair("linkHex", clink.ToString(LINK_FORMAT_HEX)));

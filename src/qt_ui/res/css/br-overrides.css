@@ -1,0 +1,45 @@
+.container{
+    margin-top:10px;
+}.brimg{
+    max-width:60%;
+    max-height:800px;
+}
+.nav-pills  .active  a{
+    background-color: #666;
+    color: #fff;
+}.nav-pills  .active  a:hover{
+    background-color: #ccc;
+    cursor:pointer;
+}.nav-pills  a{
+    color: #444;
+    border-radius: 3px;
+}.post{
+    overflow:auto;
+    line-height: 24px;
+}.post .domain, .post .leftblock{
+    display:inline-block;
+    width:50px
+}.post .domain a{
+    color: #048;
+}.post .id,.post .brctt{
+    overflow:hidden;
+    display:inline-block;
+    width: 70%;
+}.idbtn, .idbtn:hover{
+    border-radius: 2px;
+    background-color: #444;
+    color: #fff;
+    padding:3px 6px;    
+}.idbtn:hover{
+    cursor: pointer;
+}.post ul{
+    margin:0;
+}.post ul li{
+    display:inline-block;
+}.post ul a{
+}.post ul li a{
+    display:none;
+}.post .brctt .cmt{
+    clear:both;
+    float:right;
+}

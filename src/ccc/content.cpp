@@ -14,7 +14,6 @@ using namespace std;
 static const int TRIM_READABLE_LEN = 1000;
 static const int TRIM_BINARY_LEN = 20;
 
-
 std::string GetCcName(const cctype cc)
 {
     switch (cc) {
@@ -727,7 +726,7 @@ std::string GetCcHex(const cctype cc)
     return HexStr(stm.str());
 }
 
-Array CContent::ToJson()
+Array CContent::ToJson(stringformat fFormat)
 {
 
     iterator pc = begin();
@@ -743,9 +742,21 @@ Array CContent::ToJson()
         ccUnit.push_back(Pair("cc_name", ccName));
         ccUnit.push_back(Pair("cc", GetCcHex(cc)));
         if (IsCcParent(cc)) {
-            ccUnit.push_back(Pair("content", contentStr.ToJson()));
+            ccUnit.push_back(Pair("content", contentStr.ToJson(fFormat)));
         } else {
-            ccUnit.push_back(Pair("content", contentStr));
+            switch (fFormat) {
+                case STR_FORMAT_BIN:
+                    ccUnit.push_back(Pair("content", contentStr));
+                    break;
+                case STR_FORMAT_HEX:
+                    ccUnit.push_back(Pair("content", HexStr(contentStr)));
+                    break;
+                case STR_FORMAT_B64:
+                    ccUnit.push_back(Pair("content", EncodeBase64(contentStr)));
+                    break;
+
+            }
+
         }
         result.push_back(ccUnit);
     }

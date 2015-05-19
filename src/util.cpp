@@ -17,7 +17,9 @@
 #include "utiltime.h"
 
 #include <stdarg.h>
-
+#include "json/json_spirit_reader_template.h"
+#include "json/json_spirit_utils.h"
+#include "json/json_spirit_writer_template.h"
 #ifndef WIN32
 // for posix_fallocate
 #ifdef __linux__
@@ -741,6 +743,100 @@ void SetThreadPriority(int nPriority)
 #endif // WIN32
 }
 
+int GetFileNames(const boost::filesystem::path& dir, std::vector<std::string>& filenames)  
+{        
+     
+    namespace fs = boost::filesystem;  
+    if (!fs::exists(dir))  
+    {  
+        return -1;  
+    }  
+  
+    fs::directory_iterator end_iter;  
+    for (fs::directory_iterator iter(dir); iter!=end_iter; ++iter)  
+    {  
+  
+        if (fs::is_regular_file(iter->status()))  
+        {  
+            filenames.push_back(iter->path().string());  
+        }  
+  
+        if (fs::is_directory(iter->status()))  
+        {  
+  
+            GetFileNames(iter->path().string(), filenames);  
+        }  
+    }  
+  
+    return filenames.size();  
+}  
+bool ReadFileToString(string file_name, string& fileData)
+{
+
+
+    ifstream file(file_name.c_str(),  std::ifstream::binary);
+   
+    if(file)
+    {
+        // Calculate the file's size, and allocate a buffer of that size.
+        file.seekg(0, file.end);
+        const int file_size = file.tellg();
+        char* file_buf = new char [file_size+1];
+        //make sure the end tag \0 of string.
+
+        memset(file_buf, 0, file_size+1);
+       
+        // Read the entire file into the buffer.
+        file.seekg(0, ios::beg);
+        file.read(file_buf, file_size);
+
+
+        if(file)
+        {
+            fileData.append(file_buf);
+        }
+        else
+        {
+            std::cout << "error: only " <<  file.gcount() << " could be read";
+            fileData.append(file_buf);
+            return false;
+        }
+        file.close();
+        delete []file_buf;
+    }
+    else
+    {
+        return false;
+    }
+    return true;
+}
+bool ReadFileToJson(const string file_name, json_spirit::Value& fileData){    
+    string strFileContent;
+    if (!ReadFileToString(file_name, strFileContent)){
+        LogPrintf("util.cpp:readfiletojson: fail \n");
+        return false;
+        
+    }
+    if (!json_spirit::read_string(strFileContent,fileData)){
+        LogPrintf("util.cpp:readfiletojson: fail2 \n");
+        return false;
+    }
+    
+    if(fileData.type() != json_spirit::array_type&&fileData.type() != json_spirit::obj_type){
+        LogPrintf("util.cpp:readfiletojson: fail3 \n");
+        return false;
+    }
+    return true;
+}
+bool WriteJsonToFile(const json_spirit::Value& valContent,const string file_name){    
+    ofstream fout;  
+    fout.open(file_name.c_str());  
+    assert(fout.is_open());  
+    fout << json_spirit::write_string(valContent,true) << endl; 
+    //ofstream os(file_name.c_str());
+    //os.write( valContent.get_str(), strlen(valContent.get_str()));
+    return true;
+}
 bool FileExists(const std::string& filename)
 {
     boost::filesystem::ifstream file(filename.c_str());
@@ -793,3 +889,5 @@ int HexStringToInt(const std::string& s)
     ss >> x;
     return x;
 }
+
+

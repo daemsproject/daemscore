@@ -278,7 +278,7 @@ bool CheckInputs(const CTransaction& tx,const CTransaction& tx4CheckVins, CValid
 /** Apply the effects of this transaction on the UTXO set represented by view */
 void UpdateCoins(const CTransaction& tx, CValidationState &state, CCoinsViewCache &inputs, CTxUndo &txundo, int nHeight);
 /** Apply tx changes to txaddressmap db*/
-void UpdateTxAddressMap(const CTransaction& tx,const CDiskTxPos& pos,CValidationState &state,const CCoinsViewCache& inputs,bool fErase);
+void UpdateTxAddressMap(const CTransaction& tx,const CDiskTxPos& pos,CValidationState &state,const CCoinsViewCache& inputs,bool fErase=false);
 /** Context-independent validity checks */
 bool CheckTransaction(const CTransaction& tx, CValidationState& state);
 

@@ -10,6 +10,13 @@ using namespace json_spirit;
 using namespace std;
 using std::string;
 
+enum stringformat
+{
+    STR_FORMAT_BIN = 0,
+    STR_FORMAT_HEX = 1,
+    STR_FORMAT_B64 = 2,
+};
+
 /** Content codes */
 enum cctype
 {
@@ -384,7 +391,7 @@ public:
     {
         SetJson(cttJson);
     }
-    Array ToJson();
+    Array ToJson(stringformat fFormat = STR_FORMAT_BIN);
     bool ToJsonString(std::string& entry);
     bool SetString(const std::string& cttStr);
     bool SetString(const vector<unsigned char>& cttVch);

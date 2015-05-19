@@ -41,14 +41,14 @@ var BrowserAPI = new function () {
         }
         var jsreply;
         var jsreplyjson = jsinterface.jscall(cmd, datajson);
-        console.log("browserapi.call:" + jsreplyjson);
+//        console.log("browserapi.call:" + jsreplyjson);
         try {
             jsreply = $.parseJSON(jsreplyjson);
         }
         catch (e) {
             errorfunc(jsreplyjson);
         }
-        console.log("browserapi.call:" + jsreply);
+//        console.log("browserapi.call:" + jsreply);
         if (!jsreply) {
             errorfunc("api error");
             return;
@@ -57,7 +57,7 @@ var BrowserAPI = new function () {
             errorfunc(jsreply.error);
             return;
         }
-        console.log("browserapi.call:" + jsreply);
+//        console.log("browserapi.call:" + jsreply);
         successfunc(jsreply);
     };
     this.getAccountID = function () {
@@ -141,6 +141,16 @@ var BrowserAPI = new function () {
         var d = [c];
         this.call("createcontent", JSON.stringify(d), function (r1) {
             r = JSON.stringify(r1);
+        }, function (e) {
+            r = e;
+        });
+        return r;
+    }
+    this.getContentByLink = function (c) {
+        var r;
+        var d = [c,4];
+        this.call("getcontentbylink", JSON.stringify(d), function (r1) {
+            r = r1;
         }, function (e) {
             r = e;
         });

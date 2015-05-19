@@ -26,6 +26,7 @@
 
 #include <boost/filesystem/path.hpp>
 #include <boost/thread/exceptions.hpp>
+#include "json/json_spirit.h"
 
 extern std::map<std::string, std::string> mapArgs;
 extern std::map<std::string, std::vector<std::string> > mapMultiArgs;
@@ -117,6 +118,12 @@ boost::filesystem::path GetSpecialFolderPath(int nFolder, bool fCreate = true);
 boost::filesystem::path GetTempPath();
 void ShrinkDebugFile();
 void runCommand(std::string strCommand);
+
+int GetFileNames(const boost::filesystem::path& dir, std::vector<std::string>& filenames);
+bool ReadFileToString(std::string file_name, std::string& fileData);
+bool ReadFileToJson(const std::string file_name, json_spirit::Value& fileData);
+bool WriteJsonToFile(const json_spirit::Value& valContent,const std::string file_name);
+
 
 inline bool IsSwitchChar(char c)
 {

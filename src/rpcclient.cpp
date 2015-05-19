@@ -93,6 +93,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "getlink", 1 },
     { "getcontents", 1 },
     { "getcontents", 2 },
+    { "getcontentbylink", 1 },
 };
 
 class CRPCConvertTable
