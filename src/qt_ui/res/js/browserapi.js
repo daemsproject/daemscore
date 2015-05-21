@@ -20,14 +20,14 @@ var BrowserAPI = new function () {
             //jsinterface.notify.connect(this,notify);
             //jsinterface.updateWalletFeedback.connect(this, MyWallet.updateWalletFeedback);
         }
-    }
+    };
     //! <!--  [ connect slots ] -->
 
     this.feedback = function (feedbackjson, func) {
         func($.parseJSON(feedbackjson));
         //setStatus('Idle');
         //document.getElementById('testdiv').innerHTML = a;        
-    }
+    };
     function test() {
         document.getElementById('testdiv').innerHTML = jsinterface.str;
         this.connectSlots();
@@ -65,7 +65,7 @@ var BrowserAPI = new function () {
         this.call("getmainid", "", function (a) {
             jsreply = a;
         }, function (b) {
-            return null
+            return null;
         });
         console.log("accountid:" + jsreply);
         return jsreply;
@@ -95,7 +95,7 @@ var BrowserAPI = new function () {
             if (error)
                 error(e);
         });
-    }
+    };
     this.regNotifyBlocks = function (blocksfunc) {
         var data = [{blocks: blocksfunc}];
         this.call("regnotify", JSON.stringify(data), null, null, true);
@@ -107,25 +107,25 @@ var BrowserAPI = new function () {
     this.regNotifyPeers = function (peerfunc) {
         var data = [{peers: peerfunc}];
         this.call("regnotify", JSON.stringify(data), null, null, true);
-    }
+    };
     this.regNotifyAccount = function (accountfunc) {
         var data = [{account: accountfunc}];
         this.call("regnotify", JSON.stringify(data), null, null, true);
-    }
+    };
     this.getInfo = function () {
         var r;
         this.call("getinfo", "", function (r1) {
             r = JSON.stringify(r1);
         });
         return r;
-    }
+    };
     this.getBlockCount = function () {
         var r;
         this.call("getblockcount", "", function (r1) {
             r = JSON.stringify(r1);
         });
         return r;
-    }
+    };
     this.decodeContent = function (c) {
         var r;
         var d = [c];
@@ -135,7 +135,7 @@ var BrowserAPI = new function () {
             r = e;
         });
         return r;
-    }
+    };
     this.createContent = function (c) {
         var r;
         var d = [c];
@@ -145,18 +145,27 @@ var BrowserAPI = new function () {
             r = e;
         });
         return r;
-    }
+    };
     this.getContentByLink = function (c) {
         var r;
-        var d = [c,6];
+        var d = [c, 6];
         this.call("getcontentbylink", JSON.stringify(d), function (r1) {
             r = r1;
         }, function (e) {
             r = e;
         });
         return r;
-    }
+    };
+    this.getRecent = function () {
+        var r;
+        var d = [{"fbh":0,"maxb":3000000,"maxc":1,"firstcc":"CC_FILE_P","fAsc":true,"mincsize":20,"cformat":0}];
+        this.call("getcontents", JSON.stringify(d), function (r1) {
+            r = r1;
+        }, function (e) {
+            r = e;
+        });
+        return r;
+    };
 
-
-}
+};
 

@@ -100,5 +100,9 @@ $(document).ready(function () {
     });
     $("#test1").html(CBrowser.getImage("ccc:4310.1"));
     $("#test2").html(CBrowser.getImage("ccc:11175.1"));
+    $("#test-btn").click(function(){
+        console.log('test');
+        console.log(BrowserAPI.getRecent());
+    });
 
 });

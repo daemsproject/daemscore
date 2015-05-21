@@ -950,13 +950,7 @@ Value getcontentbylink(const Array& params, bool fHelp)
     return r;
 }
 
-Value getcontents2(const Array& params, bool fHelp)
-{
-    Object result;
-    return result;
-}
-
-bool _parse_getcontents_params(const Array& params, int& fbh, int& maxc, int& maxb, Array& withcc, Array& withoutcc, std::string& firstcc, int& fContentFormat, unsigned char& cflag, int& mincsize, Array& addrs, bool& fAsc)
+bool _parse_getcontents_params(const Array& params, int& fbh, int& maxc, int& maxb, Array& withcc, Array& withoutcc, Array& firstcc, int& fContentFormat, unsigned char& cflag, int& mincsize, Array& addrs, bool& fAsc)
 {
     if (params.size() > 3)
         return false;
@@ -1054,7 +1048,7 @@ bool _parse_getcontents_params(const Array& params, int& fbh, int& maxc, int& ma
     }
     const Value& firstcc_v = find_value(param, "firstcc");
     try {
-        firstcc = firstcc_v.get_str();
+        firstcc = firstcc_v.get_array();
     } catch (std::exception& e) {
     }
     if (params.size() > 1)
@@ -1062,14 +1056,23 @@ bool _parse_getcontents_params(const Array& params, int& fbh, int& maxc, int& ma
     return true;
 }
 
-bool _check_cc(const CContent& ctt, const Array& withcc, const Array& withoutcc, const std::string& firstcc)
+bool _check_cc(const CContent& ctt, const Array& withcc, const Array& withoutcc, const Array& firstcc)
 {
-    if (withcc.size() == 0 && withoutcc.size() == 0 && (firstcc == ""))
+    if (withcc.size() == 0 && withoutcc.size() == 0 && firstcc.size() == 0 )
         return true;
     CContent cttcopy = ctt;
 
-    cctype cc = GetCcValue(firstcc);
-    if (!cttcopy.FirstCc(cc))
+    bool r = false;
+
+    BOOST_FOREACH(const Value& ccName_v, firstcc)
+    {
+        cctype cc = GetCcValue(ccName_v.get_str());
+        if (cttcopy.FirstCc(cc)) {
+            r = true;
+            break;
+        }
+    }
+    if(!r)
         return false;
 
     BOOST_FOREACH(const Value& ccName_v, withcc)
@@ -1100,7 +1103,7 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
     int maxb;
     Array withcc;
     Array withoutcc;
-    std::string firstcc = "";
+    Array firstcc;
     Array gAddrs;
     int cformat;
     unsigned char cflag;
