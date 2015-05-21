@@ -231,10 +231,8 @@ extern json_spirit::Value reconsiderblock(const json_spirit::Array& params, bool
 extern json_spirit::Value getcontent(const json_spirit::Array& params, bool fHelp);
 
 // New
-extern json_spirit::Value getvoutbylink(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getcontentbylink(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getlink(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value getcontentlist(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getcontents(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value devtest(const json_spirit::Array& params, bool fHelp); // to be deleted
 

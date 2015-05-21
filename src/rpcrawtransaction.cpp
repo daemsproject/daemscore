@@ -79,11 +79,13 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
             in.push_back(Pair("coinbase", HexStr(txin.scriptSig.begin(), txin.scriptSig.end())));
             in.push_back(Pair("blockHeight", (int64_t)txin.prevout.n));
             in.push_back(Pair("value", ValueFromAmount(txin.prevout.nValue)));
+            in.push_back(Pair("satoshi", txin.prevout.nValue));
         }
         else {
             in.push_back(Pair("txid", txin.prevout.hash.GetHex()));
             in.push_back(Pair("vout", (int64_t)txin.prevout.n));
             in.push_back(Pair("value", ValueFromAmount(txin.prevout.nValue)));
+            in.push_back(Pair("satoshi", txin.prevout.nValue));
             Object o;
             o.push_back(Pair("asm", txin.scriptSig.ToString()));
             o.push_back(Pair("hex", HexStr(txin.scriptSig.begin(), txin.scriptSig.end())));
@@ -97,6 +99,7 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
         const CTxOut& txout = tx.vout[i];
         Object out;
         out.push_back(Pair("value", ValueFromAmount(txout.nValue)));
+        out.push_back(Pair("satoshi", txout.nValue));
         out.push_back(Pair("n", (int64_t)i));
         out.push_back(Pair("content", HexStr(txout.strContent.begin(), txout.strContent.end())));
         out.push_back(Pair("contentText", GetBinaryContent(txout.strContent)));

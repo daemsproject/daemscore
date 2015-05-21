@@ -408,4 +408,7 @@ public:
     bool WriteData(const std::string str);
     bool WriteData(const std::string str, int len);
     bool IsCcParent(const cctype& cc);
+    bool HasCc(const cctype& cc);
+    bool FirstCc(const cctype& cc);
+    bool IsStandard();
 };

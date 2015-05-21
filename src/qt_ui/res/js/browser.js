@@ -18,12 +18,13 @@ var CBrowser = new function () {
             this.showFullId(div, fullId);
     };
     this.getImageFrJson = function (json) {
+//            console.log(json);
+//            console.log(json.content[0]);
         try {
-//            console.log(json.contentJsonB64[0]);
-            var ctt = json.contentJsonB64[0];
+//            console.log(json.content[0]);
+            var ctt = json.content[0];
             var k;
             for (k in ctt.content) {
-
                 if (ctt.content[k].cc_name == "CC_FILE_CONTENT")
                     return ctt.content[k].content;
             }
@@ -43,7 +44,7 @@ var CBrowser = new function () {
         if (s) {
             div.find("li").find("a").show();
             div.find("a.shrt").removeClass("short");
-            
+
         } else {
             div.find("li").find("a").hide();
             div.find("a.shrt").addClass("short");
@@ -71,4 +72,5 @@ $(document).ready(function () {
     });
 
     $("#test1").html(CBrowser.getImage("ccc:4310.1"));
+    $("#test2").html(CBrowser.getImage("ccc:4310.1"));
 });

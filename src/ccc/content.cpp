@@ -726,9 +726,20 @@ std::string GetCcHex(const cctype cc)
     return HexStr(stm.str());
 }
 
+bool CContent::IsStandard()
+{
+    iterator pc = begin();
+    while (pc < end()) {
+        cctype cc;
+        CContent contentStr;
+        if (!GetCcUnit(pc, cc, contentStr))
+            return false;
+    }
+    return (pc > end()) ? false : true;
+}
+
 Array CContent::ToJson(stringformat fFormat)
 {
-
     iterator pc = begin();
     Array result;
     while (pc < end()) {
@@ -742,7 +753,10 @@ Array CContent::ToJson(stringformat fFormat)
         ccUnit.push_back(Pair("cc_name", ccName));
         ccUnit.push_back(Pair("cc", GetCcHex(cc)));
         if (IsCcParent(cc)) {
-            ccUnit.push_back(Pair("content", contentStr.ToJson(fFormat)));
+            if (contentStr.IsStandard())
+                ccUnit.push_back(Pair("content", contentStr.ToJson(fFormat)));
+            else
+                ccUnit.push_back(Pair("content", "non-standard"));
         } else {
             switch (fFormat) {
                 case STR_FORMAT_BIN:
@@ -763,7 +777,7 @@ Array CContent::ToJson(stringformat fFormat)
     if (pc > end()) {
         result.clear();
         Object rObj;
-        rObj.push_back(Pair("content", HexStr(*this)));
+        rObj.push_back(Pair("content", "non-standard"));
         result.push_back(rObj);
     }
     return result;
@@ -797,20 +811,55 @@ std::string CContent::ToHumanString()
         ccName = GetCcName(cc);
         ccUnit += ccName;
         if (IsCcParent(cc)) {
-            ccUnit += " " + contentStr.ToHumanString() + " ";
+            if (contentStr.IsStandard())
+                ccUnit += " " + contentStr.ToHumanString() + " ";
+            else
+                ccUnit = strpatch::to_string(size()) + " bytes binary";
         } else {
             ccUnit += " " + TrimToHumanString(contentStr) + " ";
         }
     }
-    if (pc > end())
-        return *this;
+    if (pc > end()) {
+        return strpatch::to_string(size()) + " bytes binary";
+    }
     trim(ccUnit);
     return ccUnit;
 }
 
+bool CContent::HasCc(const cctype& ccIn) // Very costly !!! Try to use FirstCc()
+{
+    iterator pc = begin();
+    bool r = false;
+    while (pc < end()) {
+        cctype cc;
+        CContent contentStr;
+        if (!GetCcUnit(pc, cc, contentStr))
+            break;
+        if (cc == ccIn)
+            return true;
+        if (IsCcParent(cc)) {
+            r = contentStr.HasCc(ccIn);
+        }
+    }
+    if (pc > end())
+        return 0;
+    return r;
+}
+
+bool CContent::FirstCc(const cctype& ccIn)
+{
+    iterator pc = begin();
+    cctype cc = (cctype) ReadVarInt(pc);
+    if (cc != ccIn)
+        return false;
+    if (!IsStandard())
+        return false;
+    return true;
+
+}
+
 bool CContent::SetJson(const Array& cttJson)
 {
-
     cctype cc = CC_NULL;
 
     BOOST_FOREACH(const Value& input, cttJson)
@@ -856,8 +905,10 @@ bool CContent::GetCcUnit(iterator& pc, cctype& ccRet, std::string& content)
         return false;
     ccRet = (cctype) ReadVarInt(pc);
     int len = ReadCompactSize(pc);
-    if (len > 0)
+    if (len > 0 && len <= end() - pc)
         content = ReadData(pc, len);
+    else
+        return false;
     return pc <= end() ? true : false;
 }
 

@@ -148,7 +148,7 @@ var BrowserAPI = new function () {
     }
     this.getContentByLink = function (c) {
         var r;
-        var d = [c,4];
+        var d = [c,6];
         this.call("getcontentbylink", JSON.stringify(d), function (r1) {
             r = r1;
         }, function (e) {

@@ -20,6 +20,27 @@
 using namespace json_spirit;
 using namespace std;
 
+static const int DEFAULT_MAX_CONTENTS = 100;
+static const int DEFAULT_MAX_CONTENTSBYTES = 10000000;
+
+static const int CONTENT_FORMAT_SIZE = 0;
+static const int CONTENT_FORMAT_STR_HEX = 1;
+static const int CONTENT_FORMAT_STR_BIN = 2;
+static const int CONTENT_FORMAT_STR_B64 = 3;
+static const int CONTENT_FORMAT_JSON_HEX = 4;
+static const int CONTENT_FORMAT_JSON_BIN = 5;
+static const int CONTENT_FORMAT_JSON_B64 = 6;
+static const int CONTENT_FORMAT_HUMAN_STR = 7;
+
+enum cttflag{
+    CONTENT_FALSE = 0X00,
+    CONTENT_SHOW_LINK = 0x01,
+    CONTENT_SHOW_POSTER = 0x02,
+    CONTENT_SHOW_VALUE = 0x04,
+    CONTENT_SHOW_ADDR = 0x08,
+    CONTENT_SIMPLE_FORMAT = 0x20 // clink:size
+};
+
 extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry);
 void ScriptPubKeyToJSON(const CScript& scriptPubKey, Object& out, bool fIncludeHex);
 
@@ -760,7 +781,7 @@ Value getcontent(const Array& params, bool fHelp)  // TO DO
 
 
 
-Value getlink(const json_spirit::Array& params, bool fHelp) // TO DO: Help msg
+Value getlink(const Array& params, bool fHelp) // TO DO: Help msg
 {
     if (fHelp || params.size() > 2)
         throw runtime_error("");
@@ -828,32 +849,78 @@ Object _voutToJson(const CTxOut& txout)
     return out;
 }
 
-Value getvoutbylink(const json_spirit::Array& params, bool fHelp)
+Object _output_content(const CContent& cttIn, const int& cformat, const unsigned char& cttf, const CLink& clinkIn, const std::vector<CBitcoinAddress>& posters, const CAmount nValue, const CScript& scriptPubKey)
 {
-    if (fHelp || params.size() != 1)
-        throw runtime_error("Wrong number of parameters");
-    CLink clink(params[0].get_str());
+    CLink clink = clinkIn;
+    CContent ctt = cttIn;
+    Object r;
+    if (cttf & CONTENT_SIMPLE_FORMAT) {
+        r.push_back(Pair(clink.ToString(), ctt.size()));
+        return r;
+    }
+    if (cttf & CONTENT_SHOW_LINK)
+        r.push_back(Pair("link", clink.ToString()));
 
+    if (cttf & CONTENT_SHOW_POSTER) {
+        Array poster;
 
-    CBlockIndex* pblockindex;
-    CBlock block;
-    if (!_getBlockByHeight(clink.nHeight, block, pblockindex))
-        throw JSONRPCError(RPC_INTERNAL_ERROR, "Get block failed");
-    CTransaction tx;
-    if (!_getTxFrBlock(block,clink.nTx,tx))
-        throw JSONRPCError(RPC_INTERNAL_ERROR, "Get tx failed");
-    CTxOut vout;
-    if(!_getVoutFrTx(tx, clink.nVout, vout))
-        throw JSONRPCError(RPC_INTERNAL_ERROR, "Get content failed");
-    Object result;
-    result.push_back(Pair("vout", _voutToJson(vout)));
-    result.push_back(Pair("link", clink.ToString()));
-    result.push_back(Pair("linkHex", clink.ToString(LINK_FORMAT_HEX)));
-    result.push_back(Pair("linkB32", clink.ToString(LINK_FORMAT_B32)));
-    return result;
+        BOOST_FOREACH(const CBitcoinAddress& addr, posters)
+        {
+            poster.push_back(addr.ToString());
+        }
+        r.push_back(Pair("poster", poster));
+    }
+    if (cttf & CONTENT_SHOW_VALUE)
+        r.push_back(Pair("satoshi", nValue));
+    if (cttf & CONTENT_SHOW_ADDR) {
+        if (scriptPubKey.size() == 0)
+            r.push_back(Pair("addr", ""));
+        else {
+            CBitcoinAddress addr(scriptPubKey);
+            r.push_back(Pair("addr", addr.ToString()));
+        }
+    }
+    switch (cformat) {
+        case CONTENT_FORMAT_STR_HEX:r.push_back(Pair("content", HexStr(ctt)));
+            break;
+        case CONTENT_FORMAT_STR_BIN:r.push_back(Pair("content", ctt));
+            break;
+        case CONTENT_FORMAT_STR_B64:r.push_back(Pair("content", EncodeBase64(ctt)));
+            break;
+        case CONTENT_FORMAT_JSON_HEX:r.push_back(Pair("content", ctt.ToJson(STR_FORMAT_HEX)));
+            break;
+        case CONTENT_FORMAT_JSON_BIN:r.push_back(Pair("content", ctt.ToJson(STR_FORMAT_BIN)));
+            break;
+        case CONTENT_FORMAT_JSON_B64:r.push_back(Pair("content", ctt.ToJson(STR_FORMAT_B64)));
+            break;
+        case CONTENT_FORMAT_HUMAN_STR:r.push_back(Pair("content", ctt.ToHumanString()));
+            break;
+        case CONTENT_FORMAT_SIZE:
+        default:
+            r.push_back(Pair("content", ctt.size()));
+    }
+    return r;
 }
 
-Value getcontentbylink(const json_spirit::Array& params, bool fHelp)
+std::vector<CBitcoinAddress> _get_posters(CTransaction tx)
+{
+    std::vector<CBitcoinAddress> posters;
+
+    BOOST_FOREACH(const CTxIn& in, tx.vin)
+    {
+        if (in.prevout.hash.EqualTo(0))
+            continue;
+        CTransaction prevTx;
+        uint256 tmphash;
+        if (!GetTransaction(in.prevout.hash, prevTx, tmphash, true))
+            throw JSONRPCError(RPC_INTERNAL_ERROR, "Get prev tx failed");
+        CBitcoinAddress addr(prevTx.vout[in.prevout.n].scriptPubKey);
+        posters.push_back(addr);
+    }
+    return posters;
+}
+
+Value getcontentbylink(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() < 1 || params.size() > 2)
         throw runtime_error("Wrong number of parameters");
@@ -869,101 +936,272 @@ Value getcontentbylink(const json_spirit::Array& params, bool fHelp)
     CContent content;
     if (!_getContentFrTx(tx, clink.nVout, content))
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Get content failed");
-    Object result;
+    int cformat = (params.size() == 2) ? params[1].get_int() : CONTENT_FORMAT_STR_HEX;
+    std::vector<CBitcoinAddress> posters = _get_posters(tx);
+    unsigned char cflag = CONTENT_SHOW_LINK | CONTENT_SHOW_POSTER | CONTENT_SHOW_VALUE | CONTENT_SHOW_ADDR;
+    Object r = _output_content(content, cformat, cflag, clink, posters, tx.vout[clink.nVout].nValue, tx.vout[clink.nVout].scriptPubKey);
+    return r;
+}
 
-    int fContentType = (params.size() == 2) ? params[1].get_int() : 0; // 0 hex, 1 b64, 2 json, 3 json hex, 4 json b64
-    switch (fContentType) {
-        case 1:
-            result.push_back(Pair("contentBase64", EncodeBase64(content)));
-            break;
-        case 2:
-            result.push_back(Pair("contentJson", content.ToJson(STR_FORMAT_BIN)));
-            break;
-        case 3:
-            result.push_back(Pair("contentJsonHex", content.ToJson(STR_FORMAT_HEX)));
-            break;
-        case 4:
-            result.push_back(Pair("contentJsonB64", content.ToJson(STR_FORMAT_B64)));
-            break;
-        case 0:
-        default:
-            result.push_back(Pair("contentHex", HexStr(content)));
+Value getcontents2(const Array& params, bool fHelp)
+{
+    Object result;
+    return result;
+}
+
+bool _parse_getcontents_params(const Array& params, int& fbh, int& maxc, int& maxb, Array& withcc, Array& withoutcc, std::string& firstcc, int& fContentFormat, unsigned char& cflag, int& mincsize, Array& addrs, bool& fAsc)
+{
+    if (params.size() > 3)
+        return false;
+    if (params.size() == 0) {
+        fbh = 0;
+        maxc = DEFAULT_MAX_CONTENTS;
+        maxb = DEFAULT_MAX_CONTENTSBYTES;
+        return true;
     }
-    result.push_back(Pair("humanString", content.ToHumanString()));
-    result.push_back(Pair("link", clink.ToString()));
-    result.push_back(Pair("linkHex", clink.ToString(LINK_FORMAT_HEX)));
-    result.push_back(Pair("linkB32", clink.ToString(LINK_FORMAT_B32)));
-    return result;
+    Object param = params[0].get_obj();
+    const Value& fbh_v = find_value(param, "fbh");
+    try {
+        fbh = fbh_v.get_int();
+    } catch (std::exception& e) {
+        fbh = 0;
+    }
+    const Value& maxc_v = find_value(param, "maxc");
+    try {
+        maxc = maxc_v.get_int();
+    } catch (std::exception& e) {
+        maxc = DEFAULT_MAX_CONTENTS;
+    }
+    const Value& maxb_v = find_value(param, "maxb");
+    try {
+        maxb = maxb_v.get_int();
+    } catch (std::exception& e) {
+        maxb = DEFAULT_MAX_CONTENTSBYTES;
+    }
+    const Value& fContentFormat_v = find_value(param, "cformat");
+    try {
+        fContentFormat = fContentFormat_v.get_int();
+    } catch (std::exception& e) {
+        fContentFormat = CONTENT_FORMAT_JSON_B64;
+    }
+
+    // cflag
+    cttflag fShowLink;
+    const Value& fShowLink_v = find_value(param, "fShowLink");
+    try {
+        fShowLink = fShowLink_v.get_bool() ? CONTENT_SHOW_LINK : CONTENT_FALSE;
+    } catch (std::exception& e) {
+        fShowLink = CONTENT_SHOW_LINK;
+    }
+    cttflag fShowPoster;
+    const Value& fShowPoster_v = find_value(param, "fShowPoster");
+    try {
+        fShowPoster = fShowPoster_v.get_bool() ? CONTENT_SHOW_POSTER : CONTENT_FALSE;
+    } catch (std::exception& e) {
+        fShowPoster = CONTENT_SHOW_POSTER;
+    }
+    cttflag fShowValue;
+    const Value& fShowValue_v = find_value(param, "fShowValue");
+    try {
+        fShowValue = fShowValue_v.get_bool() ? CONTENT_SHOW_VALUE : CONTENT_FALSE;
+    } catch (std::exception& e) {
+        fShowValue = CONTENT_SHOW_VALUE;
+    }
+    cttflag fShowAddr;
+    const Value& fShowAddr_v = find_value(param, "fShowAddr");
+    try {
+        fShowAddr = fShowAddr_v.get_bool() ? CONTENT_SHOW_ADDR : CONTENT_FALSE;
+    } catch (std::exception& e) {
+        fShowAddr = CONTENT_SHOW_ADDR;
+    }
+    cttflag fSimpleFormat;
+    const Value& fSimpleFormat_v = find_value(param, "fSimpleFormat");
+    try {
+        fSimpleFormat = fSimpleFormat_v.get_bool() ? CONTENT_SIMPLE_FORMAT : CONTENT_FALSE;
+    } catch (std::exception& e) {
+        fSimpleFormat = CONTENT_FALSE;
+    }
+    cflag = fShowLink | fShowPoster | fShowValue | fShowAddr | fSimpleFormat;
+
+    const Value& mincsize_v = find_value(param, "mincsize");
+    try {
+        mincsize = mincsize_v.get_int();
+    } catch (std::exception& e) {
+        mincsize = 1;
+    }
+    const Value& fAsc_v = find_value(param, "fAsc");
+    try {
+        fAsc = fAsc_v.get_bool();
+    } catch (std::exception& e) {
+        fAsc = false;
+    }
+    const Value& withcc_v = find_value(param, "withcc");
+    try {
+        withcc = withcc_v.get_array();
+    } catch (std::exception& e) {
+    }
+    const Value& withoutcc_v = find_value(param, "withoutcc");
+    try {
+        withoutcc = withoutcc_v.get_array();
+    } catch (std::exception& e) {
+    }
+    const Value& firstcc_v = find_value(param, "firstcc");
+    try {
+        firstcc = firstcc_v.get_str();
+    } catch (std::exception& e) {
+    }
+    if (params.size() > 1)
+        addrs = params[1].get_array();
+    return true;
 }
 
-Value getcontentlist(const json_spirit::Array& params, bool fHelp)
+bool _check_cc(const CContent& ctt, const Array& withcc, const Array& withoutcc, const std::string& firstcc)
 {
-    Object result;
-    return result;
+    if (withcc.size() == 0 && withoutcc.size() == 0 && (firstcc == ""))
+        return true;
+    CContent cttcopy = ctt;
+
+    cctype cc = GetCcValue(firstcc);
+    if (!cttcopy.FirstCc(cc))
+        return false;
+
+    BOOST_FOREACH(const Value& ccName_v, withcc)
+    {
+        cctype cc = GetCcValue(ccName_v.get_str());
+        if (!cttcopy.HasCc(cc))
+            return false;
+    }
+
+    BOOST_FOREACH(const Value& ccName_v, withoutcc)
+    {
+        cctype cc = GetCcValue(ccName_v.get_str());
+        if (cttcopy.HasCc(cc))
+            return false;
+    }
+
+    return true;
 }
 
-Value getcontents(const json_spirit::Array& params, bool fHelp)
+
+
+Value getcontents(const Array& params, bool fHelp) // withcc and without cc is very costly, DONOT use in standard occasion
 {
-    if (fHelp || params.size() < 1 || params.size() > 3)
-        throw runtime_error("Wrong number of parameters");
-    CBitcoinAddress address(params[0].get_str());
-    if (!address.IsValid())
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Address is invalid");
-    int lbh = params.size() > 1 ? params[1].get_int() : 0;
-    int fFormat = params.size() == 3 ? params[2].get_int() : 0;
-    if(fFormat < 0 || fFormat > 3)
-        throw runtime_error("Invalid format code");
-    CScript scriptPubKey = GetScriptForDestination(address.Get());
-    std::vector<CScript> vIds;
-    vIds.push_back(scriptPubKey);
-    std::vector<std::pair<CTransaction, uint256> > vTxs;
-    if (!GetTransactions(vIds, vTxs))
-        throw JSONRPCError(RPC_INTERNAL_ERROR, "Get tx failed");
-    Object o;
-    for (std::vector<std::pair<CTransaction, uint256> >::iterator it = vTxs.begin(); it != vTxs.end(); ++it) {
-        BlockMap::iterator mi = mapBlockIndex.find(it->second);
-        if (mi != mapBlockIndex.end() && (*mi).second) {
-            for (int i = 0; i < (int) it->first.vout.size(); i++) {
-                CBlockIndex* pindex = (*mi).second;
-                if (pindex->nHeight > lbh) {
-                    int nTx = GetNTx(it->first.GetHash()); // Very inefficient
-                    CLink clink(pindex->nHeight, nTx, i);
-                    CContent ctt;
-                    if (_getContentFrTx(it->first, i, ctt)) {
-                        switch (fFormat) {
-                            case 0:
-                                o.push_back(Pair(clink.ToString(), ctt.size()));
-                                break;
-                            case 1:
-                                o.push_back(Pair(clink.ToString(), ctt.ToHumanString()));
-                                break;
-                            case 2:
-                                o.push_back(Pair(clink.ToString(), HexStr(ctt)));
-                                break;
-                            case 3:
-                                o.push_back(Pair(clink.ToString(), EncodeBase64(ctt)));
-                                break;
+    if (fHelp)
+        throw runtime_error("Help msg");
+    int fbh;
+    int maxc;
+    int maxb;
+    Array withcc;
+    Array withoutcc;
+    std::string firstcc = "";
+    Array gAddrs;
+    int cformat;
+    unsigned char cflag;
+    int minsz;
+    bool fAsc;
+    if (!_parse_getcontents_params(params, fbh, maxc, maxb, withcc, withoutcc, firstcc, cformat, cflag, minsz, gAddrs, fAsc))
+        throw runtime_error("Error parsing parameters");
+    Array r;
+    int c = 0;
+    int b = 0;
+    if (gAddrs.size() == 0) {
+        int nHeight = fAsc ? fbh : chainActive.Height();
+        int total = chainActive.Height() - fbh + 1;
+        for (int i = 0; i < total; i++) {
+            CBlockIndex* pblockindex;
+            CBlock block;
+            if (!_getBlockByHeight(nHeight, block, pblockindex))
+                throw JSONRPCError(RPC_INTERNAL_ERROR, "Get block failed");
+            int nTx = 0;
+
+            BOOST_FOREACH(const CTransaction& tx, block.vtx)
+            {
+                int nVout = 0;
+                std::vector<CBitcoinAddress> posters;
+                if (cflag & CONTENT_SHOW_POSTER)
+                    posters = _get_posters(tx);
+
+                BOOST_FOREACH(const CTxOut& out, tx.vout)
+                {
+                    if (c >= maxc)
+                        return r;
+                    if ((int) out.strContent.size() >= minsz) {
+                        b += out.strContent.size();
+                        if (c > maxc || b > maxb)
+                            return r;
+                        CContent ctt(out.strContent);
+                        if (_check_cc(ctt, withcc, withoutcc, firstcc)) {
+                            CLink clink(nHeight, nTx, nVout);
+                            Object cttr = _output_content(ctt, cformat, cflag, clink, posters, out.nValue, out.scriptPubKey);
+                            r.push_back(cttr);
+                            c++;
+                        } else {
+                            b -= out.strContent.size();
+                            continue;
+                        }
+
+                    }
+                    nVout++;
+                }
+                nTx++;
+            }
+            fAsc ? nHeight++ : nHeight--;
+        }
+    } else {
+        std::vector<CScript> vIds;
+        BOOST_FOREACH(const Value& addrStr, gAddrs)
+        {
+            CBitcoinAddress address(addrStr.get_str());
+            if (!address.IsValid())
+                throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Address is invalid");
+            CScript scriptPubKey = GetScriptForDestination(address.Get());
+            vIds.push_back(scriptPubKey);
+        }
+        std::vector<std::pair<CTransaction, uint256> > vTxs;
+        if (!GetTransactions(vIds, vTxs))
+            throw JSONRPCError(RPC_INTERNAL_ERROR, "Get tx failed");
+        for (std::vector<std::pair<CTransaction, uint256> >::iterator it = vTxs.begin(); it != vTxs.end(); ++it) {
+            BlockMap::iterator mi = mapBlockIndex.find(it->second);
+            if (mi != mapBlockIndex.end() && (*mi).second) {
+                std::vector<CBitcoinAddress> posters;
+                if (cflag & CONTENT_SHOW_POSTER)
+                    posters = _get_posters(it->first);
+                for (int i = 0; i < (int) it->first.vout.size(); i++) {
+                    if (c >= maxc)
+                        return r;
+                    CBlockIndex* pindex = (*mi).second;
+                    if (pindex->nHeight > fbh) {
+                        int nTx = GetNTx(it->first.GetHash()); // Very inefficient
+                        CLink clink(pindex->nHeight, nTx, i);
+                        CContent ctt;
+                        if (_getContentFrTx(it->first, i, ctt)) {
+                            if ((int) ctt.size() >= minsz) {
+                                b += ctt.size();
+                                if (c > maxc || b > maxb)
+                                    return r;
+                                if (_check_cc(ctt, withcc, withoutcc, firstcc)) {
+                                    Object cttr = _output_content(ctt, cformat, cflag, clink, posters, it->first.vout[i].nValue, it->first.vout[i].scriptPubKey);
+                                    r.push_back(cttr);
+                                    c++;
+                                } else
+                                    b -= ctt.size();
+                            }
                         }
                     }
                 }
             }
         }
     }
-
-    return o;
+    return r;
 }
 
 std::string _test()
 {
     std::string str;
-    str = "ab1";
-    int i = -1;
-    i = atoi(str.c_str());
-    std::cout << "test: " << i << "\n";
     return str;
 }
 
-Value devtest(const json_spirit::Array& params, bool fHelp)
+Value devtest(const Array& params, bool fHelp)
 {
     return _test();
 } 
