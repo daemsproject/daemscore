@@ -3,6 +3,15 @@
 }.brimg{
     max-width:60%;
     max-height:800px;
+}#fullImage{
+    position: absolute;
+    top: 0;
+    height : 90%;
+    bottom: 5%;
+}#standard{
+    display:none; // comment out for dev
+}#refresh-btn{
+    
 }
 .nav-pills  .active  a{
     background-color: #666;
