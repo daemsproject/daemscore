@@ -175,6 +175,8 @@ std::string EncodeBase32(const int i)
 {
     std::string str = "";
     int t = i;
+    if(t == 0)
+        str += pszBase32[0];
     while (t > 0) {
         str += pszBase32[ t % 32];
         t = t / 32;

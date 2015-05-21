@@ -21,6 +21,14 @@ void CLink::SetEmpty()
     nVout = -1;
 }
 
+bool CLink::SetInt(const int nHeightIn, const int nTxIn, const int nVoutIn)
+{
+    nHeight = nHeightIn;
+    nTx = nTxIn;
+    nVout = nVoutIn;
+    return true;
+}
+
 bool CLink::SetString(const std::string linkStr)
 {
     nHeight = -1;

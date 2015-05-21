@@ -779,33 +779,40 @@ Value getcontent(const Array& params, bool fHelp)  // TO DO
     return Value::null;
 }
 
-
-
 Value getlink(const Array& params, bool fHelp) // TO DO: Help msg
 {
     if (fHelp || params.size() > 2)
         throw runtime_error("");
-    uint256 hash = ParseHashV(params[0], "parameter 1");
-    int nVout = params.size() == 2 ? params[1].get_int() : 0;
-    CTransaction tx;
-    uint256 hashBlock = 0;
-    if (!GetTransaction(hash, tx, hashBlock, true))
-        throw JSONRPCError(RPC_LINK_ERROR, "No information available about transaction");
-    if ((int)tx.vout.size() <= nVout)
-        throw JSONRPCError(RPC_LINK_ERROR, "nVout larger than total vout count");
-    int nTx = 0;
-    nTx = GetNTx(tx.GetHash());
-    if (nTx < 0)
-        throw JSONRPCError(RPC_LINK_ERROR, "Get nTx failed");
     Object result;
-    BlockMap::iterator mi = mapBlockIndex.find(hashBlock);
-    if (mi != mapBlockIndex.end() && (*mi).second) {
-        CBlockIndex* pindex = (*mi).second;
-        CLink clink(pindex->nHeight, nTx, nVout);
-        result.push_back(Pair("link", clink.ToString(LINK_FORMAT_DEC)));
-        result.push_back(Pair("linkHex", clink.ToString(LINK_FORMAT_HEX)));
-        result.push_back(Pair("linkB32", clink.ToString(LINK_FORMAT_B32)));
+    CLink clink;
+    if (IsHex(params[0].get_str())) { // input is txid
+        uint256 hash = ParseHashV(params[0], "parameter 1");
+
+        int nVout = params.size() == 2 ? params[1].get_int() : 0;
+        CTransaction tx;
+        uint256 hashBlock = 0;
+        if (!GetTransaction(hash, tx, hashBlock, true))
+            throw JSONRPCError(RPC_LINK_ERROR, "No information available about transaction");
+        if ((int) tx.vout.size() <= nVout)
+            throw JSONRPCError(RPC_LINK_ERROR, "nVout larger than total vout count");
+        int nTx = 0;
+        nTx = GetNTx(tx.GetHash());
+        if (nTx < 0)
+            throw JSONRPCError(RPC_LINK_ERROR, "Get nTx failed");
+
+        BlockMap::iterator mi = mapBlockIndex.find(hashBlock);
+        if (mi != mapBlockIndex.end() && (*mi).second) {
+            CBlockIndex* pindex = (*mi).second;
+            clink.SetInt(pindex->nHeight, nTx, nVout);
+
+        } else
+            throw JSONRPCError(RPC_LINK_ERROR, "Fail to get link");
+    } else { // input is link
+        clink.SetString(params[0].get_str());
     }
+    result.push_back(Pair("link", clink.ToString(LINK_FORMAT_DEC)));
+    result.push_back(Pair("linkHex", clink.ToString(LINK_FORMAT_HEX)));
+    result.push_back(Pair("linkB32", clink.ToString(LINK_FORMAT_B32)));
     return result;
 }
 

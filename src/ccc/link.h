@@ -51,10 +51,12 @@ public:
         nTx = nTxIn;
         nVout = nVoutIn;
     }
+    
     Array ToJson();
     bool ToJsonString(std::string& entry);
     std::string ToString(linkformat linkFormat = LINK_FORMAT_DEC);
     void SetEmpty();
+    bool SetInt(const int nHeightIn,const int nTxIn,const int nVoutIn = 0);
     bool SetString(const std::string linkStr);
     bool SetString(const vector<unsigned char>& linkVch);
     bool SetJson(const Array& linkJson);
