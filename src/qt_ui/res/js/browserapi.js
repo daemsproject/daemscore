@@ -156,9 +156,25 @@ var BrowserAPI = new function () {
         });
         return r;
     };
-    this.getRecent = function () {
+    this.getRecent = function (fbh, blkc, fAsc) {
+        fbh = typeof fbh !== 'undefiend' ? fbh : 0;
+        blkc = typeof blkc !== 'undefiend' ? blkc : 10;
+        fAsc = typeof fAsc !== 'undefiend' ? fAsc : true;
         var r;
-        var d = [{"fbh":0,"maxb":3000000,"maxc":1,"firstcc":"CC_FILE_P","fAsc":true,"mincsize":20,"cformat":0}];
+        var fcc = ["CC_FILE_P", "CC_TEXT_P", "CC_LINK_P", "CC_LINK"];
+        var d = [{"fbh": fbh, "maxc": 20, "maxb": 3000000, "firstcc": fcc, "cformat": 6, "fAsc": fAsc, "mincsize": 3, "blkc": blkc}];
+        this.call("getcontents", JSON.stringify(d), function (r1) {
+            r = r1;
+        }, function (e) {
+            r = e;
+        });
+        return r;
+    };
+    this.testGetContents = function (fbh) {
+        var r;
+        var fcc = ["CC_FILE_P", "CC_TEXT_P", "CC_LINK_P", "CC_LINK"];
+console.log(fbh);
+        var d = [{"fbh": fbh, "maxc": 20, "maxb": 3000000, "firstcc": fcc, "cformat": 6, "fAsc": false, "mincsize": 3, "blkc": 10}];
         this.call("getcontents", JSON.stringify(d), function (r1) {
             r = r1;
         }, function (e) {
@@ -167,5 +183,18 @@ var BrowserAPI = new function () {
         return r;
     };
 
+};
+var CLink = new function () {
+    var nHeight;
+    var nTx;
+    var nVout;
+    var tmp;
+    this.setString = function (str) {
+        tmp = str;
+        return this;
+    };
+    this.toString = function () {
+        return tmp;
+    };
 };
 

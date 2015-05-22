@@ -22,6 +22,7 @@ using namespace std;
 
 static const int DEFAULT_MAX_CONTENTS = 100;
 static const int DEFAULT_MAX_CONTENTSBYTES = 10000000;
+static const int DEFAULT_MAX_BLKCOUNT = 10;
 
 static const int CONTENT_FORMAT_SIZE = 0;
 static const int CONTENT_FORMAT_STR_HEX = 1;
@@ -950,7 +951,7 @@ Value getcontentbylink(const Array& params, bool fHelp)
     return r;
 }
 
-bool _parse_getcontents_params(const Array& params, int& fbh, int& maxc, int& maxb, Array& withcc, Array& withoutcc, Array& firstcc, int& fContentFormat, unsigned char& cflag, int& mincsize, Array& addrs, bool& fAsc)
+bool _parse_getcontents_params(const Array& params, int& fbh, int& maxc, int& maxb, int& blkc, Array& withcc, Array& withoutcc, Array& firstcc, int& fContentFormat, unsigned char& cflag, int& mincsize, Array& addrs, bool& fAsc)
 {
     if (params.size() > 3)
         return false;
@@ -978,6 +979,12 @@ bool _parse_getcontents_params(const Array& params, int& fbh, int& maxc, int& ma
         maxb = maxb_v.get_int();
     } catch (std::exception& e) {
         maxb = DEFAULT_MAX_CONTENTSBYTES;
+    }
+        const Value& blkc_v = find_value(param, "blkc");
+    try {
+        blkc = blkc_v.get_int();
+    } catch (std::exception& e) {
+        blkc = DEFAULT_MAX_BLKCOUNT;
     }
     const Value& fContentFormat_v = find_value(param, "cformat");
     try {
@@ -1101,6 +1108,7 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
     int fbh;
     int maxc;
     int maxb;
+    int blkc;
     Array withcc;
     Array withoutcc;
     Array firstcc;
@@ -1109,14 +1117,15 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
     unsigned char cflag;
     int minsz;
     bool fAsc;
-    if (!_parse_getcontents_params(params, fbh, maxc, maxb, withcc, withoutcc, firstcc, cformat, cflag, minsz, gAddrs, fAsc))
+    if (!_parse_getcontents_params(params, fbh, maxc, maxb, blkc,withcc, withoutcc, firstcc, cformat, cflag, minsz, gAddrs, fAsc))
         throw runtime_error("Error parsing parameters");
     Array r;
     int c = 0;
     int b = 0;
     if (gAddrs.size() == 0) {
-        int nHeight = fAsc ? fbh : chainActive.Height();
-        int total = chainActive.Height() - fbh + 1;
+        int nHeight = fAsc ? fbh : std::min (chainActive.Height(), fbh + blkc) ;
+        int totalM = chainActive.Height() - fbh + 1;
+        int total = totalM > blkc ? blkc : totalM;
         for (int i = 0; i < total; i++) {
             CBlockIndex* pblockindex;
             CBlock block;

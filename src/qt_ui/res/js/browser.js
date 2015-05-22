@@ -52,34 +52,97 @@ var CBrowser = new function () {
         $("#fullImage").html(div.html());
         $("#fullImage").find("img").removeClass("brimg");
     };
+    this.toggleLink = function (div) {
+        var cl = div.parent().parent().find(".linkspan");
+        if (cl.html() === "")
+            cl.html(cl.attr("clink"));
+        else
+            cl.html("");
+    };
+
     this.shortenId = function (id) {
         return id.substr(0, 10) + "...";
     };
-    this.addContent = function (clink, ctt) {
-        var sdiv = $("#standard").clone(true, true);
-        sdiv.removeAttr("id");
-        sdiv.find(".id").find(".text").attr("fullid", ctt.poster[0]);
-        sdiv.find(".id").find(".text").html(this.shortenId(ctt.poster[0]));
-        sdiv.find(".ctt").html(this.createImgHtml(clink, this.getImageFrJson(ctt)));
-        $("#mainframe").prepend(sdiv.children());
+    this.addContent = function (ctt) {
+        if (ctt.content[0].content !== "non-standard") {
+            var sdiv = $("#standard").clone(true, true);
+            sdiv.removeAttr("id");
+            sdiv.find(".id").find(".text").attr("fullid", ctt.poster[0]);
+            sdiv.find(".id").find(".text").html(this.shortenId(ctt.poster[0]));
+            sdiv.find(".linkspan").attr("clink", ctt.link);
+
+            sdiv.find(".ctt").html(this.createImgHtml(ctt.link, this.getImageFrJson(ctt)));
+            $("#mainframe").prepend(sdiv.children());
+        }
 //        console.log(ctt);
 //        console.log(sdiv);
     };
     this.refreshNew = function () {
-        var clink = "ccc:11175.1";
-        var ctt = BrowserAPI.getContentByLink(clink);
-        this.addContent(clink, ctt);
-//        this.refreshEvent();
+        var ctts = this.getRecentContents();
+        console.log(ctts);
+        for (k in ctts) {
+            console.log("ctt" + ctts[k]);
+            this.addContent(ctts[k]);
+        }
+        console.log(blkDisp);
+    };
+    this.refreshOld = function () {
+        var ctts = this.getOldContents();
+        console.log(ctts);
+        for (k in ctts) {
+            console.log("ctt" + ctts[k]);
+            this.addContent(ctts[k]);
+        }
+        console.log(blkDisp);
+    };
+    this.getRecentContents = function () {
+        var rc = 3;
+        var lbh = BrowserAPI.getBlockCount();
+        var bh = lbh;
+        bh -= 10;
+        console.log(bh);
+        var ctts = BrowserAPI.getRecent(bh, 10, false);
+        bh -= 10;
+        while (ctts.length < rc && bh > 0) {
+            var tmp = BrowserAPI.getRecent(bh, 10, false);
+            ctts = ctts.concat(tmp);
+            bh -= 10;
+
+        }
+        blkDisp = [bh + 10, parseInt(lbh)];
+        return ctts;
+    };
+    this.getOldContents = function () {
+        var rc = 3;
+        var lbh = blkDisp[0];
+        var bh = lbh;
+        bh -= 10;
+        console.log(bh);
+        var ctts = BrowserAPI.getRecent(bh, 10, false);
+        bh -= 10;
+        while (ctts.length < rc && bh > 0) {
+            var tmp = BrowserAPI.getRecent(bh, 10, false);
+            ctts = ctts.concat(tmp);
+            bh -= 10;
+
+        }
+        blkDisp = [bh + 10, lbh];
+        return ctts;
     };
 
 };
-
+var blkDisp;
 $(document).ready(function () {
+
+    CBrowser.refreshNew();
     $("#refresh-btn").click(function () {
         CBrowser.refreshNew();
+//        console.log("blkh: " + blkh);
+    });
+    $("#refreshold-btn").click(function () {
+        CBrowser.refreshOld();
     });
     $(".id").find("a.text").click(function () {
-        console.log('log');
         CBrowser.toggleFullId($(this).parent());
     });
     $(".id-follow-btn").click(function () {
@@ -94,15 +157,18 @@ $(document).ready(function () {
     $(".ctt").click(function () {
         CBrowser.showFullImg($(this));
     });
+    $(".ctt-link-btn").click(function () {
+        CBrowser.toggleLink($(this));
+    });
+
 
     $("#fullImage").click(function () {
         $(this).html("");
     });
-    $("#test1").html(CBrowser.getImage("ccc:4310.1"));
-    $("#test2").html(CBrowser.getImage("ccc:11175.1"));
-    $("#test-btn").click(function(){
-        console.log('test');
-        console.log(BrowserAPI.getRecent());
+//    $("#test1").html(CBrowser.getImage("ccc:4310.1"));
+//    $("#test2").html(CBrowser.getImage("ccc:11175.1"));
+    $("#test-btn").click(function () {
+        CBrowser.getRecentContents();
     });
 
 });
