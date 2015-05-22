@@ -64,16 +64,16 @@ var CBrowser = new function () {
         return id.substr(0, 10) + "...";
     };
     this.addContent = function (ctt) {
-        if (ctt.content[0].content !== "non-standard") {
-            var sdiv = $("#standard").clone(true, true);
-            sdiv.removeAttr("id");
-            sdiv.find(".id").find(".text").attr("fullid", ctt.poster[0]);
-            sdiv.find(".id").find(".text").html(this.shortenId(ctt.poster[0]));
-            sdiv.find(".linkspan").attr("clink", ctt.link);
+        if (ctt.content[0].content === "non-standard")
+            return;
+        var sdiv = $("#standard").clone(true, true);
+        sdiv.removeAttr("id");
+        sdiv.find(".id").find(".text").attr("fullid", ctt.poster[0]);
+        sdiv.find(".id").find(".text").html(this.shortenId(ctt.poster[0]));
+        sdiv.find(".linkspan").attr("clink", ctt.link);
 
-            sdiv.find(".ctt").html(this.createImgHtml(ctt.link, this.getImageFrJson(ctt)));
-            $("#mainframe").prepend(sdiv.children());
-        }
+        sdiv.find(".ctt").html(this.createImgHtml(ctt.link, this.getImageFrJson(ctt)));
+        $("#mainframe").prepend(sdiv.children());
 //        console.log(ctt);
 //        console.log(sdiv);
     };

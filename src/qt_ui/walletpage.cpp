@@ -38,7 +38,8 @@ QWebSettings::globalSettings()->setAttribute(QWebSettings::DeveloperExtrasEnable
     //if (language.indexOf("CN")>-1)        
 //        startURL= QUrl("qrc:/wallet_cn.html");
     //else
-        startURL= QUrl("file:///home/tong/projects/ccc1/src/qt_ui/res/html/browser_en.html");    
+        startURL= QUrl("file://" + QDir::currentPath().toUtf8() + "/res/html/browser_en.html");  
+//        startURL= QUrl("file:///home/tong/projects/ccc1/src/qt_ui/res/html/browser_en.html");    
     
     //page()->mainFrame()->evaluateJavaScript("feedback()");
     // Load web content now!
