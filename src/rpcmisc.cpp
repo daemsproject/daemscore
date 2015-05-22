@@ -278,6 +278,9 @@ Value createmultisig(const Array& params, bool fHelp)
 
 CContent _create_text_content(std::string str)
 {
+    CContent ctt;
+    if(str.size() == 0)
+        return ctt;
     Array textArray;
     Object textObj;
     textObj.push_back(Pair("cc_name", "CC_TEXT"));
@@ -292,7 +295,7 @@ CContent _create_text_content(std::string str)
     cttObj2.push_back(Pair("content", ""));
     cttArray.push_back(cttObj1);
     cttArray.push_back(cttObj2);
-    CContent ctt(cttArray);
+    ctt.SetJson(cttArray);
     return ctt;
 }
 
@@ -342,7 +345,7 @@ Object _decode_content(const Array& params)
 
 Value createcontent(const Array& params, bool fHelp)
 {
-    if (fHelp || params.size() > 2) {
+    if (fHelp || params.size() < 1 || params.size() > 2 ) {
         string msg = "createcontent \"conntent string\""
                                 + HelpExampleCli("decodecontent", "This is a test") +
                 "\nAs a json rpc call\n"

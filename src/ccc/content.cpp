@@ -858,6 +858,12 @@ bool CContent::FirstCc(const cctype& ccIn)
 
 }
 
+bool CContent::SetEmpty()
+{
+    clear();
+    return true;
+}
+
 bool CContent::SetJson(const Array& cttJson)
 {
     cctype cc = CC_NULL;
@@ -907,7 +913,7 @@ bool CContent::GetCcUnit(iterator& pc, cctype& ccRet, std::string& content)
     int len = ReadCompactSize(pc);
     if (len > 0 && len <= end() - pc)
         content = ReadData(pc, len);
-    else if(len == 0)
+    else if (len == 0)
         content = "";
     else
         return false;

@@ -375,7 +375,10 @@ class CContent : public std::string
 {
 public:
 
-    CContent() { }
+    CContent()
+    {
+        SetEmpty();
+    }
 
     CContent(const std::string& cttStr)
     {
@@ -393,6 +396,7 @@ public:
     }
     Array ToJson(stringformat fFormat = STR_FORMAT_BIN);
     bool ToJsonString(std::string& entry);
+    bool SetEmpty();
     bool SetString(const std::string& cttStr);
     bool SetString(const vector<unsigned char>& cttVch);
     bool SetJson(const Array& cttJson);
