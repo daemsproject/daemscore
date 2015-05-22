@@ -907,6 +907,8 @@ bool CContent::GetCcUnit(iterator& pc, cctype& ccRet, std::string& content)
     int len = ReadCompactSize(pc);
     if (len > 0 && len <= end() - pc)
         content = ReadData(pc, len);
+    else if(len == 0)
+        content = "";
     else
         return false;
     return pc <= end() ? true : false;
