@@ -52,7 +52,7 @@ bool CLink::SetString(const std::string linkStr)
     std::string nHeightS = str.substr(0, posFirstDot);
     std::size_t posSecondDot = str.find(".", posFirstDot + 1);
     std::string nTxS = (posSecondDot == std::string::npos) ? str.substr(posFirstDot + 1) :
-            str.substr(posFirstDot + 1, posSecondDot - posFirstDot);
+            str.substr(posFirstDot + 1, posSecondDot - posFirstDot - 1);
     if (nHeightS.substr(0, 1) == URI_HEX_HEADER) {
         nHeight = HexStringToInt(nHeightS.substr(1));
         nTx = HexStringToInt(nTxS);
