@@ -933,7 +933,6 @@ Value getcontentbylink(const Array& params, bool fHelp)
     if (fHelp || params.size() < 1 || params.size() > 2)
         throw runtime_error("Wrong number of parameters");
     CLink clink(params[0].get_str());
-
     CBlockIndex* pblockindex;
     CBlock block;
     if (!_getBlockByHeight(clink.nHeight, block, pblockindex))

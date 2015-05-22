@@ -72,35 +72,49 @@ var CBrowser = new function () {
         sdiv.find(".id").find(".text").html(this.shortenId(ctt.poster[0]));
         sdiv.find(".linkspan").attr("clink", ctt.link);
 
-        sdiv.find(".ctt").html(this.createImgHtml(ctt.link, this.getImageFrJson(ctt)));
+        if (this.isContentImage(ctt))
+            sdiv.find(".ctt").html(this.createImgHtml(ctt.link, this.getImageFrJson(ctt)));
+        else if (this.isContentText(ctt))
+            sdiv.find(".ctt").html(atob(ctt.content[0].content[0].content));
+        else
+            return;
         $("#mainframe").prepend(sdiv.children());
 //        console.log(ctt);
-//        console.log(sdiv);
     };
+    this.isContentImage = function (ctt) {
+        return ctt.content[0].cc_name === "CC_FILE_P" &&
+                ctt.content[0].content[1].cc_name === "CC_FILE_TYPESTRING" &&
+                ctt.content[0].content[1].content === btoa("image/jpeg");
+    };
+    this.isContentText = function (ctt) {
+        return ctt.content[0].cc_name === "CC_TEXT_P" &&
+                ctt.content[0].content[0].cc_name === "CC_TEXT" &&
+                ctt.content[0].content[0].content.length !== 0;
+    };
+
     this.refreshNew = function () {
         var ctts = this.getRecentContents();
-        console.log(ctts);
+//        console.log(ctts);
         for (k in ctts) {
-            console.log("ctt" + ctts[k]);
+//            console.log("ctt" + ctts[k]);
             this.addContent(ctts[k]);
         }
-        console.log(blkDisp);
+//        console.log(blkDisp);
     };
     this.refreshOld = function () {
         var ctts = this.getOldContents();
-        console.log(ctts);
+//        console.log(ctts);
         for (k in ctts) {
-            console.log("ctt" + ctts[k]);
+//            console.log("ctt" + ctts[k]);
             this.addContent(ctts[k]);
         }
-        console.log(blkDisp);
+//        console.log(blkDisp);
     };
     this.getRecentContents = function () {
         var rc = 3;
         var lbh = BrowserAPI.getBlockCount();
         var bh = lbh;
         bh -= 10;
-        console.log(bh);
         var ctts = BrowserAPI.getRecent(bh, 10, false);
         bh -= 10;
         while (ctts.length < rc && bh > 0) {
@@ -117,7 +131,6 @@ var CBrowser = new function () {
         var lbh = blkDisp[0];
         var bh = lbh;
         bh -= 10;
-        console.log(bh);
         var ctts = BrowserAPI.getRecent(bh, 10, false);
         bh -= 10;
         while (ctts.length < rc && bh > 0) {
@@ -137,7 +150,6 @@ $(document).ready(function () {
     CBrowser.refreshNew();
     $("#refresh-btn").click(function () {
         CBrowser.refreshNew();
-//        console.log("blkh: " + blkh);
     });
     $("#refreshold-btn").click(function () {
         CBrowser.refreshOld();
@@ -165,8 +177,6 @@ $(document).ready(function () {
     $("#fullImage").click(function () {
         $(this).html("");
     });
-//    $("#test1").html(CBrowser.getImage("ccc:4310.1"));
-//    $("#test2").html(CBrowser.getImage("ccc:11175.1"));
     $("#test-btn").click(function () {
         CBrowser.getRecentContents();
     });
