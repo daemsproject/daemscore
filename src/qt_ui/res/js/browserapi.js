@@ -157,9 +157,9 @@ var BrowserAPI = new function () {
         return r;
     };
     this.getRecent = function (fbh, blkc, fAsc) {
-        fbh = typeof fbh !== 'undefiend' ? fbh : 0;
-        blkc = typeof blkc !== 'undefiend' ? blkc : 10;
-        fAsc = typeof fAsc !== 'undefiend' ? fAsc : true;
+        fbh = typeof fbh !== 'undefined' ? fbh : 0;
+        blkc = typeof blkc !== 'undefined' ? blkc : 10;
+        fAsc = typeof fAsc !== 'undefined' ? fAsc : true;
         var r;
         var fcc = ["CC_FILE_P", "CC_TEXT_P", "CC_LINK_P", "CC_LINK"];
         var d = [{"fbh": fbh, "maxc": 20, "maxb": 3000000, "firstcc": fcc, "cformat": 6, "fAsc": fAsc, "mincsize": 3, "blkc": blkc}];
@@ -173,7 +173,7 @@ var BrowserAPI = new function () {
     this.testGetContents = function (fbh) {
         var r;
         var fcc = ["CC_FILE_P", "CC_TEXT_P", "CC_LINK_P", "CC_LINK"];
-console.log(fbh);
+        console.log(fbh);
         var d = [{"fbh": fbh, "maxc": 20, "maxb": 3000000, "firstcc": fcc, "cformat": 6, "fAsc": false, "mincsize": 3, "blkc": 10}];
         this.call("getcontents", JSON.stringify(d), function (r1) {
             r = r1;
@@ -184,17 +184,37 @@ console.log(fbh);
     };
 
 };
+
 var CLink = new function () {
     var nHeight;
     var nTx;
     var nVout;
-    var tmp;
     this.setString = function (str) {
-        tmp = str;
+        this.nHeight = -1;
+        this.nTx = -1;
+        this.nVout = -1;
+        var pc = str.indexOf(":");
+        if (pc >= 0)
+            str = str.substring(pc + 1);
+        var pfd = str.indexOf(".");
+        this.nHeight = parseInt(str.substring(0, pfd));
+        var psd = str.indexOf(".", pfd + 1);
+        if (psd >= 0) {
+            this.nTx = parseInt(str.substring(pfd + 1, psd));
+            this.nVout = parseInt(str.substring(psd + 1));
+        } else {
+            this.nTx = parseInt(str.substring(pfd + 1));
+            this.nVout = 0;
+        }
         return this;
     };
     this.toString = function () {
-        return tmp;
+        return this.nHeight >= 0 && this.nTx >= 0 ?
+                (this.nVout > 0 ? "ccc:" + this.nHeight + "." + this.nTx + "." + this.nVout : "ccc:" + this.nHeight + "." + this.nTx) : "";
+    };
+    this.toHtmlId = function () {
+        return this.nHeight >= 0 && this.nTx >= 0 ?
+                (this.nVout > 0 ? this.nHeight + "_" + this.nTx + "_" + this.nVout : this.nHeight + "_" + this.nTx) : "";
     };
 };
 

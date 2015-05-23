@@ -15,7 +15,7 @@ var CBrowser = new function () {
         else
             this.showFullId(div, fullId);
     };
-    this.getImageFrJson = function (json) {
+    this.getFileContentFrJson = function (json) {
         try {
             var ctt = json.content[0];
             var k;
@@ -24,18 +24,39 @@ var CBrowser = new function () {
                     return ctt.content[k].content;
             }
         } catch (e) {
-            console.log("getImageFrJson error");
+            console.log("getFileContentFrJson error");
         }
 
     };
     this.getImage = function (clink) {
         var cj = (BrowserAPI.getContentByLink(clink));
-        r = this.getImageFrJson(cj);
+        r = this.getFileContentFrJson(cj);
         return this.createImgHtml(clink, r);
 
     };
-    this.createImgHtml = function (clink, imgB64Data) {
-        return '<a ><img id="' + clink + '" src="data:image/jpg;base64,' + imgB64Data + '" class="brimg"/></a>';
+    this.createImgHtml = function (clink, imgB64Data, type) {
+        type = typeof type !== 'undefined' ? type : "image/jpeg";
+        var idiv = $("#image-tpl").clone(true, true);
+        idiv.find("img").attr("id", CLink.setString(clink).toHtmlId());
+        idiv.find("img").attr("type", type);
+        idiv.find("img").attr("src", "data:" + type + ";base64," + imgB64Data);
+        return idiv.html();
+    };
+    this.createVideoHtml = function (clink, vdoB64Data, type) {
+        type = typeof type !== 'undefined' ? type : "video/mp4";
+        var vdiv = $("#video-tpl").clone(true, true);
+        vdiv.find("video").attr("id", CLink.setString(clink).toHtmlId());
+        vdiv.find("source").attr("type", type);
+        vdiv.find("source").attr("src", "data:" + type + ";base64," + vdoB64Data);
+        return vdiv.html();
+    };
+    this.createAudioHtml = function (clink, adoB64Data, type) {
+        type = typeof type !== 'undefined' ? type : "audio/mpeg";
+        var vdiv = $("#video-tpl").clone(true, true);
+        vdiv.find("video").attr("id", CLink.setString(clink).toHtmlId());
+        vdiv.find("source").attr("type", type);
+        vdiv.find("source").attr("src", "data:" + type + ";base64," + adoB64Data);
+        return vdiv.html();
     };
     this.toggleCmt = function (div) {
         var s = div.find("a.shrt").hasClass("short");
@@ -49,8 +70,10 @@ var CBrowser = new function () {
         }
     };
     this.showFullImg = function (div) {
-        $("#fullImage").html(div.html());
-        $("#fullImage").find("img").removeClass("brimg");
+        if (div.find("img").length !== 0) {
+            $("#fullImage").html(div.html());
+            $("#fullImage").find("img").removeClass("brimg");
+        }
     };
     this.toggleLink = function (div) {
         var cl = div.parent().parent().find(".linkspan");
@@ -63,7 +86,8 @@ var CBrowser = new function () {
     this.shortenId = function (id) {
         return id.substr(0, 10) + "...";
     };
-    this.addContent = function (ctt) {
+    this.addContent = function (ctt, fPos) {
+        fPos = typeof fPos !== 'undefined' ? fPos : true;
         if (ctt.content[0].content === "non-standard")
             return;
         var sdiv = $("#standard").clone(true, true);
@@ -73,18 +97,33 @@ var CBrowser = new function () {
         sdiv.find(".linkspan").attr("clink", ctt.link);
 
         if (this.isContentImage(ctt))
-            sdiv.find(".ctt").html(this.createImgHtml(ctt.link, this.getImageFrJson(ctt)));
+            sdiv.find(".ctt").html(this.createImgHtml(ctt.link, this.getFileContentFrJson(ctt)));
+        else if (this.isContentVideo(ctt))
+            sdiv.find(".ctt").html(this.createVideoHtml(ctt.link, this.getFileContentFrJson(ctt)));
+        else if (this.isContentAudio(ctt))
+            sdiv.find(".ctt").html(this.createAudioHtml(ctt.link, this.getFileContentFrJson(ctt)));
         else if (this.isContentText(ctt))
             sdiv.find(".ctt").html(atob(ctt.content[0].content[0].content));
         else
             return;
-        $("#mainframe").prepend(sdiv.children());
+
+        fPos ? $("#mainframe").prepend(sdiv.children()) : $("#mainframe").append(sdiv.children());
 //        console.log(ctt);
     };
     this.isContentImage = function (ctt) {
         return ctt.content[0].cc_name === "CC_FILE_P" &&
                 ctt.content[0].content[1].cc_name === "CC_FILE_TYPESTRING" &&
                 ctt.content[0].content[1].content === btoa("image/jpeg");
+    };
+    this.isContentVideo = function (ctt) {
+        return ctt.content[0].cc_name === "CC_FILE_P" &&
+                ctt.content[0].content[1].cc_name === "CC_FILE_TYPESTRING" &&
+                ctt.content[0].content[1].content === btoa("video/mp4");
+    };
+    this.isContentAudio = function (ctt) {
+        return ctt.content[0].cc_name === "CC_FILE_P" &&
+                ctt.content[0].content[1].cc_name === "CC_FILE_TYPESTRING" &&
+                ctt.content[0].content[1].content === btoa("audio/mpeg");
     };
     this.isContentText = function (ctt) {
         return ctt.content[0].cc_name === "CC_TEXT_P" &&
@@ -94,21 +133,15 @@ var CBrowser = new function () {
 
     this.refreshNew = function () {
         var ctts = this.getRecentContents();
-//        console.log(ctts);
         for (k in ctts) {
-//            console.log("ctt" + ctts[k]);
-            this.addContent(ctts[k]);
+            this.addContent(ctts[k], false);
         }
-//        console.log(blkDisp);
     };
     this.refreshOld = function () {
         var ctts = this.getOldContents();
-//        console.log(ctts);
         for (k in ctts) {
-//            console.log("ctt" + ctts[k]);
-            this.addContent(ctts[k]);
+            this.addContent(ctts[k], false);
         }
-//        console.log(blkDisp);
     };
     this.getRecentContents = function () {
         var rc = 3;
@@ -178,7 +211,12 @@ $(document).ready(function () {
         $(this).html("");
     });
     $("#test-btn").click(function () {
-        CBrowser.getRecentContents();
+//        CBrowser.getRecentContents();
+        var clink = CLink.setString("ccc:11175.1");
+        var clink2 = CLink.setString("11175.1");
+        var clink2 = CLink.setString("11175.1.1");
+        console.log(clink.toString());
+        console.log(clink2.toHtmlId());
     });
 
 });

@@ -1,17 +1,21 @@
 .container{
     margin-top:10px;
 }.brimg{
-    max-width:60%;
+    max-width:90%;
     max-height:800px;
+}.ctt{
+    padding: 6px 0;
 }#fullImage{
     position: absolute;
     top: 0;
     height : 90%;
     bottom: 5%;
 }#standard{
-    display:none; // comment out for dev
+    display:none; 
 }#refresh-btn{
     
+}#video-tpl, #image-tpl{
+    display:none;
 }
 .nav-pills  .active  a{
     background-color: #666;
