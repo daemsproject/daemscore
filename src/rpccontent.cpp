@@ -33,7 +33,8 @@ static const int CONTENT_FORMAT_JSON_BIN = 5;
 static const int CONTENT_FORMAT_JSON_B64 = 6;
 static const int CONTENT_FORMAT_HUMAN_STR = 7;
 
-enum cttflag{
+enum cttflag
+{
     CONTENT_FALSE = 0X00,
     CONTENT_SHOW_LINK = 0x01,
     CONTENT_SHOW_POSTER = 0x02,
@@ -44,6 +45,7 @@ enum cttflag{
 
 void ScriptPubKeyToJSON(const CScript& scriptPubKey, Object& out, bool fIncludeHex);
 bool _getBlockByHeight(const int nHeight, CBlock& blockOut, CBlockIndex*& pblockindex);
+
 CContent _create_text_content(std::string str)
 {
     CContent ctt;
@@ -291,8 +293,17 @@ std::vector<CBitcoinAddress> _get_posters(CTransaction tx)
         uint256 tmphash;
         if (!GetTransaction(in.prevout.hash, prevTx, tmphash, true))
             throw JSONRPCError(RPC_INTERNAL_ERROR, "Get prev tx failed");
-        CBitcoinAddress addr(prevTx.vout[in.prevout.n].scriptPubKey);
-        posters.push_back(addr);
+        txnouttype type;
+        vector<CTxDestination> raddresses;
+        int nRequired;
+        if (!ExtractDestinations(prevTx.vout[in.prevout.n].scriptPubKey, type, raddresses, nRequired))
+            continue;
+
+        BOOST_FOREACH(const CTxDestination& raddr, raddresses)
+        {
+            CBitcoinAddress addr(raddr);
+            posters.push_back(addr);
+        }
     }
     return posters;
 }
