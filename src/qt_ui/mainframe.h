@@ -11,7 +11,7 @@
 class BitcoinGUI;
 //class ClientModel;
 //class SendCoinsRecipient;
-class WalletModel;
+//class WalletModel;
 class MainView;
 
 QT_BEGIN_NAMESPACE
@@ -23,20 +23,22 @@ class MainFrame : public QFrame
     Q_OBJECT
 
 public:
-    explicit MainFrame(QString languageIn,BitcoinGUI *_gui = 0);
+    explicit MainFrame(QString languageIn,BitcoinGUI *_gui = 0,JsInterface *_js=0);
     ~MainFrame();
     QString language;
-//    void setClientModel(ClientModel *clientModel);
+    //void setClientModel(ClientModel *clientModel);
 //
     bool addWallet(const QString& name);//, WalletModel *walletModel);
+    MainView* getMainView(const QString& name);
+    JsInterface jsInterface;
 //    bool setCurrentWallet(const QString& name);
 //    bool removeWallet(const QString &name);
 //    void removeAllWallets();
 //
 //    bool handlePaymentRequest(const SendCoinsRecipient& recipient);
 //
-//    void showOutOfSyncWarning(bool fShow);
-
+    void showOutOfSyncWarning(bool fShow);
+    
 private:
     QStackedWidget *widgetStack;
     BitcoinGUI *gui;
@@ -48,7 +50,7 @@ private:
     MainView *currentMainView();
 
 public slots:
-        void gotoWalletPage();
+        void gotoWebPage(int nPageID);
     /** Switch to overview (home) page */
 //    void gotoOverviewPage();
 //    /** Switch to history (transactions) page */

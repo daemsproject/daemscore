@@ -551,3 +551,48 @@ bool CBitcoinSecret::SetString(const std::string& strSecret)
 {
     return SetString(strSecret.c_str());
 }
+
+void CBitcoinPubKey::SetKey(const CPubKey& vchPub)
+{
+    assert(vchPub.IsValid());
+    SetData(Params().Base32Prefix(CChainParams::PUBLIC_KEY), vchPub.begin(), vchPub.size());    
+}
+
+CPubKey CBitcoinPubKey::GetKey()
+{
+    CPubKey ret;
+    assert(vchData.size() >= 33);
+    ret.Set(vchData.begin(), vchData.begin() + vchData.size());
+    return ret;
+}
+
+bool CBitcoinPubKey::IsValid() const
+{
+    bool fExpectedFormat = (vchData.size() == 33 && (vchData[0] == 2||vchData[0] == 3))|| (vchData.size() == 65 && vchData[0] == 4);
+    bool fCorrectVersion = vchVersion == Params().Base32Prefix(CChainParams::PUBLIC_KEY);
+    return fExpectedFormat && fCorrectVersion;
+}
+
+bool CBitcoinPubKey::SetString(const char* pszPub)
+{
+    return CBase32Data::SetString(pszPub) && IsValid();
+}
+
+bool CBitcoinPubKey::SetString(const std::string& strPub)
+{
+    return SetString(strPub.c_str());
+}
+bool StringToScriptPubKey(const string& str,CScript& script){
+    CBitcoinAddress address = CBitcoinAddress(str);
+            if (!address.IsValid()){                
+                return false;
+            }
+    script = GetScriptForDestination(address.Get());
+    return true;
+}
+bool ScriptPubKeyToString(const CScript& script,string& str){
+    CBitcoinAddress address;
+    address.Set(script);
+    str=address.ToString();
+    return true;
+}

@@ -36,6 +36,7 @@ public:
         SCRIPT_ADDRESS,
         SCRIPTHASH_ADDRESS,
         SECRET_KEY,
+        PUBLIC_KEY,
         EXT_PUBLIC_KEY,
         EXT_SECRET_KEY,
         MAX_BASE32_TYPES

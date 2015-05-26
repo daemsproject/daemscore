@@ -9,7 +9,9 @@ TEMPLATE = app
 DEFINES += ENABLE_WALLET=1
 
 FORMS += \ 
-    forms/helpmessagedialog.ui 
+    forms/helpmessagedialog.ui \ 
+    forms/userconfirmdialog.ui \
+    forms/askpassphrasedialog.ui
 
 RESOURCES += \
     browser.qrc \

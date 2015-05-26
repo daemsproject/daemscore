@@ -10,7 +10,7 @@
 //#include "clientmodel.h"
 #include "guiutil.h"
 //#include "optionsmodel.h"
-#include "walletpage.h"
+#include "webpage.h"
 //#include "overviewpage.h"
 ///#include "receivecoinsdialog.h"
 //#include "sendcoinsdialog.h"
@@ -18,9 +18,9 @@
 //#include "transactiontablemodel.h"
 //#include "transactionview.h"
 #include "walletmodel.h"
-
+#include "jsinterface.h"
 #include "ui_interface.h"
-
+#include "util.h"
 #include <QAction>
 #include <QActionGroup>
 #include <QFileDialog>
@@ -29,14 +29,22 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
-MainView::MainView(QString languageIn,QWidget *parent):
+MainView::MainView(QString languageIn,BitcoinGUI *parent,JsInterface *_js):
     QStackedWidget(parent),
-        language(languageIn)
-    //clientModel(0),
+        language(languageIn),
+        jsInterface(_js)
+    //clientModel(0)
     //walletModel(0)
 {
-    // Create tabs
-    walletPage = new WalletPage(language);
+    // Create tabs    
+    //QUrl walletUrl= QUrl("file:///home/alan/projects/ccc/src/qt_ui/res/html/wallet_en.html"); 
+    //QUrl walletUrl= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/wallet_en.html"); 
+    QUrl browserUrl= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/browser_en.html"); 
+    //LogPrintf(QDir::currentPath().toUtf8() + "/res/html/wallet_en.html");
+    
+    //vWebPages.push_back(new WebPage(language,parent,jsInterface,walletUrl,1));    
+    vWebPages.push_back(new WebPage(language,this,jsInterface,browserUrl,2));  
+    
     //overviewPage = new OverviewPage();
 
     //transactionsPage = new QWidget(this);
@@ -56,7 +64,12 @@ MainView::MainView(QString languageIn,QWidget *parent):
 
     //receiveCoinsPage = new ReceiveCoinsDialog();
     //sendCoinsPage = new SendCoinsDialog();
-    addWidget(walletPage);
+     for(unsigned int i=0;i<vWebPages.size();i++)        
+            addWidget(vWebPages[i]);
+    if (vWebPages.size()>0)
+        setCurrentWidget(*vWebPages.begin());
+//    for (std::vector<WebPage*>::iterator it=vWebPages.begin();it!=vWebPages.end();it++)
+//        addWidget(*it);
     //addWidget(overviewPage);
     //addWidget(transactionsPage);
     //addWidget(receiveCoinsPage);
@@ -75,29 +88,43 @@ MainView::MainView(QString languageIn,QWidget *parent):
     //connect(sendCoinsPage, SIGNAL(message(QString,QString,unsigned int)), this, SIGNAL(message(QString,QString,unsigned int)));
     // Pass through messages from transactionView
     //connect(transactionView, SIGNAL(message(QString,QString,unsigned int)), this, SIGNAL(message(QString,QString,unsigned int)));
-}
-
-MainView::~MainView()
-{
-}
-
-void MainView::setBitcoinGUI(BitcoinGUI *gui)
-{
-    if (gui)
-    {
+    //if (gui)
+    //{
         // Clicking on a transaction on the overview page simply sends you to transaction history page
         //connect(overviewPage, SIGNAL(transactionClicked(QModelIndex)), gui, SLOT(gotoHistoryPage()));
 
         // Receive and report messages
-        connect(this, SIGNAL(message(QString,QString,unsigned int)), gui, SLOT(message(QString,QString,unsigned int)));
+       // connect(this, SIGNAL(message(QString,QString,unsigned int)), gui, SLOT(message(QString,QString,unsigned int)));
 
         // Pass through encryption status changed signals
         //connect(this, SIGNAL(encryptionStatusChanged(int)), gui, SLOT(setEncryptionStatus(int)));
 
         // Pass through transaction notifications
         //connect(this, SIGNAL(incomingTransaction(QString,int,CAmount,QString,QString)), gui, SLOT(incomingTransaction(QString,int,CAmount,QString,QString)));
-    }
+    //}
 }
+
+MainView::~MainView()
+{
+}
+
+//void MainView::setBitcoinGUI(BitcoinGUI *gui)
+//{
+//    if (gui)
+//    {
+        // Clicking on a transaction on the overview page simply sends you to transaction history page
+        //connect(overviewPage, SIGNAL(transactionClicked(QModelIndex)), gui, SLOT(gotoHistoryPage()));
+
+        // Receive and report messages
+        //connect(this, SIGNAL(message(QString,QString,unsigned int)), gui, SLOT(message(QString,QString,unsigned int)));
+
+        // Pass through encryption status changed signals
+        //connect(this, SIGNAL(encryptionStatusChanged(int)), gui, SLOT(setEncryptionStatus(int)));
+
+        // Pass through transaction notifications
+        //connect(this, SIGNAL(incomingTransaction(QString,int,CAmount,QString,QString)), gui, SLOT(incomingTransaction(QString,int,CAmount,QString,QString)));
+//    }
+//}
 
 //void MainView::setClientModel(ClientModel *clientModel)
 //{
@@ -156,9 +183,32 @@ void MainView::setBitcoinGUI(BitcoinGUI *gui)
 //
 //    emit incomingTransaction(date, walletModel->getOptionsModel()->getDisplayUnit(), amount, type, address);
 //}
-void MainView::gotoWalletPage()
+void MainView::gotoWebPage(int nPageID,QUrl url)
 {
-    setCurrentWidget(walletPage);
+    LogPrintf("gotowebpage pageid:%i,url:%s",nPageID,url.toString().toStdString());
+    //for (std::vector<WebPage*>::iterator it=vWebPages.begin();it!=vWebPages.end();it++){
+    //    if (vWebPages*it->nPageID==nPageID){
+    for(unsigned int i=0;i<vWebPages.size();i++){
+        if (vWebPages[i]->nPageID==nPageID){
+            if(url!=QUrl(""))
+                vWebPages[i]->setUrl(url);
+            setCurrentWidget(vWebPages[i]);
+            return;
+        }            
+    }
+    vWebPages.push_back(new WebPage(language,this,jsInterface,url,nPageID));  
+    addWidget(*vWebPages.rbegin());
+    
+    setCurrentWidget(*vWebPages.rbegin());
+    //gotoWebPage(nPageID);
+    //setCurrentWidget(*vWebPages.rbegin());
+    //setCurrentWidget(walletPage);
+}
+void MainView::closeWebPage(int nPageID){
+    for(std::vector<WebPage*>::iterator it=vWebPages.begin();it!=vWebPages.end();it++){
+        if((*it)->nPageID==nPageID)
+            vWebPages.erase(it);
+    }
 }
 //void MainView::gotoOverviewPage()
 //{
@@ -212,10 +262,10 @@ void MainView::gotoWalletPage()
 //    return sendCoinsPage->handlePaymentRequest(recipient);
 //}
 
-void MainView::showOutOfSyncWarning(bool fShow)
-{
-    //overviewPage->showOutOfSyncWarning(fShow);
-}
+//void MainView::showOutOfSyncWarning(bool fShow)
+//{
+//    //overviewPage->showOutOfSyncWarning(fShow);
+//}
 
 //void MainView::updateEncryptionStatus()
 //{
@@ -292,25 +342,25 @@ void MainView::showOutOfSyncWarning(bool fShow)
 //    dlg->show();
 //}
 //
-//void MainView::showProgress(const QString &title, int nProgress)
-//{
-//    if (nProgress == 0)
-//    {
-//        progressDialog = new QProgressDialog(title, "", 0, 100);
-//        progressDialog->setWindowModality(Qt::ApplicationModal);
-//        progressDialog->setMinimumDuration(0);
-//        progressDialog->setCancelButton(0);
-//        progressDialog->setAutoClose(false);
-//        progressDialog->setValue(0);
-//    }
-//    else if (nProgress == 100)
-//    {
-//        if (progressDialog)
-//        {
-//            progressDialog->close();
-//            progressDialog->deleteLater();
-//        }
-//    }
-//    else if (progressDialog)
-//        progressDialog->setValue(nProgress);
-//}
+void MainView::showProgress(const QString &title, int nProgress)
+{
+    if (nProgress == 0)
+    {
+        progressDialog = new QProgressDialog(title, "", 0, 100);
+        progressDialog->setWindowModality(Qt::ApplicationModal);
+        progressDialog->setMinimumDuration(0);
+        progressDialog->setCancelButton(0);
+        progressDialog->setAutoClose(false);
+        progressDialog->setValue(0);
+    }
+    else if (nProgress == 100)
+    {
+        if (progressDialog)
+        {
+            progressDialog->close();
+            progressDialog->deleteLater();
+        }
+    }
+    else if (progressDialog)
+        progressDialog->setValue(nProgress);
+}

@@ -9,7 +9,7 @@
 #include "amount.h"
 #include "rpcprotocol.h"
 #include "uint256.h"
-
+#include "primitives/transaction.h"
 #include <list>
 #include <map>
 #include <stdint.h>
@@ -241,5 +241,5 @@ extern bool HTTPReq_REST(AcceptedConnection *conn,
                   std::string& strURI,
                   std::map<std::string, std::string>& mapHeaders,
                   bool fRun);
-
+extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, json_spirit::Object& entry);
 #endif // BITCOIN_RPCSERVER_H

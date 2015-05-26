@@ -11,12 +11,13 @@
 #include "primitives/transaction.h"
 #include "crypter.h"
 #include "key.h"
+#include "pubkey.h"
 #include "keystore.h"
 #include "main.h"
 #include "ui_interface.h"
 #include "wallet_ismine.h"
 #include "walletdb.h"
-
+#include "base58.h"
 #include <algorithm>
 #include <map>
 #include <set>

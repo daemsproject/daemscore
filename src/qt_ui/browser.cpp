@@ -8,13 +8,13 @@
 
 #include "bitcoingui.h"
 
-//#include "clientmodel.h"
+#include "clientmodel.h"
 #include "guiconstants.h"
 #include "guiutil.h"
 //#include "intro.h"
 #include "networkstyle.h"
 //#include "optionsmodel.h"
-//#include "splashscreen.h"
+#include "splashscreen.h"
 #include "utilitydialog.h"
 #include "winshutdownmonitor.h"
 
@@ -228,7 +228,7 @@ signals:
 private:
     QThread *coreThread;
     //OptionsModel *optionsModel;
-    //ClientModel *clientModel;
+    ClientModel *clientModel;
     BitcoinGUI *window;
     QTimer *pollShutdownTimer;
 #ifdef ENABLE_WALLET
@@ -295,7 +295,7 @@ BitcoinApplication::BitcoinApplication(int &argc, char **argv):
     QApplication(argc, argv),
     coreThread(0),
     //optionsModel(0),
-    //clientModel(0),
+    clientModel(0),
     window(0),
     pollShutdownTimer(0),
 #ifdef ENABLE_WALLET
@@ -350,12 +350,12 @@ void BitcoinApplication::createWindow(const NetworkStyle *networkStyle,QString l
 
 void BitcoinApplication::createSplashScreen(const NetworkStyle *networkStyle)
 {
-    //SplashScreen *splash = new SplashScreen(0, networkStyle);
+    SplashScreen *splash = new SplashScreen(0, networkStyle);
     // We don't hold a direct pointer to the splash screen after creation, so use
     // Qt::WA_DeleteOnClose to make sure that the window will be deleted eventually.
-    //splash->setAttribute(Qt::WA_DeleteOnClose);
-    //splash->show();
-    //connect(this, SIGNAL(splashFinished(QWidget*)), splash, SLOT(slotFinish(QWidget*)));
+    splash->setAttribute(Qt::WA_DeleteOnClose);
+    splash->show();
+    connect(this, SIGNAL(splashFinished(QWidget*)), splash, SLOT(slotFinish(QWidget*)));
 }
 
 void BitcoinApplication::startThread()
@@ -391,7 +391,7 @@ void BitcoinApplication::requestShutdown()
     qDebug() << __func__ << ": Requesting shutdown";
     startThread();
     window->hide();
-    //window->setClientModel(0);
+    window->setClientModel(0);
     pollShutdownTimer->stop();
 
 #ifdef ENABLE_WALLET
@@ -399,8 +399,8 @@ void BitcoinApplication::requestShutdown()
     //delete walletModel;
     //walletModel = 0;
 #endif
-    //delete clientModel;
-    //clientModel = 0;
+    delete clientModel;
+    clientModel = 0;
 
     // Show a simple window indicating shutdown status
     ShutdownWindow::showShutdownWindow(window);
@@ -422,15 +422,16 @@ void BitcoinApplication::initializeResult(int retval)
         //paymentServer->setOptionsModel(optionsModel);
 #endif
 
-        //clientModel = new ClientModel(optionsModel);
-        //window->setClientModel(clientModel);
+        clientModel = new ClientModel();
+        window->setClientModel(clientModel);
 
 #ifdef ENABLE_WALLET
         if(pwalletMain)
         {
             //walletModel = new WalletModel(pwalletMain, optionsModel);
         LogPrintf("init result2 \n");
-            window->addWallet(BitcoinGUI::DEFAULT_WALLET);//, walletModel);
+            window->addWallet(BitcoinGUI::DEFAULT_WALLET);
+            window->subscribeToCoreSignalsJs();//, walletModel);
             //window->setCurrentWallet(BitcoinGUI::DEFAULT_WALLET);
 
             //connect(walletModel, SIGNAL(coinsSent(CWallet*,SendCoinsRecipient,QByteArray)),

@@ -88,13 +88,13 @@ std::string EncodeBase58Check(const std::vector<unsigned char>& vchIn);
  * Decode a base58-encoded string (psz) that includes a checksum into a byte
  * vector (vchRet), return true if decoding is successful
  */
-inline bool DecodeBase58Check(const char* psz, std::vector<unsigned char>& vchRet);
+bool DecodeBase58Check(const char* psz, std::vector<unsigned char>& vchRet);
 
 /**
  * Decode a base58-encoded string (str) that includes a checksum into a byte
  * vector (vchRet), return true if decoding is successful
  */
-inline bool DecodeBase58Check(const std::string& str, std::vector<unsigned char>& vchRet);
+bool DecodeBase58Check(const std::string& str, std::vector<unsigned char>& vchRet);
 
 /**
  * Encode a byte vector into a base32-encoded string, including checksum
@@ -105,13 +105,13 @@ std::string EncodeBase32Check(const std::vector<unsigned char>& vchIn);
  * Decode a base32-encoded string (psz) that includes a checksum into a byte
  * vector (vchRet), return true if decoding is successful
  */
-inline bool DecodeBase32Check(const char* psz, std::vector<unsigned char>& vchRet);
+bool DecodeBase32Check(const char* psz, std::vector<unsigned char>& vchRet);
 
 /**
  * Decode a base32-encoded string (str) that includes a checksum into a byte
  * vector (vchRet), return true if decoding is successful
  */
-inline bool DecodeBase32Check(const std::string& str, std::vector<unsigned char>& vchRet);
+bool DecodeBase32Check(const std::string& str, std::vector<unsigned char>& vchRet);
 
 /**
  * Base class for all base58-encoded data
@@ -214,6 +214,21 @@ public:
     CBitcoinSecret(const CKey& vchSecret) { SetKey(vchSecret); }
     CBitcoinSecret() {}
 };
+/**
+ * A base32-encoded public key
+ */
+class CBitcoinPubKey : public CBase32Data
+{
+public:
+    void SetKey(const CPubKey& vchPub);
+    CPubKey GetKey();
+    bool IsValid() const;
+    bool SetString(const char* pszPub);
+    bool SetString(const std::string& strPub);
+
+    CBitcoinPubKey(const CPubKey& vchPub) { SetKey(vchPub); }
+    CBitcoinPubKey() {}
+};
 
 template<typename K, int Size, CChainParams::Base32Type Type> class CBitcoinExtKeyBase : public CBase32Data
 {
@@ -239,5 +254,6 @@ public:
 
 typedef CBitcoinExtKeyBase<CExtKey, 74, CChainParams::EXT_SECRET_KEY> CBitcoinExtKey;
 typedef CBitcoinExtKeyBase<CExtPubKey, 74, CChainParams::EXT_PUBLIC_KEY> CBitcoinExtPubKey;
-
+bool StringToScriptPubKey(const string& str,CScript& script);
+bool ScriptPubKeyToString(const CScript& script,string& str);
 #endif // BITCOIN_BASE58_H

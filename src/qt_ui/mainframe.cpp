@@ -12,9 +12,9 @@
 #include <QHBoxLayout>
 #include <QLabel>
 
-MainFrame::MainFrame(QString languageIn,BitcoinGUI *_gui) :
+MainFrame::MainFrame(QString languageIn,BitcoinGUI *_gui,JsInterface *_js) :
     QFrame(_gui),
-    gui(_gui),
+    jsInterface(_js),
     language(languageIn)
 {
     // Leave HBox hook for adding a list view later
@@ -38,31 +38,37 @@ MainFrame::~MainFrame()
 //{
 //    this->clientModel = clientModel;
 //}
-//
+
 bool MainFrame::addWallet(const QString& name)//, WalletModel *walletModel)
 {
     LogPrintf("mainframe addwallet \n");
     //if (!gui || !clientModel || !walletModel || mapMainViews.count(name) > 0)
     if (!gui)// ||mapMainViews.count(name) > 0)
         return false;
-    LogPrintf("mainframe addwallet2 \n");
-    MainView *mainView = new MainView(language,this);
-    mainView->setBitcoinGUI(gui);
+    LogPrintf("mainframe addwallet2 %i\n",gui);
+    MainView *mainView = new MainView(language,this,jsInterface);
+    LogPrintf("mainframe addwallet3 %i\n",gui);
+    //mainView->setBitcoinGUI(gui);
     //mainView->setClientModel(clientModel);
     //mainView->setWalletModel(walletModel);
     //mainView->showOutOfSyncWarning(bOutOfSync);
-
+ 
      /* TODO we should goto the currently selected page once dynamically adding wallets is supported */
-    mainView->gotoWalletPage();
+    mainView->gotoWebPage(1);
+    LogPrintf("mainframe addwallet4 %i\n",gui);
     widgetStack->addWidget(mainView);
+    LogPrintf("mainframe addwallet5 %i\n",gui);
     mapMainViews[name] = mainView;
+    LogPrintf("mainframe addwallet6 %i\n",gui);
 
     // Ensure a mainView is able to show the main window
     connect(mainView, SIGNAL(showNormalIfMinimized()), gui, SLOT(showNormalIfMinimized()));
-
+LogPrintf("mainframe addwallet7 %i\n",gui);
     return true;
 }
-
+MainView* MainFrame::getMainView(const QString& name){
+    return mapMainViews[name];
+}
 //bool MainFrame::setCurrentWallet(const QString& name)
 //{
 //    if (mapMainViews.count(name) == 0)
@@ -101,18 +107,18 @@ bool MainFrame::addWallet(const QString& name)//, WalletModel *walletModel)
 //    return mainView->handlePaymentRequest(recipient);
 //}
 
-//void MainFrame::showOutOfSyncWarning(bool fShow)
-//{
+void MainFrame::showOutOfSyncWarning(bool fShow)
+{
 //    bOutOfSync = fShow;
 //    QMap<QString, MainView*>::const_iterator i;
 //    for (i = mapMainViews.constBegin(); i != mapMainViews.constEnd(); ++i)
 //        i.value()->showOutOfSyncWarning(fShow);
-//}
-void MainFrame::gotoWalletPage()
+}
+void MainFrame::gotoWebPage(int nPageID)
 {
     QMap<QString, MainView*>::const_iterator i;
     for (i = mapMainViews.constBegin(); i != mapMainViews.constEnd(); ++i)
-        i.value()->gotoWalletPage();
+        i.value()->gotoWebPage(nPageID);
 }
 //void MainFrame::gotoOverviewPage()
 //{

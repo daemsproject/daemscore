@@ -185,6 +185,7 @@ libbitcoin_server_a_SOURCES = \
   rpcnet.cpp \
   rpcrawtransaction.cpp \
   rpcserver.cpp \
+  rpcutil.cpp \
   script/sigcache.cpp \
   timedata.cpp \
   txdb.cpp \
@@ -227,8 +228,6 @@ crypto_libbitcoin_crypto_a_SOURCES = \
   crypto/ripemd160.h\
     ccc/mhash.h \
     ccc/mhash.cpp
-
-
 
 # univalue JSON library
 univalue_libbitcoin_univalue_a_SOURCES = \

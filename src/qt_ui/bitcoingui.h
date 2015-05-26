@@ -10,7 +10,9 @@
 #endif
 
 #include "amount.h"
-
+#include "primitives/transaction.h"
+//#include "wallet.h"
+#include "jsinterface.h"
 #include <QLabel>
 #include <QMainWindow>
 #include <QMap>
@@ -18,17 +20,18 @@
 #include <QPoint>
 #include <QSystemTrayIcon>
 
-//class ClientModel;
+class ClientModel;
 class NetworkStyle;
 class Notificator;
 //class OptionsModel;
 //class RPCConsole;
 //class SendCoinsRecipient;
-class UnitDisplayStatusBarControl;
-class MainFrame;
-class WalletModel;
-
-class CWallet;
+//class UnitDisplayStatusBarControl;
+class MainView;
+//class WalletModel;
+//class PaymentRequest;
+//class CWalletTx;
+//class CWallet;
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -40,6 +43,7 @@ QT_END_NAMESPACE
   Bitcoin GUI main class. This class represents the main window of the Bitcoin UI. It communicates with both the client and
   wallet models to give the user an up-to-date view of the current core state.
 */
+typedef std::basic_string<char, std::char_traits<char>, secure_allocator<char> > SecureString;
 class BitcoinGUI : public QMainWindow
 {
     Q_OBJECT
@@ -49,11 +53,11 @@ public:
 
     explicit BitcoinGUI(const NetworkStyle *networkStyle,QString languageIn, QWidget *parent = 0);
     ~BitcoinGUI();
-
+    
     /** Set the client model.
         The client model represents the part of the core that communicates with the P2P network, and is wallet-agnostic.
     */
-    //void setClientModel(ClientModel *clientModel);
+    void setClientModel(ClientModel *clientModel);
 
 #ifdef ENABLE_WALLET
     /** Set the wallet model.
@@ -63,9 +67,12 @@ public:
     bool addWallet(const QString& name);//,WalletModel *walletModel);
     bool setCurrentWallet(const QString& name);
     void removeAllWallets();
+    void subscribeToCoreSignalsJs();
 #endif // ENABLE_WALLET
     bool enableWallet;
     QString language;
+    bool handlePaymentRequest(QString message,int nOP,string& strError,SecureString& ssInput);
+    JsInterface* jsInterface;
 protected:
     void changeEvent(QEvent *e);
     void closeEvent(QCloseEvent *event);
@@ -74,10 +81,10 @@ protected:
     bool eventFilter(QObject *object, QEvent *event);
 
 private:
-    //ClientModel *clientModel;
-    MainFrame *mainFrame;
+    ClientModel *clientModel;
+    MainView *mainView;
 
-    UnitDisplayStatusBarControl *unitDisplayControl;
+    //UnitDisplayStatusBarControl *unitDisplayControl;
     QLabel *labelEncryptionIcon;
     QLabel *labelConnectionsIcon;
     QLabel *labelBlocksIcon;
@@ -87,6 +94,11 @@ private:
 
     QMenuBar *appMenuBar;
     QAction *walletAction;
+    QAction *browserAction;
+    QAction *publisherAction;
+    QAction *messengerAction;
+    QAction *shopAction;
+    QAction *domainNameAction;
     //QAction *overviewAction;
     //QAction *historyAction;
     QAction *quitAction;
@@ -95,17 +107,20 @@ private:
     //QAction *usedReceivingAddressesAction;
     //QAction *signMessageAction;
     //QAction *verifyMessageAction;
-    //QAction *aboutAction;
+    QAction *aboutAction;
     //QAction *receiveCoinsAction;
     //QAction *optionsAction;
-    QAction *toggleHideAction;
-    //QAction *encryptWalletAction;
-    //QAction *backupWalletAction;
-    //QAction *changePassphraseAction;
+    QAction *toggleHideAction;        
+    QAction *changePassphraseAction;
+    QAction *newAccountAction;
+    QAction *switchAccountAction;
+    QAction *encryptAccountAction;        
+    QAction *exportAccountAction;
+    QAction *importAccountAction;
     //QAction *aboutQtAction;
     //QAction *openRPCConsoleAction;
     //QAction *openAction;
-    //QAction *showHelpMessageAction;
+    QAction *showHelpMessageAction;
 
     QSystemTrayIcon *trayIcon;
     QMenu *trayIconMenu;
@@ -133,12 +148,11 @@ private:
     /** Connect core signals to GUI client */
     void subscribeToCoreSignals();
     /** Disconnect core signals from GUI client */
-    void unsubscribeFromCoreSignals();
-
+    void unsubscribeFromCoreSignals();    
 signals:
     /** Signal raised when a URI was entered or dragged to the GUI */
     void receivedURI(const QString &uri);
-
+    void sendMoneyResult(std::string str,bool fSuccess,QString data);
 public slots:
     /** Set number of connections shown in the UI */
     void setNumConnections(int count);
@@ -154,22 +168,26 @@ public slots:
     */
     void message(const QString &title, const QString &message, unsigned int style, bool *ret = NULL);
 
-#ifdef ENABLE_WALLET
+//#ifdef ENABLE_WALLET
     /** Set the encryption status as shown in the UI.
        @param[in] status            current encryption status
        @see WalletModel::EncryptionStatus
     */
     void setEncryptionStatus(int status);
-
-    //bool handlePaymentRequest(const SendCoinsRecipient& recipient);
+    
+      
 
     /** Show incoming transaction notification for new transactions. */
-    //void incomingTransaction(const QString& date, int unit, const CAmount& amount, const QString& type, const QString& address);
-#endif // ENABLE_WALLET
+    void incomingTransaction(const QString& date, int unit, const CAmount& amount, const QString& type, const QString& address);
+   
+    
+//#endif // ENABLE_WALLET
 
 private slots:
 #ifdef ENABLE_WALLET
-    void gotoWalletPage();
+    void gotoWalletPage();    
+    void gotoPublisherPage();  
+    void gotoMessengerPage();  
     /** Switch to overview (home) page */
     //void gotoOverviewPage();
     /** Switch to history (transactions) page */
@@ -189,7 +207,16 @@ private slots:
 #endif // ENABLE_WALLET
     /** Show configuration dialog */
     //void optionsClicked();
-    /** Show about dialog */
+   
+   
+   void backupWallet(){};
+   void encryptWallet(bool fEncrypted){};
+    void changePassphrase(){};
+   void newAccountClicked(){};
+   void switchAccountClicked(){};
+   void domainNameClicked(){};
+    void gotoBrowserPage();  
+    /** Show about dialog */    
     void aboutClicked();
     /** Show help message dialog */
     void showHelpMessageClicked();
@@ -210,33 +237,33 @@ private slots:
     void showProgress(const QString &title, int nProgress);
 };
 
-class UnitDisplayStatusBarControl : public QLabel
-{
-    Q_OBJECT
-
-public:
-    explicit UnitDisplayStatusBarControl();
-    /** Lets the control know about the Options Model (and its signals) */
-    //void setOptionsModel(OptionsModel *optionsModel);
-
-protected:
-    /** So that it responds to left-button clicks */
-    void mousePressEvent(QMouseEvent *event);
-
-private:
-    //OptionsModel *optionsModel;
-    QMenu* menu;
-
-    /** Shows context menu with Display Unit options by the mouse coordinates */
-    void onDisplayUnitsClicked(const QPoint& point);
-    /** Creates context menu, its actions, and wires up all the relevant signals for mouse events. */
-    void createContextMenu();
-
-private slots:
-    /** When Display Units are changed on OptionsModel it will refresh the display text of the control on the status bar */
-    void updateDisplayUnit(int newUnits);
-    /** Tells underlying optionsModel to update its current display unit. */
-    void onMenuSelection(QAction* action);
-};
+//class UnitDisplayStatusBarControl : public QLabel
+//{
+//    Q_OBJECT
+//
+//public:
+//    explicit UnitDisplayStatusBarControl();
+//    /** Lets the control know about the Options Model (and its signals) */
+//    //void setOptionsModel(OptionsModel *optionsModel);
+//
+//protected:
+//    /** So that it responds to left-button clicks */
+//    void mousePressEvent(QMouseEvent *event);
+//
+//private:
+//    //OptionsModel *optionsModel;
+//    QMenu* menu;
+//
+//    /** Shows context menu with Display Unit options by the mouse coordinates */
+//    void onDisplayUnitsClicked(const QPoint& point);
+//    /** Creates context menu, its actions, and wires up all the relevant signals for mouse events. */
+//    void createContextMenu();
+//
+//private slots:
+//    /** When Display Units are changed on OptionsModel it will refresh the display text of the control on the status bar */
+//    void updateDisplayUnit(int newUnits);
+//    /** Tells underlying optionsModel to update its current display unit. */
+//    void onMenuSelection(QAction* action);
+//};
 
 #endif // BITCOIN_QT_BITCOINGUI_H

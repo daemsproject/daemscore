@@ -1,5 +1,5 @@
 *.tar.gz
-
+*.autosave
 *.exe
 src/bitcoin
 src/bitcoind
@@ -53,8 +53,13 @@ src/univalue/gen
 src/qt/*.moc
 src/qt/moc_*.cpp
 src/qt/forms/ui_*.h
-browserexe
 src/qt/test/moc*.cpp
+src/qt_ui/*.moc
+src/qt_ui/moc_*.cpp
+src/qt_ui/browserexe
+src/qt_ui/browsertest
+src/qt_ui/forms/ui_*.h
+src/qt_ui/test/moc*.cpp
 
 .deps
 .dirstamp
@@ -76,7 +81,6 @@ moc*.cpp
 *.log
 *.trs
 *.dmg
-
 *.json.h
 *.raw.h
 

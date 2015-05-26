@@ -15,7 +15,7 @@
 #include "utilmoneystr.h"
 #include "wallet.h"
 #include "walletdb.h"
-
+#include "utilstrencodings.h"
 #include <stdint.h>
 
 #include <boost/assign/list_of.hpp>

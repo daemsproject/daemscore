@@ -6,22 +6,23 @@
 #define BITCOIN_QT_WALLETVIEW_H
 
 #include "amount.h"
-
+#include <QUrl>
 #include <QStackedWidget>
 
 class BitcoinGUI;
-//class ClientModel;
-class WalletPage;
+class ClientModel;
+class JsInterface;
+class WebPage;
 //class OverviewPage;
 //class ReceiveCoinsDialog;
 //class SendCoinsDialog;
 //class SendCoinsRecipient;
 //class TransactionView;
-class WalletModel;
+//class WalletModel;
 
 QT_BEGIN_NAMESPACE
 class QModelIndex;
-//class QProgressDialog;
+class QProgressDialog;
 QT_END_NAMESPACE
 
 /*
@@ -35,10 +36,12 @@ class MainView : public QStackedWidget
     Q_OBJECT
 
 public:
-    explicit MainView(QString languageIn,QWidget *parent);
+    explicit MainView(QString languageIn,BitcoinGUI *parent,JsInterface *_js=0);
     ~MainView();
     QString language;
-    void setBitcoinGUI(BitcoinGUI *gui);
+    JsInterface *jsInterface;
+    std::vector<WebPage*> vWebPages;
+    //void setBitcoinGUI(BitcoinGUI *gui);
     /** Set the client model.
         The client model represents the part of the core that communicates with the P2P network, and is wallet-agnostic.
     */
@@ -51,12 +54,14 @@ public:
 
     //bool handlePaymentRequest(const SendCoinsRecipient& recipient);
 
-    void showOutOfSyncWarning(bool fShow);
-
+    //void showOutOfSyncWarning(bool fShow);
+    void gotoWebPage(int nPageID,QUrl url=QUrl(""));
+    void closeWebPage(int nPageID);
 private:
     //ClientModel *clientModel;
     //WalletModel *walletModel;
-    WalletPage *walletPage;
+    
+    //WalletPage *walletPage;
 //    OverviewPage *overviewPage;
 //    QWidget *transactionsPage;
 //    ReceiveCoinsDialog *receiveCoinsPage;
@@ -64,10 +69,11 @@ private:
 //
 //    TransactionView *transactionView;
 
-    //QProgressDialog *progressDialog;
+    QProgressDialog *progressDialog;
 
 public slots:
-    void gotoWalletPage();
+
+    
     /** Switch to overview (home) page */
     //void gotoOverviewPage();
     /** Switch to history (transactions) page */
@@ -105,7 +111,7 @@ public slots:
     //void updateEncryptionStatus();
 
     /** Show progress dialog e.g. for rescan */
-    //void showProgress(const QString &title, int nProgress);
+    void showProgress(const QString &title, int nProgress);
 
 signals:
     /** Signal that we want to show the main window */
