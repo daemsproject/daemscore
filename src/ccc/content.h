@@ -15,6 +15,7 @@ enum stringformat
     STR_FORMAT_BIN = 0,
     STR_FORMAT_HEX = 1,
     STR_FORMAT_B64 = 2,
+    STR_FORMAT_SUM = 3,
 };
 
 /** Content codes */

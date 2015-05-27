@@ -213,10 +213,15 @@ $(document).ready(function () {
     $("#test-btn").click(function () {
 //        CBrowser.getRecentContents();
         var clink = CLink.setString("ccc:11175.1");
-        var clink2 = CLink.setString("11175.1");
+//        var clink2 = CLink.setString("11175.1");
         var clink2 = CLink.setString("11175.1.1");
         console.log(clink.toString());
         console.log(clink2.toHtmlId());
     });
-
+    $(window).scroll(function () {
+        if ($(window).scrollTop() + $(window).height() == $(document).height()) {
+//            alert("bottom!");
+            CBrowser.refreshOld();
+        }
+    });
 });
