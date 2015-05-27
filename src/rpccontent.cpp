@@ -31,8 +31,10 @@ static const int CONTENT_FORMAT_STR_B64 = 3;
 static const int CONTENT_FORMAT_JSON_HEX = 4;
 static const int CONTENT_FORMAT_JSON_BIN = 5;
 static const int CONTENT_FORMAT_JSON_B64 = 6;
-static const int CONTENT_FORMAT_JSON_SUM = 7;
-static const int CONTENT_FORMAT_HUMAN_STR = 8;
+static const int CONTENT_FORMAT_JSON_HEX_SUM = 7;
+static const int CONTENT_FORMAT_JSON_BIN_SUM = 8;
+static const int CONTENT_FORMAT_JSON_B64_SUM = 9;
+static const int CONTENT_FORMAT_HUMAN_STR = 10;
 
 enum cttflag
 {
@@ -273,7 +275,11 @@ Object _output_content(const CContent& cttIn, const int& cformat, const unsigned
             break;
         case CONTENT_FORMAT_JSON_B64:r.push_back(Pair("content", ctt.ToJson(STR_FORMAT_B64)));
             break;
-        case CONTENT_FORMAT_JSON_SUM:r.push_back(Pair("content", ctt.ToJson(STR_FORMAT_SUM)));
+        case CONTENT_FORMAT_JSON_BIN_SUM:r.push_back(Pair("content", ctt.ToJson(STR_FORMAT_BIN_SUM)));
+            break;
+        case CONTENT_FORMAT_JSON_HEX_SUM:r.push_back(Pair("content", ctt.ToJson(STR_FORMAT_HEX_SUM)));
+            break;
+        case CONTENT_FORMAT_JSON_B64_SUM:r.push_back(Pair("content", ctt.ToJson(STR_FORMAT_B64_SUM)));
             break;
         case CONTENT_FORMAT_HUMAN_STR:r.push_back(Pair("content", ctt.ToHumanString()));
             break;

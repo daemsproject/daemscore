@@ -1,3 +1,6 @@
+#ifndef CCC_LINK_H
+#define CCC_LINK_H
+
 #include <string.h>
 #include <string>
 #include <vector>
@@ -61,3 +64,4 @@ public:
     bool SetString(const vector<unsigned char>& linkVch);
     bool SetJson(const Array& linkJson);
 };
+#endif // CCC_LINK_H

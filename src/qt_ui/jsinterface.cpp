@@ -183,7 +183,7 @@ QString JsInterface::jscall(QString command,QString dataJson){
         valResult=Value(reply);            
     }  
     string str=json_spirit::write_string(valResult,false);
-    LogPrintf("jsinterface:jscall result %s\n",str);
+    LogPrintf("jsinterface:jscall result %s\n",str.substr(0,100));
     QString result=QString::fromStdString(str);    
     return result;
 }

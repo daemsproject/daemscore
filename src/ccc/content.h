@@ -1,3 +1,6 @@
+#ifndef CCC_CONTENT_H
+#define CCC_CONTENT_H
+
 #include <string.h>
 #include <string>
 #include <vector>
@@ -15,7 +18,9 @@ enum stringformat
     STR_FORMAT_BIN = 0,
     STR_FORMAT_HEX = 1,
     STR_FORMAT_B64 = 2,
-    STR_FORMAT_SUM = 3,
+    STR_FORMAT_BIN_SUM = 3,
+    STR_FORMAT_HEX_SUM = 4,
+    STR_FORMAT_B64_SUM = 5,
 };
 
 /** Content codes */
@@ -417,3 +422,4 @@ public:
     bool FirstCc(const cctype& cc);
     bool IsStandard();
 };
+#endif // CCC_CONTENT_H

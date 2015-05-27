@@ -13,6 +13,7 @@ using namespace std;
 #define to_uint64(n) (*(uint64_t*)(n))
 static const int TRIM_READABLE_LEN = 1000;
 static const int TRIM_BINARY_LEN = 20;
+static const int STR_FORMAT_SUM_MAXSIZE = 512;
 
 std::string GetCcName(const cctype cc)
 {
@@ -760,16 +761,25 @@ Array CContent::ToJson(stringformat fFormat)
         } else {
             switch (fFormat) {
                 case STR_FORMAT_BIN:
-                    ccUnit.push_back(Pair("content", contentStr));
+                case STR_FORMAT_BIN_SUM:
+                    if (fFormat == STR_FORMAT_BIN_SUM && contentStr.size() > STR_FORMAT_SUM_MAXSIZE)
+                        ccUnit.push_back(Pair("length", contentStr.size()));
+                    else
+                        ccUnit.push_back(Pair("content", contentStr));
                     break;
                 case STR_FORMAT_HEX:
-                    ccUnit.push_back(Pair("content", HexStr(contentStr)));
+                case STR_FORMAT_HEX_SUM:
+                    if (fFormat == STR_FORMAT_HEX_SUM && contentStr.size() > STR_FORMAT_SUM_MAXSIZE)
+                        ccUnit.push_back(Pair("length", contentStr.size()));
+                    else
+                        ccUnit.push_back(Pair("content", HexStr(contentStr)));
                     break;
                 case STR_FORMAT_B64:
-                    ccUnit.push_back(Pair("content", EncodeBase64(contentStr)));
-                    break;
-                case STR_FORMAT_SUM:
-                    ccUnit.push_back(Pair("content", contentStr.size()));
+                case STR_FORMAT_B64_SUM:
+                    if (fFormat == STR_FORMAT_B64_SUM && contentStr.size() > STR_FORMAT_SUM_MAXSIZE)
+                        ccUnit.push_back(Pair("length", contentStr.size()));
+                    else
+                        ccUnit.push_back(Pair("content", EncodeBase64(contentStr)));
                     break;
 
             }
