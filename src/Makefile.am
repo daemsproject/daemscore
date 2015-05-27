@@ -78,6 +78,7 @@ BITCOIN_CORE_H = \
   bloom.h \
   ccc/content.h \
   ccc/link.h \
+  ccc/browserdb.h \
   chain.h \
   chainparams.h \
   chainparamsbase.h \
@@ -180,6 +181,7 @@ libbitcoin_server_a_SOURCES = \
   rest.cpp \
   rpcblockchain.cpp \
   rpccontent.cpp \
+  rpcbrowserconf.cpp \
   rpcmining.cpp \
   rpcmisc.cpp \
   rpcnet.cpp \
@@ -246,6 +248,7 @@ libbitcoin_common_a_SOURCES = \
   chainparams.cpp \
   ccc/content.cpp \
   ccc/link.cpp \
+  ccc/browserdb.cpp \
   coins.cpp \
   ccc/txaddressmap.cpp \
   compressor.cpp \

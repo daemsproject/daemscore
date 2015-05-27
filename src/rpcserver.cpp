@@ -276,6 +276,10 @@ static const CRPCCommand vRPCCommands[] =
     { "blockchain",         "getlink",                &getlink,                true,      false,      false },
     { "blockchain",         "getcontents",            &getcontents,            true,      false,      false },
     { "blockchain",         "devtest",                &devtest,                true,      false,      false },
+    
+    { "conf",               "getbrowserconf",         &getbrowserconf,         true,      true,       false },
+    { "conf",               "getfollowed",            &getfollowed,            true,      true,       false },
+    { "conf",               "setfollow",              &setfollow,              true,      true,       false },
 
     /* Mining */
     { "mining",             "getblocktemplate",       &getblocktemplate,       true,      false,      false },

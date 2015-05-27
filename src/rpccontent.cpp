@@ -79,7 +79,7 @@ CContent _create_file_content(std::string str)
     Object fileObj2;
     fileObj1.push_back(Pair("cc_name", "CC_FILE_NAME"));
     fileObj1.push_back(Pair("content", basename(str.c_str())));
-    fileObj2.push_back(Pair("cc_name", "CC_FILE_CONTENT"));
+    fileObj2.push_back(Pair("cc_name", "CC_FILE"));
     std::string fileStr;
     FileToString(str, fileStr);
     fileObj2.push_back(Pair("content", fileStr));
@@ -145,13 +145,6 @@ Value decodecontent(const Array& params, bool fHelp)
 
     Object result = _decode_content(params);
     return result;
-}
-
-Value getcontent(const Array& params, bool fHelp) // TO DO
-{
-    if (fHelp || params.size() != 1)
-        throw runtime_error("");
-    return Value::null;
 }
 
 Value getlink(const Array& params, bool fHelp) // TO DO: Help msg

@@ -236,6 +236,10 @@ extern json_spirit::Value getlink(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getcontents(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value devtest(const json_spirit::Array& params, bool fHelp); // to be deleted
 
+extern json_spirit::Value getbrowserconf(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getfollowed(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value setfollow(const json_spirit::Array& params, bool fHelp);
+
 // in rest.cpp
 extern bool HTTPReq_REST(AcceptedConnection *conn,
                   std::string& strURI,

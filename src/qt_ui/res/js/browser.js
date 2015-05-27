@@ -20,7 +20,7 @@ var CBrowser = new function () {
             var ctt = json.content[0];
             var k;
             for (k in ctt.content) {
-                if (ctt.content[k].cc_name == "CC_FILE_CONTENT")
+                if (ctt.content[k].cc_name == "CC_FILE_CONTENT" || ctt.content[k].cc_name == "CC_FILE")
                     return ctt.content[k].content;
             }
         } catch (e) {
