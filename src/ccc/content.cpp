@@ -14,7 +14,8 @@ using namespace std;
 static const int TRIM_READABLE_LEN = 1000;
 static const int TRIM_BINARY_LEN = 20;
 
-std::string GetCcName(const cctype cc) {
+std::string GetCcName(const cctype cc)
+{
     switch (cc) {
             /** Null * */
         case CC_NULL: return "CC_NULL";
@@ -367,7 +368,8 @@ std::string GetCcName(const cctype cc) {
     }
 }
 
-cctype GetCcValue(std::string ccName) {
+cctype GetCcValue(std::string ccName)
+{
     /** Null * */
     if (ccName == "CC_NULL") return CC_NULL;
 
@@ -717,13 +719,15 @@ cctype GetCcValue(std::string ccName) {
     else return CC_NULL;
 }
 
-std::string GetCcHex(const cctype cc) {
+std::string GetCcHex(const cctype cc)
+{
     std::ostringstream stm;
     stm << (char) cc;
     return HexStr(stm.str());
 }
 
-bool CContent::IsStandard() {
+bool CContent::IsStandard()
+{
     iterator pc = begin();
     while (pc < end()) {
         cctype cc;
@@ -734,7 +738,8 @@ bool CContent::IsStandard() {
     return (pc > end()) ? false : true;
 }
 
-Array CContent::ToJson(stringformat fFormat) {
+Array CContent::ToJson(stringformat fFormat)
+{
     iterator pc = begin();
     Array result;
     while (pc < end()) {
@@ -781,7 +786,8 @@ Array CContent::ToJson(stringformat fFormat) {
     return result;
 }
 
-std::string CContent::TrimToHumanString(const std::string& str) {
+std::string CContent::TrimToHumanString(const std::string& str)
+{
     std::string lenStr = " ... (";
     lenStr += strpatch::to_string(str.size());
     lenStr += " bytes) ";
@@ -795,7 +801,8 @@ std::string CContent::TrimToHumanString(const std::string& str) {
     return str2;
 }
 
-std::string CContent::ToHumanString() {
+std::string CContent::ToHumanString()
+{
     std::string ccUnit;
     iterator pc = begin();
     while (pc < end()) {
@@ -842,7 +849,8 @@ bool CContent::HasCc(const cctype& ccIn) // Very costly !!! Try to use FirstCc()
     return r;
 }
 
-bool CContent::FirstCc(const cctype& ccIn) {
+bool CContent::FirstCc(const cctype& ccIn)
+{
     iterator pc = begin();
     cctype cc = (cctype) ReadVarInt(pc);
     if (cc != ccIn)
@@ -853,18 +861,22 @@ bool CContent::FirstCc(const cctype& ccIn) {
 
 }
 
-bool CContent::SetEmpty() {
+bool CContent::SetEmpty()
+{
     clear();
     return true;
 }
 
-bool CContent::SetJson(const Array& cttJson) {
+bool CContent::SetJson(const Array& cttJson)
+{
     cctype cc = CC_NULL;
 
-    BOOST_FOREACH(const Value& input, cttJson) {
+    BOOST_FOREACH(const Value& input, cttJson)
+    {
         const Object& cttObj = input.get_obj();
 
-        BOOST_FOREACH(const Pair& ccUnit, cttObj) {
+        BOOST_FOREACH(const Pair& ccUnit, cttObj)
+        {
             std::string ccName;
             CContent content;
             if (ccUnit.name_ == "cc_name") {
@@ -882,18 +894,21 @@ bool CContent::SetJson(const Array& cttJson) {
     return true;
 }
 
-bool CContent::SetString(const std::string& cttStr) {
+bool CContent::SetString(const std::string& cttStr)
+{
     clear();
     append(cttStr);
     return true;
 }
 
-bool CContent::SetString(const vector<unsigned char>& cttVch) {
+bool CContent::SetString(const vector<unsigned char>& cttVch)
+{
     std::string str(cttVch.begin(), cttVch.end());
     return SetString(str);
 }
 
-bool CContent::GetCcUnit(iterator& pc, cctype& ccRet, std::string& content) {
+bool CContent::GetCcUnit(iterator& pc, cctype& ccRet, std::string& content)
+{
     ccRet = CC_NULL;
     if (pc >= end())
         return false;
@@ -908,7 +923,8 @@ bool CContent::GetCcUnit(iterator& pc, cctype& ccRet, std::string& content) {
     return pc <= end() ? true : false;
 }
 
-bool CContent::WriteVarInt(u_int64_t n) {
+bool CContent::WriteVarInt(u_int64_t n)
+{
     char tmp[8];
     int len = 0;
     while (true) {
@@ -926,7 +942,8 @@ bool CContent::WriteVarInt(u_int64_t n) {
     return true;
 }
 
-u_int64_t CContent::ReadVarInt(iterator& pc) {
+u_int64_t CContent::ReadVarInt(iterator& pc)
+{
     u_int64_t n = 0;
     while (true) {
         unsigned char chData;
@@ -939,7 +956,8 @@ u_int64_t CContent::ReadVarInt(iterator& pc) {
     }
 }
 
-bool CContent::WriteCompactSize(u_int64_t n) {
+bool CContent::WriteCompactSize(u_int64_t n)
+{
     std::ostringstream os;
     if (n < 253) {
         os << (char) n;
@@ -974,7 +992,8 @@ bool CContent::WriteCompactSize(u_int64_t n) {
     return true;
 }
 
-u_int64_t CContent::ReadCompactSize(iterator& pc) {
+u_int64_t CContent::ReadCompactSize(iterator& pc)
+{
     unsigned char chSize;
     std::string chData;
     chSize = *pc++;
@@ -1001,17 +1020,20 @@ u_int64_t CContent::ReadCompactSize(iterator& pc) {
     return nSizeRet;
 }
 
-bool CContent::WriteData(const std::string str) {
+bool CContent::WriteData(const std::string str)
+{
     append(str);
     return true;
 }
 
-bool CContent::WriteData(const std::string str, int len) {
+bool CContent::WriteData(const std::string str, int len)
+{
     append(str, 0, len);
     return true;
 }
 
-std::string CContent::ReadData(iterator& pc, int len) {
+std::string CContent::ReadData(iterator& pc, int len)
+{
     std::string result;
     int i = 0;
     while (i < len) {
@@ -1021,7 +1043,8 @@ std::string CContent::ReadData(iterator& pc, int len) {
     return result;
 }
 
-std::string CContent::ReadDataReverse(iterator& pc, int len) {
+std::string CContent::ReadDataReverse(iterator& pc, int len)
+{
     std::string result;
     int i = len;
     iterator pc2 = pc + len;
@@ -1033,7 +1056,8 @@ std::string CContent::ReadDataReverse(iterator& pc, int len) {
     return result;
 }
 
-bool CContent::IsCcParent(const cctype& cc) {
+bool CContent::IsCcParent(const cctype& cc)
+{
     u_int64_t cc2 = cc;
     return (cc2 % 2 == 1) ? true : false;
 }
