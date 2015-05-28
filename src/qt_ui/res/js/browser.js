@@ -191,7 +191,9 @@ $(document).ready(function () {
         CBrowser.toggleFullId($(this).parent());
     });
     $(".id-follow-btn").click(function () {
-        alert("To Do");
+//        alert("To Do");
+        console.log($(this).parent().parent().find(".text").attr("fullid"));
+        console.log(BrowserAPI.setFollow($(this).parent().parent().find(".text").attr("fullid")));
     });
     $(".id-share-btn").click(function () {
         alert("To Do");

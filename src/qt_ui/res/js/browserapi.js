@@ -156,6 +156,16 @@ var BrowserAPI = new function () {
         });
         return r;
     };
+    this.setFollow = function (a) {
+        var r;
+        var d = [[a]];
+        this.call("setfollow", JSON.stringify(d), function (r1) {
+            r = r1;
+        }, function (e) {
+            r = e;
+        });
+        return r;
+    };
     this.getRecent = function (fbh, blkc, fAsc) {
         fbh = typeof fbh !== 'undefined' ? fbh : 0;
         blkc = typeof blkc !== 'undefined' ? blkc : 10;

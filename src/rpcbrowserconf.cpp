@@ -1,7 +1,9 @@
 #include "ccc/browserdb.h"
+#include "rpcserver.h"
 #include <boost/foreach.hpp>
+#include <boost/assign/list_of.hpp>
 using namespace std;
-
+using namespace boost::assign;
 Value getbrowserconf(const json_spirit::Array& params, bool fHelp) //  To Do
 {
     Object r;
@@ -27,6 +29,7 @@ Value setfollow(const json_spirit::Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 1)
         throw runtime_error("Wrong number of parameters");
+    RPCTypeCheck(params, list_of(array_type));
     Array addrs = params[0].get_array();
     CBrowserFollow fll;
 
