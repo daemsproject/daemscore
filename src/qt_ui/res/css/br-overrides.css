@@ -5,24 +5,35 @@
     max-height:800px;
 }.ctt{
     padding: 6px 0;
+}.quickstart{
+    width:100%;
+    position:fixed;
+    background-color: #e0e0e0;
+}main-notices-container{
+    z-index:1; position:fixed; right:0px; margin:20px; width:auto; min-width:280px; overflow:visible; height:0px;
 }#fullImage{
     position: absolute;
     top: 0;
     height : 90%;
     bottom: 5%;
-}#standard{
+}#standard,#followstd{
     display:none; 
 }#refresh-btn{
-    
-}#video-tpl, #image-tpl{
+
+}#video-tpl, #image-tpl,#notices{
     display:none;
+}#notices{
+    max-width:600px;width:auto;;background-color: antiquewhite; padding:5px;border-radius: 3px;
+}hr{
+    border-top: 1px solid #ddd;
 }
-.nav-pills  .active  a{
+.nav-pills a{
+    cursor:pointer;
+}.nav-pills  .active  a{
     background-color: #666;
     color: #fff;
 }.nav-pills  .active  a:hover{
     background-color: #ccc;
-    cursor:pointer;
 }.nav-pills  a{
     color: #444;
     border-radius: 3px;

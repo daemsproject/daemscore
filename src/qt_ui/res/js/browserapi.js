@@ -166,13 +166,25 @@ var BrowserAPI = new function () {
         });
         return r;
     };
-    this.getRecent = function (fbh, blkc, fAsc) {
+    this.getFollowed = function () {
+        var r;
+        var d = [];
+        this.call("getfollowed", JSON.stringify(d), function (r1) {
+            r = r1;
+        }, function (e) {
+            r = e;
+        });
+        return r;
+    };
+
+    this.getContents = function (fbh, blkc, fAsc, addrs) {
         fbh = typeof fbh !== 'undefined' ? fbh : 0;
         blkc = typeof blkc !== 'undefined' ? blkc : 10;
         fAsc = typeof fAsc !== 'undefined' ? fAsc : true;
+        addrs = typeof addrs !== 'undefined' ? addrs : [];
         var r;
         var fcc = ["CC_FILE_P", "CC_TEXT_P", "CC_LINK_P", "CC_LINK"];
-        var d = [{"fbh": fbh, "maxc": 20, "maxb": 3000000, "firstcc": fcc, "cformat": 6, "fAsc": fAsc, "mincsize": 3, "blkc": blkc}];
+        var d = [{"fbh": fbh, "maxc": 20, "maxb": 3000000, "firstcc": fcc, "cformat": 6, "fAsc": fAsc, "mincsize": 3, "blkc": blkc},addrs];
         this.call("getcontents", JSON.stringify(d), function (r1) {
             r = r1;
         }, function (e) {

@@ -1,3 +1,7 @@
+var CONTENT_TYPE_FEED = 0;
+var CONTENT_TYPE_FOLLOW = 1;
+var CONTENT_TYPE_MINE = 2;
+
 var CBrowser = new function () {
     var CBrowser = this;
     this.showFullId = function (div, fullId) {
@@ -86,11 +90,20 @@ var CBrowser = new function () {
     this.shortenId = function (id) {
         return id.substr(0, 10) + "...";
     };
-    this.addContent = function (ctt, fPos) {
+    this.addContent = function (ctt, fType, fPos) {
         fPos = typeof fPos !== 'undefined' ? fPos : true;
+        fType = typeof fType !== 'undefined' ? fType : CONTENT_TYPE_FEED;
         if (ctt.content[0].content === "non-standard")
             return;
-        var sdiv = $("#standard").clone(true, true);
+        var sdiv
+        switch (fType) {
+            case CONTENT_TYPE_FEED:
+                sdiv = $("#standard").clone(true, true);
+                break;
+            case CONTENT_TYPE_FOLLOW:
+                sdiv = $("#followstd").clone(true, true);
+                break;
+        }
         sdiv.removeAttr("id");
         sdiv.find(".id").find(".text").attr("fullid", ctt.poster[0]);
         sdiv.find(".id").find(".text").html(this.shortenId(ctt.poster[0]));
@@ -106,9 +119,7 @@ var CBrowser = new function () {
             sdiv.find(".ctt").html(atob(ctt.content[0].content[0].content));
         else
             return;
-
         fPos ? $("#mainframe").prepend(sdiv.children()) : $("#mainframe").append(sdiv.children());
-//        console.log(ctt);
     };
     this.isContentImage = function (ctt) {
         return ctt.content[0].cc_name === "CC_FILE_P" &&
@@ -132,42 +143,45 @@ var CBrowser = new function () {
     };
 
     this.refreshNew = function () {
-        var ctts = this.getRecentContents();
+        var ctts = this.getNewContents();
         for (k in ctts) {
-            this.addContent(ctts[k], false);
+            this.addContent(ctts[k], CONTENT_TYPE_FEED, false);
         }
     };
     this.refreshOld = function () {
         var ctts = this.getOldContents();
         for (k in ctts) {
-            this.addContent(ctts[k], false);
+            this.addContent(ctts[k], CONTENT_TYPE_FEED, false);
         }
     };
-    this.getRecentContents = function () {
-        var rc = 3;
-        var lbh = BrowserAPI.getBlockCount();
-        var bh = lbh;
-        bh -= 10;
-        var ctts = BrowserAPI.getRecent(bh, 10, false);
-        bh -= 10;
-        while (ctts.length < rc && bh > 0) {
-            var tmp = BrowserAPI.getRecent(bh, 10, false);
-            ctts = ctts.concat(tmp);
-            bh -= 10;
-
+    this.refreshNewFollowed = function () {
+        var flist = BrowserAPI.getFollowed();
+        if (flist.length == 0) {
+            this.showNotice("You need to follow someone first");
+            return;
         }
-        blkDisp = [bh + 10, parseInt(lbh)];
-        return ctts;
+        var ctts = this.getNewContents(flist);
+        for (k in ctts) {
+            this.addContent(ctts[k], CONTENT_TYPE_FEED, false);
+        }
     };
-    this.getOldContents = function () {
+    this.refreshOldFollowed = function () {
+        var flist = BrowserAPI.getFollowed();
+        var ctts = this.getOldContents(flist);
+        for (k in ctts) {
+            this.addContent(ctts[k], CONTENT_TYPE_FEED, false);
+        }
+    };
+    this.getNewContents = function (addrs) {
+        addrs = typeof addrs !== 'undefined' ? addrs : [];
         var rc = 3;
-        var lbh = blkDisp[0];
+        var lbh = parseInt(BrowserAPI.getBlockCount());
         var bh = lbh;
         bh -= 10;
-        var ctts = BrowserAPI.getRecent(bh, 10, false);
+        var ctts = BrowserAPI.getContents(bh, 10, false, addrs);
         bh -= 10;
         while (ctts.length < rc && bh > 0) {
-            var tmp = BrowserAPI.getRecent(bh, 10, false);
+            var tmp = BrowserAPI.getContents(bh, 10, false, addrs);
             ctts = ctts.concat(tmp);
             bh -= 10;
 
@@ -175,25 +189,98 @@ var CBrowser = new function () {
         blkDisp = [bh + 10, lbh];
         return ctts;
     };
+    this.getOldContents = function (addrs) {
+        addrs = typeof addrs !== 'undefined' ? addrs : [];
+        var rc = 3;
+        var lbh = blkDisp[0];
+        var bh = lbh;
+        bh -= 10;
+        var ctts = BrowserAPI.getContents(bh, 10, false, addrs);
+        bh -= 10;
+        while (ctts.length < rc && bh > 0) {
+            var tmp = BrowserAPI.getContents(bh, 10, false, addrs);
+            ctts = ctts.concat(tmp);
+            bh -= 10;
 
+        }
+//        console.log(blkDisp);
+        blkDisp = [bh + 10, lbh];
+        return ctts;
+    };
+    this.switchTab = function (tabid) {
+//        console.log(tabid);
+        if ($("#" + tabid).parent().hasClass("active"))
+            return;
+        $("#" + tabid).parent().parent().children("li").removeClass("active");
+        $("#" + tabid).parent().addClass("active");
+        $("#mainframe").children(".container").remove();
+        $("#mainframe").children("hr").remove();
+        switch (tabid) {
+            case "br-new-btn":
+                this.newAction();
+                break;
+            case "br-followed-btn":
+                this.followedAction();
+                break;
+        }
+//        blkDisp = [];
+
+
+    };
+    this.newAction = function () {
+        this.refreshNew();
+        this.refreshOld();
+    };
+    this.followedAction = function () {
+        this.refreshNewFollowed();
+    };
+    this.showNotice = function (n) {
+        $("#notices").html(n).show();
+        $("#notices").delay(2000).hide(0);
+    };
+    this.bottomAction = function () {
+        var tabid = $(".tabbar").children("li.active").children("a").attr("id");
+//        var page = this.findPage();
+        switch (tabid) {
+            case "br-new-btn":
+                this.newAction();
+                break;
+            case "br-followed-btn":
+                this.refreshOldFollowed();
+                break;
+        }
+//        console.log(tabid);
+    };
 };
 var blkDisp;
+var fllDisp;
 $(document).ready(function () {
 
-    CBrowser.refreshNew();
+    CBrowser.newAction();
+
     $("#refresh-btn").click(function () {
         CBrowser.refreshNew();
     });
     $("#refreshold-btn").click(function () {
         CBrowser.refreshOld();
     });
+    $(".tabbar").children("li").children("a").click(function () {
+        CBrowser.switchTab($(this).attr("id"));
+    });
     $(".id").find("a.text").click(function () {
         CBrowser.toggleFullId($(this).parent());
     });
     $(".id-follow-btn").click(function () {
-//        alert("To Do");
-        console.log($(this).parent().parent().find(".text").attr("fullid"));
-        console.log(BrowserAPI.setFollow($(this).parent().parent().find(".text").attr("fullid")));
+        var id = $(this).parent().parent().find(".text").attr("fullid");
+        var feedback = BrowserAPI.setFollow(id);
+        for (k in feedback) {
+            if (feedback[k] == id) {
+                CBrowser.showNotice("Successful");
+                return;
+            }
+        }
+        CBrowser.showNotice("Failed");
+        console.log(feedback);
     });
     $(".id-share-btn").click(function () {
         alert("To Do");
@@ -213,17 +300,11 @@ $(document).ready(function () {
         $(this).html("");
     });
     $("#test-btn").click(function () {
-//        CBrowser.getRecentContents();
-        var clink = CLink.setString("ccc:11175.1");
-//        var clink2 = CLink.setString("11175.1");
-        var clink2 = CLink.setString("11175.1.1");
-        console.log(clink.toString());
-        console.log(clink2.toHtmlId());
+        console.log(BrowserAPI.getFollowed());
     });
     $(window).scroll(function () {
         if ($(window).scrollTop() + $(window).height() == $(document).height()) {
-//            alert("bottom!");
-            CBrowser.refreshOld();
+            CBrowser.bottomAction();
         }
     });
 });
