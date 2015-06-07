@@ -184,10 +184,12 @@ public:
 //        vSeeds.push_back(CDNSSeedData("koin-project.com", "dnsseed.koin-project.com"));
 //        vSeeds.push_back(CDNSSeedData("weminemnc.com", "dnsseed.weminemnc.com"));
 
-        base32Prefixes[PUBKEY_ADDRESS]      = list_of(0x00);
-        base32Prefixes[SCRIPT_ADDRESS]      = list_of(0x90);
-        base32Prefixes[SCRIPTHASH_ADDRESS]  = list_of(0x38);
+        base32Prefixes[PUBKEY_ADDRESS_2]    = list_of(0x02);    //  (51 bytes)(AE/AF/QE/QF)(7 bytes)
+        base32Prefixes[PUBKEY_ADDRESS_3]    = list_of(0x03);    //  (51 bytes)(AG/AH/QG/QH)(7 bytes)
+        base32Prefixes[SCRIPT_ADDRESS]      = list_of(0x90);    //  (n bytes)(S)(7 bytes)
+        base32Prefixes[SCRIPTHASH_ADDRESS]  = list_of(0x38);    //  (32 bytes)(H)(7 bytes)
         base32Prefixes[SECRET_KEY]          = list_of(0x48);
+        base32Prefixes[SECRET_KEY_CPR]      = list_of(0x49);
         base32Prefixes[EXT_PUBLIC_KEY]      = list_of(0x04)(0x88)(0xB2)(0x1E);
         base32Prefixes[EXT_SECRET_KEY]      = list_of(0x04)(0x88)(0xAD)(0xE4);
 
@@ -247,11 +249,14 @@ public:
         vSeeds.push_back(CDNSSeedData("xurious.com", "testnet-seed.ltc.xurious.com"));
         vSeeds.push_back(CDNSSeedData("wemine-testnet.com", "dnsseed.wemine-testnet.com"));
 
-        base32Prefixes[PUBKEY_ADDRESS] = list_of(111);
-        base32Prefixes[SCRIPT_ADDRESS] = list_of(196);
-        base32Prefixes[SECRET_KEY]     = list_of(239);
-        base32Prefixes[EXT_PUBLIC_KEY] = list_of(0x04)(0x35)(0x87)(0xCF);
-        base32Prefixes[EXT_SECRET_KEY] = list_of(0x04)(0x35)(0x83)(0x94);
+        base32Prefixes[PUBKEY_ADDRESS_2]    = list_of(111);
+        base32Prefixes[PUBKEY_ADDRESS_3]    = list_of(112);
+        base32Prefixes[SCRIPT_ADDRESS]      = list_of(196);
+        base32Prefixes[SCRIPTHASH_ADDRESS]  = list_of(197);
+        base32Prefixes[SECRET_KEY]          = list_of(239);    
+        base32Prefixes[SECRET_KEY_CPR]      = list_of(240);
+        base32Prefixes[EXT_PUBLIC_KEY]      = list_of(0x04)(0x88)(0xB2)(0x1E);
+        base32Prefixes[EXT_SECRET_KEY]      = list_of(0x04)(0x88)(0xAD)(0xE4);
 
         convertSeed6(vFixedSeeds, pnSeed6_test, ARRAYLEN(pnSeed6_test));
 

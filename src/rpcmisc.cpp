@@ -113,6 +113,7 @@ public:
     DescribeAddressVisitor(isminetype mineIn) : mine(mineIn) {}
 
     Object operator()(const CNoDestination &dest) const { return Object(); }
+    Object operator()(const CScript & script) const { return Object(); }
 
     Object operator()(const CKeyID &keyID) const {
         Object obj;
@@ -273,7 +274,6 @@ Value createmultisig(const Array& params, bool fHelp)
 
     return result;
 }
-
 
 Value verifymessage(const Array& params, bool fHelp)
 {

@@ -2147,6 +2147,10 @@ public:
         if (keystore.GetCScript(scriptId, script))
             Process(script);
     }
+    
+    void operator()(const CScript &script) {
+        Process(script);
+    }
 
     void operator()(const CNoDestination &none) {}
 };

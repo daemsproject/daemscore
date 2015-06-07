@@ -167,6 +167,10 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
                 // Read prev transaction
                 if (!view.HaveCoins(txin.prevout.hash))
                 {
+                    //don't take in transactions with prevout in mempool,because txs are queued by fee, not sequence, we can't guarantee it's
+                    //previous tx can be included in this block
+                    fMissingInputs = true;
+                    break;
                     // This should never happen; all transactions in the memory
                     // pool should connect to either transactions in the chain
                     // or other transactions in the memory pool.

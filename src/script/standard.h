@@ -59,7 +59,6 @@ enum txnouttype
     TX_NONSTANDARD,
     // 'standard' transaction types:
     TX_PUBKEY,
-    TX_PUBKEYHASH,
     TX_SCRIPTHASH,
     TX_SCRIPT,
     TX_MULTISIG,
@@ -75,7 +74,6 @@ public:
 /** 
  * A txout script template with a specific destination. It is either:
  *  * CNoDestination: no destination set
- *  * CKeyID: TX_PUBKEYHASH destination
  *  * CScriptID: TX_SCRIPTHASH destination
  *  A CTxDestination is the internal data type encoded in a CBitcoinAddress
  */

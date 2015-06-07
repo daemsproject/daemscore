@@ -27,7 +27,6 @@ const char* GetTxnOutputType(txnouttype t)
     {
         case TX_NONSTANDARD: return "nonstandard";
         case TX_PUBKEY: return "pubkey";
-        case TX_PUBKEYHASH: return "pubkeyhash";
         case TX_SCRIPTHASH: return "scripthash";
         case TX_SCRIPT: return "script";
         case TX_MULTISIG: return "multisig";
@@ -53,8 +52,6 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, vector<vector<unsi
         // Standard tx, sender provides pubkey, receiver adds signature
         mTemplates.insert(make_pair(TX_PUBKEY, CScript() << OP_PUBKEY << OP_CHECKSIG));
 
-        // Cccoin address tx, sender provides hash of pubkey, receiver provides signature
-        mTemplates.insert(make_pair(TX_PUBKEYHASH, CScript() << OP_PUBKEYHASH << OP_CHECKSIG));
 
         // Sender provides N pubkeys, receivers provides M signatures
         mTemplates.insert(make_pair(TX_MULTISIG, CScript() << OP_SMALLINTEGER << OP_PUBKEYS << OP_SMALLINTEGER << OP_CHECKMULTISIG));
@@ -132,11 +129,7 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, vector<vector<unsi
                 vSolutionsRet.push_back(vch1);
             }
             else if (opcode2 == OP_PUBKEYHASH)
-            {
-                if (vch1.size() != sizeof(uint160))
-                    break;
-                vSolutionsRet.push_back(vch1);
-            }
+                break;
             else if (opcode2 == OP_SMALLINTEGER)
             {   // Single-byte small integer pushed onto vSolutions
                 if (opcode1 == OP_0 ||
@@ -182,8 +175,6 @@ int ScriptSigArgsExpected(txnouttype t, const std::vector<std::vector<unsigned c
         case TX_NULL_DATA:
             return -1;
         case TX_PUBKEY:
-            return 1;
-        case TX_PUBKEYHASH:
             return 1;
         case TX_MULTISIG:
             if (vSolutions.size() < 1 || vSolutions[0].size() < 1)
@@ -231,11 +222,6 @@ bool ExtractDestination(const CScript& scriptPubKey, CTxDestination& addressRet)
             return false;
 
         addressRet = pubKey.GetID();
-        return true;
-    }
-    else if (whichType == TX_PUBKEYHASH)
-    {
-        addressRet = CKeyID(uint160(vSolutions[0]));
         return true;
     }
     else if (whichType == TX_SCRIPTHASH)
@@ -303,7 +289,7 @@ class CScriptVisitor : public boost::static_visitor<bool>
         }
 
         bool operator()(const CKeyID &keyID) const {
-            *script << ToByteVector(keyID);
+            *script << keyID.ToByteVector();
             if(fType == 1)
                 *script << OP_CHECKSIG;
             return true;

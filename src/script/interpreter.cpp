@@ -776,7 +776,7 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                         return set_error(serror, SCRIPT_ERR_INVALID_STACK_OPERATION);
 
                     valtype& vchSig    = stacktop(-2);
-                    valtype& vchPubKeyHash = stacktop(-1);
+                    valtype& vchPubKey = stacktop(-1);
 
                     // Subset of script starting at the most recent codeseparator
                     CScript scriptCode(pbegincodehash, pend);
@@ -784,9 +784,8 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                     // Drop the signature, since there's no way for a signature to sign itself
                     scriptCode.FindAndDelete(CScript(vchSig));
 
-                    bool fSuccess = checker.CheckSigByPubKeyHash(vchSig, vchPubKeyHash, scriptCode);
-                    if(!fSuccess)
-                        fSuccess = checker.CheckSig(vchSig, vchPubKeyHash, scriptCode);
+                    bool fSuccess = checker.CheckSig(vchSig, vchPubKey, scriptCode);
+
                     popstack(stack);
                     popstack(stack);
                     stack.push_back(fSuccess ? vchTrue : vchFalse);
@@ -804,6 +803,8 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                 case OP_CHECKMULTISIGVERIFY:
                 {
                     // [sig1][sig2]....[sigCount][weightRequired][pubkey1][weight1][pubkey2][weight2]....[pubkeyCount]OP_CHECKMULTISIG --bool
+                    
+                    // [weight] weight_to_spend [pubkey][weightOfPubkey] ... 
                     
                     int i = 1;
                     if ((int)stack.size() < i)
@@ -841,24 +842,24 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
 
                     bool fSuccess = true;
                     int wSigned = 0;
-                    std::vector<vector<unsigned char> > vchPubKeyHashRet;
+                    std::vector<vector<unsigned char> > vchPubKeyRet;
                         for(int i=0; i< nKeysCount; i++){
-                            valtype& vchPubKeyHash = stacktop(-ikey);
-                            vchPubKeyHashRet.push_back(vchPubKeyHash);
+                            valtype& vchPubKey = stacktop(-ikey);
+                            vchPubKeyRet.push_back(vchPubKey);
                             ikey +=2;
                         }
                     while ( nSigsCount > 0)
                     {
                         valtype& vchSig    = stacktop(-isig);
                         
-                        std::vector<unsigned char> vchRecoveredPubKeyHash;
-                        if(!checker.RecoverPubKeyHash(vchSig, vchRecoveredPubKeyHash, scriptCode))
+                        std::vector<unsigned char> vchRecoveredPubKey;
+                        if(!checker.RecoverPubKey(vchSig, vchRecoveredPubKey, scriptCode))
                             return false;
                         isig++;
                         bool fOk = false;
                         int rphIndex = 0;
-                        BOOST_FOREACH(vector<unsigned char>& vchPubKeyHash , vchPubKeyHashRet){
-                                if(vchPubKeyHash == vchRecoveredPubKeyHash){
+                        BOOST_FOREACH(vector<unsigned char>& vchPubKey , vchPubKeyRet){
+                                if(vchPubKey == vchRecoveredPubKey){
                                     fOk = true;
                                     break;
                                 }
@@ -1036,35 +1037,14 @@ uint256 SignatureHash(const CScript& scriptCode, const CTransaction& txTo, unsig
 
 bool TransactionSignatureChecker::VerifySignature(const std::vector<unsigned char>& vchSig, const CPubKey& pubkey, const uint256& sighash) const
 {
-//    return pubkey.Verify(sighash, vchSig);
-    std::vector<unsigned char> vchSigCompact;
-    vchSigCompact = vchSig;
-    vchSigCompact.resize(65);
     CPubKey rPubKey;    
-    if(!rPubKey.RecoverCompact(sighash,vchSigCompact))
+    if(!rPubKey.RecoverCompact(sighash,vchSig))
         return false;
-    if(pubkey != rPubKey)
-        return false;
+    if(rPubKey == pubkey)
     return true;
-}
-
-bool TransactionSignatureChecker::VerifySignatureByPubKeyHash(const std::vector<unsigned char>& vchSig, const std::vector<unsigned char>& pubkeyhash, const uint256& sighash) const
-{
-    valtype vchHash(20);
-    CHash160().Write(begin_ptr(pubkeyhash), pubkeyhash.size()).Finalize(begin_ptr(vchHash));
-    std::vector<unsigned char> pubkeyhash2;
-    pubkeyhash2 = pubkeyhash;
-    std::reverse(pubkeyhash2.begin(),pubkeyhash2.end());
-    CPubKey rPubKey;
-    std::vector<unsigned char> vchSigCompact;
-    vchSigCompact = vchSig;
-    vchSigCompact.resize(65);
-    if(!rPubKey.RecoverCompact(sighash,vchSigCompact))
+    if(!rPubKey.Compress())
         return false;
-    if(HexStr(pubkeyhash2) != rPubKey.GetID().GetHex())
-        return false;
-    
-    return true;
+    return rPubKey == pubkey;
 }
 
 bool TransactionSignatureChecker::CheckSig(const vector<unsigned char>& vchSigIn, const vector<unsigned char>& vchPubKey, const CScript& scriptCode) const
@@ -1088,35 +1068,8 @@ bool TransactionSignatureChecker::CheckSig(const vector<unsigned char>& vchSigIn
     return true;
 }
 
-bool TransactionSignatureChecker::CheckSigByPubKeyHash(const std::vector<unsigned char>& vchSigIn, const std::vector<unsigned char>& vchPubKeyHash, const CScript& scriptCode) const
-{
-    // Hash type is one byte tacked on to the end of the signature
-    vector<unsigned char> vchSig(vchSigIn);
-    if (vchSig.empty())
-        return false;
-    int nHashType = vchSig.back();
-    vchSig.pop_back();
-
-    uint256 sighash = SignatureHash(scriptCode, *txTo, nIn, nHashType);
-    if (!VerifySignatureByPubKeyHash(vchSig, vchPubKeyHash, sighash))
-        return false;
-
-    return true;
-
-}
 
 bool TransactionSignatureChecker::RecoverPubKey(const std::vector<unsigned char>& vchSigIn, std::vector<unsigned char>& vchPubKey, const CScript& scriptCode) const
-{
-//    uint256 sighash = SignatureHash(scriptCode, *txTo, nIn, nHashType);
-//    std::vector<unsigned char> vchSigCompact;
-//    CPubKey rPubKey;
-//    if(!rPubKey.RecoverCompact(sighash,vchSigCompact))
-//        return false;
-//    vchPubKey = rPubKey.;
-    return true;
-}
-
-bool TransactionSignatureChecker::RecoverPubKeyHash(const std::vector<unsigned char>& vchSigIn, std::vector<unsigned char>& vchPubKeyHash, const CScript& scriptCode) const
 {
     int nHashType = vchSigIn.back();
     uint256 sighash = SignatureHash(scriptCode, *txTo, nIn, nHashType);
@@ -1127,7 +1080,7 @@ bool TransactionSignatureChecker::RecoverPubKeyHash(const std::vector<unsigned c
     if(!rPubKey.RecoverCompact(sighash,vchSigCompact))
         return false;
     
-    vchPubKeyHash = ToByteVector(rPubKey.GetID());
+    vchPubKey = rPubKey.GetChar();
     return true;
 }
     

@@ -5,11 +5,13 @@
 #include "pubkey.h"
 
 #include "eccryptoverify.h"
+#include "utilstrencodings.h"
 
 #ifdef USE_SECP256K1
 #include <secp256k1.h>
 #else
 #include "ecwrapper.h"
+#include "key.h"
 #endif
 
 bool CPubKey::Verify(const uint256 &hash, const std::vector<unsigned char>& vchSig) const {
@@ -73,12 +75,26 @@ bool CPubKey::Decompress() {
     assert(clen == (int)size());
 #else
     CECKey key;
-    if (!key.SetPubKey(begin(), size()))
+    if (!key.SetPubKey(begin(), size()))  // Bug here to fix : compressed pubkey can not set successfully
         return false;
     std::vector<unsigned char> pubkey;
     key.GetPubKey(pubkey, false);
     Set(pubkey.begin(), pubkey.end());
 #endif
+    return true;
+}
+
+bool CPubKey::Compress() {
+    if (!IsValid())
+        return false;
+    if(IsCompressed())
+        return true;
+    CECKey key;
+    if (!key.SetPubKey(begin(), size()))
+        return false;
+    std::vector<unsigned char> pubkey;
+    key.GetPubKey(pubkey, true);
+    Set(pubkey.begin(), pubkey.end());
     return true;
 }
 
@@ -127,4 +143,16 @@ bool CExtPubKey::Derive(CExtPubKey &out, unsigned int nChild) const {
     memcpy(&out.vchFingerprint[0], &id, 4);
     out.nChild = nChild;
     return pubkey.Derive(out.pubkey, out.vchChainCode, nChild, vchChainCode);
+}
+
+std::vector<unsigned char> CPubKey::GetChar() const
+{
+    return std::vector<unsigned char>(vch, vch + size());
+}
+
+// The ID from this function can be invalid. Need to check before using
+CKeyID CPubKey::GetID () const 
+{
+    CPubKey pk(begin(),end());
+    return pk.Compress() ? CKeyID(pk.GetChar()) : CKeyID();
 }

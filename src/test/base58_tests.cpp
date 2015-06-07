@@ -98,27 +98,27 @@ public:
 };
 
 // Visitor to check address payload
-class TestPayloadVisitor : public boost::static_visitor<bool>
-{
-private:
-    std::vector<unsigned char> exp_payload;
-public:
-    TestPayloadVisitor(std::vector<unsigned char> &exp_payload) : exp_payload(exp_payload) { }
-    bool operator()(const CKeyID &id) const
-    {
-        uint160 exp_key(exp_payload);
-        return exp_key == id;
-    }
-    bool operator()(const CScriptID &id) const
-    {
-        uint160 exp_key(exp_payload);
-        return exp_key == id;
-    }
-    bool operator()(const CNoDestination &no) const
-    {
-        return exp_payload.size() == 0;
-    }
-};
+//class TestPayloadVisitor : public boost::static_visitor<bool>
+//{
+//private:
+//    std::vector<unsigned char> exp_payload;
+//public:
+//    TestPayloadVisitor(std::vector<unsigned char> &exp_payload) : exp_payload(exp_payload) { }
+//    bool operator()(const CKeyID &id) const
+//    {
+//        uint160 exp_key(exp_payload);
+//        return exp_key == id;
+//    }
+//    bool operator()(const CScriptID &id) const
+//    {
+//        uint160 exp_key(exp_payload);
+//        return exp_key == id;
+//    }
+//    bool operator()(const CNoDestination &no) const
+//    {
+//        return exp_payload.size() == 0;
+//    }
+//};
 
 // Goal: check that parsed keys match test payload
 BOOST_AUTO_TEST_CASE(base58_keys_valid_parse)
@@ -216,11 +216,12 @@ BOOST_AUTO_TEST_CASE(base58_keys_valid_gen)
         {
             std::string exp_addrType = find_value(metadata, "addrType").get_str();
             CTxDestination dest;
-            if(exp_addrType == "pubkey")
-            {
-                dest = CKeyID(uint160(exp_payload));
-            }
-            else if(exp_addrType == "script")
+//            if(exp_addrType == "pubkey")
+//            {
+//                dest = CKeyID(uint160(exp_payload));
+//            }
+//            else
+                if(exp_addrType == "script")
             {
                 dest = CScriptID(uint160(exp_payload));
             }

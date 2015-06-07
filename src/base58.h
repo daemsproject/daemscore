@@ -197,6 +197,7 @@ public:
     CTxDestination Get() const;
     bool GetKeyID(CKeyID &keyID) const;
     bool IsScript() const;
+    std::string ToString() const;
 };
 
 /**
@@ -213,21 +214,6 @@ public:
 
     CBitcoinSecret(const CKey& vchSecret) { SetKey(vchSecret); }
     CBitcoinSecret() {}
-};
-/**
- * A base32-encoded public key
- */
-class CBitcoinPubKey : public CBase32Data
-{
-public:
-    void SetKey(const CPubKey& vchPub);
-    CPubKey GetKey();
-    bool IsValid() const;
-    bool SetString(const char* pszPub);
-    bool SetString(const std::string& strPub);
-
-    CBitcoinPubKey(const CPubKey& vchPub) { SetKey(vchPub); }
-    CBitcoinPubKey() {}
 };
 
 template<typename K, int Size, CChainParams::Base32Type Type> class CBitcoinExtKeyBase : public CBase32Data

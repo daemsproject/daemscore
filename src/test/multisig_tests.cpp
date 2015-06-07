@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE(multisig_Solver1)
         vector<valtype> solutions;
         txnouttype whichType;
         CScript s;
-        s << OP_DUP << OP_HASH160 << ToByteVector(key[0].GetPubKey().GetID()) << OP_EQUALVERIFY << OP_CHECKSIG;
+        s << OP_DUP << OP_HASH160 << key[0].GetPubKey().GetID().ToByteVector() << OP_EQUALVERIFY << OP_CHECKSIG;
         BOOST_CHECK(Solver(s, whichType, solutions));
         BOOST_CHECK(solutions.size() == 1);
         CTxDestination addr;

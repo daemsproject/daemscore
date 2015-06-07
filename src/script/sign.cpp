@@ -47,9 +47,9 @@ bool SignN(const vector<valtype>& multisigdata, const CKeyStore& keystore, uint2
     
     for (unsigned int i = 1; i < multisigdata.size()-1 && wSigned < wRequired; i++)
     {
-        const valtype& pubkeyHash = multisigdata[i];
+        const valtype& pubkey = multisigdata[i];
         CKeyID keyID;
-        keyID = CKeyID(uint160(pubkeyHash));
+        keyID = CKeyID(pubkey);
         i++;
         if (Sign1(keyID, keystore, hash, nHashType, scriptSigRet)){
             wSigned += (int)multisigdata[i][0];
@@ -91,11 +91,6 @@ bool Solver(const CKeyStore& keystore, const CScript& scriptPubKey, uint256 hash
     case TX_PUBKEY:
         keyID = CPubKey(vSolutions[0]).GetID();
         return Sign1(keyID, keystore, hash, nHashType, scriptSigRet);
-    case TX_PUBKEYHASH:
-        keyID = CKeyID(uint160(vSolutions[0]));
-        if (!Sign1(keyID, keystore, hash, nHashType, scriptSigRet))
-            return false;
-        return true;
     case TX_SCRIPTHASH:
         return keystore.GetCScript(uint160(vSolutions[0]), scriptSigRet);
     case TX_SCRIPT:
@@ -196,13 +191,13 @@ static CScript CombineMultisig(const CScript& scriptPubKey, const CTransaction& 
     {
         for (unsigned int i = 0; i < nPubKeys; i++)
         {
-            const valtype& pubkeyHash = vSolutions[i*2+1];
-            if (sigs.count(pubkeyHash))
+            const valtype& pubkey = vSolutions[i*2+1];
+            if (sigs.count(pubkey))
                 continue; // Already got a sig for this pubkey
 
-            if (TransactionSignatureChecker(&txTo, nIn).CheckSigByPubKeyHash(sig, pubkeyHash, scriptPubKey))
+            if (TransactionSignatureChecker(&txTo, nIn).CheckSig(sig, pubkey, scriptPubKey))
             {
-                sigs[pubkeyHash] = sig;
+                sigs[pubkey] = sig;
                 break;
             }
         }
@@ -235,7 +230,6 @@ static CScript CombineSignatures(const CScript& scriptPubKey, const CTransaction
                 return PushAll(sigs1);
             return PushAll(sigs2);
         case TX_PUBKEY:
-        case TX_PUBKEYHASH:
             // Signatures are bigger than placeholders or empty scripts:
             if (sigs1.empty() || sigs1[0].empty())
                 return PushAll(sigs2);

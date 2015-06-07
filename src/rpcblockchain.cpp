@@ -427,7 +427,7 @@ Value gettxout(const Array& params, bool fHelp)
             "     \"asm\" : \"code\",       (string) \n"
             "     \"hex\" : \"hex\",        (string) \n"
             "     \"reqSigs\" : n,          (numeric) Number of required signatures\n"
-            "     \"type\" : \"pubkeyhash\", (string) The type, eg pubkeyhash\n"
+            "     \"type\" : \"pubkey\", (string) The type, eg pubkey\n"
             "     \"addresses\" : [          (array of string) array of cccoin addresses\n"
             "        \"cccoinaddress\"     (string) cccoin address\n"
             "        ,...\n"

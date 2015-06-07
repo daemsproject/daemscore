@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="en">
+<TS version="2.1" language="en">
 <context>
     <name>AddressBookPage</name>
     <message>
@@ -1506,7 +1506,7 @@ Address: %4
     <message>
         <location line="+112"/>
         <source>Immature:</source>
-        <translation>Immature:</translation>
+        <translation type="unfinished">Locked:</translation>
     </message>
     <message>
         <location line="-29"/>

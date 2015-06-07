@@ -15,7 +15,7 @@
 #include "utilmoneystr.h"
 #include "wallet.h"
 #include "walletdb.h"
-#include "utilstrencodings.h"
+
 #include <stdint.h>
 
 #include <boost/assign/list_of.hpp>
@@ -1211,7 +1211,7 @@ void ListTransactions(const CWalletTx& wtx, const string& strAccount, int nMinDe
                     if (wtx.GetDepthInMainChain() < 1)
                         entry.push_back(Pair("category", "orphan"));
                     else if (wtx.GetBlocksToMaturity() > 0)
-                        entry.push_back(Pair("category", "immature"));
+                        entry.push_back(Pair("category", "locked"));
                     else
                         entry.push_back(Pair("category", "generate"));
                 }
