@@ -184,8 +184,11 @@ var BrowserAPI = new function () {
         addrs = typeof addrs !== 'undefined' ? addrs : [];
         var r;
         var fcc = ["CC_FILE_P", "CC_TEXT_P", "CC_LINK_P", "CC_LINK"];
-        var d = [{"fbh": fbh, "maxc": 20, "maxb": 3000000, "firstcc": fcc, "cformat": 6, "fAsc": fAsc, "mincsize": 3, "blkc": blkc},addrs];
+        var d = [{"fbh": fbh, "maxc": 20, "maxb": 3000000, "firstcc": fcc, "cformat": 6, "fAsc": fAsc, "mincsize": 3, "blkc": blkc}, addrs];
+
         this.call("getcontents", JSON.stringify(d), function (r1) {
+            if (r1.length > 0)
+                console.log(JSON.stringify(d));
             r = r1;
         }, function (e) {
             r = e;
