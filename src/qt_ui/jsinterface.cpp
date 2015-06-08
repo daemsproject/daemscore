@@ -256,77 +256,77 @@ QString JsInterface::HandlePaymentReqeust(Array arrData)
     return QString("{\"success\":\"tx sent\"}");
             
 }
-QString JsInterface::getPaymentAlertMessage(CWalletTx tx)
-{
-    
-    // Format confirmation message
-    QStringList formatted;
-    foreach(const CTxOut &rcp, tx.vout)
-    {
-        // generate bold amount string
-        QString amount = "<b>" + BitcoinUnits::formatHtmlWithUnit(0, rcp.nValue);
-        amount.append("</b>");
-        //LogPrintf(amount.toStdString());
-        // generate monospace address string
-        string add;
-        ScriptPubKeyToString(rcp.scriptPubKey,add);
-        QString address = "<span style='font-family: monospace;'>" + QString().fromStdString(add);
-        address.append("</span>");
-        //LogPrintf(address.toStdString());
-        QString recipientElement;
-            //if(rcp.label.length() > 0) // label with address
+//QString JsInterface::getPaymentAlertMessage(CWalletTx tx)
+//{
+//    
+//    // Format confirmation message
+//    QStringList formatted;
+//    foreach(const CTxOut &rcp, tx.vout)
+//    {
+//        // generate bold amount string
+//        QString amount = "<b>" + BitcoinUnits::formatHtmlWithUnit(0, rcp.nValue);
+//        amount.append("</b>");
+//        //LogPrintf(amount.toStdString());
+//        // generate monospace address string
+//        string add;
+//        ScriptPubKeyToString(rcp.scriptPubKey,add);
+//        QString address = "<span style='font-family: monospace;'>" + QString().fromStdString(add);
+//        address.append("</span>");
+//        //LogPrintf(address.toStdString());
+//        QString recipientElement;
+//            //if(rcp.label.length() > 0) // label with address
+////            {
+////                recipientElement = tr("%1 to %2").arg(amount, GUIUtil::HtmlEscape(rcp.label));
+////                recipientElement.append(QString(" (%1)").arg(address));
+////            }
+//            //else // just address
 //            {
-//                recipientElement = tr("%1 to %2").arg(amount, GUIUtil::HtmlEscape(rcp.label));
-//                recipientElement.append(QString(" (%1)").arg(address));
+//                recipientElement = tr("%1 to %2").arg(amount, address);
 //            }
-            //else // just address
-            {
-                recipientElement = tr("%1 to %2").arg(amount, address);
-            }
+////        
+////        else if(!rcp.authenticatedMerchant.isEmpty()) // secure payment request
+////        {
+////            recipientElement = tr("%1 to %2").arg(amount, GUIUtil::HtmlEscape(rcp.authenticatedMerchant));
+////        }
+////        else // insecure payment request
+////        {
+////            recipientElement = tr("%1 to %2").arg(amount, address);
+////        }
+//        //LogPrintf(recipientElement.toStdString());
+//        formatted.append(recipientElement);
 //        
-//        else if(!rcp.authenticatedMerchant.isEmpty()) // secure payment request
-//        {
-//            recipientElement = tr("%1 to %2").arg(amount, GUIUtil::HtmlEscape(rcp.authenticatedMerchant));
+//        QString content=QString().fromStdString(CContent(rcp.strContent).ToHumanString());
+//        if (content.size()>100)
+//            content=content.left(100);
+//        if (content.size()>0){
+//            recipientElement = tr("    message:%1").arg(content);
+//            formatted.append(recipientElement);
 //        }
-//        else // insecure payment request
-//        {
-//            recipientElement = tr("%1 to %2").arg(amount, address);
-//        }
-        //LogPrintf(recipientElement.toStdString());
-        formatted.append(recipientElement);
-        
-        QString content=QString().fromStdString(CContent(rcp.strContent).ToHumanString());
-        if (content.size()>100)
-            content=content.left(100);
-        if (content.size()>0){
-            recipientElement = tr("    message:%1").arg(content);
-            formatted.append(recipientElement);
-        }
-    }
-    CAmount txFee = tx.GetFee();
-    QString questionString = tr("Are you sure you want to send?");
-    questionString.append("<br /><br />");
-    questionString.append(formatted.join("<br />"));
-        // append fee string if a fee is required
-        questionString.append("<hr /><span style='color:#aa0000;'>");
-        questionString.append(BitcoinUnits::formatHtmlWithUnit(0, txFee));
-        questionString.append("</span> ");
-        questionString.append(tr("added as transaction fee"));
-
-        // append transaction size
-        questionString.append(" (" + QString::number((double)tx.GetSerializeSize(SER_NETWORK, CTransaction::CURRENT_VERSION) / 1000) + " kB)");
-    
-
-    // add total amount in all subdivision units
-    questionString.append("<hr />");
-    CAmount totalAmount = tx.GetValueOut() + txFee;
-    
-    
-    questionString.append(tr("Total Amount %1")
-        .arg(BitcoinUnits::formatHtmlWithUnit(0, totalAmount)));
-    //questionString.arg();
-    return questionString;
-}
+//    }
+//    CAmount txFee = tx.GetFee();
+//    QString questionString = tr("Are you sure you want to send?");
+//    questionString.append("<br /><br />");
+//    questionString.append(formatted.join("<br />"));
+//        // append fee string if a fee is required
+//        questionString.append("<hr /><span style='color:#aa0000;'>");
+//        questionString.append(BitcoinUnits::formatHtmlWithUnit(0, txFee));
+//        questionString.append("</span> ");
+//        questionString.append(tr("added as transaction fee"));
+//
+//        // append transaction size
+//        questionString.append(" (" + QString::number((double)tx.GetSerializeSize(SER_NETWORK, CTransaction::CURRENT_VERSION) / 1000) + " kB)");
+//    
+//
+//    // add total amount in all subdivision units
+//    questionString.append("<hr />");
+//    CAmount totalAmount = tx.GetValueOut() + txFee;
+//    
+//    
+//    questionString.append(tr("Total Amount %1")
+//        .arg(BitcoinUnits::formatHtmlWithUnit(0, totalAmount)));
+//    //questionString.arg();
+//    return questionString;
+//}
 
 bool DecodeSigs(string ssInput,std::vector<CScript> sigs){
     return false;

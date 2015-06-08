@@ -59,7 +59,7 @@ private:
     std::map<std::string,std::pair<QString,QString> > mapAsync;
     QString HandlePaymentReqeust(json_spirit::Array arrData);
     bool handlePaymentRequest(CWalletTx tx,int nOP,string strError,SecureString& ssInput);  
-    QString getPaymentAlertMessage(CWalletTx tx);
+//    QString getPaymentAlertMessage(CWalletTx tx);
     
     CWallet wallet;
 
