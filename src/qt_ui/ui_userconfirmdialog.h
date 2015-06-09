@@ -19,6 +19,7 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
+#include <QtWidgets/QScrollArea>
 #include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -31,6 +32,8 @@ public:
     QHBoxLayout *layout_password;
     QLabel *label_7;
     QLineEdit *passwordEdit;
+    QScrollArea *scrollArea;
+    QWidget *scrollAreaWidgetContents;
     QLabel *label_message;
 
     void setupUi(QDialog *UserConfirmDialog)
@@ -67,9 +70,16 @@ public:
 
         layout_password->addWidget(passwordEdit);
 
-        label_message = new QLabel(UserConfirmDialog);
+        scrollArea = new QScrollArea(UserConfirmDialog);
+        scrollArea->setObjectName(QStringLiteral("scrollArea"));
+        scrollArea->setGeometry(QRect(30, 10, 591, 201));
+        scrollArea->setWidgetResizable(true);
+        scrollAreaWidgetContents = new QWidget();
+        scrollAreaWidgetContents->setObjectName(QStringLiteral("scrollAreaWidgetContents"));
+        scrollAreaWidgetContents->setGeometry(QRect(0, 0, 589, 199));
+        label_message = new QLabel(scrollAreaWidgetContents);
         label_message->setObjectName(QStringLiteral("label_message"));
-        label_message->setGeometry(QRect(30, 10, 571, 171));
+        label_message->setGeometry(QRect(10, 10, 571, 171));
         QSizePolicy sizePolicy1(QSizePolicy::Expanding, QSizePolicy::Expanding);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
@@ -77,10 +87,7 @@ public:
         label_message->setSizePolicy(sizePolicy1);
         label_message->setTextFormat(Qt::RichText);
         label_message->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop);
-        buttonBox->raise();
-        horizontalLayoutWidget->raise();
-        label_7->raise();
-        label_message->raise();
+        scrollArea->setWidget(scrollAreaWidgetContents);
 
         retranslateUi(UserConfirmDialog);
         QObject::connect(buttonBox, SIGNAL(accepted()), UserConfirmDialog, SLOT(accept()));

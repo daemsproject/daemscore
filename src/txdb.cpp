@@ -245,6 +245,8 @@ bool CTxAddressMapViewDB::BatchWrite(const std::map<CScript, std::vector<CDiskTx
     size_t count = 0;
     //size_t changed = 1;
     for (std::map<CScript, std::vector<CDiskTxPos> >::const_iterator it = mapTamList.begin(); it != mapTamList.end();it++) {
+        //if (it->first.ToString()=="837a12ff6edf48c868dd6e410ef7983ac9158eac OP_CHECKSIG")
+                //LogPrintf("CTxAddressMapDB::BatchWrite:script:%s, vtxpos size:%u\n",it->first.ToString(),it->second.size());
         //LogPrintf("%s : script:%s,pos:%u", __func__,it->first.ToString(),it->second.size());
             batch.Write(it->first, it->second);
             //LogPrintf("%s : 2", __func__);
@@ -254,6 +256,7 @@ bool CTxAddressMapViewDB::BatchWrite(const std::map<CScript, std::vector<CDiskTx
     return db.WriteBatch(batch);
 }
 bool CTxAddressMapViewDB::Write(const CScript &scriptPubKey,const std::vector<CDiskTxPos> &vTxPos) {
+     //LogPrintf("CTxAddressMapDB::BatchWrite:script:%s, vtxpos size:%u\n",scriptPubKey.ToString(),vTxPos.size());
     //LogPrintf("tamdb batchwrite \n");
     return db.Write(scriptPubKey,vTxPos);
 }

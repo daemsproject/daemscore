@@ -45,7 +45,7 @@ protected:
      * whether the public key is valid (as invalid ones cannot be represented in compressed
      * form).
      */
-    bool IsToKeyID(CKeyID &hash) const;
+    //bool IsToKeyID(CKeyID &hash) const;
     bool IsToScriptID(CScriptID &hash) const;
     bool IsToPubKey(CPubKey &pubkey) const;
 

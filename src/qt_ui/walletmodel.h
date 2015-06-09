@@ -14,16 +14,17 @@
 #include <vector>
 
 #include <QObject>
-
-
-class OptionsModel;
-class WalletModelTransaction;
+#include "pubkey.h"
+#include "key.h"
+//class OptionsModel;
+//class WalletModelTransaction;
 
 //class CCoinControl;
 //class CKeyID;
-//class COutPoint;
-//class COutput;
-//class CPubKey;
+class COutPoint;
+class COutput;
+
+//class CKey;
 class CWallet;
 class uint256;
 
@@ -39,7 +40,7 @@ class WalletModel : public QObject
     Q_OBJECT
 
 public:
-    explicit WalletModel(CWallet *wallet, OptionsModel *optionsModel, QObject *parent = 0);
+    explicit WalletModel(CWallet *walletIn,QObject *parent = 0);
     ~WalletModel();
 
     enum StatusCode // Returned by sendCoins
@@ -62,7 +63,7 @@ public:
         Unlocked      // wallet->IsCrypted() && !wallet->IsLocked()
     };
 
-    OptionsModel *getOptionsModel();
+    //OptionsModel *getOptionsModel();
     //AddressTableModel *getAddressTableModel();
     //TransactionTableModel *getTransactionTableModel();
     //RecentRequestsTableModel *getRecentRequestsTableModel();
@@ -80,12 +81,12 @@ public:
     //bool validateAddress(const QString &address);
 
     // Return status record for SendCoins, contains error id + information
-    struct SendCoinsReturn
-    {
-        SendCoinsReturn(StatusCode status = OK):
-            status(status) {}
-        StatusCode status;
-    };
+//    struct SendCoinsReturn
+//    {
+//        SendCoinsReturn(StatusCode status = OK):
+//            status(status) {}
+//        StatusCode status;
+//    };
 
     // prepare transaction for getting txfee before sending coins
     //SendCoinsReturn prepareTransaction(WalletModelTransaction &transaction, const CCoinControl *coinControl = NULL);
@@ -100,7 +101,11 @@ public:
     bool changePassphrase(const SecureString &oldPass, const SecureString &newPass);
     // Wallet backup
     bool backupWallet(const QString &filename);
-
+    double testEccSpeed();
+    bool createNewAccount(const QString header,const SecureString &passPhraseNew,bool fSwitchTo);
+    bool stopVanityGen();
+    QStringList GetAccountList();
+    bool switchToAccount(QString ID);
     // RAI object for unlocking wallet, returned by requestUnlock()
     class UnlockContext
     {
@@ -138,6 +143,10 @@ public:
 
 private:
     CWallet *wallet;
+    CWallet *wallet2;
+    bool fSwitchToAccount;
+    std::string strHeaderTarget;
+    SecureString ssPassPhrase;
     //bool fHaveWatchOnly;
     //bool fForceCheckBalanceChanged;
 
@@ -177,7 +186,7 @@ signals:
     // It is valid behaviour for listeners to keep the wallet locked after this signal;
     // this means that the unlocking failed or was cancelled.
     void requireUnlock();
-
+    void accountSwitched(const std::string id);
     // Fired when a message should be reported to the user
     void message(const QString &title, const QString &message, unsigned int style);
 
@@ -185,16 +194,19 @@ signals:
     //void coinsSent(CWallet* wallet, SendCoinsRecipient recipient, QByteArray transaction);
 
     // Show progress dialog e.g. for rescan
-    void showProgress(const QString &title, int nProgress);
+    //void showProgress(const QString &title, int nProgress);
 //    void showTx();
 //    void showOverrideTx();
 //    viod showHash();
     // Watch-only address added
     //void notifyWatchonlyChanged(bool fHaveWatchonly);
-
+    void vanitygenSuccess();
+private slots:
+    void notifyEcMinerResult(const CPubKey basePub,const CKey stepKey,const std::string strHeader);
+    void notifyAccountSwitched(const std::string id);
 public slots:
     /* Wallet status might have changed */
-    //void updateStatus();
+    void updateStatus();
     /* New transaction, or transaction changed status */
     //void updateTransaction();
     /* New, updated or removed address book entry */

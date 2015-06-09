@@ -296,8 +296,11 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
         pblocktemplate->vTxSigOps[0] = GetLegacySigOpCount(pblock->vtx[0]);
 
         CValidationState state;
-        if (!TestBlockValidity(state, *pblock, pindexPrev, false, false))
-            throw std::runtime_error("CreateNewBlock() : TestBlockValidity failed");
+        if (!TestBlockValidity(state, *pblock, pindexPrev, false, false)){
+            LogPrintf("CreateNewBlock() : TestBlockValidity failed \n" );
+            return NULL;
+          //  throw std::runtime_error("CreateNewBlock() : TestBlockValidity failed");
+        }
     }
 
     return pblocktemplate.release();
@@ -332,19 +335,22 @@ void IncrementExtraNonce(CBlock* pblock, CBlockIndex* pindexPrev, unsigned int& 
 double dHashesPerSec = 0.0;
 int64_t nHPSTimerStart = 0;
 
-CBlockTemplate* CreateNewBlockWithKey(CReserveKey& reservekey)
+CBlockTemplate* CreateNewBlockWithKey(CPubKey& miningID)
 {
-    CPubKey pubkey;
-    if (!reservekey.GetReservedKey(pubkey))
-        return NULL;
-
+//    CPubKey pubkey;
+//    if (!reservekey.GetReservedKey(pubkey))
+//        return NULL;
+//
     CBitcoinAddress address;
-    address.Set(pubkey.GetID());
+    address.Set(miningID);
     CScript scriptPubKey = GetScriptForDestination(address.Get());
-    return CreateNewBlock(scriptPubKey);
+    CBlockTemplate* pBlockTemplate=NULL;
+    while(pBlockTemplate==NULL)
+        pBlockTemplate=CreateNewBlock(scriptPubKey);
+    return pBlockTemplate;
 }
 
-bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
+bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CPubKey& miningID,bool fExtendID)
 {
     LogPrintf("%s\n", pblock->ToString());
     LogPrintf("generated %s\n", FormatMoney(pblock->vtx[0].vout[0].nValue));
@@ -357,7 +363,7 @@ bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
     }
 
     // Remove key from key pool
-    reservekey.KeepKey();
+    //reservekey.KeepKey();
 
     // Track how many getdata requests this block gets
     {
@@ -369,18 +375,25 @@ bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
     CValidationState state;
     if (!ProcessNewBlock(state, NULL, pblock))
         return error("CccoinMiner : ProcessNewBlock, block not accepted");
-
+    if (fExtendID)
+        miningID=wallet.GenerateNewKey();
     return true;
 }
 
-void static BitcoinMiner(CWallet *pwallet)
+void BitcoinMiner(CWallet *pwallet,bool fExtendID)
 {
     LogPrintf("CccoinMiner started\n");
     SetThreadPriority(THREAD_PRIORITY_LOWEST);
     RenameThread("cccoin-miner");
 
     // Each thread has its own key and counter
-    CReserveKey reservekey(pwallet);
+    
+    //CReserveKey reservekey(pwallet);
+    CPubKey miningID;
+    if(fExtendID)
+        miningID=pwallet->GenerateNewKey();
+    else
+        miningID=pwallet->GetID();
     unsigned int nExtraNonce = 0;
 
     try {
@@ -398,7 +411,7 @@ void static BitcoinMiner(CWallet *pwallet)
             unsigned int nTransactionsUpdatedLast = mempool.GetTransactionsUpdated();
             CBlockIndex* pindexPrev = chainActive.Tip();
 
-            auto_ptr<CBlockTemplate> pblocktemplate(CreateNewBlockWithKey(reservekey));
+            auto_ptr<CBlockTemplate> pblocktemplate(CreateNewBlockWithKey(miningID));
             //if no fee collected
             if (pblocktemplate->block.vtx[0].vout[0].nValue==0)  {              
                 MilliSleep(10);
@@ -435,7 +448,7 @@ void static BitcoinMiner(CWallet *pwallet)
                         SetThreadPriority(THREAD_PRIORITY_NORMAL);
                         LogPrintf("CccoinMiner:\n");
                         LogPrintf("proof-of-work found  \n  powhash: %s  \ntarget: %s\n", thash.GetHex(), hashTarget.GetHex());
-                        ProcessBlockFound(pblock, *pwallet, reservekey);
+                        ProcessBlockFound(pblock, *pwallet, miningID,fExtendID);
                         SetThreadPriority(THREAD_PRIORITY_LOWEST);
 
                         // In regression test mode, stop mining after a block is found.
@@ -473,7 +486,7 @@ void static BitcoinMiner(CWallet *pwallet)
                             if (GetTime() - nLogTime > 30 * 60)
                             {
                                 nLogTime = GetTime();
-                                LogPrintf("hashmeter %6.0f khash/s\n", dHashesPerSec/1000.0);
+                                LogPrintf("hashmeter %6.3f khash/s\n", dHashesPerSec/1000.0);
                             }
                         }
                     }
@@ -504,11 +517,13 @@ void static BitcoinMiner(CWallet *pwallet)
     catch (boost::thread_interrupted)
     {
         LogPrintf("CccoinMiner terminated\n");
+       // if(pwallet!=pwalletMain&&pwallet!=NULL)
+         //   delete pwallet;
         throw;
     }
 }
 
-void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads)
+void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads,bool fExtendID)
 {
     static boost::thread_group* minerThreads = NULL;
 
@@ -532,7 +547,7 @@ void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads)
 
     minerThreads = new boost::thread_group();
     for (int i = 0; i < nThreads; i++)
-        minerThreads->create_thread(boost::bind(&BitcoinMiner, pwallet));
+        minerThreads->create_thread(boost::bind(&BitcoinMiner, pwallet,fExtendID));
 }
 
 #endif // ENABLE_WALLET

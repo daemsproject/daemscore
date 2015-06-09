@@ -33,9 +33,6 @@ LIBS += \
   -lssl \
   -lcrypto \
   -lminiupnpc \
-  #/usr/local/BerkeleyDB.4.8/lib/libdb_cxx-4.8.a \
-  -ldb_cxx \
-  -ldb \
   -lprotobuf \
   -lpthread \
   -lsecp256k1 \

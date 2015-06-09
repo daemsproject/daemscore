@@ -196,6 +196,8 @@ bool GetTransaction(const uint256 &hash, CTransaction &tx, uint256 &hashBlock, b
 bool GetTransaction(const CDiskTxPos &postx, CTransaction &txOut, uint256 &hashBlock);
 /**get all transactions related to the id list, with block hash*/
 bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTransaction, uint256> >& vTxs,bool fIncludeUnconfirmed =true,bool fNoContent=false,unsigned int nOffset=0,unsigned int nNumber=1000000);
+bool GetDiskTxPoses (const std::vector<CScript>& vIds,std::vector<CDiskTxPos>& vTxPosAll);
+bool GetPubKeyFromBlockChain(CScript script,CPubKey& pubKey);
 /** Get nTx from block*/
 int GetNTx(const uint256 &hashTx);
 int GetNTx(const CTransaction &tx,const CBlock &block);
@@ -358,7 +360,7 @@ bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex);
 bool DisconnectBlock(CBlock& block, CValidationState& state, CBlockIndex* pindex, CCoinsViewCache& coins, bool* pfClean = NULL);
 
 /** Apply the effects of this block (with given index) on the UTXO set represented by coins */
-bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pindex, CCoinsViewCache& coins, bool fJustCheck = false);
+bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pindex, CCoinsViewCache& coins, bool fJustCheck = false,bool fUpdateTam=true);
 
 /** Context-independent validity checks */
 bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state, bool fCheckPOW = true);

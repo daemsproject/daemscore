@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
+#include <sstream>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/thread/exceptions.hpp>
@@ -187,6 +188,8 @@ bool FileToString(const std::string& filename, std::string& content);
 bool IsStringPrint(const std::string& str);
 bool IsStringInteger(const std::string & s);
 std::string IntToHexString(const int i);
+std::string num2str(const double i);
+
 int HexStringToInt(const std::string& s);
 /**
  * Standard wrapper for do-something-forever thread functions.

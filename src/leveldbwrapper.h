@@ -10,6 +10,7 @@
 #include "streams.h"
 #include "util.h"
 #include "version.h"
+//#include "utilstrencodings.h"
 
 #include <boost/filesystem/path.hpp>
 
@@ -40,12 +41,12 @@ public:
         ssKey.reserve(ssKey.GetSerializeSize(key));
         ssKey << key;
         leveldb::Slice slKey(&ssKey[0], ssKey.size());
-
+        
         CDataStream ssValue(SER_DISK, CLIENT_VERSION);
         ssValue.reserve(ssValue.GetSerializeSize(value));
         ssValue << value;
         leveldb::Slice slValue(&ssValue[0], ssValue.size());
-
+        //LogPrintf("leveldb batch.write %s result:%s\n",HexStr(ssKey),HexStr(ssValue));
         batch.Put(slKey, slValue);
     }
 
@@ -98,11 +99,12 @@ public:
         leveldb::Slice slKey(&ssKey[0], ssKey.size());
 
         std::string strValue;
-        leveldb::Status status = pdb->Get(readoptions, slKey, &strValue);
+        leveldb::Status status = pdb->Get(readoptions, slKey, &strValue); 
+         //LogPrintf("leveldb read %s result:%s\n",HexStr(ssKey),HexStr(strValue));
         if (!status.ok()) {
             if (status.IsNotFound())
                 return false;
-            LogPrintf("LevelDB read failure: %s\n", status.ToString());
+            //LogPrintf("LevelDB read failure: %s\n", status.ToString());
             HandleError(status);
         }
         try {

@@ -94,7 +94,24 @@ static inline int64_t roundint64(double d)
 
 CAmount AmountFromValue(const Value& value)
 {
-    double dAmount = value.get_real();
+    double dAmount=0;
+    switch (value.type()){
+        case str_type:
+        {
+            dAmount=atof(value.get_str().c_str());
+            break;
+        }
+        case real_type:
+        {
+            dAmount= value.get_real();
+            break;
+        }
+        default:
+        {
+           
+        }
+    }
+     
     if (dAmount < 0.0 || dAmount > 210000000000.0)
         throw JSONRPCError(RPC_TYPE_ERROR, "Invalid amount");
     CAmount nAmount = roundint64(dAmount * COIN);
@@ -275,6 +292,7 @@ static const CRPCCommand vRPCCommands[] =
     { "blockchain",         "getcontentbylink",       &getcontentbylink,       true,      false,      false },
     { "blockchain",         "getlink",                &getlink,                true,      false,      false },
     { "blockchain",         "getcontents",            &getcontents,            true,      false,      false },
+    { "blockchain",         "getmessages",            &getmessages,            true,      false,      false },
     { "blockchain",         "devtest",                &devtest,                true,      false,      false },
     
     { "conf",               "getbrowserconf",         &getbrowserconf,         true,      true,       false },
@@ -311,6 +329,7 @@ static const CRPCCommand vRPCCommands[] =
     { "util",               "verifymessage",          &verifymessage,          true,      false,      false },
     { "util",               "estimatefee",            &estimatefee,            true,      true,       false },
     { "util",               "estimatepriority",       &estimatepriority,       true,      true,       false },
+    { "util",               "getmaturetime",          &getmaturetime,          false,     false,      false },
 
     /* Not shown in help */
     { "hidden",             "invalidateblock",        &invalidateblock,        true,      true,       false },
@@ -324,11 +343,11 @@ static const CRPCCommand vRPCCommands[] =
     { "wallet",             "dumpprivkey",            &dumpprivkey,            true,      false,      true },
     { "wallet",             "dumpwallet",             &dumpwallet,             true,      false,      true },
     { "wallet",             "encryptwallet",          &encryptwallet,          true,      false,      true },
-    { "wallet",             "getaccountaddress",      &getaccountaddress,      true,      false,      true },
+    { "wallet",             "getmainid",              &getmainid,              true,      false,      true },
     { "wallet",             "getaccount",             &getaccount,             true,      false,      true },
-    { "wallet",             "getaddressesbyaccount",  &getaddressesbyaccount,  true,      false,      true },
+    { "wallet",             "getidlist",              &getidlist,              true,      false,      true },
     { "wallet",             "getbalance",             &getbalance,             false,     false,      true },
-    { "wallet",             "getnewaddress",          &getnewaddress,          true,      false,      true },
+    { "wallet",             "getnewid",               &getnewid,               true,      false,      true },
     { "wallet",             "getrawchangeaddress",    &getrawchangeaddress,    true,      false,      true },
     { "wallet",             "getreceivedbyaccount",   &getreceivedbyaccount,   false,     false,      true },
     { "wallet",             "getreceivedbyaddress",   &getreceivedbyaddress,   false,     false,      true },
@@ -358,6 +377,8 @@ static const CRPCCommand vRPCCommands[] =
     { "wallet",             "walletlock",             &walletlock,             true,      false,      true },
     { "wallet",             "walletpassphrasechange", &walletpassphrasechange, true,      false,      true },
     { "wallet",             "walletpassphrase",       &walletpassphrase,       true,      false,      true },
+    { "wallet",             "getcontacts",            &getcontacts,           false,     false,      true },
+    { "wallet",             "addcontacts",            &addcontacts,           false,     false,      true }
 #endif // ENABLE_WALLET
 };
 

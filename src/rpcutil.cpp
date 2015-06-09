@@ -15,6 +15,7 @@
 #ifdef ENABLE_WALLET
 #include "wallet.h"
 #include "walletdb.h"
+//#include "script/interpreter.h"
 #endif
 
 #include <stdint.h>

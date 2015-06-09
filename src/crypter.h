@@ -8,10 +8,14 @@
 #include "allocators.h"
 #include "keystore.h"
 #include "serialize.h"
-
+#include "json/json_spirit_reader_template.h"
+#include "json/json_spirit_utils.h"
+#include "json/json_spirit_writer_template.h"
+#include <vector>
 class uint256;
 
 const unsigned int WALLET_CRYPTO_KEY_SIZE = 32;
+const unsigned int WALLET_CRYPTO_IV_SIZE = 16;
 const unsigned int WALLET_CRYPTO_SALT_SIZE = 8;
 
 /**
@@ -29,39 +33,31 @@ const unsigned int WALLET_CRYPTO_SALT_SIZE = 8;
  * master key's key as the encryption key (see keystore.[ch]).
  */
 
-/** Master key for wallet encryption */
-class CMasterKey
+/** Encrypt params for wallet encryption */
+class CEncryptParameters
 {
 public:
-    std::vector<unsigned char> vchCryptedKey;
     std::vector<unsigned char> vchSalt;
-    //! 0 = EVP_sha512()
-    //! 1 = scrypt()
-    unsigned int nDerivationMethod;
-    unsigned int nDeriveIterations;
-    //! Use this for more parameters to key derivation,
-    //! such as the various parameters to scrypt
-    std::vector<unsigned char> vchOtherDerivationParameters;
+    std::vector<unsigned char> chIV;//unsigned char chIV[WALLET_CRYPTO_IV_SIZE];
+    unsigned long N;
+    unsigned int p;
+    unsigned int r;    
 
-    ADD_SERIALIZE_METHODS;
+    //ADD_SERIALIZE_METHODS;
 
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
-        READWRITE(vchCryptedKey);
-        READWRITE(vchSalt);
-        READWRITE(nDerivationMethod);
-        READWRITE(nDeriveIterations);
-        READWRITE(vchOtherDerivationParameters);
-    }
+//    template <typename Stream, typename Operation>
+//    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {        
+//        READWRITE(vchSalt);
+//        READWRITE(chIV);
+//        READWRITE(N);
+//        READWRITE(p);
+//        READWRITE(r);        
+//    }
 
-    CMasterKey()
-    {
-        // 25000 rounds is just under 0.1 seconds on a 1.86 GHz Pentium M
-        // ie slightly lower than the lowest hardware we need bother supporting
-        nDeriveIterations = 25000;
-        nDerivationMethod = 0;
-        vchOtherDerivationParameters = std::vector<unsigned char>(0);
-    }
+    CEncryptParameters(std::vector<unsigned char> vchSaltIn,std::vector<unsigned char> chIVIn
+            ,unsigned long NIn,unsigned int pIn,unsigned int rIn):
+            vchSalt(vchSaltIn),chIV(chIVIn),N(NIn),p(pIn),r(rIn){};
+    CEncryptParameters();
 };
 
 typedef std::vector<unsigned char, secure_allocator<unsigned char> > CKeyingMaterial;
@@ -69,13 +65,13 @@ typedef std::vector<unsigned char, secure_allocator<unsigned char> > CKeyingMate
 /** Encryption/decryption context with key information */
 class CCrypter
 {
-private:
+protected:
     unsigned char chKey[WALLET_CRYPTO_KEY_SIZE];
-    unsigned char chIV[WALLET_CRYPTO_KEY_SIZE];
+    unsigned char chIV[WALLET_CRYPTO_IV_SIZE];
     bool fKeySet;
 
 public:
-    bool SetKeyFromPassphrase(const SecureString &strKeyData, const std::vector<unsigned char>& chSalt, const unsigned int nRounds, const unsigned int nDerivationMethod);
+    bool SetKeyFromPassphrase(const SecureString& strKeyData, const CEncryptParameters &params);
     bool Encrypt(const CKeyingMaterial& vchPlaintext, std::vector<unsigned char> &vchCiphertext);
     bool Decrypt(const std::vector<unsigned char>& vchCiphertext, CKeyingMaterial& vchPlaintext);
     bool SetKey(const CKeyingMaterial& chNewKey, const std::vector<unsigned char>& chNewIV);
@@ -86,7 +82,7 @@ public:
         OPENSSL_cleanse(chIV, sizeof(chIV));
         fKeySet = false;
     }
-
+    //CCrypter(unsigned char chKey,unsigned char chIV);
     CCrypter()
     {
         fKeySet = false;
@@ -116,79 +112,93 @@ bool DecryptSecret(const CKeyingMaterial& vMasterKey, const std::vector<unsigned
 class CCryptoKeyStore : public CBasicKeyStore
 {
 private:
-    CryptedKeyMap mapCryptedKeys;
-
-    CKeyingMaterial vMasterKey;
-
-    //! if fUseCrypto is true, mapKeys must be empty
-    //! if fUseCrypto is false, vMasterKey must be empty
-    bool fUseCrypto;
-
+    //This is extremely private, remove it immediately after signing
+    SecureString strPassword;
+    
+    
     //! keeps track of whether Unlock has run a thorough check before
     bool fDecryptionThoroughlyChecked;
-
+    bool GetDecryptedKey(const CPubKey &address, CKey &keyOut) const;
 protected:
     bool SetCrypted();
-
+    
     //! will encrypt previously unencrypted keys
-    bool EncryptKeys(CKeyingMaterial& vMasterKeyIn);
 
-    bool Unlock(const CKeyingMaterial& vMasterKeyIn);
 
 public:
-    CCryptoKeyStore() : fUseCrypto(false), fDecryptionThoroughlyChecked(false)
-    {
-    }
+    CEncryptParameters encParams;
+        bool Encrypt(CCrypter& crypter);
 
+    bool Decrypt(CCrypter& crypter);
+    bool fUseCrypto;
+    CCryptoKeyStore() 
+    {
+        fUseCrypto=false;
+        fDecryptionThoroughlyChecked=false;
+        encParams=CEncryptParameters();
+    }
+    CCryptoKeyStore(json_spirit::Value keyStoreJson);
     bool IsCrypted() const
     {
         return fUseCrypto;
     }
-
+    bool SetPassword(SecureString pwd){        
+        if(!VerifyPassword(pwd))
+            return false;
+        strPassword=pwd;
+        NotifyStatusChanged(this);
+        return true;
+    }
+    bool VerifyPassword(SecureString pwd);
+    void ClearPassword(){
+        strPassword="1234567890";
+        strPassword.clear();
+    }
     bool IsLocked() const
     {
-        if (!IsCrypted())
-            return false;
-        bool result;
-        {
-            LOCK(cs_KeyStore);
-            result = vMasterKey.empty();
-        }
-        return result;
+        return IsCrypted()&&strPassword.size()==0;
     }
 
-    bool Lock();
-
-    virtual bool AddCryptedKey(const CPubKey &vchPubKey, const std::vector<unsigned char> &vchCryptedSecret);
-    bool AddKeyPubKey(const CKey& key, const CPubKey &pubkey);
-    bool HaveKey(const CKeyID &address) const
+    bool Lock(){
+        ClearPassword();
+        NotifyStatusChanged(this);
+        return true;
+    };
+    bool Unlock(const SecureString& strWalletPassphrase)
+{
+   
+        
+        if(SetPassword(strWalletPassphrase))
+        {
+            return true;
+            NotifyStatusChanged(this);
+        }
+        return false;
+    
+}
+    
+    
+    bool HaveKey(const CPubKey &address) const
     {
         {
-            LOCK(cs_KeyStore);
-            if (!IsCrypted())
-                return CBasicKeyStore::HaveKey(address);
-            return mapCryptedKeys.count(address) > 0;
+            LOCK(cs_KeyStore);            
+            return CBasicKeyStore::HaveKey(address);
+            
         }
         return false;
     }
-    bool GetKey(const CKeyID &address, CKey& keyOut) const;
-    bool GetPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const;
-    void GetKeys(std::set<CKeyID> &setAddress) const
-    {
-        if (!IsCrypted())
-        {
+    bool GetKey(const CPubKey &address, CKey& keyOut) const;
+    bool GetBaseKey(CKey& keyOut)const;
+    bool GetStepKey(CKey& keyOut)const;
+        
+    //bool GetPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const;
+    void GetKeys(std::set<CPubKey> &setAddress) const
+    {        
             CBasicKeyStore::GetKeys(setAddress);
-            return;
-        }
-        setAddress.clear();
-        CryptedKeyMap::const_iterator mi = mapCryptedKeys.begin();
-        while (mi != mapCryptedKeys.end())
-        {
-            setAddress.insert((*mi).first);
-            mi++;
-        }
+            return;        
     }
-
+    //decrypt sharedkey
+    bool DecryptKey(const CKey &keyIn, CKey &keyOut)const;
     /**
      * Wallet status (encrypted, locked) changed.
      * Note: Called without locks held.

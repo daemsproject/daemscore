@@ -132,15 +132,15 @@ BOOST_AUTO_TEST_CASE(rpc_wallet)
     /*********************************
      * 		getnewaddress
      *********************************/
-    BOOST_CHECK_NO_THROW(CallRPC("getnewaddress"));
-    BOOST_CHECK_NO_THROW(CallRPC("getnewaddress getnewaddress_demoaccount"));
+    BOOST_CHECK_NO_THROW(CallRPC("getnewid"));
+    BOOST_CHECK_NO_THROW(CallRPC("getnewid ROFVVNPWUN2L7EFDA3T6MPDDRUSGHNPZACHP6I2L"));
 
     /*********************************
      * 		getaccountaddress
      *********************************/
-    BOOST_CHECK_NO_THROW(CallRPC("getaccountaddress \"\""));
-    BOOST_CHECK_NO_THROW(CallRPC("getaccountaddress accountThatDoesntExists")); // Should generate a new account
-    BOOST_CHECK_NO_THROW(retValue = CallRPC("getaccountaddress " + strAccount));
+    BOOST_CHECK_NO_THROW(CallRPC("getmainid \"\""));
+    //BOOST_CHECK_NO_THROW(CallRPC("getaccountaddress accountThatDoesntExists")); // Should generate a new account
+    BOOST_CHECK_NO_THROW(retValue = CallRPC("getmainid " + strAccount));
     BOOST_CHECK(CBitcoinAddress(retValue.get_str()).Get() == demoAddress.Get());
 
     /*********************************
@@ -172,8 +172,8 @@ BOOST_AUTO_TEST_CASE(rpc_wallet)
     /*********************************
      * 		getaddressesbyaccount
      *********************************/
-    BOOST_CHECK_THROW(CallRPC("getaddressesbyaccount"), runtime_error);
-    BOOST_CHECK_NO_THROW(retValue = CallRPC("getaddressesbyaccount " + strAccount));
+    BOOST_CHECK_THROW(CallRPC("getidlist"), runtime_error);
+    BOOST_CHECK_NO_THROW(retValue = CallRPC("getidlist ROFVVNPWUN2L7EFDA3T6MPDDRUSGHNPZACHP6I2L"));
     Array arr = retValue.get_array();
     BOOST_CHECK(arr.size() > 0);
     BOOST_CHECK(CBitcoinAddress(arr[0].get_str()).Get() == demoAddress.Get());

@@ -18,12 +18,14 @@
 //#include "rpcserver.h"
 #include "userconfirmdialog.h"
 #include "ui_userconfirmdialog.h"
+#include "accountdialog.h"
 #ifdef ENABLE_WALLET
 //#include "mainframe.h"
 #include "mainview.h"
 //#include "wallet.h"
 
-//#include "walletmodel.h"
+#include "walletmodel.h"
+
 #endif // ENABLE_WALLET
 
 #ifdef Q_OS_MAC
@@ -82,10 +84,12 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle *networkStyle,QString languageIn,  QWi
     browserAction(0),
     publisherAction(0),
     messengerAction(0),
+    minerAction(0),
     shopAction(0),
     domainNameAction(0),
     newAccountAction(0),
     switchAccountAction(0),
+    unlockAccountAction(0),
     encryptAccountAction(0),        
     exportAccountAction(0), 
     importAccountAction(0), 
@@ -103,7 +107,7 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle *networkStyle,QString languageIn,  QWi
     toggleHideAction(0),
     //encryptWalletAction(0),
     //backupWalletAction(0),
-    //changePassphraseAction(0),
+    changePassphraseAction(0),
     //aboutQtAction(0),
     //openRPCConsoleAction(0),
     //openAction(0),
@@ -151,7 +155,7 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle *networkStyle,QString languageIn,  QWi
     //if(enableWallet)
     //{
         /** Create wallet frame and make it the central widget */
-    LogPrintf("bitcoingui: 0 \n");
+    //LogPrintf("bitcoingui: 0 \n");
         mainView = new MainView(language,this,jsInterface);
         connect(mainView, SIGNAL(showNormalIfMinimized()), this, SLOT(showNormalIfMinimized()));
        setCentralWidget(mainView);
@@ -166,23 +170,23 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle *networkStyle,QString languageIn,  QWi
 
     // Accept D&D of URIs
     setAcceptDrops(true);
-LogPrintf("bitcoingui: 1 \n");
+//LogPrintf("bitcoingui: 1 \n");
     // Create actions for the toolbar, menu bar and tray/dock icon
     // Needs mainView to be initialized
     createActions(networkStyle);
-LogPrintf("bitcoingui: 2 \n");
+//LogPrintf("bitcoingui: 2 \n");
     // Create application menu bar
     createMenuBar();
-LogPrintf("bitcoingui: 3 \n");
+//LogPrintf("bitcoingui: 3 \n");
     // Create the toolbars
     createToolBars();
-LogPrintf("bitcoingui: 4 \n");
+//LogPrintf("bitcoingui: 4 \n");
     // Create system tray icon and notification
     createTrayIcon(networkStyle);
-LogPrintf("bitcoingui: 5 \n");
+//LogPrintf("bitcoingui: 5 \n");
     // Create status bar
     statusBar();
-LogPrintf("bitcoingui: 6 \n");
+//LogPrintf("bitcoingui: 6 \n");
     // Status bar notification icons
     QFrame *frameBlocks = new QFrame();
     frameBlocks->setContentsMargins(0,0,0,0);
@@ -194,7 +198,7 @@ LogPrintf("bitcoingui: 6 \n");
     labelEncryptionIcon = new QLabel();
     labelConnectionsIcon = new QLabel();
     labelBlocksIcon = new QLabel();
-    LogPrintf("bitcoingui: 7 \n");
+    //LogPrintf("bitcoingui: 7 \n");
     if(enableWallet)
     {
         //frameBlocksLayout->addStretch();
@@ -207,14 +211,14 @@ LogPrintf("bitcoingui: 6 \n");
     frameBlocksLayout->addStretch();
     frameBlocksLayout->addWidget(labelBlocksIcon);
     frameBlocksLayout->addStretch();
-LogPrintf("bitcoingui: 8 \n");
+//LogPrintf("bitcoingui: 8 \n");
     // Progress bar and label for blocks download
     progressBarLabel = new QLabel();
     progressBarLabel->setVisible(false);
     progressBar = new GUIUtil::ProgressBar();
     progressBar->setAlignment(Qt::AlignCenter);
     progressBar->setVisible(false);
-LogPrintf("bitcoingui: 9 \n");
+//LogPrintf("bitcoingui: 9 \n");
     // Override style sheet for progress bar for styles that have a segmented progress bar,
     // as they make the text unreadable (workaround for issue #1071)
     // See https://qt-project.org/doc/qt-4.8/gallery.html
@@ -227,7 +231,7 @@ LogPrintf("bitcoingui: 9 \n");
     statusBar()->addWidget(progressBarLabel);
     statusBar()->addWidget(progressBar);
     statusBar()->addPermanentWidget(frameBlocks);
-LogPrintf("bitcoingui: 10 \n");
+//LogPrintf("bitcoingui: 10 \n");
     //connect(openRPCConsoleAction, SIGNAL(triggered()), rpcConsole, SLOT(show()));
 
     // prevents an open debug window from becoming stuck/unusable on client shutdown
@@ -235,13 +239,13 @@ LogPrintf("bitcoingui: 10 \n");
 
     // Install event filter to be able to catch status tip events (QEvent::StatusTip)
     this->installEventFilter(this);
-LogPrintf("bitcoingui: 11 \n");
+//LogPrintf("bitcoingui: 11 \n");
     // Initially wallet actions should be disabled
     setWalletActionsEnabled(false);
-LogPrintf("bitcoingui: 12 \n");
+//LogPrintf("bitcoingui: 12 \n");
     // Subscribe to notifications from core
     subscribeToCoreSignals();
-    LogPrintf("bitcoingui: 13 \n");
+    //LogPrintf("bitcoingui: 13 \n");
 }
 
 BitcoinGUI::~BitcoinGUI()
@@ -281,39 +285,18 @@ void BitcoinGUI::createActions(const NetworkStyle *networkStyle)
     publisherAction->setCheckable(true);
     publisherAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_3));
     tabGroup->addAction(publisherAction);
-    messengerAction = new QAction(QIcon(":/icons/messenger"), tr("&Messenger"), this);
+    messengerAction = new QAction(QIcon(":/icons/chat"), tr("&Messenger"), this);
     messengerAction->setStatusTip(tr("Show messenger page"));
     messengerAction->setToolTip(messengerAction->statusTip());
     messengerAction->setCheckable(true);
-    messengerAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_3));
+    messengerAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_C));
     tabGroup->addAction(messengerAction);
-//    overviewAction = new QAction(QIcon(":/icons/overview"), tr("&Overview"), this);
-//    overviewAction->setStatusTip(tr("Show general overview of wallet"));
-//    overviewAction->setToolTip(overviewAction->statusTip());
-//    overviewAction->setCheckable(true);
-//    overviewAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_1));
-//    tabGroup->addAction(overviewAction);
-
-//    sendCoinsAction = new QAction(QIcon(":/icons/send"), tr("&Send"), this);
-//    sendCoinsAction->setStatusTip(tr("Send coins to a Cccoin address"));
-//    sendCoinsAction->setToolTip(sendCoinsAction->statusTip());
-//    sendCoinsAction->setCheckable(true);
-//    sendCoinsAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_2));
-//    tabGroup->addAction(sendCoinsAction);
-
-//    receiveCoinsAction = new QAction(QIcon(":/icons/receiving_addresses"), tr("&Receive"), this);
-//    receiveCoinsAction->setStatusTip(tr("Request payments (generates QR codes and cccoin: URIs)"));
-//    receiveCoinsAction->setToolTip(receiveCoinsAction->statusTip());
-//    receiveCoinsAction->setCheckable(true);
-//    receiveCoinsAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_3));
-//    tabGroup->addAction(receiveCoinsAction);
-//
-//    historyAction = new QAction(QIcon(":/icons/history"), tr("&Transactions"), this);
-//    historyAction->setStatusTip(tr("Browse transaction history"));
-//    historyAction->setToolTip(historyAction->statusTip());
-//    historyAction->setCheckable(true);
-//    historyAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_4));
-//    tabGroup->addAction(historyAction);
+    minerAction = new QAction(QIcon(":/icons/tx_mined"), tr("&Miner"), this);
+    minerAction->setStatusTip(tr("Show miner page"));
+    minerAction->setToolTip(minerAction->statusTip());
+    minerAction->setCheckable(true);
+    minerAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_M));
+    tabGroup->addAction(minerAction);
 LogPrintf("bitcoingui:createactions 1 \n");
 #ifdef ENABLE_WALLET
     // These showNormalIfMinimized are needed because Send Coins and Receive Coins
@@ -324,16 +307,9 @@ LogPrintf("bitcoingui:createactions 1 \n");
     connect(publisherAction, SIGNAL(triggered()), this, SLOT(gotoPublisherPage()));
     connect(messengerAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(messengerAction, SIGNAL(triggered()), this, SLOT(gotoMessengerPage()));
-    //connect(browserAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    //connect(browserAction, SIGNAL(triggered()), this, SLOT(gotoWebPage(2)));
-    //connect(overviewAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    //connect(overviewAction, SIGNAL(triggered()), this, SLOT(gotoOverviewPage()));
-    //connect(sendCoinsAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    //connect(sendCoinsAction, SIGNAL(triggered()), this, SLOT(gotoSendCoinsPage()));
-    //connect(receiveCoinsAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    //connect(receiveCoinsAction, SIGNAL(triggered()), this, SLOT(gotoReceiveCoinsPage()));
-   // connect(historyAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    //connect(historyAction, SIGNAL(triggered()), this, SLOT(gotoHistoryPage()));
+    connect(minerAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    connect(minerAction, SIGNAL(triggered()), this, SLOT(gotoMinerPage()));    
+    
 #endif // ENABLE_WALLET
 LogPrintf("bitcoingui:createactions 2 \n");
     quitAction = new QAction(QIcon(":/icons/quit"), tr("E&xit"), this);
@@ -355,19 +331,21 @@ LogPrintf("bitcoingui:createactions 2 \n");
     //optionsAction->setMenuRole(QAction::PreferencesRole);
     toggleHideAction = new QAction(networkStyle->getAppIcon(), tr("&Show / Hide"), this);
     toggleHideAction->setStatusTip(tr("Show or hide the main Window"));
-LogPrintf("bitcoingui:createactions 3 \n");
+//LogPrintf("bitcoingui:createactions 3 \n");
     encryptAccountAction = new QAction(QIcon(":/icons/lock_closed"), tr("&Encrypt Account..."), this);
     encryptAccountAction->setStatusTip(tr("Encrypt the private keys that belong to your Account"));
     encryptAccountAction->setCheckable(true);
     exportAccountAction = new QAction(QIcon(":/icons/filesave"), tr("&Export account..."), this);
     exportAccountAction->setStatusTip(tr("export account to another location"));
-LogPrintf("bitcoingui:createactions 4 \n");     
+//LogPrintf("bitcoingui:createactions 4 \n");     
     changePassphraseAction = new QAction(QIcon(":/icons/key"), tr("&Change Passphrase..."), this);
     changePassphraseAction->setStatusTip(tr("Change the passphrase used for wallet encryption"));
     newAccountAction = new QAction(QIcon(":/icons/key"), tr("&Create new account..."), this);
     newAccountAction->setStatusTip(tr("Create new account..."));
     switchAccountAction = new QAction(QIcon(":/icons/key"), tr("&Switch Account..."), this);
     switchAccountAction->setStatusTip(tr("switch account"));
+      unlockAccountAction = new QAction(QIcon(":/icons/lock_open"), tr("&Unlock Account..."), this);
+    unlockAccountAction->setStatusTip(tr("unlock account"));
     domainNameAction = new QAction(QIcon(":/icons/key"), tr("&Domain name manage..."), this);
     domainNameAction->setStatusTip(tr("Domain name manage"));
     exportAccountAction = new QAction(QIcon(":/icons/key"), tr("&Export Account"), this);
@@ -394,7 +372,7 @@ LogPrintf("bitcoingui:createactions 4 \n");
 
     showHelpMessageAction = new QAction(QApplication::style()->standardIcon(QStyle::SP_MessageBoxInformation), tr("&Command-line options"), this);
     showHelpMessageAction->setStatusTip(tr("Show the Cccoin Core help message to get a list with possible Cccoin command-line options"));
-LogPrintf("bitcoingui:createactions 5 \n");
+//LogPrintf("bitcoingui:createactions 5 \n");
     connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
     connect(aboutAction, SIGNAL(triggered()), this, SLOT(aboutClicked()));
     connect(browserAction, SIGNAL(triggered()), this, SLOT(gotoBrowserPage()));
@@ -402,21 +380,22 @@ LogPrintf("bitcoingui:createactions 5 \n");
     //connect(optionsAction, SIGNAL(triggered()), this, SLOT(optionsClicked()));
     connect(toggleHideAction, SIGNAL(triggered()), this, SLOT(toggleHidden()));
     connect(showHelpMessageAction, SIGNAL(triggered()), this, SLOT(showHelpMessageClicked()));
-    LogPrintf("bitcoingui:createactions 6 \n");
+    //LogPrintf("bitcoingui:createactions 6 \n");
 #ifdef ENABLE_WALLET
     
         connect(encryptAccountAction, SIGNAL(triggered(bool)), this, SLOT(encryptWallet(bool)));
-        LogPrintf("bitcoingui:createactions 7 \n");
+        //LogPrintf("bitcoingui:createactions 7 \n");
         connect(exportAccountAction, SIGNAL(triggered()), this, SLOT(backupWallet()));
-        LogPrintf("bitcoingui:createactions 8 \n");
+        //LogPrintf("bitcoingui:createactions 8 \n");
         connect(changePassphraseAction, SIGNAL(triggered()), this, SLOT(changePassphrase()));
-        LogPrintf("bitcoingui:createactions 9 \n");
+        //LogPrintf("bitcoingui:createactions 9 \n");
          connect(newAccountAction, SIGNAL(triggered()), this, SLOT(newAccountClicked()));
-         LogPrintf("bitcoingui:createactions 10 \n");
+         //LogPrintf("bitcoingui:createactions 10 \n");
           connect(switchAccountAction, SIGNAL(triggered()), this, SLOT(switchAccountClicked()));
-          LogPrintf("bitcoingui:createactions 11 \n");
+          connect(unlockAccountAction, SIGNAL(triggered()), this, SLOT(unlockAccountClicked()));
+          //LogPrintf("bitcoingui:createactions 11 \n");
            connect(domainNameAction, SIGNAL(triggered()), this, SLOT(domainNameClicked()));
-           LogPrintf("bitcoingui:createactions 12 \n");
+           //LogPrintf("bitcoingui:createactions 12 \n");
             
             
         //connect(signMessageAction, SIGNAL(triggered()), this, SLOT(gotoSignMessageTab()));
@@ -458,6 +437,7 @@ void BitcoinGUI::createMenuBar()
         account->addAction(newAccountAction);
         account->addAction(switchAccountAction);
         account->addAction(encryptAccountAction);
+        account->addAction(unlockAccountAction);
         //account->addAction(decryptAccountAction);
         account->addAction(changePassphraseAction);
         account->addAction(domainNameAction);
@@ -468,12 +448,16 @@ void BitcoinGUI::createMenuBar()
     applications->addAction(browserAction);
     applications->addAction(walletAction);
     applications->addAction(publisherAction);
+    applications->addAction(messengerAction);
+    applications->addAction(minerAction);
     applications->addAction(shopAction);
     
     QMenu *settings = appMenuBar->addMenu(tr("&Settings"));
+    QMenu *services = appMenuBar->addMenu(tr("&Services"));
     
-        //settings->addAction(encryptWalletAction);
-        //settings->addAction(changePassphraseAction);
+    //services->addAction(icqServiceAction);    
+    //services->addAction(miningpoolServiceAction);
+        
         //settings->addSeparator();
     
     //settings->addAction(optionsAction);
@@ -502,11 +486,7 @@ void BitcoinGUI::createToolBars()
         walletAction->setChecked(true);        
         toolbar->addAction(publisherAction);
         toolbar->addAction(messengerAction);
-        //toolbar->addAction(overviewAction);
-        //toolbar->addAction(sendCoinsAction);
-        //toolbar->addAction(receiveCoinsAction);
-        //toolbar->addAction(historyAction);
-        //overviewAction->setChecked(true);
+        toolbar->addAction(minerAction);        
     }
 }
 
@@ -552,16 +532,21 @@ void BitcoinGUI::setClientModel(ClientModel *clientModel)
 }
 
 #ifdef ENABLE_WALLET
-bool BitcoinGUI::addWallet(const QString& name)//, WalletModel *walletModel)
+bool BitcoinGUI::addWallet(const QString& name, WalletModel *walletModelIn)
 {
     LogPrintf("bitcoingui addwallet \n");
+    walletModel=walletModelIn;
+    jsInterface->setWalletModel(walletModel);
+    setWalletActionsEnabled(true);
+    connect(walletModel, SIGNAL(encryptionStatusChanged(int)), this, SLOT(setEncryptionStatus(int)));
+    walletModel->updateStatus();
     if(!mainView)
         return false;
-    setWalletActionsEnabled(true);
-    LogPrintf("bitcoingui addwallet2 \n");
+    
+    //LogPrintf("bitcoingui addwallet2 \n");
     QUrl walletUrl= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/wallet_en.html"); 
     mainView->gotoWebPage(1,walletUrl);//, walletModel);    
-    LogPrintf("bitcoingui addwallet3 \n");
+    //LogPrintf("bitcoingui addwallet3 \n");
      return true;
 }
 
@@ -587,9 +572,10 @@ void BitcoinGUI::setWalletActionsEnabled(bool enabled)
     //sendCoinsAction->setEnabled(enabled);
     //receiveCoinsAction->setEnabled(enabled);
     //historyAction->setEnabled(enabled);
-    //encryptWalletAction->setEnabled(enabled);
-    //backupWalletAction->setEnabled(enabled);
-    //changePassphraseAction->setEnabled(enabled);
+    encryptAccountAction->setEnabled(enabled);
+    exportAccountAction->setEnabled(enabled);
+    unlockAccountAction->setEnabled(enabled);
+    changePassphraseAction->setEnabled(enabled);    
     //signMessageAction->setEnabled(enabled);
     //verifyMessageAction->setEnabled(enabled);
     //usedSendingAddressesAction->setEnabled(enabled);
@@ -635,9 +621,8 @@ void BitcoinGUI::createTrayIconMenu()
     trayIconMenu->addAction(browserAction);
     trayIconMenu->addAction(walletAction);
     trayIconMenu->addAction(publisherAction);
-    trayIconMenu->addAction(messengerAction);
-    //trayIconMenu->addAction(sendCoinsAction);
-    //trayIconMenu->addAction(receiveCoinsAction);
+    trayIconMenu->addAction(messengerAction);    
+    trayIconMenu->addAction(minerAction);    
     trayIconMenu->addSeparator();
     //trayIconMenu->addAction(signMessageAction);
     //trayIconMenu->addAction(verifyMessageAction);
@@ -696,6 +681,58 @@ void BitcoinGUI::openClicked()
 //        emit receivedURI(dlg.getURI());
 //    }
 }
+//enum ACCOUNT_OPS
+//{
+//    ACCOUNT_CREATE_NEW,
+//    ACCOUNT_SWITCH,
+//    ACCOUNT_CHANGE_PWD,
+//    ACCOUNT_ENCRYPT
+//};
+void BitcoinGUI::newAccountClicked()
+{
+    if(!walletModel)
+        return;
+    AccountDialog dlg(AccountDialog::CreateNew,this, walletModel);    
+    
+        if(dlg.exec()){
+        }
+}
+void BitcoinGUI::switchAccountClicked()
+{
+    if(!walletModel)
+        return;
+        AccountDialog dlg(AccountDialog::Switch,this, walletModel);    
+    
+        if(dlg.exec()){
+        }
+}
+void BitcoinGUI::unlockAccountClicked()
+{
+    if(!walletModel)
+        return;
+        AccountDialog dlg(AccountDialog::Unlock,this, walletModel);    
+    
+        if(dlg.exec()){
+        }
+}
+void BitcoinGUI::encryptWallet(bool fEncrypted)
+{
+    if(!walletModel)
+        return;
+        AccountDialog dlg(AccountDialog::Encrypt,this, walletModel);    
+    
+        if(dlg.exec()){
+        }
+}
+void BitcoinGUI::changePassphrase()
+{
+    if(!walletModel)
+        return;
+        AccountDialog dlg(AccountDialog::ChangePass,this, walletModel);    
+    
+        if(dlg.exec()){
+        }
+}
 void BitcoinGUI::gotoWalletPage()
 {
     walletAction->setChecked(true);
@@ -703,42 +740,29 @@ void BitcoinGUI::gotoWalletPage()
 }
 void BitcoinGUI::gotoBrowserPage()
 {
+    QUrl browserUrl= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/browser_en.html"); 
     browserAction->setChecked(true);
-    if (mainView) mainView->gotoWebPage(2);
+    if (mainView) mainView->gotoWebPage(2,browserUrl);
 }
 void BitcoinGUI::gotoPublisherPage()
 {
+    QUrl url=QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/publisher_en.html"); 
     publisherAction->setChecked(true);
-    if (mainView) mainView->gotoWebPage(3);
+    if (mainView) mainView->gotoWebPage(3,url);
 }
 void BitcoinGUI::gotoMessengerPage()
 {
+    QUrl messengerUrl= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/messenger_en.html"); 
     messengerAction->setChecked(true);
-    if (mainView) mainView->gotoWebPage(4);
+    if (mainView) mainView->gotoWebPage(4,messengerUrl);
 }
-//void BitcoinGUI::gotoOverviewPage()
-//{
-//    overviewAction->setChecked(true);
-//    if (walletFrame) walletFrame->gotoOverviewPage();
-//}
+void BitcoinGUI::gotoMinerPage()
+{
+    minerAction->setChecked(true);
+    QUrl minerUrl= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/miner_en.html"); 
+    if (mainView) mainView->gotoWebPage(5,minerUrl);
+}
 
-//void BitcoinGUI::gotoHistoryPage()
-//{
-//    historyAction->setChecked(true);
-//    if (walletFrame) walletFrame->gotoHistoryPage();
-//}
-//
-//void BitcoinGUI::gotoReceiveCoinsPage()
-//{
-//    receiveCoinsAction->setChecked(true);
-//    if (walletFrame) walletFrame->gotoReceiveCoinsPage();
-//}
-
-//void BitcoinGUI::gotoSendCoinsPage(QString addr)
-//{
-//    sendCoinsAction->setChecked(true);
-//    if (walletFrame) walletFrame->gotoSendCoinsPage(addr);
-//}
 
 //void BitcoinGUI::gotoSignMessageTab(QString addr)
 //{
@@ -1021,31 +1045,36 @@ bool BitcoinGUI::eventFilter(QObject *object, QEvent *event)
 
 void BitcoinGUI::setEncryptionStatus(int status)
 {
-//    switch(status)
-//    {
-//    case WalletModel::Unencrypted:
-//        labelEncryptionIcon->hide();
-//        //encryptWalletAction->setChecked(false);
-//        //changePassphraseAction->setEnabled(false);
-//        //encryptWalletAction->setEnabled(true);
-//        break;
-//    case WalletModel::Unlocked:
-//        labelEncryptionIcon->show();
-//        labelEncryptionIcon->setPixmap(QIcon(":/icons/lock_open").pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
-//        labelEncryptionIcon->setToolTip(tr("Wallet is <b>encrypted</b> and currently <b>unlocked</b>"));
-//        //encryptWalletAction->setChecked(true);
-//        //changePassphraseAction->setEnabled(true);
-//        //encryptWalletAction->setEnabled(false); // TODO: decrypt currently not supported
-//        break;
-//    case WalletModel::Locked:
-//        labelEncryptionIcon->show();
-//        labelEncryptionIcon->setPixmap(QIcon(":/icons/lock_closed").pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
-//        labelEncryptionIcon->setToolTip(tr("Wallet is <b>encrypted</b> and currently <b>locked</b>"));
-//        //encryptWalletAction->setChecked(true);
-//        //changePassphraseAction->setEnabled(true);
-//        //encryptWalletAction->setEnabled(false); // TODO: decrypt currently not supported
-//        break;
-//    }
+    switch(status)
+    {
+    case WalletModel::Unencrypted:
+        labelEncryptionIcon->hide();
+        encryptAccountAction->setChecked(false);
+        changePassphraseAction->setEnabled(false);
+        unlockAccountAction->setEnabled(false);
+        encryptAccountAction->setEnabled(true);
+        break;
+    case WalletModel::Unlocked:
+        labelEncryptionIcon->show();
+        labelEncryptionIcon->setPixmap(QIcon(":/icons/lock_open").pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
+        labelEncryptionIcon->setToolTip(tr("Wallet is <b>encrypted</b> and currently <b>unlocked</b>"));
+        encryptAccountAction->setChecked(true);
+        changePassphraseAction->setEnabled(true);
+        encryptAccountAction->setEnabled(false); // TODO: decrypt currently not supported
+        unlockAccountAction->setChecked(false);
+        unlockAccountAction->setEnabled(true);
+        break;
+    case WalletModel::Locked:
+        labelEncryptionIcon->show();
+        labelEncryptionIcon->setPixmap(QIcon(":/icons/lock_closed").pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
+        labelEncryptionIcon->setToolTip(tr("Wallet is <b>encrypted</b> and currently <b>locked</b>"));
+        encryptAccountAction->setChecked(true);
+        changePassphraseAction->setEnabled(true);
+        encryptAccountAction->setEnabled(false); // TODO: decrypt currently not supported
+        unlockAccountAction->setChecked(true);
+        unlockAccountAction->setEnabled(true);
+        break;
+    }
 }
 
 
@@ -1207,10 +1236,10 @@ void BitcoinGUI::unsubscribeFromCoreSignals()
 //        //optionsModel->setDisplayUnit(action->data());
 //    }
 //}
-bool BitcoinGUI::handlePaymentRequest(QString message,int nOP,string& strError,SecureString& ssInput){
-    LogPrintf("bitcoingui requestpayment received: \n");    
+bool BitcoinGUI::handleUserConfirm(QString title,QString message,int nOP,string& strError,SecureString& ssInput){
+    LogPrintf("bitcoingui handleUserConfirm received: \n");    
         UserConfirmDialog dlg(this);
-        dlg.setWindowTitle(tr("Confirm Payment"));
+        dlg.setWindowTitle(title);
         dlg.ui->label_message->setText(message);
         if (nOP!=1){
             dlg.ui->label_7->hide();
@@ -1222,12 +1251,12 @@ bool BitcoinGUI::handlePaymentRequest(QString message,int nOP,string& strError,S
                 ssInput.reserve(MAX_PASSPHRASE_SIZE);    
                 ssInput.assign(dlg.ui->passwordEdit->text().toStdString().c_str());           
             }
-            LogPrintf("bitcoingui handlepr ok pressed, \n");             
+            LogPrintf("bitcoingui handleUserConfirm ok pressed, \n");             
             return true;//QString("{\"success\":\"tx sent\"}");
             //emit sendMoneyResult(strToken,true,dlg.ui->passwordEdit->text());
         }else{
-            LogPrintf("bitcoingui handlepr cancel pressed \n"); 
-            strError="payment request cancelled";
+            LogPrintf("bitcoingui handleUserConfirm cancel pressed \n"); 
+            strError="user cancelled";
             return false;//QString("{\"error\":\"payment request cancelled\"}");
             //emit sendMoneyResult(strToken,false,QString().fromStdString("{\"result\":\"dialogue opened\"}"));
         }

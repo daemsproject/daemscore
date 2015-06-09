@@ -22,6 +22,8 @@
 #include <boost/assign/list_of.hpp>
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_value.h"
+#include "ccc/content.h"
+#include "utilstrencodings.h"
 
 using namespace boost;
 using namespace boost::assign;
@@ -91,11 +93,11 @@ Value getinfo(const Array& params, bool fHelp)
     obj.push_back(Pair("testnet",       Params().TestnetToBeDeprecatedFieldRPC()));
 #ifdef ENABLE_WALLET
     if (pwalletMain) {
-        obj.push_back(Pair("keypoololdest", pwalletMain->GetOldestKeyPoolTime()));
-        obj.push_back(Pair("keypoolsize",   (int)pwalletMain->GetKeyPoolSize()));
+    //    obj.push_back(Pair("keypoololdest", pwalletMain->GetOldestKeyPoolTime()));
+    //    obj.push_back(Pair("keypoolsize",   (int)pwalletMain->GetKeyPoolSize()));
     }
-    if (pwalletMain && pwalletMain->IsCrypted())
-        obj.push_back(Pair("unlocked_until", nWalletUnlockTime));
+    //if (pwalletMain && pwalletMain->IsCrypted())
+    //    obj.push_back(Pair("unlocked_until", nWalletUnlockTime));
     obj.push_back(Pair("paytxfeePerKB",      ValueFromAmount(payTxFee.GetFeePerK())));
 #endif
     obj.push_back(Pair("relayfeePerKB",      ValueFromAmount(::minRelayTxFee.GetFeePerK())));
@@ -113,17 +115,27 @@ public:
     DescribeAddressVisitor(isminetype mineIn) : mine(mineIn) {}
 
     Object operator()(const CNoDestination &dest) const { return Object(); }
-    Object operator()(const CScript & script) const { return Object(); }
 
-    Object operator()(const CKeyID &keyID) const {
+    Object operator()(const CPubKey &keyID) const {
         Object obj;
-        CPubKey vchPubKey;
+        //CPubKey vchPubKey;
         obj.push_back(Pair("isscript", false));
         if (mine == ISMINE_SPENDABLE) {
-            pwalletMain->GetPubKey(keyID, vchPubKey);
-            obj.push_back(Pair("pubkey", HexStr(vchPubKey)));
-            obj.push_back(Pair("iscompressed", vchPubKey.IsCompressed()));
+            //pwalletMain->GetPubKey(keyID, vchPubKey);
+            obj.push_back(Pair("pubkey", HexStr(keyID)));
+            obj.push_back(Pair("iscompressed", keyID.IsCompressed()));
         }
+        return obj;
+    }
+    Object operator()(const CScript &script) const {
+        Object obj;
+        //CPubKey vchPubKey;
+        obj.push_back(Pair("isscript", false));
+//        if (mine == ISMINE_SPENDABLE) {
+//            //pwalletMain->GetPubKey(keyID, vchPubKey);
+//            obj.push_back(Pair("pubkey", HexStr(keyID)));
+//            obj.push_back(Pair("iscompressed", keyID.IsCompressed()));
+//        }
         return obj;
     }
 
@@ -275,6 +287,7 @@ Value createmultisig(const Array& params, bool fHelp)
     return result;
 }
 
+
 Value verifymessage(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 3)
@@ -306,9 +319,9 @@ Value verifymessage(const Array& params, bool fHelp)
     if (!addr.IsValid())
         throw JSONRPCError(RPC_TYPE_ERROR, "Invalid address");
 
-    CKeyID keyID;
-    if (!addr.GetKeyID(keyID))
-        throw JSONRPCError(RPC_TYPE_ERROR, "Address does not refer to key");
+    CPubKey keyID;
+    if(!addr.GetKey(keyID))
+        throw JSONRPCError(RPC_TYPE_ERROR, "Invalid address");
 
     bool fInvalid = false;
     vector<unsigned char> vchSig = DecodeBase64(strSign.c_str(), &fInvalid);
@@ -324,7 +337,7 @@ Value verifymessage(const Array& params, bool fHelp)
     if (!pubkey.RecoverCompact(ss.GetHash(), vchSig))
         return false;
 
-    return (pubkey.GetID() == keyID);
+    return (pubkey == keyID);
 }
 
 Value setmocktime(const Array& params, bool fHelp)
@@ -345,4 +358,169 @@ Value setmocktime(const Array& params, bool fHelp)
     SetMockTime(params[0].get_int64());
 
     return Value::null;
+}
+
+PaymentRequest ParsePaymentRequest(json_spirit::Value paymentRequestJson){    
+    PaymentRequest pr;
+    pr.fIsValid=false;    
+    std::string strError;
+    if(paymentRequestJson.type()!=obj_type){        
+        strError="input is not object type";
+        throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+    }
+    Object obj=paymentRequestJson.get_obj();
+    Value valtmp;
+    valtmp=find_value(obj, "ids");
+    bool fHasIDs=false;    
+    if(valtmp.type()==str_type){ 
+        LogPrintf("rpcmist processpayment id %s\n",valtmp.get_str());
+        CScript scriptPubKey;        
+        if(!StringToScriptPubKey(valtmp.get_str(),scriptPubKey)){
+                strError="id is not valid fromat";
+                throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+        }
+        LogPrintf("rpcmist processpayment script %s\n",scriptPubKey.ToString());
+        pr.vFrom.push_back(scriptPubKey);
+        fHasIDs=true;
+    }else if (valtmp.type()==array_type){
+        Array adds=valtmp.get_array();
+        for(unsigned int i=0;i<adds.size();i++){
+            if(adds[i].type()!=str_type){
+                strError="id is not string type";
+                throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+            }
+            LogPrintf("rpcmist processpayment id %s\n",adds[i].get_str());
+            CScript scriptPubKey;
+            if(!StringToScriptPubKey(adds[i].get_str(),scriptPubKey)){
+                strError="id is not valid fromat";
+                throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+            }
+            LogPrintf("rpcmist processpayment script %s\n",scriptPubKey.ToString());
+            pr.vFrom.push_back(scriptPubKey);
+            fHasIDs=true;
+        }
+    }
+    if(!fHasIDs){
+        strError="no input ids";
+                throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+    }
+    valtmp=find_value(obj, "vout");
+    if(valtmp.type()!=array_type){  
+        strError="vout is not array type";
+        throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+    }
+    Array arr=valtmp.get_array();
+    if(arr.size()==0){  
+        strError="vout is empty";
+        throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+    }
+    for(unsigned int i=0;i<arr.size();i++){
+        
+        if(arr[i].type()!=obj_type){
+            strError="out is not object type";
+            throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+        }
+        
+        Object objvout=arr[i].get_obj();
+        valtmp=find_value(objvout, "id");
+        if(valtmp.type()!=str_type){
+            strError="out id is not string type";
+            throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+        }        
+        
+        CScript scriptPubKey;
+        if(!StringToScriptPubKey(valtmp.get_str(),scriptPubKey)){
+                strError="out id is not valid format";
+                throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+        }
+        LogPrintf("rpcmist processpayment vout scriptpubkey:%s\n",scriptPubKey.ToString());
+        valtmp=find_value(objvout, "amount");
+        CAmount amount;
+        try{
+            amount=AmountFromValue(valtmp);
+        }
+        catch (Object& objError)
+        {
+        strError="out amount is not valid fromat";        
+        throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+        }
+        
+        CContent ctt=CContent("");
+        valtmp=find_value(objvout, "content");
+        if(valtmp.type()==obj_type){            
+            Object objContent=valtmp.get_obj();
+            valtmp=find_value(objContent, "type");
+            if (valtmp.type()!=str_type){
+                strError="content type is not valid format";
+                throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+            }
+            if(valtmp.get_str()=="file"){
+                valtmp=find_value(objContent, "value");
+                if (valtmp.type()!=str_type){
+                    strError="content value is not valid format";
+                    throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+                }    
+                std::string str = valtmp.get_str();
+                if(!FileExists(str)){
+                    strError="content file not found";
+                    throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+                }
+                CContent ctt = _create_file_content(str);
+            }
+        }
+        else if (valtmp.type()==str_type){
+            std::string str = valtmp.get_str();
+            ctt = _create_text_content(str);
+        }
+        
+        pr.vout.push_back(CTxOut(amount,scriptPubKey,ctt));
+    }
+    //nSigType=129;
+    valtmp=find_value(obj, "locktime");
+    switch (valtmp.type()){
+        case int_type:
+        {
+             pr.nLockTime=(unsigned int)valtmp.get_uint64();
+            break;
+        }
+        case null_type:
+        {
+            break;
+        }
+        default:
+        {
+            strError="lock time is not int type or null";
+            throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+        }
+    }    
+    valtmp=find_value(obj, "feerate");
+    switch (valtmp.type()){
+        case real_type:
+        {
+             pr.feeRate=valtmp.get_real();
+            break;
+        }
+        case str_type:
+        {
+            pr.feeRate=atof(valtmp.get_str().c_str());
+            break;
+        }
+        case null_type:
+        {
+            break;
+        }
+        default:
+        {
+            strError="fee rate format error";
+            throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+        }
+    }      
+    if (pr.feeRate<1000)
+        {
+            strError="fee rate is lower than limit";
+            throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+        }        
+    pr.fIsValid=true;
+    return pr;
+    //valtmp=find_value(obj, "vins");
 }

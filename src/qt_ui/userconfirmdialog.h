@@ -2,8 +2,8 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_SENDCOINSDIALOG_H
-#define BITCOIN_QT_SENDCOINSDIALOG_H
+#ifndef BITCOIN_QT_USERTCONFIRMDIALOG_H
+#define BITCOIN_QT_USERTCONFIRMDIALOG_H
 
 
 
@@ -12,19 +12,19 @@
 //#include "bitcoingui.h"
 //#include "ui_userconfirmdialog.h"
 class ClientModel;
-class OptionsModel;
-class SendCoinsEntry;
-class SendCoinsRecipient;
+//class OptionsModel;
+//class SendCoinsEntry;
+//class SendCoinsRecipient;
 
-class PaymentRequest;
-class CWalletTx;
+//class PaymentRequest;
+//class CWalletTx;
 namespace Ui {
     class UserConfirmDialog;
 }
 
-QT_BEGIN_NAMESPACE
-class QUrl;
-QT_END_NAMESPACE
+//QT_BEGIN_NAMESPACE
+//class QUrl;
+//QT_END_NAMESPACE
 
 /** Dialog for sending bitcoins */
 class UserConfirmDialog : public QDialog

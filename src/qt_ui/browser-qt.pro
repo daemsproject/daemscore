@@ -11,7 +11,8 @@ DEFINES += ENABLE_WALLET=1
 FORMS += \ 
     forms/helpmessagedialog.ui \ 
     forms/userconfirmdialog.ui \
-    forms/askpassphrasedialog.ui
+    forms/intro.ui \
+    forms/accountdialog.ui
 
 RESOURCES += \
     browser.qrc \

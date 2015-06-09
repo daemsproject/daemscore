@@ -124,7 +124,7 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, vector<vector<unsi
 
             if (opcode2 == OP_PUBKEY)
             {
-                if ( vch1.size() > 65 || vch1.size() < 32 )
+                if ( vch1.size() > 65)
                     break;
                 vSolutionsRet.push_back(vch1);
             }
@@ -221,7 +221,7 @@ bool ExtractDestination(const CScript& scriptPubKey, CTxDestination& addressRet)
         if (!pubKey.IsValid())
             return false;
 
-        addressRet = pubKey.GetID();
+        addressRet = pubKey;
         return true;
     }
     else if (whichType == TX_SCRIPTHASH)
@@ -254,7 +254,7 @@ bool ExtractDestinations(const CScript& scriptPubKey, txnouttype& typeRet, vecto
             if (!pubKey.IsValid())
                 continue;
 
-            CTxDestination address = pubKey.GetID();
+            CTxDestination address = pubKey;
             addressRet.push_back(address);
         }
 
@@ -288,8 +288,8 @@ class CScriptVisitor : public boost::static_visitor<bool>
             return false;
         }
 
-        bool operator()(const CKeyID &keyID) const {
-            *script << keyID.ToByteVector();
+        bool operator()(const CPubKey &keyID) const {
+            *script << ToByteVector(keyID);
             if(fType == 1)
                 *script << OP_CHECKSIG;
             return true;

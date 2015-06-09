@@ -6,7 +6,10 @@
 #include <boost/foreach.hpp>
 #include <stdio.h>
 #include "util.h"
+#include "utiltime.h"
+#include "base58.h"
 
+#include "json/json_spirit_writer_template.h"
 using namespace boost;
 using namespace std;
 
@@ -765,21 +768,21 @@ Array CContent::ToJson(stringformat fFormat)
                     if (fFormat == STR_FORMAT_BIN_SUM && contentStr.size() > STR_FORMAT_SUM_MAXSIZE)
                         ccUnit.push_back(Pair("length", contentStr.size()));
                     else
-                        ccUnit.push_back(Pair("content", contentStr));
+                    ccUnit.push_back(Pair("content", contentStr));
                     break;
                 case STR_FORMAT_HEX:
                 case STR_FORMAT_HEX_SUM:
                     if (fFormat == STR_FORMAT_HEX_SUM && contentStr.size() > STR_FORMAT_SUM_MAXSIZE)
                         ccUnit.push_back(Pair("length", contentStr.size()));
                     else
-                        ccUnit.push_back(Pair("content", HexStr(contentStr)));
+                    ccUnit.push_back(Pair("content", HexStr(contentStr)));
                     break;
                 case STR_FORMAT_B64:
                 case STR_FORMAT_B64_SUM:
                     if (fFormat == STR_FORMAT_B64_SUM && contentStr.size() > STR_FORMAT_SUM_MAXSIZE)
                         ccUnit.push_back(Pair("length", contentStr.size()));
                     else
-                        ccUnit.push_back(Pair("content", EncodeBase64(contentStr)));
+                    ccUnit.push_back(Pair("content", EncodeBase64(contentStr)));
                     break;
 
             }
@@ -926,7 +929,7 @@ bool CContent::GetCcUnit(iterator& pc, cctype& ccRet, std::string& content)
     int len = ReadCompactSize(pc);
     if (len > 0 && len <= end() - pc)
         content = ReadData(pc, len);
-    else if (len == 0)
+    else if(len == 0)
         content = "";
     else
         return false;
@@ -1070,4 +1073,30 @@ bool CContent::IsCcParent(const cctype& cc)
 {
     u_int64_t cc2 = cc;
     return (cc2 % 2 == 1) ? true : false;
+}
+bool CContent::Encode(int cc,std::vector<std::string>vData){
+    return false;
+}
+Value CMessage::ToJson(bool fLinkOnly){ // to test
+    json_spirit::Object obj;    
+    string strID;
+    ScriptPubKeyToString(IDFrom,strID);
+    obj.push_back(Pair("IDFrom", Value(strID)));    
+    ScriptPubKeyToString(IDTo,strID);
+    obj.push_back(Pair("IDTo", Value(strID)));
+    obj.push_back(Pair("txid", Value(txid.GetHex())));
+    obj.push_back(Pair("nVout", Value(nVout)));
+    obj.push_back(Pair("nBlockHeight", Value(nBlockHeight)));
+    obj.push_back(Pair("nTime", Value((uint64_t)nTime)));
+    obj.push_back(Pair("nTx", Value(nTx)));
+    if(content!=CContent())        
+        obj.push_back(Pair("content", content.ToJson(fLinkOnly?STR_FORMAT_B64_SUM:STR_FORMAT_B64)));
+    return Value(obj);
+}
+string CMessage::ToJsonString(bool fLinkOnly){
+    return write_string(ToJson(fLinkOnly),false);
+
+}
+bool CMessage::SetJson(const Object& json){
+    return false;
 }

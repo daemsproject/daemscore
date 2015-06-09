@@ -45,6 +45,7 @@
         <file alias="debugwindow">res/icons/debugwindow.png</file>
         <file alias="browser">res/icons/browser.png</file>
         <file alias="publisher">res/icons/publish.png</file>
+        <file alias="chat">res/icons/chat.png</file>
     </qresource>
     <qresource prefix="/images">
         <file alias="about">res/images/about.png</file>

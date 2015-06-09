@@ -28,22 +28,28 @@
  */
 
 #include "crypto/scrypt.h"
-//#include "util.h"
+#include "util.h"
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include <openssl/sha.h>
 
-#if defined(USE_SSE2) && !defined(USE_SSE2_ALWAYS)
-#ifdef _MSC_VER
-// MSVC 64bit is unable to use inline asm
-#include <intrin.h>
-#else
-// GCC Linux or i686-w64-mingw32
-#include <cpuid.h>
-#endif
-#endif
-
+//#if defined(USE_SSE2) && !defined(USE_SSE2_ALWAYS)
+//#ifdef _MSC_VER
+//// MSVC 64bit is unable to use inline asm
+//#include <intrin.h>
+//#else
+//// GCC Linux or i686-w64-mingw32
+//#include <cpuid.h>
+//#endif
+//#endif
+using namespace std;
+static void smix(uint8_t * B, size_t r, uint64_t N, uint32_t * V, uint32_t * XY);
+static void blkcpy(uint32_t * dest, uint32_t * src, size_t len);
+static void blkxor(uint32_t * dest, uint32_t * src, size_t len);
+static void salsa20_8(uint32_t B[16]);
+static void blockmix_salsa8(uint32_t * Bin, uint32_t * Bout, uint32_t * X, size_t r);
+static uint64_t integerify(uint32_t * B, size_t r);
 static inline uint32_t be32dec(const void *pp)
 {
 	const uint8_t *p = (uint8_t const *)pp;
@@ -253,77 +259,275 @@ static inline void xor_salsa8(uint32_t B[16], const uint32_t Bx[16])
 	B[15] += x15;
 }
 
-void scrypt_1024_1_1_256_sp_generic(const char *input, char *output, char *scratchpad)
+bool scrypt_sp_generic(const char *ucInput, unsigned long nInputSize, const unsigned char *ucSalt,
+        unsigned long nSaltSize, unsigned long N, unsigned int p, unsigned int r, unsigned char *ucOutput, unsigned long nOutputSize)
 {
-	uint8_t B[128];
-	uint32_t X[32];
-	uint32_t *V;
-	uint32_t i, j, k;
+    //LogPrintf("scrypt_sp_generic1\n");
+    if (N < 2 || (N & (N - 1)) != 0) return false;//("N must be a power of 2 greater than 1");
+    //LogPrintf("scrypt_sp_generic2\n");
+    if (N > 0x7fffffff / 128 / r) return false;// throw new IllegalArgumentException("Parameter N is too large");
+    //LogPrintf("scrypt_sp_generic3\n");
+    if (r > 0x7fffffff / 128 / p) return false;//("Parameter r is too large");
+    //LogPrintf("scrypt_sp_generic4\n");
+    uint8_t *B;
+    B=new uint8_t[128*r*p];    
+    //uint32_t X[32];
+    uint32_t *XY;
+    XY=new uint32_t[64*(r+1)];
+    uint32_t *V;
+    V=new uint32_t[32*r*N];
+    //LogPrintf("scrypt_sp_generic5\n");
+    uint32_t i;
 
-	V = (uint32_t *)(((uintptr_t)(scratchpad) + 63) & ~ (uintptr_t)(63));
+    //V = (uint32_t *)(((uintptr_t)(scratchpad) + 63) & ~ (uintptr_t)(63));
 
-	PBKDF2_SHA256((const uint8_t *)input, 84, (const uint8_t *)input, 80, 1, B, 128);
+    //PBKDF2_SHA256((const uint8_t *)input, 84, (const uint8_t *)input, 80, 1, B, 128);
+    PBKDF2_SHA256((const uint8_t *)ucInput, nInputSize, (const uint8_t *)ucSalt, nSaltSize, 1, B, p*128*r);
+//LogPrintf("scrypt_sp_generic6\n");
+   for(i=0;i<p;i++){
+       smix(&B[i * 128 * r], r, N, V, XY);
 
-	for (k = 0; k < 32; k++)
+   }
+//LogPrintf("scrypt_sp_generic7\n");
+//        for (k = 0; k < 32; k++)
+//		X[k] = le32dec(&B[4 * k]);
+//
+//	for (i = 0; i < 1024; i++) {
+//		memcpy(&V[i * 32], X, 128);
+//		xor_salsa8(&X[0], &X[16]);
+//		xor_salsa8(&X[16], &X[0]);
+//	}
+//	for (i = 0; i < 1024; i++) {
+//		j = 32 * (X[16] & 1023);
+//		for (k = 0; k < 32; k++)
+//			X[k] ^= V[j + k];
+//		xor_salsa8(&X[0], &X[16]);
+//		xor_salsa8(&X[16], &X[0]);
+//	}
+//
+//	for (k = 0; k < 32; k++)
+//		le32enc(&B[4 * k], X[k]);
+    PBKDF2_SHA256((const uint8_t *)ucInput, nInputSize, B, sizeof(B), 1, (uint8_t *)ucOutput, nOutputSize);
+    //LogPrintf("scrypt_sp_generic8\n");
+    delete [] B;
+    B=NULL;
+    //LogPrintf("scrypt_sp_generic9\n");
+    delete [] XY;
+    XY=NULL;
+    //LogPrintf("scrypt_sp_generic10\n");
+    delete [] V;
+    V=NULL;
+    LogPrintf("scrypt_sp_generic\n");
+    return true;
+}
+
+/**
+ * smix(B, r, N, V, XY):
+ * Compute B = SMix_r(B, N).  The input B must be 128r bytes in length;
+ * the temporary storage V must be 128rN bytes in length; the temporary
+ * storage XY must be 256r + 64 bytes in length.  The value N must be a
+ * power of 2 greater than 1.  The arrays B, V, and XY must be aligned to a
+ * multiple of 64 bytes.
+ */
+static void
+smix(uint8_t * B, size_t r, uint64_t N, uint32_t * V, uint32_t * XY)
+{
+	uint32_t * X = XY;
+	uint32_t * Y = &XY[32 * r];
+	uint32_t * Z = &XY[64 * r];
+	uint64_t i;
+	uint64_t j;
+	size_t k;
+
+	/* 1: X <-- B */
+	for (k = 0; k < 32 * r; k++)
 		X[k] = le32dec(&B[4 * k]);
 
-	for (i = 0; i < 1024; i++) {
-		memcpy(&V[i * 32], X, 128);
-		xor_salsa8(&X[0], &X[16]);
-		xor_salsa8(&X[16], &X[0]);
-	}
-	for (i = 0; i < 1024; i++) {
-		j = 32 * (X[16] & 1023);
-		for (k = 0; k < 32; k++)
-			X[k] ^= V[j + k];
-		xor_salsa8(&X[0], &X[16]);
-		xor_salsa8(&X[16], &X[0]);
+	/* 2: for i = 0 to N - 1 do */
+	for (i = 0; i < N; i += 2) {
+		/* 3: V_i <-- X */
+		blkcpy(&V[i * (32 * r)], X, 128 * r);
+
+		/* 4: X <-- H(X) */
+		blockmix_salsa8(X, Y, Z, r);
+
+		/* 3: V_i <-- X */
+		blkcpy(&V[(i + 1) * (32 * r)], Y, 128 * r);
+
+		/* 4: X <-- H(X) */
+		blockmix_salsa8(Y, X, Z, r);
 	}
 
-	for (k = 0; k < 32; k++)
+	/* 6: for i = 0 to N - 1 do */
+	for (i = 0; i < N; i += 2) {
+		/* 7: j <-- Integerify(X) mod N */
+		j = integerify(X, r) & (N - 1);
+
+		/* 8: X <-- H(X \xor V_j) */
+		blkxor(X, &V[j * (32 * r)], 128 * r);
+		blockmix_salsa8(X, Y, Z, r);
+
+		/* 7: j <-- Integerify(X) mod N */
+		j = integerify(Y, r) & (N - 1);
+
+		/* 8: X <-- H(X \xor V_j) */
+		blkxor(Y, &V[j * (32 * r)], 128 * r);
+		blockmix_salsa8(Y, X, Z, r);
+	}
+
+	/* 10: B' <-- X */
+	for (k = 0; k < 32 * r; k++)
 		le32enc(&B[4 * k], X[k]);
-
-	PBKDF2_SHA256((const uint8_t *)input, 84, B, 128, 1, (uint8_t *)output, 32);
 }
-
-#if defined(USE_SSE2)
-// By default, set to generic scrypt function. This will prevent crash in case when scrypt_detect_sse2() wasn't called
-void (*scrypt_1024_1_1_256_sp_detected)(const char *input, char *output, char *scratchpad) = &scrypt_1024_1_1_256_sp_generic;
-
-void scrypt_detect_sse2()
+static void
+blkcpy(uint32_t * dest, uint32_t * src, size_t len)
 {
-#if defined(USE_SSE2_ALWAYS)
-    printf("scrypt: using scrypt-sse2 as built.\n");
-#else // USE_SSE2_ALWAYS
-    // 32bit x86 Linux or Windows, detect cpuid features
-    unsigned int cpuid_edx=0;
-#if defined(_MSC_VER)
-    // MSVC
-    int x86cpuid[4];
-    __cpuid(x86cpuid, 1);
-    cpuid_edx = (unsigned int)buffer[3];
-#else // _MSC_VER
-    // Linux or i686-w64-mingw32 (gcc-4.6.3)
-    unsigned int eax, ebx, ecx;
-    __get_cpuid(1, &eax, &ebx, &ecx, &cpuid_edx);
-#endif // _MSC_VER
+	uint32_t * D = dest;
+	uint32_t * S = src;
+	size_t L = len / sizeof(size_t);
+	size_t i;
 
-    if (cpuid_edx & 1<<26)
-    {
-        scrypt_1024_1_1_256_sp_detected = &scrypt_1024_1_1_256_sp_sse2;
-        printf("scrypt: using scrypt-sse2 as detected.\n");
-    }
-    else
-    {
-        scrypt_1024_1_1_256_sp_detected = &scrypt_1024_1_1_256_sp_generic;
-        printf("scrypt: using scrypt-generic, SSE2 unavailable.\n");
-    }
-#endif // USE_SSE2_ALWAYS
+	for (i = 0; i < L; i++)
+		D[i] = S[i];
 }
-#endif
 
-void scrypt_1024_1_1_256(const char *input, char *output)
+static void
+blkxor(uint32_t * dest, uint32_t * src, size_t len)
 {
-	char scratchpad[SCRYPT_SCRATCHPAD_SIZE];
-    scrypt_1024_1_1_256_sp(input, output, scratchpad);
+	uint32_t * D = dest;
+	uint32_t * S = src;
+	size_t L = len / sizeof(size_t);
+	size_t i;
+
+	for (i = 0; i < L; i++)
+		D[i] ^= S[i];
 }
+/**
+ * salsa20_8(B):
+ * Apply the salsa20/8 core to the provided block.
+ */
+static void
+salsa20_8(uint32_t B[16])
+{
+	uint32_t x[16];
+	size_t i;
+
+	blkcpy(x, B, 64);
+	for (i = 0; i < 8; i += 2) {
+#define R(a,b) (((a) << (b)) | ((a) >> (32 - (b))))
+		/* Operate on columns. */
+		x[ 4] ^= R(x[ 0]+x[12], 7);  x[ 8] ^= R(x[ 4]+x[ 0], 9);
+		x[12] ^= R(x[ 8]+x[ 4],13);  x[ 0] ^= R(x[12]+x[ 8],18);
+
+		x[ 9] ^= R(x[ 5]+x[ 1], 7);  x[13] ^= R(x[ 9]+x[ 5], 9);
+		x[ 1] ^= R(x[13]+x[ 9],13);  x[ 5] ^= R(x[ 1]+x[13],18);
+
+		x[14] ^= R(x[10]+x[ 6], 7);  x[ 2] ^= R(x[14]+x[10], 9);
+		x[ 6] ^= R(x[ 2]+x[14],13);  x[10] ^= R(x[ 6]+x[ 2],18);
+
+		x[ 3] ^= R(x[15]+x[11], 7);  x[ 7] ^= R(x[ 3]+x[15], 9);
+		x[11] ^= R(x[ 7]+x[ 3],13);  x[15] ^= R(x[11]+x[ 7],18);
+
+		/* Operate on rows. */
+		x[ 1] ^= R(x[ 0]+x[ 3], 7);  x[ 2] ^= R(x[ 1]+x[ 0], 9);
+		x[ 3] ^= R(x[ 2]+x[ 1],13);  x[ 0] ^= R(x[ 3]+x[ 2],18);
+
+		x[ 6] ^= R(x[ 5]+x[ 4], 7);  x[ 7] ^= R(x[ 6]+x[ 5], 9);
+		x[ 4] ^= R(x[ 7]+x[ 6],13);  x[ 5] ^= R(x[ 4]+x[ 7],18);
+
+		x[11] ^= R(x[10]+x[ 9], 7);  x[ 8] ^= R(x[11]+x[10], 9);
+		x[ 9] ^= R(x[ 8]+x[11],13);  x[10] ^= R(x[ 9]+x[ 8],18);
+
+		x[12] ^= R(x[15]+x[14], 7);  x[13] ^= R(x[12]+x[15], 9);
+		x[14] ^= R(x[13]+x[12],13);  x[15] ^= R(x[14]+x[13],18);
+#undef R
+	}
+	for (i = 0; i < 16; i++)
+		B[i] += x[i];
+}
+/**
+ * blockmix_salsa8(Bin, Bout, X, r):
+ * Compute Bout = BlockMix_{salsa20/8, r}(Bin).  The input Bin must be 128r
+ * bytes in length; the output Bout must also be the same size.  The
+ * temporary space X must be 64 bytes.
+ */
+static void
+blockmix_salsa8(uint32_t * Bin, uint32_t * Bout, uint32_t * X, size_t r)
+{
+	size_t i;
+
+	/* 1: X <-- B_{2r - 1} */
+	blkcpy(X, &Bin[(2 * r - 1) * 16], 64);
+
+	/* 2: for i = 0 to 2r - 1 do */
+	for (i = 0; i < 2 * r; i += 2) {
+		/* 3: X <-- H(X \xor B_i) */
+		blkxor(X, &Bin[i * 16], 64);
+		salsa20_8(X);
+
+		/* 4: Y_i <-- X */
+		/* 6: B' <-- (Y_0, Y_2 ... Y_{2r-2}, Y_1, Y_3 ... Y_{2r-1}) */
+		blkcpy(&Bout[i * 8], X, 64);
+
+		/* 3: X <-- H(X \xor B_i) */
+		blkxor(X, &Bin[i * 16 + 16], 64);
+		salsa20_8(X);
+
+		/* 4: Y_i <-- X */
+		/* 6: B' <-- (Y_0, Y_2 ... Y_{2r-2}, Y_1, Y_3 ... Y_{2r-1}) */
+		blkcpy(&Bout[i * 8 + r * 16], X, 64);
+	}
+}
+
+/**
+ * integerify(B, r):
+ * Return the result of parsing B_{2r-1} as a little-endian integer.
+ */
+static uint64_t
+integerify(uint32_t * B, size_t r)
+{
+	uint32_t * X = (uint32_t *)(B + (2 * r - 1) * 64);
+
+	return (((uint64_t)(X[1]) << 32) + X[0]);
+}
+//#if defined(USE_SSE2)
+//// By default, set to generic scrypt function. This will prevent crash in case when scrypt_detect_sse2() wasn't called
+//void (*scrypt_1024_1_1_256_sp_detected)(const char *input, char *output, char *scratchpad) = &scrypt_1024_1_1_256_sp_generic;
+//
+//void scrypt_detect_sse2()
+//{
+//#if defined(USE_SSE2_ALWAYS)
+//    printf("scrypt: using scrypt-sse2 as built.\n");
+//#else // USE_SSE2_ALWAYS
+//    // 32bit x86 Linux or Windows, detect cpuid features
+//    unsigned int cpuid_edx=0;
+//#if defined(_MSC_VER)
+//    // MSVC
+//    int x86cpuid[4];
+//    __cpuid(x86cpuid, 1);
+//    cpuid_edx = (unsigned int)buffer[3];
+//#else // _MSC_VER
+//    // Linux or i686-w64-mingw32 (gcc-4.6.3)
+//    unsigned int eax, ebx, ecx;
+//    __get_cpuid(1, &eax, &ebx, &ecx, &cpuid_edx);
+//#endif // _MSC_VER
+//
+//    if (cpuid_edx & 1<<26)
+//    {
+//        scrypt_1024_1_1_256_sp_detected = &scrypt_1024_1_1_256_sp_sse2;
+//        printf("scrypt: using scrypt-sse2 as detected.\n");
+//    }
+//    else
+//    {
+//        scrypt_1024_1_1_256_sp_detected = &scrypt_1024_1_1_256_sp_generic;
+//        printf("scrypt: using scrypt-generic, SSE2 unavailable.\n");
+//    }
+//#endif // USE_SSE2_ALWAYS
+//}
+//#endif
+//
+//void scrypt_1024_1_1_256(const char *input, char *output)
+//{
+//	char scratchpad[SCRYPT_SCRATCHPAD_SIZE];
+//    scrypt_1024_1_1_256_sp(input, output, scratchpad);
+//}

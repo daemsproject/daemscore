@@ -10,6 +10,9 @@
 #include "rpcprotocol.h"
 #include "uint256.h"
 #include "primitives/transaction.h"
+#include "ccc/content.h"
+#include "ccc/link.h"
+#include "base58.h"
 #include <list>
 #include <map>
 #include <stdint.h>
@@ -21,7 +24,7 @@
 
 class CBlockIndex;
 class CNetAddr;
-
+class CBlock;
 class AcceptedConnection
 {
 public:
@@ -131,6 +134,7 @@ extern void ShutdownRPCMining();
 extern int64_t nWalletUnlockTime;
 extern CAmount AmountFromValue(const json_spirit::Value& value);
 extern json_spirit::Value ValueFromAmount(const CAmount& amount);
+extern CPubKey AccountFromValue(const Value& value);
 extern double GetDifficulty(const CBlockIndex* blockindex = NULL);
 extern std::string HelpRequiringPassphrase();
 extern std::string HelpExampleCli(std::string methodname, std::string args);
@@ -163,12 +167,12 @@ extern json_spirit::Value submitblock(const json_spirit::Array& params, bool fHe
 extern json_spirit::Value estimatefee(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value estimatepriority(const json_spirit::Array& params, bool fHelp);
 
-extern json_spirit::Value getnewaddress(const json_spirit::Array& params, bool fHelp); // in rpcwallet.cpp
-extern json_spirit::Value getaccountaddress(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getnewid(const json_spirit::Array& params, bool fHelp); // in rpcwallet.cpp
+extern json_spirit::Value getmainid(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getrawchangeaddress(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value setaccount(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getaccount(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value getaddressesbyaccount(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getidlist(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value sendtoaddress(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value signmessage(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value verifymessage(const json_spirit::Array& params, bool fHelp);
@@ -202,6 +206,9 @@ extern json_spirit::Value getwalletinfo(const json_spirit::Array& params, bool f
 extern json_spirit::Value getblockchaininfo(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getnetworkinfo(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value setmocktime(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getmaturetime(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getcontacts(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value addcontacts(const json_spirit::Array& params, bool fHelp);
 
 extern json_spirit::Value getrawtransaction(const json_spirit::Array& params, bool fHelp); // in rcprawtransaction.cpp
 extern json_spirit::Value listunspent(const json_spirit::Array& params, bool fHelp);
@@ -234,7 +241,22 @@ extern json_spirit::Value getcontent(const json_spirit::Array& params, bool fHel
 extern json_spirit::Value getcontentbylink(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getlink(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getcontents(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getmessages(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value devtest(const json_spirit::Array& params, bool fHelp); // to be deleted
+extern CContent _create_text_content(std::string str);
+extern CContent _create_file_content(std::string str);
+extern CContent _create_content(const json_spirit::Array& params);
+extern json_spirit::Value createcontent(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Object _decode_content(const json_spirit::Array& params);
+extern json_spirit::Value decodecontent(const json_spirit::Array& params, bool fHelp);
+extern bool _getTxFrBlock(const CBlock& block, const int nTx, CTransaction& txOut);
+extern bool _getVoutFrTx(const CTransaction& tx, const int nVout, CTxOut& vout);
+extern bool _getContentFrTx(const CTransaction& tx, const int nVout, CContent& content);
+extern json_spirit::Object _voutToJson(const CTxOut& txout);
+extern json_spirit::Object _output_content(const CContent& cttIn, const int& cformat, const unsigned char& cttf, const CLink& clinkIn, const std::vector<CBitcoinAddress>& posters, const CAmount nValue, const CScript& scriptPubKey);
+extern std::vector<CBitcoinAddress> _get_posters(CTransaction tx);
+extern bool _parse_getcontents_params(const json_spirit::Array& params, int& fbh, int& maxc, int& maxb, int& blkc, json_spirit::Array& withcc, json_spirit::Array& withoutcc, json_spirit::Array& firstcc, int& fContentFormat, unsigned char& cflag, int& mincsize, json_spirit::Array& addrs, bool& fAsc);
+extern bool _check_cc(const CContent& ctt, const json_spirit::Array& withcc, const json_spirit::Array& withoutcc, const json_spirit::Array& firstcc);
 
 extern json_spirit::Value getbrowserconf(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getfollowed(const json_spirit::Array& params, bool fHelp);
@@ -245,5 +267,14 @@ extern bool HTTPReq_REST(AcceptedConnection *conn,
                   std::string& strURI,
                   std::map<std::string, std::string>& mapHeaders,
                   bool fRun);
+class PaymentRequest;
+class CWalletTx;
+class CWallet;
+extern PaymentRequest ParsePaymentRequest(json_spirit::Value paymentRequestJson);
+extern CWalletTx CreateRawTransaction(PaymentRequest pr,bool& fRequestPassword,CWallet*& pwallet);
 extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, json_spirit::Object& entry);
+extern void GetMessagesFromTx(std::vector<CMessage>& vMessages,const CTransaction& tx,const int nBlockHeight,int nTx,int nTime,const std::vector<CScript>& vIDsLocal,
+        const std::vector<CScript>& vIDsForeign,int nDirectionFilter,bool fLinkonly,int nPos,int nOffset,int nCount);
+
+extern void SortMessages(std::vector<CMessage>& vMsg,std::vector<CScript> vIDsLocal);
 #endif // BITCOIN_RPCSERVER_H

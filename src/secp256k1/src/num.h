@@ -13,11 +13,11 @@
 #include "libsecp256k1-config.h"
 #endif
 
-#if defined(USE_NUM_GMP)
+//#if defined(USE_NUM_GMP)
 #include "num_gmp.h"
-#else
-#error "Please select num implementation"
-#endif
+//#else
+//#error "Please select num implementation"
+//#endif
 
 /** Copy a number. */
 static void secp256k1_num_copy(secp256k1_num_t *r, const secp256k1_num_t *a);

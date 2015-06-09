@@ -28,7 +28,7 @@ class Notificator;
 //class SendCoinsRecipient;
 //class UnitDisplayStatusBarControl;
 class MainView;
-//class WalletModel;
+class WalletModel;
 //class PaymentRequest;
 //class CWalletTx;
 //class CWallet;
@@ -64,14 +64,15 @@ public:
         The wallet model represents a bitcoin wallet, and offers access to the list of transactions, address book and sending
         functionality.
     */
-    bool addWallet(const QString& name);//,WalletModel *walletModel);
+    
+    bool addWallet(const QString& name,WalletModel *walletModelIn);
     bool setCurrentWallet(const QString& name);
     void removeAllWallets();
     void subscribeToCoreSignalsJs();
 #endif // ENABLE_WALLET
     bool enableWallet;
     QString language;
-    bool handlePaymentRequest(QString message,int nOP,string& strError,SecureString& ssInput);
+    bool handleUserConfirm(QString title,QString message,int nOP,string& strError,SecureString& ssInput);
     JsInterface* jsInterface;
 protected:
     void changeEvent(QEvent *e);
@@ -83,7 +84,7 @@ protected:
 private:
     ClientModel *clientModel;
     MainView *mainView;
-
+    WalletModel *walletModel;
     //UnitDisplayStatusBarControl *unitDisplayControl;
     QLabel *labelEncryptionIcon;
     QLabel *labelConnectionsIcon;
@@ -97,6 +98,7 @@ private:
     QAction *browserAction;
     QAction *publisherAction;
     QAction *messengerAction;
+    QAction *minerAction;
     QAction *shopAction;
     QAction *domainNameAction;
     //QAction *overviewAction;
@@ -114,6 +116,7 @@ private:
     QAction *changePassphraseAction;
     QAction *newAccountAction;
     QAction *switchAccountAction;
+    QAction *unlockAccountAction;
     QAction *encryptAccountAction;        
     QAction *exportAccountAction;
     QAction *importAccountAction;
@@ -188,14 +191,8 @@ private slots:
     void gotoWalletPage();    
     void gotoPublisherPage();  
     void gotoMessengerPage();  
-    /** Switch to overview (home) page */
-    //void gotoOverviewPage();
-    /** Switch to history (transactions) page */
-    //void gotoHistoryPage();
-    /** Switch to receive coins page */
-    //void gotoReceiveCoinsPage();
-    /** Switch to send coins page */
-    //void gotoSendCoinsPage(QString addr = "");
+    void gotoMinerPage();  
+    
 
     /** Show Sign/Verify Message dialog and switch to sign message tab */
     //void gotoSignMessageTab(QString addr = "");
@@ -210,10 +207,11 @@ private slots:
    
    
    void backupWallet(){};
-   void encryptWallet(bool fEncrypted){};
-    void changePassphrase(){};
-   void newAccountClicked(){};
-   void switchAccountClicked(){};
+   void encryptWallet(bool fEncrypted);
+    void changePassphrase();
+   void newAccountClicked();
+   void switchAccountClicked();
+   void unlockAccountClicked();
    void domainNameClicked(){};
     void gotoBrowserPage();  
     /** Show about dialog */    

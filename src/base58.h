@@ -164,6 +164,7 @@ public:
     bool SetString(const char* psz, unsigned int nVersionBytes = 1);
     bool SetString(const std::string& str);
     std::string ToString() const;
+    std::string GetHeader(unsigned int nHeaderLen) const;
     int CompareTo(const CBase32Data& b32) const;
 
     bool operator==(const CBase32Data& b32) const { return CompareTo(b32) == 0; }
@@ -181,7 +182,8 @@ public:
  */
 class CBitcoinAddress : public CBase32Data {
 public:
-    bool Set(const CKeyID &id);
+    //bool Set(const CKeyID &id);
+    bool Set(const CPubKey& id);
     bool Set(const CScriptID &id);
     bool Set(const CTxDestination &dest);
     bool Set(const CScript &script);
@@ -190,12 +192,13 @@ public:
 
     CBitcoinAddress() {}
     CBitcoinAddress(const CTxDestination &dest) { Set(dest); }
+    CBitcoinAddress(const CPubKey& id) { Set(id); }
     CBitcoinAddress(const CScript &script) { Set(script); }
     CBitcoinAddress(const std::string& strAddress) { SetString(strAddress); }
     CBitcoinAddress(const char* pszAddress) { SetString(pszAddress); }
 
     CTxDestination Get() const;
-    bool GetKeyID(CKeyID &keyID) const;
+    bool GetKey(CPubKey& keyID) const;
     bool IsScript() const;
     std::string ToString() const;
 };
@@ -242,4 +245,6 @@ typedef CBitcoinExtKeyBase<CExtKey, 74, CChainParams::EXT_SECRET_KEY> CBitcoinEx
 typedef CBitcoinExtKeyBase<CExtPubKey, 74, CChainParams::EXT_PUBLIC_KEY> CBitcoinExtPubKey;
 bool StringToScriptPubKey(const string& str,CScript& script);
 bool ScriptPubKeyToString(const CScript& script,string& str);
+std::string ToStandardB32String(const std::string str);
+ bool B32Equal(const std::string str1,const std::string str2);
 #endif // BITCOIN_BASE58_H

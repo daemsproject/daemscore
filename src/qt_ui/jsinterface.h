@@ -1,9 +1,3 @@
-/* 
- * File:   jsinterface.h
- * Author: alan
- *
- * Created on May 6, 2015, 8:28 PM
- */
 
 #ifndef JSINTERFACE_H
 #define	JSINTERFACE_H
@@ -15,12 +9,11 @@
 #include "json/json_spirit_reader_template.h"
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_writer_template.h"
-//class QNetworkAccessManager;
-//class QNetworkReply;
-//class QNetworkDiskCache;
+
 class BitcoinGUI;
 class PaymentRequest;
 class CWalletTx;
+class WalletModel;
 class JsInterface: public QObject
 {
     Q_OBJECT
@@ -29,7 +22,9 @@ public:
     ~JsInterface();
     BitcoinGUI *gui;
     void subscribeToCoreSignals();
+    void setWalletModel(WalletModel *walletModelIn);
 public slots:    
+    void notifyAccountSwitched(std::string id);
     Q_INVOKABLE
     void test();
     QString jscall(QString command,QString dataJson);
@@ -39,30 +34,24 @@ public slots:
 signals:
     //Q_SIGNAL
     void feedback(QString str,QString func);
-//    void requestPayment(std::string strToken,PaymentRequest pr, CWalletTx tx,bool fRequestPassword);
+    void requestPayment(std::string strToken,PaymentRequest pr, CWalletTx tx,bool fRequestPassword);
     void notify(QString result);
 private slots:
-//    void notifyBlockHeight(const uint256 blockHash);
-//    void notifyTransactionChanged(const uint256 txid,const uint256 hashBlock);
+    void notifyBlockHeight(const uint256 blockHash);
+    void notifyTransactionChanged(const uint256 txid,const uint256 hashBlock);
 
 
     
 
 private:
-//    QNetworkAccessManager* m_network;
-//    QNetworkDiskCache* m_cache;
-//    QStringList m_URLQueue;
-//    QList<QImage> m_imageQueue;
-//    int m_outstandingFetches;
-//    QFutureWatcher<QRgb> * m_watcher;
-    //QWebView* webpage;
     std::map<std::string,std::pair<QString,QString> > mapAsync;
-    QString HandlePaymentReqeust(json_spirit::Array arrData);
+    QString HandlePaymentRequest(json_spirit::Array arrData);
+    QString EncryptMessages(json_spirit::Array params);
     bool handlePaymentRequest(CWalletTx tx,int nOP,string strError,SecureString& ssInput);  
-//    QString getPaymentAlertMessage(CWalletTx tx);
-    
-    CWallet wallet;
-
+    QString getPaymentAlertMessage(CWalletTx tx);
+    QString getEncryptMessegeAlert(std::vector<string> vstrIDsForeign,bool fEncrypt);
+    //CWallet *wallet;
+    WalletModel *walletModel;
     
 };
 bool DecodeSigs(string ssInput,std::vector<CScript> sigs);

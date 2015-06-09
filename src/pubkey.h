@@ -23,44 +23,14 @@
  * script supports up to 75 for single byte push
  */
 
-static const int PUBKEY_LEN = 33;
-class CKeyID 
-{
-private:
-    unsigned char vch[PUBKEY_LEN];    
-    void Invalidate() { vch[0] = 0xFF; }
-public:
-    CKeyID()  {Invalidate();}
-    CKeyID(const std::vector<unsigned char>& in) { std::copy(in.begin(),in.end(),vch); }
+/** A reference to a CKey: the Hash160 of its serialized public key */
+//class CKeyID : public uint160
+//{
+//public:
+//    CKeyID() : uint160(0) {}
+//    CKeyID(const uint160& in) : uint160(in) {}
+//};
     
-    CKeyID operator=(const CKeyID& in)
-    {
-        std::vector<unsigned char> tmp = in.ToByteVector();
-        std::copy(tmp.begin(),tmp.end(), vch);
-        return *this;
-    }
-    //! Comparator implementation.
-
-    friend bool operator==(const CKeyID& a, const CKeyID& b)
-    {
-        return a.vch[0] == b.vch[0] &&
-               memcmp(a.vch, b.vch, PUBKEY_LEN) == 0;
-    }
-    friend bool operator!=(const CKeyID& a, const CKeyID& b)
-    {
-        return !(a == b);
-    }
-    friend bool operator<(const CKeyID& a, const CKeyID& b)
-    {
-        return a.vch[0] < b.vch[0] ||
-               (a.vch[0] == b.vch[0] && memcmp(a.vch, b.vch, PUBKEY_LEN) < 0);
-    }
-    bool IsValid() const {return vch[0] != 0xFF;}
-    std::vector<unsigned char>  ToByteVector() const{ return std::vector<unsigned char>(vch, vch + PUBKEY_LEN); }
-    bool IsEvenY() const{ return vch[0] == 2; }
-    std::vector<unsigned char> GetData() const { return std::vector<unsigned char>(vch + 1, vch + PUBKEY_LEN);}
-};
-
 /** An encapsulated public key. */
 class CPubKey
 {
@@ -169,7 +139,10 @@ public:
     }
 
     //! Get the KeyID of this public key (hash of its serialization)
-    CKeyID GetID() const;
+//    CKeyID GetID() const
+//    {
+//        return CKeyID(Hash160(vch, vch + size()));
+//    }
 
     std::vector<unsigned char> GetChar() const;
     //! Get the 256-bit hash of this public key.

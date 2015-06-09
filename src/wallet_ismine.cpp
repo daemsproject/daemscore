@@ -21,8 +21,8 @@ unsigned int HaveKeys(const vector<valtype>& pubkeys, const CKeyStore& keystore)
     unsigned int nResult = 0;
     BOOST_FOREACH(const valtype& pubkey, pubkeys)
     {
-        CKeyID keyID = CPubKey(pubkey).GetID();
-        if (keystore.HaveKey(keyID))
+        //CKeyID keyID = CPubKey(pubkey).GetID();
+        if (keystore.HaveKey(pubkey))
             ++nResult;
     }
     return nResult;
@@ -36,22 +36,23 @@ isminetype IsMine(const CKeyStore &keystore, const CTxDestination& dest)
 
 isminetype IsMine(const CKeyStore &keystore, const CScript& scriptPubKey)
 {
+    //LogPrintf("wallet.ismine script:%s \n",scriptPubKey.ToString());
     vector<valtype> vSolutions;
     txnouttype whichType;
     if (!Solver(scriptPubKey, whichType, vSolutions)) {
-        if (keystore.HaveWatchOnly(scriptPubKey))
-            return ISMINE_WATCH_ONLY;
+//        if (keystore.HaveWatchOnly(scriptPubKey))
+//            return ISMINE_WATCH_ONLY;
         return ISMINE_NO;
     }
 
-    CKeyID keyID;
+    CPubKey keyID;
     switch (whichType)
     {
     case TX_NONSTANDARD:
     case TX_NULL_DATA:
         break;
     case TX_PUBKEY:
-        keyID = CPubKey(vSolutions[0]).GetID();
+        keyID = CPubKey(vSolutions[0]);
         if (keystore.HaveKey(keyID))
             return ISMINE_SPENDABLE;
         break;
@@ -81,7 +82,7 @@ isminetype IsMine(const CKeyStore &keystore, const CScript& scriptPubKey)
     }
     }
 
-    if (keystore.HaveWatchOnly(scriptPubKey))
-        return ISMINE_WATCH_ONLY;
+//    if (keystore.HaveWatchOnly(scriptPubKey))
+//        return ISMINE_WATCH_ONLY;
     return ISMINE_NO;
 }

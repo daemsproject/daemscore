@@ -5,15 +5,28 @@
 #include "pubkey.h"
 
 #include "eccryptoverify.h"
-#include "utilstrencodings.h"
 
-#ifdef USE_SECP256K1
+//#ifdef USE_SECP256K1
 #include <secp256k1.h>
-#else
+//#include "secp256k1/src/scalar.h"
+//#else
 #include "ecwrapper.h"
-#include "key.h"
-#endif
+//#endif
+//! anonymous namespace
+namespace {
 
+class CSecp256k1Init {
+public:
+    CSecp256k1Init() {
+        secp256k1_start(SECP256K1_START_SIGN||SECP256K1_START_VERIFY);
+    }
+    ~CSecp256k1Init() {
+        secp256k1_stop();
+    }
+};
+static CSecp256k1Init instance_of_csecp256k1;
+
+} // anon namespace
 bool CPubKey::Verify(const uint256 &hash, const std::vector<unsigned char>& vchSig) const {
     if (!IsValid())
         return false;
@@ -97,6 +110,38 @@ bool CPubKey::Compress() {
     Set(pubkey.begin(), pubkey.end());
     return true;
 }
+bool CPubKey::AddSteps(const CPubKey& stepPubKey,const long& nStep){
+    //note :maybe have to change secp256k1 library to fulfill the function .The original derive function is much slower because it includes
+    //a ecc multiple procedure.
+    //the hashing is a good secure procedure, but compromise is a much slower speed
+    if (nStep==0)
+        return true;    
+    uint256 tweak=uint256((uint64_t)nStep);
+   return secp256k1_ec_pubkey_tweak_addsteps((unsigned char*)begin(), size(),(unsigned char*)stepPubKey.begin(), stepPubKey.size(),(unsigned char*)&tweak);
+
+//    secp256k1_ge_t point0;
+//    secp256k1_ge_t point1;
+//    secp256k1_eckey_pubkey_parse( *point0, (unsigned char*)begin(), &size());
+//    secp256k1_eckey_pubkey_parse( *point1, (unsigned char*)stepPubKey.begin(), &stepPubKey.size());
+//    
+//    if (nStep!=1){
+//        secp256k1_scalar_t sstStep;
+//        if (nStep<0){
+//            nStep=-nStep;
+//            uint256 b32Step=uint256(nStep);
+//            secp256k1_scalar_set_b32(&sstStep, *b32Step, NULL); 
+//            secp256k1_scalar_negate(&sstStep, &sstStep);
+//        }else{
+//            uint256 b32Step=uint256(nStep);
+//            secp256k1_scalar_set_b32(&sstStep, *b32Step, NULL);        
+//        }
+//        secp256k1_eckey_pubkey_tweak_mul(*point1, *sstStep);
+//    }
+//    secp256k1_gej_add_ge_var(*point0,*point0,*point1);
+//    secp256k1_eckey_pubkey_serialize(*point1, unsigned char *begin(), &size(), false) ;
+    
+   // return true;
+}
 
 bool CPubKey::Derive(CPubKey& pubkeyChild, unsigned char ccChild[32], unsigned int nChild, const unsigned char cc[32]) const {
     assert(IsValid());
@@ -139,7 +184,7 @@ void CExtPubKey::Decode(const unsigned char code[74]) {
 
 bool CExtPubKey::Derive(CExtPubKey &out, unsigned int nChild) const {
     out.nDepth = nDepth + 1;
-    CKeyID id = pubkey.GetID();
+    CPubKey id = pubkey;
     memcpy(&out.vchFingerprint[0], &id, 4);
     out.nChild = nChild;
     return pubkey.Derive(out.pubkey, out.vchChainCode, nChild, vchChainCode);
@@ -148,11 +193,4 @@ bool CExtPubKey::Derive(CExtPubKey &out, unsigned int nChild) const {
 std::vector<unsigned char> CPubKey::GetChar() const
 {
     return std::vector<unsigned char>(vch, vch + size());
-}
-
-// The ID from this function can be invalid. Need to check before using
-CKeyID CPubKey::GetID () const 
-{
-    CPubKey pk(begin(),end());
-    return pk.Compress() ? CKeyID(pk.GetChar()) : CKeyID();
 }

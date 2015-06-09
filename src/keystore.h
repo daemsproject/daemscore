@@ -3,13 +3,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_KEYSTORE_H
-#define BITCOIN_KEYSTORE_H
-
+#ifndef CCCOIN_KEYSTORE_H
+#define CCCOIN_KEYSTORE_H
+#include "util.h"
 #include "key.h"
 #include "pubkey.h"
 #include "sync.h"
-
 #include <boost/signals2/signal.hpp>
 #include <boost/variant.hpp>
 
@@ -25,43 +24,60 @@ protected:
 public:
     virtual ~CKeyStore() {}
 
-    //! Add a key to the store.
-    virtual bool AddKeyPubKey(const CKey &key, const CPubKey &pubkey) =0;
-    virtual bool AddKey(const CKey &key);
+   
+    virtual bool AddKey(const CKey &key){return false;};
 
     //! Check whether a key corresponding to a given address is present in the store.
-    virtual bool HaveKey(const CKeyID &address) const =0;
-    virtual bool GetKey(const CKeyID &address, CKey& keyOut) const =0;
-    virtual void GetKeys(std::set<CKeyID> &setAddress) const =0;
-    virtual bool GetPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const;
+    virtual bool HaveKey(const CPubKey &address) const =0;
+    virtual bool GetKey(const CPubKey &address, CKey& keyOut) const 
+    {
+        LogPrintf("CKeyStore::virtual GetKey called\n");
+        return false;
+    }
+    virtual void GetKeys(std::set<CPubKey> &setAddress) const =0;
+    //virtual bool GetPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const;
 
     //! Support for BIP 0013 : see https://github.com/bitcoin/bips/blob/master/bip-0013.mediawiki
     virtual bool AddCScript(const CScript& redeemScript) =0;
     virtual bool HaveCScript(const CScriptID &hash) const =0;
     virtual bool GetCScript(const CScriptID &hash, CScript& redeemScriptOut) const =0;
-
-    //! Support for Watch-only addresses
-    virtual bool AddWatchOnly(const CScript &dest) =0;
-    virtual bool RemoveWatchOnly(const CScript &dest) =0;
-    virtual bool HaveWatchOnly(const CScript &dest) const =0;
-    virtual bool HaveWatchOnly() const =0;
+    
 };
 
-typedef std::map<CKeyID, CKey> KeyMap;
+typedef std::map<CPubKey, uint64_t>  KeyMap;//uint645 is step
 typedef std::map<CScriptID, CScript > ScriptMap;
-typedef std::set<CScript> WatchOnlySet;
 
 /** Basic key store, that keeps keys in an address->secret map */
 class CBasicKeyStore : public CKeyStore
 {
 protected:
-    KeyMap mapKeys;
-    ScriptMap mapScripts;
-    WatchOnlySet setWatchOnly;
-
+    
+    
 public:
-    bool AddKeyPubKey(const CKey& key, const CPubKey &pubkey);
-    bool HaveKey(const CKeyID &address) const
+    CKey baseKey;
+    //keystep for extended keys,can be encrypted
+    CKey stepKey;
+    uint32_t nStartTime;
+    uint64_t nMaxSteps;        
+    KeyMap mapKeys; 
+    bool fHasPriv;
+    bool fHasPub;
+    bool fHasStepPub;
+    bool fHasStepPriv;
+    ScriptMap mapScripts;
+    CBasicKeyStore()
+    {
+        nMaxSteps=0;
+        nStartTime=0;
+        fHasPriv=false;
+        fHasPub=false;
+        fHasStepPub=false;
+        fHasStepPriv=false;
+    }
+    bool HavePriv(){return fHasPriv;};
+    bool HavePub(){return fHasPub;};
+    bool CanExtendKeys(){return fHasPub&&fHasStepPub;};
+    bool HaveKey(const CPubKey &address) const
     {
         bool result;
         {
@@ -70,7 +86,7 @@ public:
         }
         return result;
     }
-    void GetKeys(std::set<CKeyID> &setAddress) const
+    void GetKeys(std::set<CPubKey> &setAddress) const
     {
         setAddress.clear();
         {
@@ -83,30 +99,28 @@ public:
             }
         }
     }
-    bool GetKey(const CKeyID &address, CKey &keyOut) const
+    bool GetKey(const CPubKey &address, CKey& keyOut) const
     {
-        {
+        //LogPrintf("CBasicKeyStore::GetKey \n");
+       {
             LOCK(cs_KeyStore);
             KeyMap::const_iterator mi = mapKeys.find(address);
             if (mi != mapKeys.end())
             {
-                keyOut = mi->second;
+                if(mi->second==0){
+                    keyOut=baseKey;
+                    return true;
+                }                    
+                baseKey.AddSteps(stepKey,mi->second,keyOut);                
                 return true;
             }
         }
+         //LogPrintf("CBasicKeyStore::GetKey key not found\n");
         return false;
-    }
+    }   
     virtual bool AddCScript(const CScript& redeemScript);
     virtual bool HaveCScript(const CScriptID &hash) const;
     virtual bool GetCScript(const CScriptID &hash, CScript& redeemScriptOut) const;
 
-    virtual bool AddWatchOnly(const CScript &dest);
-    virtual bool RemoveWatchOnly(const CScript &dest);
-    virtual bool HaveWatchOnly(const CScript &dest) const;
-    virtual bool HaveWatchOnly() const;
 };
-
-typedef std::vector<unsigned char, secure_allocator<unsigned char> > CKeyingMaterial;
-typedef std::map<CKeyID, std::pair<CPubKey, std::vector<unsigned char> > > CryptedKeyMap;
-
 #endif // BITCOIN_KEYSTORE_H

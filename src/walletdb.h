@@ -7,24 +7,28 @@
 #define BITCOIN_WALLETDB_H
 
 #include "amount.h"
-#include "db.h"
 #include "key.h"
+#include "util.h"
 #include "keystore.h"
-
+#include "pubkey.h"
+#include "crypter.h"
 #include <list>
 #include <stdint.h>
 #include <string>
 #include <utility>
 #include <vector>
-
+#include <boost/filesystem.hpp>
+#include "json/json_spirit_reader_template.h"
+#include "json/json_spirit_utils.h"
+#include "json/json_spirit_writer_template.h"
 class CAccount;
 class CAccountingEntry;
 struct CBlockLocator;
-class CKeyPool;
-class CMasterKey;
+
+
 class CScript;
 class CWallet;
-class CWalletTx;
+
 class uint160;
 class uint256;
 
@@ -45,7 +49,7 @@ public:
     static const int CURRENT_VERSION=1;
     int nVersion;
     int64_t nCreateTime; // 0 means unknown
-
+    
     CKeyMetadata()
     {
         SetNull();
@@ -72,47 +76,66 @@ public:
     }
 };
 
-/** Access to the wallet database (wallet.dat) */
-class CWalletDB : public CDB
+/** Access to the wallet database  */
+class CWalletDB
 {
-public:
-    CWalletDB(const std::string& strFilename, const char* pszMode = "r+") : CDB(strFilename, pszMode)
-    {
-    }
 
+public:
+    std::string strCurrentWallet;
+    int nWalletDBUpdated;
+    boost::filesystem::path fpWalletPath= GetDataDir() / "ids" ;
+    boost::filesystem::path fpConfFile= GetDataDir() / "ids" / "ids.conf";
+    CWalletDB()
+    {   
+        LogPrintf("Cwalletdb() \n");
+        //fpWalletPath = GetDataDir() / "ids" ; 
+        boost::filesystem::create_directories(fpWalletPath);
+        //fpConfFile = GetDataDir() / "ids" / "ids.conf"; 
+        nWalletDBUpdated=0;
+        LogPrintf("Cwalletdb()2 %s\n",fpWalletPath.string());
+    }    
+    DBErrors LoadWallet(CWallet* pwallet,CPubKey id);    
+    bool GetDefaultWallet(CPubKey& id);
+    bool SetDefaultWallet(CPubKey& id);
+    bool SetCurrentWallet(CPubKey& id);
+    bool GetCurrentWallet(CPubKey& id);
+    bool GetWalletList(std::vector<CPubKey>& vIds);    
+    bool IsWalletExists(CPubKey& id);
+    bool SwitchToWallet(CPubKey& id,CCryptoKeyStore* keyStore);
+    //bool SwitchToWallet(std::string strWalletName);
+    //bool ReadKeyStore(CCryptoKeyStore* keyStore);
+    bool WriteKeyStore(CCryptoKeyStore* keyStore);
+    bool SetWalletConf(const std::string& strConfName,const json_spirit::Value& valConfValue);
+    bool GetWalletConf(const std::string& strConfName,json_spirit::Value& valConfValue);
+    bool GetWalletConfObj(json_spirit::Object& objConf);
+    bool ReadKeyStore(CCryptoKeyStore* keyStore);
+    bool GetIdObj(const std::string& strId,json_spirit::Object& objId);  
+    bool WriteToAddressBook(const std::string& strCategory,const std::string& strKey,const json_spirit::Value& valInfo);
+    bool EraseFromAddressBook(const std::string& strCategory,const std::string& strKey);
+    bool ReadFromAddressBook(const std::string& strCategory,const std::string& strKey,json_spirit::Value& valInfo);
+    bool WriteAddressBookToFile(json_spirit::Value& objAddressBook);
+    bool GetAddressBookObj(json_spirit::Object& objAdb);
+    bool AddContacts(const std::map<std::string,json_spirit::Object>mapContact);
+    bool GetContactInfo(const std::string strKey,json_spirit::Object objInfo);
+    
     bool WriteName(const std::string& strAddress, const std::string& strName);
     bool EraseName(const std::string& strAddress);
+    
+    
 
-    bool WritePurpose(const std::string& strAddress, const std::string& purpose);
-    bool ErasePurpose(const std::string& strAddress);
-
-    bool WriteTx(uint256 hash, const CWalletTx& wtx);
-    bool EraseTx(uint256 hash);
-
-    bool WriteKey(const CPubKey& vchPubKey, const CPrivKey& vchPrivKey, const CKeyMetadata &keyMeta);
-    bool WriteCryptedKey(const CPubKey& vchPubKey, const std::vector<unsigned char>& vchCryptedSecret, const CKeyMetadata &keyMeta);
-    bool WriteMasterKey(unsigned int nID, const CMasterKey& kMasterKey);
+    
 
     bool WriteCScript(const uint160& hash, const CScript& redeemScript);
 
-    bool WriteWatchOnly(const CScript &script);
-    bool EraseWatchOnly(const CScript &script);
 
-    bool WriteBestBlock(const CBlockLocator& locator);
-    bool ReadBestBlock(CBlockLocator& locator);
 
     bool WriteOrderPosNext(int64_t nOrderPosNext);
 
-    bool WriteDefaultKey(const CPubKey& vchPubKey);
-
-    bool ReadPool(int64_t nPool, CKeyPool& keypool);
-    bool WritePool(int64_t nPool, const CKeyPool& keypool);
-    bool ErasePool(int64_t nPool);
+        
 
     bool WriteMinVersion(int nVersion);
 
-    bool ReadAccount(const std::string& strAccount, CAccount& account);
-    bool WriteAccount(const std::string& strAccount, const CAccount& account);
+    
 
     /// Write destination data key,value tuple to database
     bool WriteDestData(const std::string &address, const std::string &key, const std::string &value);
@@ -120,19 +143,11 @@ public:
     bool EraseDestData(const std::string &address, const std::string &key);
 
     bool WriteAccountingEntry(const CAccountingEntry& acentry);
-    CAmount GetAccountCreditDebit(const std::string& strAccount);
-    void ListAccountCreditDebit(const std::string& strAccount, std::list<CAccountingEntry>& acentries);
-
-    DBErrors ReorderTransactions(CWallet* pwallet);
-    DBErrors LoadWallet(CWallet* pwallet);
-    DBErrors FindWalletTx(CWallet* pwallet, std::vector<uint256>& vTxHash, std::vector<CWalletTx>& vWtx);
-    DBErrors ZapWalletTx(CWallet* pwallet, std::vector<CWalletTx>& vWtx);
-    static bool Recover(CDBEnv& dbenv, std::string filename, bool fOnlyKeys);
-    static bool Recover(CDBEnv& dbenv, std::string filename);
+    
 
 private:
     CWalletDB(const CWalletDB&);
-    void operator=(const CWalletDB&);
+    //void operator=(const CWalletDB&);
 
     bool WriteAccountingEntry(const uint64_t nAccEntryNum, const CAccountingEntry& acentry);
 };

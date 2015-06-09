@@ -14,20 +14,19 @@
 #include "rpcserver.h"
 #include "util.h"
 #ifdef ENABLE_WALLET
-#include "db.h"
 #include "wallet.h"
 #endif
-
+#include "base58.h"
 #include <stdint.h>
 
 #include <boost/assign/list_of.hpp>
-
+#include <boost/thread.hpp>
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_value.h"
-
+#include "ccc/mhash.h"
 using namespace json_spirit;
 using namespace std;
-
+CWallet* pwalletMining=NULL;
 /**
  * Return average network hashes per second based on the last 'lookup' blocks,
  * or from the last difficulty change if 'lookup' is nonpositive.
@@ -44,7 +43,7 @@ Value GetNetworkHashPS(int lookup, int height) {
 
     // If lookup is -1, then use blocks since last difficulty change.
     if (lookup <= 0)
-        lookup = pb->nHeight % 2016 + 1;
+        lookup = pb->nHeight % 240 + 1;
 
     // If lookup is larger than chain, then set it to chain length.
     if (lookup > pb->nHeight)
@@ -92,6 +91,7 @@ Value getnetworkhashps(const Array& params, bool fHelp)
 }
 
 #ifdef ENABLE_WALLET
+
 Value getgenerate(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 0)
@@ -113,7 +113,7 @@ Value getgenerate(const Array& params, bool fHelp)
 
 Value setgenerate(const Array& params, bool fHelp)
 {
-    if (fHelp || params.size() < 1 || params.size() > 2)
+    if (fHelp || params.size() < 1 || params.size() > 4)
         throw runtime_error(
             "setgenerate generate ( genproclimit )\n"
             "\nSet 'generate' true or false to turn generation on or off.\n"
@@ -138,7 +138,9 @@ Value setgenerate(const Array& params, bool fHelp)
 
     if (pwalletMain == NULL)
         throw JSONRPCError(RPC_METHOD_NOT_FOUND, "Method not found (disabled)");
-
+    if((pwalletMining!=NULL) &&(pwalletMining!=pwalletMain))
+        delete pwalletMining;
+        pwalletMining=NULL;
     bool fGenerate = true;
     if (params.size() > 0)
         fGenerate = params[0].get_bool();
@@ -150,7 +152,7 @@ Value setgenerate(const Array& params, bool fHelp)
         if (nGenProcLimit == 0)
             fGenerate = false;
     }
-
+    
     // -regtest mode: don't return until nGenProcLimit blocks are generated
     if (fGenerate && Params().MineBlocksOnDemand())
     {
@@ -158,8 +160,8 @@ Value setgenerate(const Array& params, bool fHelp)
         int nHeightEnd = 0;
         int nHeight = 0;
         int nGenerate = (nGenProcLimit > 0 ? nGenProcLimit : 1);
-        CReserveKey reservekey(pwalletMain);
-
+        //CReserveKey reservekey(pwalletMain);
+        CPubKey miningID=pwalletMain->GenerateNewKey();
         {   // Don't keep cs_main locked
             LOCK(cs_main);
             nHeightStart = chainActive.Height();
@@ -170,7 +172,7 @@ Value setgenerate(const Array& params, bool fHelp)
         Array blockHashes;
         while (nHeight < nHeightEnd)
         {
-            auto_ptr<CBlockTemplate> pblocktemplate(CreateNewBlockWithKey(reservekey));
+            auto_ptr<CBlockTemplate> pblocktemplate(CreateNewBlockWithKey(miningID));
             if (!pblocktemplate.get())
                 throw JSONRPCError(RPC_INTERNAL_ERROR, "Wallet keypool empty");
             CBlock *pblock = &pblocktemplate->block;
@@ -195,10 +197,30 @@ Value setgenerate(const Array& params, bool fHelp)
     {
         mapArgs["-gen"] = (fGenerate ? "1" : "0");
         mapArgs ["-genproclimit"] = itostr(nGenProcLimit);
-        GenerateBitcoins(fGenerate, pwalletMain, nGenProcLimit);
-    }
-
-    return Value::null;
+        pwalletMining=pwalletMain;
+        
+        if (params.size() > 2)
+        {
+            if(params[2].get_str()!=""){                
+                CBitcoinAddress add;
+                LogPrintf("setgenerate address in:%s\n",params[2].get_str());
+                if(!add.SetString(params[2].get_str()))
+                    throw JSONRPCError(RPC_INTERNAL_ERROR, "ID format error");            
+                LogPrintf("setgenerate address setstring:%s\n",add.ToString());
+                CPubKey miningID;
+                if(!add.GetKey(miningID))
+                    throw JSONRPCError(RPC_INTERNAL_ERROR, "ID format error2");            
+                pwalletMining=new CWallet(miningID);
+            }
+        }
+        bool fExtendID=false;
+        if (params.size() > 3)
+            fExtendID=params[3].get_bool();        
+        GenerateBitcoins(fGenerate, pwalletMining, nGenProcLimit,fExtendID);
+    }    
+    Object obj;
+    obj.push_back(Pair("generate",fGenerate));
+    return Value(obj);
 }
 
 Value gethashespersec(const Array& params, bool fHelp)
@@ -218,6 +240,14 @@ Value gethashespersec(const Array& params, bool fHelp)
     if (GetTimeMillis() - nHPSTimerStart > 8000)
         return (int64_t)0;
     return (int64_t)dHashesPerSec;
+//    uint256* temphash=new uint256(0);
+//    double startTime=clock();
+//    for (int i=0;i<100;i++){
+//        mixHash(temphash,(unsigned int)chainActive.Height()+1);
+//    }
+//    double timeUsed=clock()-startTime;
+//    temphash=NULL;
+//    return 100*1000/timeUsed;
 }
 #endif
 
@@ -253,14 +283,42 @@ Value getmininginfo(const Array& params, bool fHelp)
     obj.push_back(Pair("currentblocktx",   (uint64_t)nLastBlockTx));
     obj.push_back(Pair("difficulty",       (double)GetDifficulty()));
     obj.push_back(Pair("errors",           GetWarnings("statusbar")));
-    obj.push_back(Pair("genproclimit",     (int)GetArg("-genproclimit", -1)));
-    obj.push_back(Pair("networkhashps",    getnetworkhashps(params, false)));
+    obj.push_back(Pair("genproclimit",     (int)GetArg("-genproclimit", -1)));    
+    uint64_t netRate=(double)getnetworkhashps(params, false).get_int64();
+    obj.push_back(Pair("networkhashrate",    netRate));
     obj.push_back(Pair("pooledtx",         (uint64_t)mempool.size()));
     obj.push_back(Pair("testnet",          Params().TestnetToBeDeprecatedFieldRPC()));
-    obj.push_back(Pair("chain",            Params().NetworkIDString()));
+    obj.push_back(Pair("chain",            Params().NetworkIDString()));    
 #ifdef ENABLE_WALLET
+    obj.push_back(Pair("connected",            !vNodes.empty()));
     obj.push_back(Pair("generate",         getgenerate(params, false)));
-    obj.push_back(Pair("hashespersec",     gethashespersec(params, false)));
+    obj.push_back(Pair("threadsrunning",         mapArgs ["-genproclimit"]));
+    int nKernels=boost::thread::hardware_concurrency();
+    obj.push_back(Pair("kernels",          nKernels      ));
+    CAmount blockReward=0;
+    CBlockIndex* pLastBlockIndex=chainActive.Tip();
+    for(int i=1;i<=3;i++){
+        CBlock lastBlock;
+        ReadBlockFromDisk(lastBlock, pLastBlockIndex);        
+        blockReward+=lastBlock.vtx[0].GetValueOut();
+        if(pLastBlockIndex==chainActive.Genesis())
+            break;        
+        pLastBlockIndex=pLastBlockIndex->pprev;        
+    }    
+    blockReward/=3;
+    uint256* temphash=new uint256(0);
+    double startTime=clock();
+    //LogPrintf("time:%d \n",startTime);
+    for (int i=0;i<100;i++){
+        mixHash(temphash,(unsigned int)chainActive.Height()+1);
+    }
+    double timeUsed=clock()-startTime;
+    //LogPrintf("time used:%d \n",timeUsed);
+    temphash=NULL;    
+    double kernelRate=100*1000000/timeUsed;//(double)gethashespersec(params, false))/nKernels;
+    obj.push_back(Pair("kernelrate",         kernelRate));
+    obj.push_back(Pair("kernelrevenueperday",(double)(blockReward*kernelRate/GetBlockProof(*(chainActive.Tip())).getdouble()/COIN*(24*60*60))));
+    obj.push_back(Pair("kernelblockinterval",GetBlockProof(*(chainActive.Tip())).getdouble()/kernelRate));
 #endif
     return obj;
 }

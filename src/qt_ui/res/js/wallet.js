@@ -17,7 +17,7 @@ var MyWallet = new function() {
     var total_received = 0; //Total Satoshi received
     var n_tx = 0; //Number of transactions
     var n_tx_filtered = 0; //Number of transactions after filtering
-    var latest_block; //Chain head block
+    var latest_block={}; //Chain head block
     var address_book = {}; //Holds the address book addr = label
     var transactions = []; //List of all transactions (initially populated from /multiaddr updated through websockets)
     
@@ -25,7 +25,7 @@ var MyWallet = new function() {
     var tx_filter = 0; //Transaction filter (e.g. Sent Received etc)
     var maxAddr = 1000; //Maximum number of addresses
     var IDs = []; //{addr : address, priv : private key, tag : tag (mark as archived), label : label, balance : balance}
-    
+    var LOCKTIME_THRESHOLD = 500000000;
     var archTimer; //Delayed Backup wallet timer
     var recommend_include_fee = true; //Number of unconfirmed transactions in blockchain.info's memory pool
     var event_listeners = []; //Emits Did decrypt wallet event (used on claim page)
@@ -39,7 +39,7 @@ var MyWallet = new function() {
         fee_policy : 0,  //Default Fee policy (-1 Tight, 0 Normal, 1 High)
         html5_notifications : false, //HTML 5 Desktop notifications    
         tx_display : 0, //Compact or detailed transactions    
-        transactions_per_page : 30, //Number of transactions per page    
+        transactions_per_page : 1000, //Number of transactions per page    
     };
     this.setNTransactionsPerPage = function(val) {
         wallet_options.transactions_per_page = val;
@@ -133,7 +133,10 @@ var MyWallet = new function() {
             if(!tx.blocktime)
             c= new Date();
             htmlcontent+=('<tr OnClick="MyWallet.showTx(\''+tx.txid+'\')"><td>');
-            switch (tx.category){
+            if(tx.generated)
+                htmlcontent+='<img src="../icons/tx_mined.png">';  
+            else{
+                switch (tx.category){
                 case "send":
                     htmlcontent+='<img src="../icons/tx_output.png">';  
                     break;
@@ -146,6 +149,7 @@ var MyWallet = new function() {
                 default:
                     htmlcontent+='<img src="../icons/tx_inout.png">';  
                     
+                }
             }
             htmlcontent+=('</td><td>');
             htmlcontent+='<div><div style="float:left">'+ dateToString(c)+'</div><div style="text-align:right">';
@@ -161,13 +165,7 @@ var MyWallet = new function() {
         }
         htmlcontent+='</tbody> ';  
         $("#latest-tx").html(htmlcontent);
-//        $('#summary-n-tx').html(n_tx);
-//
-//        $('#summary-received').html(formatMoney(total_received, true));
-//
-//        $('#summary-sent').html(formatMoney(total_sent, true));
-//
-//        $('#summary-balance').html(formatMoney(final_balance, symbol));
+
 
 //        $('.paper-wallet-btn').unbind().click(function() {
 //            loadScript('wallet/paper-wallet', function() {
@@ -320,6 +318,7 @@ var MyWallet = new function() {
             console.log(data);    
             transactions=data.txs;
             balance=data.balance;
+            latest_block.blockHeight=data.currentblockheight;
             if (transactions.length == 0 && tx_page > 0) {
                 //We have set a higher page number than transactions we actually have to display
                 //So rewind the page number to 0
@@ -337,34 +336,74 @@ var MyWallet = new function() {
 
         }, tx_page*MyWallet.getNTransactionsPerPage(), MyWallet.getNTransactionsPerPage());
     };
+    function setLatestBlock(block) {
 
+        if (block != null) {
+            latest_block = block;
+
+            for (var key in transactions) {
+                var tx = transactions[key];
+                //console.log(latest_block.blockHeight);
+                if (tx.blockHeight != null && tx.blockHeight > 0) {
+                    //var confirmations = latest_block.blockHeight - tx.blockHeight + 1;
+                    //if (confirmations <= 100) {
+                        tx.confirmations=(latest_block.blockHeight - tx.blockHeight + 1);
+                        //console.log(tx.confirmations);
+                    //} else {
+                      //  tx.setConfirmations(null);
+                    //}
+                } else {
+                    tx.confirmations=0;
+                }
+            }
+
+            //MyWallet.sendEvent('did_set_latest_block');
+        }
+    }
     
     function registerNotifications(){
-//        BrowserAPI.regNotifyBlocks(this.notifiedBlock);
-//        BrowserAPI.regNotifyTxs(this.notifiedTx,IDs);
+        //var aa=fuction(a){(a);};
+        var aa=function(a){
+            MyWallet.notifiedBlock(a);
+        };
+        var ab=function(a){
+            MyWallet.notifiedTx(a);
+        };
+        var ac=function(a){
+            window.location.href=window.location.href;
+        };
+        BrowserAPI.regNotifyBlocks(aa);        
+        BrowserAPI.regNotifyTxs(ab,IDs);
+        BrowserAPI.regNotifyAccount(ac);
 //        BrowserAPI.regNotifyAccount(this.notifiedAccount);
 //        BrowserAPI.regNotifyPeers(this.notifiedPeers);
     }
+    this.notifiedTx=function(a){
+        console.log("notified tx");
+            this.get_history();
+            buildHomeIntroView();
+            buildTransactionsView();
+    };
     this.notifiedBlock=function(obj){
-         for (var i = 0; i < obj.x.txIndexes.length; ++i) {
-                        for (var ii = 0; ii < transactions.length; ++ii) {
-                            if (transactions[ii].txIndex == obj.x.txIndexes[i]) {
-                                if (transactions[ii].blockHeight == null || transactions[ii].blockHeight == 0) {
-                                    transactions[ii].blockHeight = obj.x.height;
-                                    break;
-                                }
-                            }
-                        }
-                    }
+//         for (var i = 0; i < obj.x.txIndexes.length; ++i) {
+//                        for (var ii = 0; ii < transactions.length; ++ii) {
+//                            if (transactions[ii].txIndex == obj.x.txIndexes[i]) {
+//                                if (transactions[ii].blockHeight == null || transactions[ii].blockHeight == 0) {
+//                                    transactions[ii].blockHeight = obj.x.height;
+//                                    break;
+//                                }
+//                            }
+//                        }
+//                    }
+            console.log("notified block");
+                    setLatestBlock(obj);
 
-                    setLatestBlock(BlockFromJSON(obj.x));
-
-                    MyWallet.sendEvent('on_block');
+                    //MyWallet.sendEvent('on_block');
 
                     //Need to update latest block
                     buildTransactionsView();
     }
-    this.notifiedTx=function(obj){
+    this.notifiedTx0=function(obj){
         var tx = TransactionFromJSON(obj.x);
 
                     //Check if this is a duplicate
@@ -443,26 +482,54 @@ var MyWallet = new function() {
     this.notifiedPeers=function(data){
         
     }
+    function getLockIcon(tx){
+        var lockBlocks;
+        var blocksLeft;
+        if(tx.locktime>LOCKTIME_THRESHOLD)//is time
+        {
+            var currentTime=(new Date())/1000;
+            if(tx.blocktime)
+                lockBlocks=(tx.locktime-tx.blocktime)/180;
+            else
+                lockBlocks=(tx.locktime-currentTime)/180;
+            blocksLeft=(tx.locktime-currentTime)/180;
+
+        }else//is blockheight
+        {
+            if(tx.blockHeight>0)
+                lockBlocks=tx.locktime-tx.blockHeight;
+            else
+                lockBlocks=tx.locktime-latest_block.blockHeight;
+             blocksLeft=tx.locktime-latest_block.blockHeight;
+        }
+        if(blocksLeft<=0)
+            return 'transaction2';  
+        if(blocksLeft>480)
+            return 'lock_closed';
+        if(lockBlocks>=480)
+            lockBlocks=480;   
+        //console.log(lockBlocks);
+        //console.log(blocksLeft);
+        var clock="clock"+Math.ceil(((lockBlocks-blocksLeft)*5+1)/lockBlocks);
+        //console.log(clock);
+        return clock;            
+    }
     function getTxHTML(tx){
         var tr = $('<tr class="pointer"></tr>');  
         var html='<td><img src="../icons/';
         if (tx.locktime>0){
-            var maturein=BrowserAPI.getMatureTime(tx.locktime);
-            if (maturein.blocks==0)
-                html+='transaction2';  
-            else if(maturein.blocks>480)
-                html+='lock_closed';  
-            else{
-                var clock=Math.ceil((480-maturein.blocks)*5/480);
-                html+=('clock'+clock);
-            }
+            html+=getLockIcon(tx);
         }
         else{
             switch (tx.confirmations){
                 case 0:
                     html+='transaction0'; 
                     break;
-                case 1,2,3,4,5:
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
                     html+=('clock'+tx.confirmations);
                     break;
                 default:
@@ -477,6 +544,8 @@ var MyWallet = new function() {
         html+=('<td>'+dateToString(c)+'</td><td>');            
 //        if(tx.category=="send")
 //            html+=('<font color="red">');
+        if(tx.category=="immature")
+            tx.category="generate";
         html+=(tx.category);
 //        if(tx.category=="send")
             html+=('</font>');
@@ -497,7 +566,7 @@ var MyWallet = new function() {
     function buildTransactionsView() {
         var interval = null;
         var start = 0;
-
+        console.log("buildtxview");
         if (interval != null) {
             clearInterval(interval);
             interval = null;

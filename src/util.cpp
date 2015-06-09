@@ -743,7 +743,7 @@ void SetThreadPriority(int nPriority)
 #endif // WIN32
 }
 
-int GetFileNames(const boost::filesystem::path& dir, std::vector<std::string>& filenames)  
+int GetFileNames(const boost::filesystem::path& dir, std::vector<std::string>& filenames)  // Only get file names under this path, not children folder
 {        
      
     namespace fs = boost::filesystem;  
@@ -758,15 +758,15 @@ int GetFileNames(const boost::filesystem::path& dir, std::vector<std::string>& f
   
         if (fs::is_regular_file(iter->status()))  
         {  
-            filenames.push_back(iter->path().string());  
+            filenames.push_back(iter->path().string().substr(dir.string().size()+1));  
         }  
-  
-        if (fs::is_directory(iter->status()))  
-        {  
-  
-            GetFileNames(iter->path().string(), filenames);  
+  //temporarily don't interate to avoid file name mistake
+//        if (fs::is_directory(iter->status()))  
+//        {  
+//  
+//            GetFileNames(iter->path().string(), filenames);  
+//        }  
         }  
-    }  
   
     return filenames.size();  
 }  
@@ -889,5 +889,9 @@ int HexStringToInt(const std::string& s)
     ss >> x;
     return x;
 }
-
-
+std::string num2str(const double i)
+{
+    std::stringstream ss;
+    ss << i;
+    return ss.str();
+}

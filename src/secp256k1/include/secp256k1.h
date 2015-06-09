@@ -233,6 +233,16 @@ SECP256K1_WARN_UNUSED_RESULT int secp256k1_ec_pubkey_tweak_mul(
   const unsigned char *tweak
 ) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(3);
 
+/** Tweak a public key by adding tweak times the step-public-key to it.
+ * Requires starting with SECP256K1_START_VERIFY.
+ */
+SECP256K1_WARN_UNUSED_RESULT int secp256k1_ec_pubkey_tweak_addsteps(
+  unsigned char *pubkey,
+  int pubkeylen,
+  unsigned char *steppubkey,
+  int steppubkeylen,
+  const unsigned char *tweak
+) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(3) SECP256K1_ARG_NONNULL(5);
 # ifdef __cplusplus
 }
 # endif

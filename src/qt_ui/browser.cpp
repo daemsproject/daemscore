@@ -9,9 +9,10 @@
 #include "bitcoingui.h"
 
 #include "clientmodel.h"
+#include "walletmodel.h"
 #include "guiconstants.h"
 #include "guiutil.h"
-//#include "intro.h"
+#include "intro.h"
 #include "networkstyle.h"
 //#include "optionsmodel.h"
 #include "splashscreen.h"
@@ -233,7 +234,7 @@ private:
     QTimer *pollShutdownTimer;
 #ifdef ENABLE_WALLET
     //PaymentServer* paymentServer;
-    //WalletModel *walletModel;
+    WalletModel *walletModel;
 #endif
     int returnValue;
 
@@ -300,7 +301,7 @@ BitcoinApplication::BitcoinApplication(int &argc, char **argv):
     pollShutdownTimer(0),
 #ifdef ENABLE_WALLET
     //paymentServer(0),
-    //walletModel(0),
+    walletModel(0),
 #endif
     returnValue(0)
 {
@@ -396,8 +397,8 @@ void BitcoinApplication::requestShutdown()
 
 #ifdef ENABLE_WALLET
     //window->removeAllWallets();
-    //delete walletModel;
-    //walletModel = 0;
+    delete walletModel;
+    walletModel = 0;
 #endif
     delete clientModel;
     clientModel = 0;
@@ -428,9 +429,9 @@ void BitcoinApplication::initializeResult(int retval)
 #ifdef ENABLE_WALLET
         if(pwalletMain)
         {
-            //walletModel = new WalletModel(pwalletMain, optionsModel);
+            walletModel = new WalletModel(pwalletMain);
         LogPrintf("init result2 \n");
-            window->addWallet(BitcoinGUI::DEFAULT_WALLET);
+            window->addWallet(BitcoinGUI::DEFAULT_WALLET,walletModel);
             window->subscribeToCoreSignalsJs();//, walletModel);
             //window->setCurrentWallet(BitcoinGUI::DEFAULT_WALLET);
 
@@ -547,7 +548,7 @@ int main(int argc, char *argv[])
 
     /// 5. Now that settings and translations are available, ask user for data directory
     // User language is set up: pick a data directory
-    //Intro::pickDataDirectory();
+    Intro::pickDataDirectory();
 
     /// 6. Determine availability of data directory and parse bitcoin.conf
     /// - Do not call GetDataDir(true) before this step finishes

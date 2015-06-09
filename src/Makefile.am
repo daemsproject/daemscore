@@ -95,8 +95,9 @@ BITCOIN_CORE_H = \
   primitives/transaction.h \
   core_io.h \
   crypter.h \
-  db.h \
+  crypto/scrypt.h \
   eccryptoverify.h \
+  ccc/ecminer.h \
   ecwrapper.h \
   hash.h \
   init.h \
@@ -170,6 +171,7 @@ libbitcoin_server_a_SOURCES = \
   bloom.cpp \
   chain.cpp \
   checkpoints.cpp \
+  ccc/ecminer.cpp \
   init.cpp \
   leveldbwrapper.cpp \
   main.cpp \
@@ -199,8 +201,8 @@ libbitcoin_server_a_SOURCES = \
 # when wallet enabled
 libbitcoin_wallet_a_CPPFLAGS = $(BITCOIN_INCLUDES)
 libbitcoin_wallet_a_SOURCES = \
-  db.cpp \
   crypter.cpp \
+  crypto/scrypt.cpp \
   rpcdump.cpp \
   rpcwallet.cpp \
   wallet.cpp \
@@ -217,6 +219,7 @@ crypto_libbitcoin_crypto_a_SOURCES = \
   crypto/hmac_sha256.cpp \
   crypto/rfc6979_hmac_sha256.cpp \
   crypto/hmac_sha512.cpp \
+  crypto/scrypt.h \
   crypto/scrypt.cpp \
   crypto/ripemd160.cpp \
   crypto/common.h \
@@ -225,7 +228,6 @@ crypto_libbitcoin_crypto_a_SOURCES = \
   crypto/hmac_sha256.h \
   crypto/rfc6979_hmac_sha256.h \
   crypto/hmac_sha512.h \
-  crypto/scrypt.h \
   crypto/sha1.h \
   crypto/ripemd160.h\
     ccc/mhash.h \
@@ -426,9 +428,9 @@ include Makefile.test.include
 endif
 
 if ENABLE_QT
-include Makefile.qt.include
+#include Makefile.qt.include
 endif
 
 if ENABLE_QT_TESTS
-include Makefile.qttest.include
+#include Makefile.qttest.include
 endif

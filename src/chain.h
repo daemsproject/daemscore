@@ -66,7 +66,9 @@ struct CDiskTxPos : public CDiskBlockPos
     CDiskTxPos() {
         SetNull();
     }
-
+    friend bool operator==(const CDiskTxPos &a, const CDiskTxPos &b) {
+        return (a.nFile == b.nFile && a.nPos == b.nPos && a.nTxOffset==b.nTxOffset);
+    }
     void SetNull() {
         CDiskBlockPos::SetNull();
         nTxOffset = 0;

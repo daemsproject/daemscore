@@ -9,7 +9,8 @@
 #include "eccryptoverify.h"
 #include "pubkey.h"
 #include "random.h"
-
+#include "util.h"
+#include "utilstrencodings.h"
 #include <secp256k1.h>
 #include "ecwrapper.h"
 
@@ -29,16 +30,19 @@ static CSecp256k1Init instance_of_csecp256k1;
 
 } // anon namespace
 
-bool CKey::Check(const unsigned char *vch) {
+bool CKey::Check(const unsigned char *vch) {    
     return eccrypto::Check(vch);
 }
 
 void CKey::MakeNewKey(bool fCompressedIn) {
     do {
-        GetRandBytes(vch, sizeof(vch));
+        //GetRandBytes(vch, sizeof(vch));
+        GetRandBytes(vch, 32);
     } while (!Check(vch));
-    fValid = true;
+    fValid = true;    
+    fEncrypted=false;
     fCompressed = fCompressedIn;
+    GetPubKey(pubKey);
 }
 
 bool CKey::SetPrivKey(const CPrivKey &privkey, bool fCompressedIn) {
@@ -49,7 +53,7 @@ bool CKey::SetPrivKey(const CPrivKey &privkey, bool fCompressedIn) {
     return true;
 }
 
-CPrivKey CKey::GetPrivKey() const {
+CPrivKey CKey::GetPrivKey() const {    
     assert(fValid);
     CPrivKey privkey;
     int privkeylen, ret;
@@ -61,19 +65,23 @@ CPrivKey CKey::GetPrivKey() const {
     return privkey;
 }
 
-CPubKey CKey::GetPubKey() const {
+bool CKey::GetPubKey(CPubKey& result) const {
     assert(fValid);
-    CPubKey result;
+    if(fEncrypted)
+        return false;
+    
     int clen = 65;
     int ret = secp256k1_ec_pubkey_create((unsigned char*)result.begin(), &clen, begin(), fCompressed);
     assert((int)result.size() == clen);
     assert(ret);
     assert(result.IsValid());
-    return result;
+    return true;
 }
 
 bool CKey::Sign(const uint256 &hash, std::vector<unsigned char>& vchSig, uint32_t test_case) const {
     if (!fValid)
+        return false;
+    if(fEncrypted)
         return false;
     vchSig.resize(72);
     RFC6979_HMAC_SHA256 prng(begin(), 32, (unsigned char*)&hash, 32);
@@ -95,6 +103,8 @@ bool CKey::VerifyPubKey(const CPubKey& pubkey) const {
     if (pubkey.IsCompressed() != fCompressed) {
         return false;
     }
+    //if(fEncrypted)
+      //  return false;
     unsigned char rnd[8];
     std::string str = "Bitcoin key verification\n";
     GetRandBytes(rnd, sizeof(rnd));
@@ -107,6 +117,8 @@ bool CKey::VerifyPubKey(const CPubKey& pubkey) const {
 
 bool CKey::SignCompact(const uint256 &hash, std::vector<unsigned char>& vchSig) const {
     if (!fValid)
+        return false;
+    if(fEncrypted)
         return false;
     vchSig.resize(65);
     int rec = -1;
@@ -139,10 +151,13 @@ bool CKey::Load(CPrivKey &privkey, CPubKey &vchPubKey, bool fSkipCheck=false) {
 bool CKey::Derive(CKey& keyChild, unsigned char ccChild[32], unsigned int nChild, const unsigned char cc[32]) const {
     assert(IsValid());
     assert(IsCompressed());
+    if(fEncrypted)
+        return false;
     unsigned char out[64];
     LockObject(out);
     if ((nChild >> 31) == 0) {
-        CPubKey pubkey = GetPubKey();
+        CPubKey pubkey;
+        GetPubKey(pubkey);
         assert(pubkey.begin() + 33 == pubkey.end());
         BIP32Hash(cc, nChild, *pubkey.begin(), pubkey.begin()+1, out);
     } else {
@@ -157,10 +172,62 @@ bool CKey::Derive(CKey& keyChild, unsigned char ccChild[32], unsigned int nChild
     keyChild.fValid = ret;
     return ret;
 }
-
+bool CKey::AddSteps(const CKey& stepKey,const uint64_t& steps,CKey& resultKey)const {
+    if(fEncrypted)
+        return false;
+    CKey temp=stepKey;
+    resultKey=*this;
+    uint256 tweak(steps);
+    bool ret=secp256k1_ec_privkey_tweak_mul((unsigned char*)temp.begin(),(unsigned char*)&tweak);
+    ret = secp256k1_ec_privkey_tweak_add((unsigned char*)resultKey.begin(), (unsigned char*)temp.begin());
+    resultKey.GetPubKey(resultKey.pubKey);
+    return ret;
+}
+ bool CKey::GetMultipliedTo(const uint64_t& steps,CKey& keyOut)
+{
+    if(fEncrypted)
+        return false;
+    keyOut=*this;
+     //LogPrintf("key:getmultipliedto 2\n"); 
+     uint256 tweak0=uint256(steps);
+     unsigned char tweak[32];
+     for(unsigned int i=0;i<32;i++){
+         unsigned char* ch=tweak0.end()-i-1;
+         tweak[i]=*ch;
+     }
+         
+     //LogPrintf("key:getmultipliedto tweak:%s\n",HexStr(tweak,tweak+32)); 
+     secp256k1_ec_privkey_tweak_mul((unsigned char*)keyOut.begin(),(unsigned char*)tweak);
+     keyOut.GetPubKey(keyOut.pubKey);
+     //LogPrintf("key:getmultipliedto 3\n"); 
+     return true;
+}
+bool CKey::MakeSharedKey(const CPubKey& pubKey,CKey& sharedKey)
+{
+    if(fEncrypted)
+        return false;
+    unsigned char temp(pubKey.size());
+    memcpy(&temp,pubKey.begin(),pubKey.size());
+    //CPubKey temp=pubKey;
+    if(secp256k1_ec_pubkey_tweak_mul(&temp,pubKey.size(),(unsigned char*)begin())){
+        sharedKey.Set(&temp+1,&temp+33,true);
+        sharedKey.GetPubKey(sharedKey.pubKey);
+        return true;
+    }
+    return false;
+}
+bool CKey::MakeSimpleSig(const std::vector<unsigned char> nounce,uint256& sig)
+{
+    if(fEncrypted)
+        return false;
+    sig= Hash(BEGIN(vch), END(vch), BEGIN(nounce), END(nounce));
+    return true;
+}
 bool CExtKey::Derive(CExtKey &out, unsigned int nChild) const {
+    
     out.nDepth = nDepth + 1;
-    CKeyID id = key.GetPubKey().GetID();
+    CPubKey id ;
+     key.GetPubKey(id);
     memcpy(&out.vchFingerprint[0], &id, 4);
     out.nChild = nChild;
     return key.Derive(out.key, out.vchChainCode, nChild, vchChainCode);
@@ -184,7 +251,7 @@ CExtPubKey CExtKey::Neuter() const {
     ret.nDepth = nDepth;
     memcpy(&ret.vchFingerprint[0], &vchFingerprint[0], 4);
     ret.nChild = nChild;
-    ret.pubkey = key.GetPubKey();
+     key.GetPubKey(ret.pubkey);
     memcpy(&ret.vchChainCode[0], &vchChainCode[0], 32);
     return ret;
 }
@@ -216,6 +283,7 @@ bool ECC_InitSanityCheck() {
 #endif
     CKey key;
     key.MakeNewKey(true);
-    CPubKey pubkey = key.GetPubKey();
+    CPubKey pubkey;
+    key.GetPubKey(pubkey);
     return key.VerifyPubKey(pubkey);
 }

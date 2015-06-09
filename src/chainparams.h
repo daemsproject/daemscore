@@ -32,8 +32,8 @@ class CChainParams
 {
 public:
     enum Base32Type {
-        PUBKEY_ADDRESS_2,
-        PUBKEY_ADDRESS_3,
+        PUBKEY_ADDRESS_2=2,
+        PUBKEY_ADDRESS_3=3,
         SCRIPT_ADDRESS,
         SCRIPTHASH_ADDRESS,
         SECRET_KEY,

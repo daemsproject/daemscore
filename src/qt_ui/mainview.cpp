@@ -39,11 +39,11 @@ MainView::MainView(QString languageIn,BitcoinGUI *parent,JsInterface *_js):
     // Create tabs    
     //QUrl walletUrl= QUrl("file:///home/alan/projects/ccc/src/qt_ui/res/html/wallet_en.html"); 
     //QUrl walletUrl= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/wallet_en.html"); 
-    QUrl browserUrl= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/browser_en.html"); 
+    //QUrl browserUrl= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/browser_en.html"); 
     //LogPrintf(QDir::currentPath().toUtf8() + "/res/html/wallet_en.html");
     
     //vWebPages.push_back(new WebPage(language,parent,jsInterface,walletUrl,1));    
-    vWebPages.push_back(new WebPage(language,this,jsInterface,browserUrl,2));  
+    //vWebPages.push_back(new WebPage(language,this,jsInterface,browserUrl,2));  
     
     //overviewPage = new OverviewPage();
 
@@ -112,8 +112,7 @@ MainView::~MainView()
 //{
 //    if (gui)
 //    {
-        // Clicking on a transaction on the overview page simply sends you to transaction history page
-        //connect(overviewPage, SIGNAL(transactionClicked(QModelIndex)), gui, SLOT(gotoHistoryPage()));
+        
 
         // Receive and report messages
         //connect(this, SIGNAL(message(QString,QString,unsigned int)), gui, SLOT(message(QString,QString,unsigned int)));
@@ -129,9 +128,7 @@ MainView::~MainView()
 //void MainView::setClientModel(ClientModel *clientModel)
 //{
 //    this->clientModel = clientModel;
-//
-//    overviewPage->setClientModel(clientModel);
-//    sendCoinsPage->setClientModel(clientModel);
+
 //}
 
 //void MainView::setWalletModel(WalletModel *walletModel)
@@ -140,10 +137,7 @@ MainView::~MainView()
 
     // Put transaction list in tabs
     //walletPage->setWalletModel(walletModel);
-    //transactionView->setModel(walletModel);
-    //overviewPage->setWalletModel(walletModel);
-    //receiveCoinsPage->setModel(walletModel);
-    //sendCoinsPage->setModel(walletModel);
+
 
     //if (walletModel)
     //{
@@ -185,12 +179,12 @@ MainView::~MainView()
 //}
 void MainView::gotoWebPage(int nPageID,QUrl url)
 {
-    LogPrintf("gotowebpage pageid:%i,url:%s",nPageID,url.toString().toStdString());
+    LogPrintf("gotowebpage pageid:%i,url:%s \n",nPageID,url.toString().toStdString());
     //for (std::vector<WebPage*>::iterator it=vWebPages.begin();it!=vWebPages.end();it++){
     //    if (vWebPages*it->nPageID==nPageID){
     for(unsigned int i=0;i<vWebPages.size();i++){
         if (vWebPages[i]->nPageID==nPageID){
-            if(url!=QUrl(""))
+            if(url!=QUrl("")&&url!=vWebPages[i]->url())
                 vWebPages[i]->setUrl(url);
             setCurrentWidget(vWebPages[i]);
             return;
@@ -210,28 +204,7 @@ void MainView::closeWebPage(int nPageID){
             vWebPages.erase(it);
     }
 }
-//void MainView::gotoOverviewPage()
-//{
-//    setCurrentWidget(overviewPage);
-//}
-//
-//void MainView::gotoHistoryPage()
-//{
-//    setCurrentWidget(transactionsPage);
-//}
-//
-//void MainView::gotoReceiveCoinsPage()
-//{
-//    setCurrentWidget(receiveCoinsPage);
-//}
-//
-//void MainView::gotoSendCoinsPage(QString addr)
-//{
-//    setCurrentWidget(sendCoinsPage);
-//
-//    if (!addr.isEmpty())
-//        sendCoinsPage->setAddress(addr);
-//}
+
 //
 //void MainView::gotoSignMessageTab(QString addr)
 //{

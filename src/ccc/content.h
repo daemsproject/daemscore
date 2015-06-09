@@ -4,11 +4,12 @@
 #include <string.h>
 #include <string>
 #include <vector>
-
+#include "utiltime.h"
 #include "serialize.h"
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_value.h"
-
+#include "uint256.h"
+#include "script/script.h"
 using namespace json_spirit;
 using namespace std;
 using std::string;
@@ -22,7 +23,12 @@ enum stringformat
     STR_FORMAT_HEX_SUM = 4,
     STR_FORMAT_B64_SUM = 5,
 };
-
+enum directionFilter
+{
+    BI_DIRECTION =0,
+    INCOMING_ONLY =1,
+    OUTPUT_ONLY =2,    
+};
 /** Content codes */
 enum cctype
 {
@@ -421,5 +427,33 @@ public:
     bool HasCc(const cctype& cc);
     bool FirstCc(const cctype& cc);
     bool IsStandard();
+    bool Encode(int cc,std::vector<std::string>vData);
 };
-#endif // CCC_CONTENT_H
+class CMessage
+{
+public:
+    int nBlockHeight;
+    uint256 txid;
+    int nTx;
+    int nVout;
+    CScript IDFrom;
+    CScript IDTo;
+    CContent content;
+    unsigned int nTime;
+    //bool fIncoming=true;
+    CMessage()
+    {
+    nBlockHeight=-1;
+    txid=0;
+    nTx=-1;
+    nVout=0;
+    CScript IDFrom;
+    CScript IDTo;
+    CContent content;
+    nTime=GetTime();
+    };
+    Value ToJson(bool fLinkOnly=false);
+    string ToJsonString(bool fLinkOnly=false);
+    bool SetJson(const Object& json);
+};
+#endif

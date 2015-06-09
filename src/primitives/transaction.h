@@ -12,7 +12,7 @@
 #include "uint256.h"
 #include <string>
 using std::string;
-/** An outpoint - a combination of a transaction hash and an index n into its vout */
+/** An outpoint - a combination of a transaction hash and an index n and nValue into its vout */
 class COutPoint
 {
 public:
@@ -278,5 +278,26 @@ struct CMutableTransaction
      */
     uint256 GetHash() const;
 };
+//the standard paymentrequest format for creating and overriding transactions
 
+class PaymentRequest :public CMutableTransaction
+{
+    public:
+    PaymentRequest(){
+        nSigType=129;//anyonecanpay
+        feeRate=1000;    
+        fIsValid=false;    
+        overridedTxid=uint256(0);
+        CMutableTransaction();
+    }
+
+    bool fIsValid;
+    std::vector<CScript> vFrom;
+    int nSigType;
+    CScript changeAddress;
+    double feeRate;
+    uint256 overridedTxid;
+    
+    std::string strError;
+};
 #endif // BITCOIN_PRIMITIVES_TRANSACTION_H

@@ -13,13 +13,13 @@
 #include "libsecp256k1-config.h"
 #endif
 
-#if defined(USE_SCALAR_4X64)
-#include "scalar_4x64.h"
-#elif defined(USE_SCALAR_8X32)
+//#if defined(USE_SCALAR_4X64)
+//#include "scalar_4x64.h"
+//#elif defined(USE_SCALAR_8X32)
 #include "scalar_8x32.h"
-#else
-#error "Please select scalar implementation"
-#endif
+//#else
+//#error "Please select scalar implementation"
+//#endif
 
 static void secp256k1_scalar_start(void);
 static void secp256k1_scalar_stop(void);

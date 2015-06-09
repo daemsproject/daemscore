@@ -9,11 +9,13 @@
 #include "allocators.h"
 #include "serialize.h"
 #include "uint256.h"
-
+#include "pubkey.h"
 #include <stdexcept>
 #include <vector>
+#include "util.h"
+#include "utilstrencodings.h"
 
-class CPubKey;
+//class CPubKey;
 
 struct CExtPubKey;
 
@@ -43,25 +45,26 @@ private:
 
     //! Whether the public key corresponding to this private key is (to be) compressed.
     bool fCompressed;
-
-    //! The actual byte data
-    unsigned char vch[32];
-
+    bool fEncrypted;
+    //! The privkey byte data
+    unsigned char vch[48];    
+    
     //! Check whether the 32-byte array pointed to be vch is valid keydata.
     bool static Check(const unsigned char* vch);
 
 public:
+    CPubKey pubKey;
     //! Construct an invalid private key.
-    CKey() : fValid(false), fCompressed(false)
+    CKey() : fValid(false), fCompressed(false),fEncrypted(false)
     {
         LockObject(vch);
     }
 
     //! Copy constructor. This is necessary because of memlocking.
-    CKey(const CKey& secret) : fValid(secret.fValid), fCompressed(secret.fCompressed)
+    CKey(const CKey& secret) : fValid(secret.fValid), fCompressed(secret.fCompressed),fEncrypted(secret.fEncrypted)
     {
         LockObject(vch);
-        memcpy(vch, secret.vch, sizeof(vch));
+        memcpy(vch, secret.vch, sizeof(secret.vch));
     }
 
     //! Destructor (again necessary because of memlocking).
@@ -69,32 +72,71 @@ public:
     {
         UnlockObject(vch);
     }
-
+    bool IsEncrypted(){return fEncrypted;};
     friend bool operator==(const CKey& a, const CKey& b)
     {
-        return a.fCompressed == b.fCompressed && a.size() == b.size() &&
+        return a.fCompressed == b.fCompressed && a.size() == b.size() &&a.fEncrypted==b.fEncrypted&&
                memcmp(&a.vch[0], &b.vch[0], a.size()) == 0;
     }
 
     //! Initialize using begin and end iterators to byte data.
     template <typename T>
-    void Set(const T pbegin, const T pend, bool fCompressedIn)
-    {
-        if (pend - pbegin != 32) {
+    void Set(const T pbegin, const T pend, bool fCompressedIn)    { 
+        int len=pend - pbegin;
+        if (len != 32&&len != 48)
+        {//TODO changed hardcoded encryption length
+            LogPrintf("CKey::Set:length is not 32 or 48\n");
             fValid = false;
             return;
         }
-        if (Check(&pbegin[0])) {
-            memcpy(vch, (unsigned char*)&pbegin[0], 32);
-            fValid = true;
-            fCompressed = fCompressedIn;
-        } else {
-            fValid = false;
-        }
+        if(len== 32)   
+        {
+            if (!Check(&pbegin[0])) {            
+                LogPrintf("CKey::Set:check error\n");
+                fValid = false;
+                return;
+            }
+        
+            fEncrypted=false;
+        }        
+        memcpy(vch, (unsigned char*)&pbegin[0], len);
+        fValid = true;
+        if(len == 48)
+            fEncrypted=true;
+        else
+                GetPubKey(pubKey);
+        fCompressed = fCompressedIn;
+        
     }
-
+//    template <typename T>
+//    void SetPrivKey(const T pbegin, const T pend, bool fCompressedIn)    { 
+//        int len=pend - pbegin;
+//        if (len != 32&&len != 48)
+//        {//TODO changed hardcoded encryption length
+//            LogPrintf("CKey::Set:length is not 32 or 48\n");
+//            fValid = false;
+//            return;
+//        }
+//        if(len== 32)   
+//        {
+//            if (!Check(&pbegin[0])) {            
+//                LogPrintf("CKey::Set:check error\n");
+//                fValid = false;
+//                return;
+//            }
+//            fEncrypted=false;
+//        }
+//        vch.resize(len);
+//            
+//        memcpy(vch, (unsigned char*)&pbegin[0], len);
+//        fValid = true;
+//        if(len == 48)
+//            fEncrypted=true;
+//        fCompressed = fCompressedIn;
+//        
+//    }
     //! Simple read-only vector-like interface.
-    unsigned int size() const { return (fValid ? 32 : 0); }
+    unsigned int size() const { return (fValid ?(fEncrypted?48:32) : 0); }
     const unsigned char* begin() const { return vch; }
     const unsigned char* end() const { return vch + size(); }
 
@@ -108,8 +150,10 @@ public:
     bool SetPrivKey(const CPrivKey& vchPrivKey, bool fCompressed);
 
     //! Generate a new private key using a cryptographic PRNG.
-    void MakeNewKey(bool fCompressed);
-
+    void MakeNewKey(bool fCompressed=true);
+    bool MakeSharedKey(const CPubKey& pubKey,CKey& sharedKey);
+    bool GetMultipliedTo(const uint64_t& steps,CKey& keyOut);
+    bool MakeSimpleSig(const std::vector<unsigned char> nounce,uint256& sig);
     /**
      * Convert the private key to a CPrivKey (serialized OpenSSL private key data).
      * This is expensive. 
@@ -120,7 +164,7 @@ public:
      * Compute the public key from a private key.
      * This is expensive.
      */
-    CPubKey GetPubKey() const;
+     bool GetPubKey(CPubKey& result) const;
 
     /**
      * Create a DER-serialized signature.
@@ -140,7 +184,7 @@ public:
 
     //! Derive BIP32 child key.
     bool Derive(CKey& keyChild, unsigned char ccChild[32], unsigned int nChild, const unsigned char cc[32]) const;
-
+    bool AddSteps(const CKey& stepKey,const uint64_t& steps,CKey& resultKey)const;
     /**
      * Verify thoroughly whether a private key and a public key match.
      * This is done using a different mechanism than just regenerating it.

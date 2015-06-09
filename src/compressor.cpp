@@ -9,16 +9,16 @@
 #include "pubkey.h"
 #include "script/standard.h"
 
-bool CScriptCompressor::IsToKeyID(CKeyID &hash) const
-{
-    if (script.size() == 25 && script[0] == OP_DUP && script[1] == OP_HASH160
-                            && script[2] == 20 && script[23] == OP_EQUALVERIFY
-                            && script[24] == OP_CHECKSIG) {
-        memcpy(&hash, &script[3], 20);
-        return true;
-    }
-    return false;
-}
+//bool CScriptCompressor::IsToKeyID(CKeyID &hash) const
+//{
+//    if (script.size() == 25 && script[0] == OP_DUP && script[1] == OP_HASH160
+//                            && script[2] == 20 && script[23] == OP_EQUALVERIFY
+//                            && script[24] == OP_CHECKSIG) {
+//        memcpy(&hash, &script[3], 20);
+//        return true;
+//    }
+//    return false;
+//}
 
 bool CScriptCompressor::IsToScriptID(CScriptID &hash) const
 {
@@ -47,13 +47,13 @@ bool CScriptCompressor::IsToPubKey(CPubKey &pubkey) const
 
 bool CScriptCompressor::Compress(std::vector<unsigned char> &out) const
 {
-    CKeyID keyID;
-    if (IsToKeyID(keyID)) {
-        out.resize(21);
-        out[0] = 0x00;
-        memcpy(&out[1], &keyID, 20);
-        return true;
-    }
+//    CKeyID keyID;
+//    if (IsToKeyID(keyID)) {
+//        out.resize(21);
+//        out[0] = 0x00;
+//        memcpy(&out[1], &keyID, 20);
+//        return true;
+//    }
     CScriptID scriptID;
     if (IsToScriptID(scriptID)) {
         out.resize(21);
