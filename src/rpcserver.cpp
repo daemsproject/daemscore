@@ -335,6 +335,7 @@ static const CRPCCommand vRPCCommands[] =
     { "util",               "encodebase32check",      &encodebase32check,      true,      true,       false },
     { "util",               "decodebase32check",      &decodebase32check,      true,      true,       false },
     { "util",               "standardizebase32",      &standardizebase32,      true,      true,       false },
+    { "util",               "comparebase32",          &comparebase32,          true,      true,       false },
 
     /* Not shown in help */
     { "hidden",             "invalidateblock",        &invalidateblock,        true,      true,       false },

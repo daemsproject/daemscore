@@ -132,3 +132,12 @@ Value standardizebase32(const Array& params, bool fHelp) // TO DO: Help msg
     else
         throw JSONRPCError(RPC_MISC_ERROR, "Decoding failed");
 }
+
+Value comparebase32(const Array& params, bool fHelp) // TO DO: Help msg
+{
+    if (fHelp || params.size() > 2 || params.size() < 1)
+        throw runtime_error("");
+    std::string s1 = params[0].get_str();
+    std::string s2 = params[1].get_str();
+    return CompareBase32(s1,s2);
+}

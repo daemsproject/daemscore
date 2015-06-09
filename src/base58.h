@@ -72,6 +72,8 @@ bool DecodeBase32Check(const char* psz, std::vector<unsigned char>& vchRet);
  */
 bool DecodeBase32Check(const std::string& str, std::vector<unsigned char>& vchRet);
 
+int CompareBase32(const std::string& s1, const std::string& s2);
+
 /**
  * Base class for all base32-encoded data
  */

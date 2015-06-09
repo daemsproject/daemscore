@@ -250,6 +250,7 @@ extern json_spirit::Value decodebase32(const json_spirit::Array& params, bool fH
 extern json_spirit::Value encodebase32check(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value decodebase32check(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value standardizebase32(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value comparebase32(const json_spirit::Array& params, bool fHelp);
 
 extern json_spirit::Value devtest(const json_spirit::Array& params, bool fHelp); // to be deleted
 
