@@ -1,4 +1,4 @@
-#include "ccc/browserdb.h"
+#include "ccc/jsondb.h"
 #include "rpcserver.h"
 #include <boost/foreach.hpp>
 #include <boost/assign/list_of.hpp>

@@ -7,7 +7,7 @@
 #include <boost/filesystem.hpp>
 using namespace json_spirit;
 
-class CBrowserConf
+class CJsonDb
 {
 public:
     boost::filesystem::path confPath;
@@ -16,7 +16,7 @@ public:
     std::string name;
     Value value;
 
-    CBrowserConf()
+    CJsonDb()
     {
         init();
     }
@@ -27,7 +27,7 @@ public:
     bool save();
 };
 
-class CBrowserFollow : public CBrowserConf
+class CBrowserFollow : public CJsonDb
 {
 public:
     std::string strCurrentWallet;

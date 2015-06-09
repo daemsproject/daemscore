@@ -2,22 +2,22 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/foreach.hpp>
 
-#include "browserdb.h"
+#include "jsondb.h"
 using namespace std;
 
-bool CBrowserConf::getValueFrFile()
+bool CJsonDb::getValueFrFile()
 {
     if (!ReadFileToJson(confFile.string(), value))
         return false;
     return true;
 }
 
-Value CBrowserConf::getValue()
+Value CJsonDb::getValue()
 {
     return value;
 }
 
-void CBrowserConf::init()
+void CJsonDb::init()
 {
     confPath = GetDataDir() / "conf";
     boost::filesystem::create_directories(confPath);
@@ -25,13 +25,13 @@ void CBrowserConf::init()
     getValueFrFile();
 }
 
-bool CBrowserConf::setValue(const Value& valueIn)
+bool CJsonDb::setValue(const Value& valueIn)
 {
     value = valueIn;
     return WriteJsonToFile(value, confFile.string());
 }
 
-bool CBrowserConf::save()
+bool CJsonDb::save()
 {
     return WriteJsonToFile(value.get_array(), confFile.string());
 }
