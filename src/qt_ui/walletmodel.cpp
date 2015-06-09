@@ -85,7 +85,7 @@ void WalletModel::updateStatus()
 {
     EncryptionStatus newEncryptionStatus = getEncryptionStatus();
 
-    if(cachedEncryptionStatus != newEncryptionStatus)
+    //if(cachedEncryptionStatus != newEncryptionStatus)
     {
         emit encryptionStatusChanged(newEncryptionStatus);
         cachedEncryptionStatus=newEncryptionStatus;
@@ -348,6 +348,7 @@ static void NotifyEcMinerResult(WalletModel* walletModel,const CPubKey basePub,c
 bool WalletModel::createNewAccount(const QString header,const SecureString &passPhraseNew,bool fSwitchTo)
 {
     ssPassPhrase=passPhraseNew;
+    fSwitchToAccount=fSwitchTo;
     if(header.size()>0)
     {
         delete wallet2;
@@ -377,6 +378,7 @@ bool WalletModel::createNewAccount(const QString header,const SecureString &pass
         delete wallet2;
         wallet2= new CWallet();
         wallet2->CreateNew(passPhraseNew);
+        if (fSwitchTo)
         wallet->SwitchToAccount(wallet2->GetID());      
         return true;
     }

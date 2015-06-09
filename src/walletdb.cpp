@@ -224,12 +224,14 @@ bool CWalletDB::ReadFromAddressBook(const std::string& strCategory,const std::st
     return false;
 }
 bool CWalletDB::WriteAddressBookToFile(json_spirit::Value& objAddressBook){
-    std::string strFileName=strCurrentWallet.append(".adb");    
+    std::string strFileName=strCurrentWallet;
+    strFileName.append(".adb");    
     filesystem::path fpAddressBookFile=fpWalletPath / strFileName;
     return WriteJsonToFile(objAddressBook,fpAddressBookFile.string());
 }
 bool CWalletDB::GetAddressBookObj(json_spirit::Object& objAdb){    
-    std::string strFileName=strCurrentWallet.append(".adb");    
+    std::string strFileName=strCurrentWallet;
+    strFileName.append(".adb");    
     filesystem::path fpAddressBookFile=fpWalletPath / strFileName;    
     json_spirit::Value valAdb;
     if(filesystem::exists(fpAddressBookFile)&&ReadFileToJson(strFileName,valAdb)){
@@ -324,7 +326,7 @@ bool CWalletDB::ReadKeyStore(CCryptoKeyStore* keyStore){
                 std::string str=valTemp.get_str();
                  
                 if(CBitcoinAddress(str).GetKey(keyStore->baseKey.pubKey))  {
-                    LogPrintf("walletdb.cpp:readkeysotre basepub:%i \n",keyStore->baseKey.pubKey.size());
+                    LogPrintf("walletdb.cpp:readkeysotre basepub:%s,size:%i \n",HexStr(keyStore->baseKey.pubKey.begin(),keyStore->baseKey.pubKey.end()),keyStore->baseKey.pubKey.size());
                     keyStore->fHasPub=true;                    
                 }              
                     
@@ -334,7 +336,7 @@ bool CWalletDB::ReadKeyStore(CCryptoKeyStore* keyStore){
                 //std::vector<unsigned char> vchTmp;
                 std::string str=valTemp.get_str();               
                 if(CBitcoinAddress(str).GetKey(keyStore->stepKey.pubKey)){
-                    LogPrintf("walletdb.cpp:readkeysotre steppub:%i \n",keyStore->stepKey.pubKey.size());
+                    LogPrintf("walletdb.cpp:readkeysotre steppub:%s,size:%i \n",HexStr(keyStore->stepKey.pubKey.begin(),keyStore->stepKey.pubKey.end()),keyStore->stepKey.pubKey.size());
                     keyStore->fHasStepPub=true;                
                 }
         }
@@ -376,6 +378,8 @@ bool CWalletDB::ReadKeyStore(CCryptoKeyStore* keyStore){
             if(valTemp.type()==json_spirit::int_type)
                 keyStore->encParams.r=(unsigned int)valTemp.get_int64();  
         }
+        else
+            keyStore->encParams=CEncryptParameters();
         //create id map
         
         LogPrintf("walletdb.cpp:readkeystore:%u \n",keyStore->mapKeys.size());
@@ -398,49 +402,59 @@ bool CWalletDB::ReadKeyStore(CCryptoKeyStore* keyStore){
     return false;
 }
 bool CWalletDB::WriteKeyStore(CCryptoKeyStore* keyStore){
-    json_spirit::Object objId;
-    //LogPrintf("walletdb.cpp:WriteKeyStore%1\n");
-    if(keyStore->fHasPriv)    
-    objId.push_back(Pair("basepriv", json_spirit::Value(CBitcoinSecret(keyStore->baseKey).ToString())));
+    json_spirit::Object objId;    
+    if(keyStore->fHasPriv)    {
+        LogPrintf("walletdb.cpp:WriteKeyStore basekey:%s,size:%i\n",HexStr(keyStore->baseKey.begin(),keyStore->baseKey.end()),keyStore->baseKey.size());
+        objId.push_back(Pair("basepriv", json_spirit::Value(CBitcoinSecret(keyStore->baseKey).ToString())));
+    }
+    
     //LogPrintf("walletdb.cpp:WriteKeyStore%2\n");
-    if(keyStore->fHasStepPriv)
-    objId.push_back(Pair("steppriv", json_spirit::Value(CBitcoinSecret(keyStore->stepKey).ToString())));
-    LogPrintf("walletdb.cpp:WriteKeyStore%3\n");
-    LogPrintf("walletdb.cpp:WriteKeyStore basepub:%s,size:%i\n",HexStr(keyStore->baseKey.pubKey.begin(),keyStore->baseKey.pubKey.end()),keyStore->baseKey.pubKey.size());
-    if(keyStore->fHasPub)
-    objId.push_back(Pair("basepub", json_spirit::Value(CBitcoinAddress(keyStore->baseKey.pubKey).ToString())));
-    LogPrintf("walletdb.cpp:WriteKeyStore%4\n");
-    if(keyStore->fHasStepPub)
-    objId.push_back(Pair("steppub", json_spirit::Value(CBitcoinAddress(keyStore->stepKey.pubKey).ToString())));
-    LogPrintf("walletdb.cpp:WriteKeyStore%5\n");
+    if(keyStore->fHasStepPriv){
+       LogPrintf("walletdb.cpp:WriteKeyStore stepKey:%s,size:%i\n",HexStr(keyStore->stepKey.begin(),keyStore->stepKey.end()),keyStore->stepKey.size());
+        objId.push_back(Pair("steppriv", json_spirit::Value(CBitcoinSecret(keyStore->stepKey).ToString())));
+    }
+    //LogPrintf("walletdb.cpp:WriteKeyStore%3\n");
+    
+    if(keyStore->fHasPub){
+        LogPrintf("walletdb.cpp:WriteKeyStore basepub:%s,size:%i\n",HexStr(keyStore->baseKey.pubKey.begin(),keyStore->baseKey.pubKey.end()),keyStore->baseKey.pubKey.size());
+        objId.push_back(Pair("basepub", json_spirit::Value(CBitcoinAddress(keyStore->baseKey.pubKey).ToString())));
+    }    
+    if(keyStore->fHasStepPub){
+        LogPrintf("walletdb.cpp:WriteKeyStore steppub:%s,size:%i\n",HexStr(keyStore->stepKey.pubKey.begin(),keyStore->stepKey.pubKey.end()),keyStore->stepKey.pubKey.size());
+        objId.push_back(Pair("steppub", json_spirit::Value(CBitcoinAddress(keyStore->stepKey.pubKey).ToString())));
+    }
+    //LogPrintf("walletdb.cpp:WriteKeyStore%4\n");
     objId.push_back(Pair("maxsteps", json_spirit::Value(keyStore->nMaxSteps)));
-    LogPrintf("walletdb.cpp:WriteKeyStore%6\n");
+    //LogPrintf("walletdb.cpp:WriteKeyStore%5\n");
     objId.push_back(Pair("isencrypted",json_spirit::Value(keyStore->fUseCrypto)));
-    LogPrintf("walletdb.cpp:WriteKeyStore%7\n");
+    //LogPrintf("walletdb.cpp:WriteKeyStore%6\n");
     objId.push_back(Pair("starttime", json_spirit::Value((uint64_t)keyStore->nStartTime)));
-    LogPrintf("walletdb.cpp:WriteKeyStore%8\n");
+    //LogPrintf("walletdb.cpp:WriteKeyStore%7\n");
     if (keyStore->fUseCrypto){
         std::string str=HexStr(keyStore->encParams.vchSalt.begin(),keyStore->encParams.vchSalt.end());
-        LogPrintf("walletdb.cpp:WriteKeyStore salt %s,length%i\n",str,keyStore->encParams.vchSalt.size());
+        //LogPrintf("walletdb.cpp:WriteKeyStore salt %s,length%i\n",str,keyStore->encParams.vchSalt.size());
         //for(vector<unsigned char>::iterator iter = keyStore->encParams.vchSalt.begin(); iter != keyStore->encParams.vchSalt.end(); ++iter)    
 //            str += *iter;         
         objId.push_back(Pair("salt", json_spirit::Value(str)));
-        LogPrintf("walletdb.cpp:WriteKeyStore%9\n");
+        //LogPrintf("walletdb.cpp:WriteKeyStore%9\n");
         std::string strTemp=HexStr(keyStore->encParams.chIV.begin(),keyStore->encParams.chIV.end());
-        LogPrintf("walletdb.cpp:WriteKeyStore iv %s,length%i\n",strTemp,keyStore->encParams.chIV.size());
+        //LogPrintf("walletdb.cpp:WriteKeyStore iv %s,length%i\n",strTemp,keyStore->encParams.chIV.size());
         //for(vector<unsigned char>::iterator iter = keyStore->encParams.chIV.begin(); iter != keyStore->encParams.chIV.end(); ++iter)    
         //    strTemp += *iter;    
         objId.push_back(Pair("iv", json_spirit::Value(strTemp)));
-        LogPrintf("walletdb.cpp:WriteKeyStore%10\n");
+        
         objId.push_back(Pair("n", json_spirit::Value((uint64_t)keyStore->encParams.N)));
-        LogPrintf("walletdb.cpp:WriteKeyStore%11\n");
+        
         objId.push_back(Pair("p", json_spirit::Value((uint64_t)keyStore->encParams.p)));
-        LogPrintf("walletdb.cpp:WriteKeyStore%12\n");
+        
         objId.push_back(Pair("r", json_spirit::Value((uint64_t)keyStore->encParams.r)));
-        LogPrintf("walletdb.cpp:WriteKeyStore%13\n");
+        
     }
-    filesystem::path fpFile=fpWalletPath / strCurrentWallet.append(".id"); 
-    LogPrintf("walletdb.cpp:WriteKeyStore%14\n");
+    //LogPrintf("walletdb.cpp:WriteKeyStore currentwallet %s\n",strCurrentWallet);
+    string filename=strCurrentWallet;
+    filename.append(".id");
+    filesystem::path fpFile=fpWalletPath / filename; 
+    //LogPrintf("walletdb.cpp:WriteKeyStore currentwallet after%s\n",strCurrentWallet);
     return WriteJsonToFile(json_spirit::Value(objId),fpFile.string());
 }
 bool CWalletDB::GetIdObj(const std::string& strId,json_spirit::Object& objId){    

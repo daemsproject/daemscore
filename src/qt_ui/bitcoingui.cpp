@@ -334,7 +334,8 @@ LogPrintf("bitcoingui:createactions 2 \n");
 //LogPrintf("bitcoingui:createactions 3 \n");
     encryptAccountAction = new QAction(QIcon(":/icons/lock_closed"), tr("&Encrypt Account..."), this);
     encryptAccountAction->setStatusTip(tr("Encrypt the private keys that belong to your Account"));
-    encryptAccountAction->setCheckable(true);
+    decryptAccountAction = new QAction(QIcon(":/icons/lock_open"), tr("&Decrypt Account..."), this);
+    decryptAccountAction->setStatusTip(tr("Decrypt the private keys that belong to your Account"));
     exportAccountAction = new QAction(QIcon(":/icons/filesave"), tr("&Export account..."), this);
     exportAccountAction->setStatusTip(tr("export account to another location"));
 //LogPrintf("bitcoingui:createactions 4 \n");     
@@ -346,6 +347,9 @@ LogPrintf("bitcoingui:createactions 2 \n");
     switchAccountAction->setStatusTip(tr("switch account"));
       unlockAccountAction = new QAction(QIcon(":/icons/lock_open"), tr("&Unlock Account..."), this);
     unlockAccountAction->setStatusTip(tr("unlock account"));
+      lockAccountAction = new QAction(QIcon(":/icons/lock_closed"), tr("&Lock Account..."), this);
+    lockAccountAction->setStatusTip(tr("Lock account"));
+    
     domainNameAction = new QAction(QIcon(":/icons/key"), tr("&Domain name manage..."), this);
     domainNameAction->setStatusTip(tr("Domain name manage"));
     exportAccountAction = new QAction(QIcon(":/icons/key"), tr("&Export Account"), this);
@@ -383,7 +387,8 @@ LogPrintf("bitcoingui:createactions 2 \n");
     //LogPrintf("bitcoingui:createactions 6 \n");
 #ifdef ENABLE_WALLET
     
-        connect(encryptAccountAction, SIGNAL(triggered(bool)), this, SLOT(encryptWallet(bool)));
+        connect(encryptAccountAction, SIGNAL(triggered()), this, SLOT(encryptWallet()));
+        connect(decryptAccountAction, SIGNAL(triggered()), this, SLOT(decryptWallet()));
         //LogPrintf("bitcoingui:createactions 7 \n");
         connect(exportAccountAction, SIGNAL(triggered()), this, SLOT(backupWallet()));
         //LogPrintf("bitcoingui:createactions 8 \n");
@@ -392,6 +397,7 @@ LogPrintf("bitcoingui:createactions 2 \n");
          connect(newAccountAction, SIGNAL(triggered()), this, SLOT(newAccountClicked()));
          //LogPrintf("bitcoingui:createactions 10 \n");
           connect(switchAccountAction, SIGNAL(triggered()), this, SLOT(switchAccountClicked()));
+          connect(lockAccountAction, SIGNAL(triggered()), this, SLOT(lockAccountClicked()));
           connect(unlockAccountAction, SIGNAL(triggered()), this, SLOT(unlockAccountClicked()));
           //LogPrintf("bitcoingui:createactions 11 \n");
            connect(domainNameAction, SIGNAL(triggered()), this, SLOT(domainNameClicked()));
@@ -438,6 +444,8 @@ void BitcoinGUI::createMenuBar()
         account->addAction(switchAccountAction);
         account->addAction(encryptAccountAction);
         account->addAction(unlockAccountAction);
+        account->addAction(decryptAccountAction);
+        account->addAction(lockAccountAction);
         //account->addAction(decryptAccountAction);
         account->addAction(changePassphraseAction);
         account->addAction(domainNameAction);
@@ -568,13 +576,12 @@ void BitcoinGUI::removeAllWallets()
 
 void BitcoinGUI::setWalletActionsEnabled(bool enabled)
 {
-    //overviewAction->setEnabled(enabled);
-    //sendCoinsAction->setEnabled(enabled);
-    //receiveCoinsAction->setEnabled(enabled);
-    //historyAction->setEnabled(enabled);
+    
     encryptAccountAction->setEnabled(enabled);
+    decryptAccountAction->setEnabled(enabled);
     exportAccountAction->setEnabled(enabled);
     unlockAccountAction->setEnabled(enabled);
+    lockAccountAction->setEnabled(enabled);
     changePassphraseAction->setEnabled(enabled);    
     //signMessageAction->setEnabled(enabled);
     //verifyMessageAction->setEnabled(enabled);
@@ -715,11 +722,29 @@ void BitcoinGUI::unlockAccountClicked()
         if(dlg.exec()){
         }
 }
-void BitcoinGUI::encryptWallet(bool fEncrypted)
+void BitcoinGUI::lockAccountClicked()
+{
+    if(!walletModel)
+        return;
+        AccountDialog dlg(AccountDialog::Lock,this, walletModel);    
+    
+        if(dlg.exec()){
+        }
+}
+void BitcoinGUI::encryptWallet()
 {
     if(!walletModel)
         return;
         AccountDialog dlg(AccountDialog::Encrypt,this, walletModel);    
+    
+        if(dlg.exec()){
+        }
+}
+void BitcoinGUI::decryptWallet()
+{
+    if(!walletModel)
+        return;
+        AccountDialog dlg(AccountDialog::Decrypt,this, walletModel);    
     
         if(dlg.exec()){
         }
@@ -1049,30 +1074,32 @@ void BitcoinGUI::setEncryptionStatus(int status)
     {
     case WalletModel::Unencrypted:
         labelEncryptionIcon->hide();
-        encryptAccountAction->setChecked(false);
-        changePassphraseAction->setEnabled(false);
-        unlockAccountAction->setEnabled(false);
-        encryptAccountAction->setEnabled(true);
+        changePassphraseAction->setVisible(false);
+        unlockAccountAction->setVisible(false);
+        lockAccountAction->setVisible(false);
+        encryptAccountAction->setVisible(true);
+        decryptAccountAction->setVisible(false);
         break;
     case WalletModel::Unlocked:
         labelEncryptionIcon->show();
         labelEncryptionIcon->setPixmap(QIcon(":/icons/lock_open").pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
         labelEncryptionIcon->setToolTip(tr("Wallet is <b>encrypted</b> and currently <b>unlocked</b>"));
-        encryptAccountAction->setChecked(true);
-        changePassphraseAction->setEnabled(true);
-        encryptAccountAction->setEnabled(false); // TODO: decrypt currently not supported
-        unlockAccountAction->setChecked(false);
-        unlockAccountAction->setEnabled(true);
+        
+        changePassphraseAction->setVisible(true);
+        decryptAccountAction->setVisible(true);
+        encryptAccountAction->setVisible(false);
+        unlockAccountAction->setVisible(false);
+        lockAccountAction->setVisible(true);
         break;
     case WalletModel::Locked:
         labelEncryptionIcon->show();
         labelEncryptionIcon->setPixmap(QIcon(":/icons/lock_closed").pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
         labelEncryptionIcon->setToolTip(tr("Wallet is <b>encrypted</b> and currently <b>locked</b>"));
-        encryptAccountAction->setChecked(true);
-        changePassphraseAction->setEnabled(true);
-        encryptAccountAction->setEnabled(false); // TODO: decrypt currently not supported
-        unlockAccountAction->setChecked(true);
-        unlockAccountAction->setEnabled(true);
+        changePassphraseAction->setVisible(true);
+        decryptAccountAction->setVisible(true);
+        encryptAccountAction->setVisible(false);
+        unlockAccountAction->setVisible(true);
+        lockAccountAction->setVisible(false);
         break;
     }
 }

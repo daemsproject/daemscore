@@ -20,8 +20,8 @@ CEncryptParameters::CEncryptParameters()
 
     RandAddSeedPerfmon();
  
-    vchSalt.resize(WALLET_CRYPTO_KEY_SIZE);
-    GetRandBytes(&vchSalt[0], WALLET_CRYPTO_KEY_SIZE);
+    vchSalt.resize(WALLET_CRYPTO_SALT_SIZE);
+    GetRandBytes(&vchSalt[0], WALLET_CRYPTO_SALT_SIZE);
     RandAddSeedPerfmon();
     chIV.resize(WALLET_CRYPTO_IV_SIZE);
     GetRandBytes(&chIV[0], WALLET_CRYPTO_IV_SIZE);
@@ -41,11 +41,15 @@ bool CCrypter::SetKeyFromPassphrase(const SecureString& strKeyData, const CEncry
     
      
     memcpy(&chIV[0], &params.chIV[0], sizeof chIV);    
+    ////LogPrintf("SetKeyFromPassphrase strkeydata:%s\n",HexStr(&strKeyData[0],&strKeyData[0]+strKeyData.size()));
+    std::string str=HexStr(params.vchSalt.begin(),params.vchSalt.end());
+        LogPrintf("SetKeyFromPassphrase salt %s,length%i\n",str,params.vchSalt.size());
+        //LogPrintf("SetKeyFromPassphrase N: %i,p:%i,r:%i\n",params.N,params.p,params.r);
     if(!scrypt_sp_generic(&strKeyData[0], strKeyData.size(), &params.vchSalt[0], params.vchSalt.size(),params.N,params.r,params.p, &chKey[0], sizeof(chKey)))           
     {
-        LogPrintf("SetKeyFromPassphrase1\n");
-        OPENSSL_cleanse(chKey, sizeof(chKey));
-        OPENSSL_cleanse(chIV, sizeof(chIV));
+        LogPrintf("SetKeyFromPassphrase fail\n");
+        OPENSSL_cleanse(chKey, sizeof chKey);
+        OPENSSL_cleanse(chIV, sizeof chIV);
         return false;
     }
     LogPrintf("SetKeyFromPassphrase2\n");
@@ -106,9 +110,12 @@ bool CCrypter::Encrypt(const CKeyingMaterial& vchPlaintext, std::vector<unsigned
 
 bool CCrypter::Decrypt(const std::vector<unsigned char>& vchCiphertext, CKeyingMaterial& vchPlaintext)
 {
+    //LogPrintf("crypter.cpp:DECRYPT iv:%s,SIZE:%i\n",HexStr(&chIV[0],&chIV[0]+sizeof chIV),sizeof chIV);        
+    //LogPrintf("crypter.cpp:chkey:%s,size:%i \n",HexStr(&chKey[0],&chKey[0]+sizeof chKey),sizeof chKey);  
+    //LogPrintf("CCrypter::Decrypt1\n");
     if (!fKeySet)
         return false;
-
+//LogPrintf("CCrypter::Decrypt2\n");
     // plaintext will always be equal to or lesser than length of ciphertext
     int nLen = vchCiphertext.size();
     int nPLen = nLen, nFLen = 0;
@@ -121,12 +128,15 @@ bool CCrypter::Decrypt(const std::vector<unsigned char>& vchCiphertext, CKeyingM
 
     EVP_CIPHER_CTX_init(&ctx);
     if (fOk) fOk = EVP_DecryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL, chKey, chIV) != 0;
+    //LogPrintf("CCrypter::Decrypt3\n");
     if (fOk) fOk = EVP_DecryptUpdate(&ctx, &vchPlaintext[0], &nPLen, &vchCiphertext[0], nLen) != 0;
+    //LogPrintf("CCrypter::Decrypt4\n");
     if (fOk) fOk = EVP_DecryptFinal_ex(&ctx, (&vchPlaintext[0]) + nPLen, &nFLen) != 0;
+    //LogPrintf("CCrypter::Decrypt5\n");
     EVP_CIPHER_CTX_cleanup(&ctx);
 
     if (!fOk) return false;
-
+//LogPrintf("CCrypter::Decrypt6\n");
     vchPlaintext.resize(nPLen + nFLen);
     return true;
 }
@@ -152,9 +162,8 @@ bool CCryptoKeyStore::Decrypt(CCrypter& crypter)
         LOCK(cs_KeyStore);
         if (!IsCrypted())
             return true;
-
-        
-            
+        //LogPrintf("crypter.cpp:encrypted basekey:%s,size:%i\n",HexStr(baseKey.begin(),baseKey.end()),baseKey.size());        
+              
             const std::vector<unsigned char> vchCryptedSecret(baseKey.begin(), baseKey.end());
             CKeyingMaterial vchSecret;
             if(!crypter.Decrypt(vchCryptedSecret,vchSecret))
@@ -162,6 +171,16 @@ bool CCryptoKeyStore::Decrypt(CCrypter& crypter)
                     return false;
                
             }
+            //LogPrintf("crypter.cpp:decrypted basekey:%s,size:%i\n",HexStr(vchSecret.begin(),vchSecret.end()),vchSecret.size());        
+            if (vchSecret.size() != 32)            
+                    return false;            
+            CKey key;
+            key.Set(vchSecret.begin(), vchSecret.end(), baseKey.IsCompressed());
+            CPubKey pub;
+            key.GetPubKey(pub);
+            //LogPrintf("crypter.cpp:decrypted basepub:%s,size:%i\n",HexStr(pub.begin(),pub.end()),pub.size());        
+            if ( pub!= baseKey.pubKey)
+                return false; 
             const std::vector<unsigned char> vchCryptedStep(stepKey.begin(), stepKey.end());
             CKeyingMaterial vchStep;
             if(!crypter.Decrypt(vchCryptedStep,vchStep))
@@ -169,25 +188,18 @@ bool CCryptoKeyStore::Decrypt(CCrypter& crypter)
                     return false;
                
             }
-            if (vchSecret.size() != 32)
-            {
-                    return false;
-            }
-            CKey key;
-            key.Set(vchSecret.begin(), vchSecret.end(), baseKey.IsCompressed());
-            CPubKey pub;
-            key.GetPubKey(pub);
-            if ( pub!= baseKey.pubKey)
-                return false;           
-            
+            //LogPrintf("crypter.cpp:decrypted stepkey:%s,size:%i\n",HexStr(vchStep.begin(),vchStep.end()),vchStep.size());        
+            if (vchStep.size() != 32)            
+                    return false;      
             CKey key1;
             key1.Set(vchStep.begin(), vchStep.end(), stepKey.IsCompressed());
             CPubKey pub1;
             key1.GetPubKey(pub1);
+            //LogPrintf("crypter.cpp:decrypted steppub:%s,size:%i\n",HexStr(pub1.begin(),pub1.end()),pub1.size());        
             if (pub1 != stepKey.pubKey)
                 return false;           
             baseKey.Set(vchSecret.begin(), vchSecret.end(), baseKey.IsCompressed());
-            stepKey.Set(vchSecret.begin(), vchSecret.end(), stepKey.IsCompressed());
+            stepKey.Set(vchStep.begin(), vchStep.end(), stepKey.IsCompressed());
             fUseCrypto=false;
         fDecryptionThoroughlyChecked = true;
     }

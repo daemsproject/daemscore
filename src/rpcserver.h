@@ -271,7 +271,6 @@ extern bool _parse_getcontents_params(const json_spirit::Array& params, int& fbh
 extern bool _check_cc(const CContent& ctt, const json_spirit::Array& withcc, const json_spirit::Array& withoutcc, const json_spirit::Array& firstcc);
 
 
-
 // in rest.cpp
 extern bool HTTPReq_REST(AcceptedConnection *conn,
                   std::string& strURI,

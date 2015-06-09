@@ -69,6 +69,27 @@ std::string HexStr(const T itbegin, const T itend, bool fSpaces=false)
 
     return rv;
 }
+template<typename T>
+std::string IntArray2HexStr(const T itbegin, const T itend, bool fSpaces=false)
+{
+    std::string rv;
+    static const char hexmap[16] = { '0', '1', '2', '3', '4', '5', '6', '7',
+                                     '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+    rv.reserve((itend-itbegin)*9);
+    for(T it = itbegin; it < itend; ++it)
+    {
+        uint32_t val = (uint32_t)(*it);
+        if(fSpaces && it != itbegin)
+            rv.push_back(' ');
+        for(int i=0;i<8;i++){ 
+            uint32_t tmp=val>>4*i;
+            rv.push_back(hexmap[tmp&15]);
+
+        }
+    }
+
+    return rv;
+}
 
 template<typename T>
 inline std::string HexStr(const T& vch, bool fSpaces=false)

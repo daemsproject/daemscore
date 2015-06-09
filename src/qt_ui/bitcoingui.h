@@ -117,7 +117,9 @@ private:
     QAction *newAccountAction;
     QAction *switchAccountAction;
     QAction *unlockAccountAction;
+    QAction *lockAccountAction;
     QAction *encryptAccountAction;        
+    QAction *decryptAccountAction;        
     QAction *exportAccountAction;
     QAction *importAccountAction;
     //QAction *aboutQtAction;
@@ -207,11 +209,13 @@ private slots:
    
    
    void backupWallet(){};
-   void encryptWallet(bool fEncrypted);
+   void encryptWallet();
+   void decryptWallet();
     void changePassphrase();
    void newAccountClicked();
    void switchAccountClicked();
    void unlockAccountClicked();
+   void lockAccountClicked();
    void domainNameClicked(){};
     void gotoBrowserPage();  
     /** Show about dialog */    

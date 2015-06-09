@@ -29,6 +29,7 @@
 
 #include "crypto/scrypt.h"
 #include "util.h"
+#include "utilstrencodings.h"
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
@@ -270,12 +271,27 @@ bool scrypt_sp_generic(const char *ucInput, unsigned long nInputSize, const unsi
     if (r > 0x7fffffff / 128 / p) return false;//("Parameter r is too large");
     //LogPrintf("scrypt_sp_generic4\n");
     uint8_t *B;
-    B=new uint8_t[128*r*p];    
+    B=new uint8_t[128*r*p]();    
+    //for(unsigned int i=0;i<128*r*p;i++)
+    //    B[i]=0;
+    //LogPrintf("scrypt_sp_generic B initial:%s,size:%i\n",HexStr(&B[0],&B[0]+128*r*p),sizeof(B));
+    //memset(B,0,128*r*p);
     //uint32_t X[32];
     uint32_t *XY;
-    XY=new uint32_t[64*(r+1)];
+    XY=new uint32_t[64*(r+1)]();    
+    //LogPrintf("scrypt_sp_generic XY initial:%s,size:%i\n",HexStr(&XY[0],&XY[0]+512),sizeof(XY));
+//    for(unsigned int i=0;i<64*(r+1);i++)
+//        XY[i]=65537;
+//    for(unsigned int i=0;i<64*(r+1);i++)
+//        LogPrintf("%i",XY[i]);
+//    LogPrintf("scrypt_sp_generic XY initial:%s,size:%i\n",HexStr(&XY[0],&XY[0]+512),sizeof(XY));
+//    memset(XY,0,64*(r+1)*4);    
+//    LogPrintf("scrypt_sp_generic XY initial:%s,size:%i\n",HexStr(&XY[0],&XY[0]+512),sizeof(XY));
     uint32_t *V;
-    V=new uint32_t[32*r*N];
+    V=new uint32_t[32*r*N]();
+    //for(unsigned int i=0;i<32*r*N;i++)
+//        V[i]=0x00000000;
+    //memset(V,0,32*r*N*4);
     //LogPrintf("scrypt_sp_generic5\n");
     uint32_t i;
 
@@ -283,11 +299,12 @@ bool scrypt_sp_generic(const char *ucInput, unsigned long nInputSize, const unsi
 
     //PBKDF2_SHA256((const uint8_t *)input, 84, (const uint8_t *)input, 80, 1, B, 128);
     PBKDF2_SHA256((const uint8_t *)ucInput, nInputSize, (const uint8_t *)ucSalt, nSaltSize, 1, B, p*128*r);
-//LogPrintf("scrypt_sp_generic6\n");
+   // LogPrintf("scrypt_sp_generic pbkdf2sha256 result:%s\n",HexStr(&B[0],&B[0]+p*128*r));
    for(i=0;i<p;i++){
        smix(&B[i * 128 * r], r, N, V, XY);
-
+       //if(i>0)break;
    }
+    //LogPrintf("scrypt_sp_generic smix result:%s\n",HexStr(&B[0],&B[0]+p*128*r));
 //LogPrintf("scrypt_sp_generic7\n");
 //        for (k = 0; k < 32; k++)
 //		X[k] = le32dec(&B[4 * k]);
@@ -307,7 +324,7 @@ bool scrypt_sp_generic(const char *ucInput, unsigned long nInputSize, const unsi
 //
 //	for (k = 0; k < 32; k++)
 //		le32enc(&B[4 * k], X[k]);
-    PBKDF2_SHA256((const uint8_t *)ucInput, nInputSize, B, sizeof(B), 1, (uint8_t *)ucOutput, nOutputSize);
+    PBKDF2_SHA256((const uint8_t *)ucInput, nInputSize, B, p * 128 * r, 1, (uint8_t *)ucOutput, nOutputSize);
     //LogPrintf("scrypt_sp_generic8\n");
     delete [] B;
     B=NULL;
@@ -340,25 +357,37 @@ smix(uint8_t * B, size_t r, uint64_t N, uint32_t * V, uint32_t * XY)
 	size_t k;
 
 	/* 1: X <-- B */
+        //LogPrintf("scrypt_sp_generic smix b:%s\n",HexStr(&B[0],&B[0]+128));
 	for (k = 0; k < 32 * r; k++)
 		X[k] = le32dec(&B[4 * k]);
-
+        //LogPrintf("scrypt_sp_generic smix x:%s\n",HexStrInt(&X[0],&X[0]+32));
+        //LogPrintf("scrypt_sp_generic smix y:%s\n",HexStrInt(&Y[0],&Y[0]+32));
+        //LogPrintf("scrypt_sp_generic smix z:%s\n",HexStrInt(&Z[0],&Z[0]+32));
 	/* 2: for i = 0 to N - 1 do */
 	for (i = 0; i < N; i += 2) {
 		/* 3: V_i <-- X */
 		blkcpy(&V[i * (32 * r)], X, 128 * r);
-
+                //if (i<1)
+                   //LogPrintf("scrypt_sp_generic smix V:%s\n",HexStrInt(&V[i * (32 * r)],&V[i * (32 * r)]+32));  //
 		/* 4: X <-- H(X) */
 		blockmix_salsa8(X, Y, Z, r);
-
+               //if (i<1)
+                    //LogPrintf("scrypt_sp_generic smix Y round%i:%s\n",i,HexStrInt(&Y[0],&Y[0]+32));
 		/* 3: V_i <-- X */
 		blkcpy(&V[(i + 1) * (32 * r)], Y, 128 * r);
-
+                //if (i<1)
+                    //LogPrintf("scrypt_sp_generic smix V:%s\n",HexStrInt(&V[i * (32 * r)],&V[i * (32 * r)]+32));  //
 		/* 4: X <-- H(X) */
 		blockmix_salsa8(Y, X, Z, r);
+                //if (i<1)
+                //LogPrintf("scrypt_sp_generic smix X round%i:%s\n",i,HexStrInt(&X[0],&X[0]+32));
+                //if(i>0)
+                //    break;
 	}
-
+        //LogPrintf("scrypt_sp_generic smix X after1:%s\n",HexStr(&X[0],&X[0]+sizeof(&X)));
 	/* 6: for i = 0 to N - 1 do */
+        
+        
 	for (i = 0; i < N; i += 2) {
 		/* 7: j <-- Integerify(X) mod N */
 		j = integerify(X, r) & (N - 1);
@@ -374,7 +403,9 @@ smix(uint8_t * B, size_t r, uint64_t N, uint32_t * V, uint32_t * XY)
 		blkxor(Y, &V[j * (32 * r)], 128 * r);
 		blockmix_salsa8(Y, X, Z, r);
 	}
-
+        
+        
+        //LogPrintf("scrypt_sp_generic smix X after2:%s\n",HexStr(&X[0],&X[0]+sizeof(&X[0])));
 	/* 10: B' <-- X */
 	for (k = 0; k < 32 * r; k++)
 		le32enc(&B[4 * k], X[k]);
@@ -384,7 +415,8 @@ blkcpy(uint32_t * dest, uint32_t * src, size_t len)
 {
 	uint32_t * D = dest;
 	uint32_t * S = src;
-	size_t L = len / sizeof(size_t);
+	//size_t L = len / sizeof(size_t);
+        size_t L = len/4;
 	size_t i;
 
 	for (i = 0; i < L; i++)
@@ -396,7 +428,8 @@ blkxor(uint32_t * dest, uint32_t * src, size_t len)
 {
 	uint32_t * D = dest;
 	uint32_t * S = src;
-	size_t L = len / sizeof(size_t);
+	//size_t L = len / sizeof(size_t);
+        size_t L = len/4;
 	size_t i;
 
 	for (i = 0; i < L; i++)
@@ -413,6 +446,7 @@ salsa20_8(uint32_t B[16])
 	size_t i;
 
 	blkcpy(x, B, 64);
+        //LogPrintf("salsa20_8 x:%s\n",HexStrInt(&x[0],&x[0]+16));
 	for (i = 0; i < 8; i += 2) {
 #define R(a,b) (((a) << (b)) | ((a) >> (32 - (b))))
 		/* Operate on columns. */
@@ -458,24 +492,27 @@ blockmix_salsa8(uint32_t * Bin, uint32_t * Bout, uint32_t * X, size_t r)
 
 	/* 1: X <-- B_{2r - 1} */
 	blkcpy(X, &Bin[(2 * r - 1) * 16], 64);
-
+        //LogPrintf("blockmix_salsa8 z:%s\n",HexStrInt(&X[0],&X[0]+32));
 	/* 2: for i = 0 to 2r - 1 do */
 	for (i = 0; i < 2 * r; i += 2) {
 		/* 3: X <-- H(X \xor B_i) */
 		blkxor(X, &Bin[i * 16], 64);
+                //LogPrintf("blockmix_salsa8 xor z:%s\n",HexStrInt(&X[0],&X[0]+32));
 		salsa20_8(X);
-
+                //LogPrintf("blockmix_salsa20_8 z:%s\n",HexStrInt(&X[0],&X[0]+32));
 		/* 4: Y_i <-- X */
 		/* 6: B' <-- (Y_0, Y_2 ... Y_{2r-2}, Y_1, Y_3 ... Y_{2r-1}) */
 		blkcpy(&Bout[i * 8], X, 64);
-
+                //LogPrintf("blockmix_copy out:%s\n",HexStr(&Bout[0],&Bout[0]+32));
 		/* 3: X <-- H(X \xor B_i) */
 		blkxor(X, &Bin[i * 16 + 16], 64);
+                //LogPrintf("blockmix_salsa8 xor z:%s\n",HexStr(&X[0],&X[0]+32));
 		salsa20_8(X);
-
+               // LogPrintf("blockmix_salsa20_8 z:%s\n",HexStr(&X[0],&X[0]+32));
 		/* 4: Y_i <-- X */
 		/* 6: B' <-- (Y_0, Y_2 ... Y_{2r-2}, Y_1, Y_3 ... Y_{2r-1}) */
 		blkcpy(&Bout[i * 8 + r * 16], X, 64);
+               // LogPrintf("blockmix_copy out:%s\n",HexStr(&Bout[0],&Bout[0]+32));
 	}
 }
 

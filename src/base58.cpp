@@ -215,7 +215,7 @@ int CompareVch(const std::vector<unsigned char>& vch1, const std::vector<unsigne
 {
     unsigned int s1 = vch1.size();
     unsigned int s2 = vch2.size();
-    for (int i = 0; i < min(s1, s2); i++) {
+    for (unsigned int i = 0; i < min(s1, s2); i++) {
         if (vch1.at(i) < vch2.at(i))
             return -1;
         if (vch1.at(i) > vch2.at(i))
@@ -237,8 +237,6 @@ int CompareBase32(const std::string& s1, const std::string& s2)
         return -1;
     if (!DecodeBase32(s2, vch2))
         return 1;
-    std::cout << "v1 " << HexStr(vch1.begin(),vch1.end()) << "\n";
-    std::cout << "v2 " << HexStr(vch2.begin(),vch2.end()) << "\n";
     return CompareVch(vch1, vch2);
 
 }

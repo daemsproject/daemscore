@@ -84,9 +84,7 @@ AccountDialog::AccountDialog(Mode mode,QWidget *parent,WalletModel* walletModelI
             setWindowTitle(tr("Encrypt wallet"));
             break;
         case Unlock: // Ask passphrase
-            ui->warningLabel->setText(tr("This operation needs your wallet passphrase to unlock the wallet."));
-            ui->passLabel1->hide();
-            ui->passEdit1->hide();
+            ui->warningLabel->setText(tr("This operation needs your wallet passphrase to unlock the wallet."));            
             ui->passLabel2->hide();
             ui->passEdit2->hide();
             ui->passLabel3->hide();
@@ -371,6 +369,7 @@ void AccountDialog::DoAccountAction(bool fSwitchTo)
              oldpass.assign(ui->passEdit1->text().toStdString().c_str());
              newpass1.assign(ui->passEdit2->text().toStdString().c_str());
              walletModel->changePassphrase(oldpass,newpass1);
+              QDialog::accept(); 
          default:
              break;
     }
