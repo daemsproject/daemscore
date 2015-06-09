@@ -51,32 +51,84 @@ Value getmaturetime(const Array& params, bool fHelp)
             "\nResult:\n"
             "{\n"
             "  \"time\": xxxxx,           (numeric) the time to maturity in seconds\n"
-            "  \"blocks\": xxxxx,   (numeric) the blocks to maturity\n"            
+            "  \"blocks\": xxxxx,   (numeric) the blocks to maturity\n"
             "}\n"
             "\nExamples:\n"
             + HelpExampleCli("getmaturetime", "10000")
             + HelpExampleRpc("getmaturetime", "10000")
-        );
-    int64_t time=0;
-    int64_t blocks=0;
-    
-     if (params.size() > 0){
-         
+            );
+    int64_t time = 0;
+    int64_t blocks = 0;
+
+    if (params.size() > 0) {
+
         int64_t nLockTime = params[0].get_int();
-        if (nLockTime!=0){        
-            if (nLockTime < LOCKTIME_THRESHOLD ){
-                blocks= max(0, (int)((int)nLockTime+1 - (int)chainActive.Height()));  
-                time=blocks*Params().TargetSpacing();
-            }
-            else{            
-                time=(int)max((int64_t)0,nLockTime-GetAdjustedTime());
-                blocks=(int)(time/Params().TargetSpacing());            
+        if (nLockTime != 0) {
+            if (nLockTime < LOCKTIME_THRESHOLD) {
+                blocks = max(0, (int) ((int) nLockTime + 1 - (int) chainActive.Height()));
+                time = blocks * Params().TargetSpacing();
+            } else {
+                time = (int) max((int64_t) 0, nLockTime - GetAdjustedTime());
+                blocks = (int) (time / Params().TargetSpacing());
             }
         }
-     }
+    }
     Object obj;
     obj.push_back(Pair("time", time));
     obj.push_back(Pair("blocks", blocks));
     return obj;
 }
 
+Value encodebase32(const Array& params, bool fHelp) // TO DO: Help msg
+{
+    if (fHelp || params.size() > 1)
+        throw runtime_error("");
+
+    std::vector<unsigned char> raw = ParseHexV(params[0], "parameter 1");
+    return EncodeBase32(raw);
+}
+
+Value encodebase32check(const Array& params, bool fHelp) // TO DO: Help msg
+{
+    if (fHelp || params.size() > 1)
+        throw runtime_error("");
+
+    std::vector<unsigned char> raw = ParseHexV(params[0], "parameter 1");
+    return EncodeBase32Check(raw);
+}
+
+Value decodebase32(const Array& params, bool fHelp) // TO DO: Help msg
+{
+    if (fHelp || params.size() > 1)
+        throw runtime_error("");
+    std::string b32 = params[0].get_str();
+    std::vector<unsigned char> raw;
+    if (DecodeBase32(b32, raw))
+        return HexStr(raw.begin(), raw.end());
+    else
+        throw JSONRPCError(RPC_MISC_ERROR, "Decoding failed");
+}
+
+Value decodebase32check(const Array& params, bool fHelp) // TO DO: Help msg
+{
+    if (fHelp || params.size() > 1)
+        throw runtime_error("");
+    std::string b32 = params[0].get_str();
+    std::vector<unsigned char> raw;
+    if (DecodeBase32Check(b32, raw))
+        return HexStr(raw.begin(), raw.end());
+    else
+        throw JSONRPCError(RPC_MISC_ERROR, "Decoding failed");
+}
+
+Value standardizebase32(const Array& params, bool fHelp) // TO DO: Help msg
+{
+    if (fHelp || params.size() > 1)
+        throw runtime_error("");
+    std::string b32 = params[0].get_str();
+    std::vector<unsigned char> raw;
+    if (DecodeBase32(b32, raw))
+        return EncodeBase32(raw);
+    else
+        throw JSONRPCError(RPC_MISC_ERROR, "Decoding failed");
+}

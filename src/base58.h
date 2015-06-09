@@ -24,17 +24,6 @@
 #include <vector>
 
 /**
- * Encode a byte sequence as a base58-encoded string.
- * pbegin and pend cannot be NULL, unless both are.
- */
-std::string EncodeBase58(const unsigned char* pbegin, const unsigned char* pend);
-
-/**
- * Encode a byte vector as a base58-encoded string
- */
-std::string EncodeBase58(const std::vector<unsigned char>& vch);
-
-/**
  * Encode a byte sequence as a base32-encoded string.
  * pbegin and pend cannot be NULL, unless both are.
  */
@@ -45,19 +34,6 @@ std::string EncodeBase32(const unsigned char* pbegin, const unsigned char* pend)
  */
 std::string EncodeBase32(const std::vector<unsigned char>& vch);
 std::string EncodeBase32(const int i);
-
-/**
- * Decode a base58-encoded string (psz) into a byte vector (vchRet).
- * return true if decoding is successful.
- * psz cannot be NULL.
- */
-bool DecodeBase58(const char* psz, std::vector<unsigned char>& vchRet);
-
-/**
- * Decode a base58-encoded string (str) into a byte vector (vchRet).
- * return true if decoding is successful.
- */
-bool DecodeBase58(const std::string& str, std::vector<unsigned char>& vchRet);
 
 /**
  * Decode a base32-encoded string (psz) into a byte vector (vchRet).
@@ -80,23 +56,6 @@ int DecodeBase32ToInt(const char* psz);
 int DecodeBase32ToInt(const std::string& str);
 
 /**
- * Encode a byte vector into a base58-encoded string, including checksum
- */
-std::string EncodeBase58Check(const std::vector<unsigned char>& vchIn);
-
-/**
- * Decode a base58-encoded string (psz) that includes a checksum into a byte
- * vector (vchRet), return true if decoding is successful
- */
-bool DecodeBase58Check(const char* psz, std::vector<unsigned char>& vchRet);
-
-/**
- * Decode a base58-encoded string (str) that includes a checksum into a byte
- * vector (vchRet), return true if decoding is successful
- */
-bool DecodeBase58Check(const std::string& str, std::vector<unsigned char>& vchRet);
-
-/**
  * Encode a byte vector into a base32-encoded string, including checksum
  */
 std::string EncodeBase32Check(const std::vector<unsigned char>& vchIn);
@@ -112,36 +71,6 @@ bool DecodeBase32Check(const char* psz, std::vector<unsigned char>& vchRet);
  * vector (vchRet), return true if decoding is successful
  */
 bool DecodeBase32Check(const std::string& str, std::vector<unsigned char>& vchRet);
-
-/**
- * Base class for all base58-encoded data
- */
-class CBase58Data
-{
-protected:
-    //! the version byte(s)
-    std::vector<unsigned char> vchVersion;
-
-    //! the actually encoded data
-    typedef std::vector<unsigned char, zero_after_free_allocator<unsigned char> > vector_uchar;
-    vector_uchar vchData;
-
-    CBase58Data();
-    void SetData(const std::vector<unsigned char> &vchVersionIn, const void* pdata, size_t nSize);
-    void SetData(const std::vector<unsigned char> &vchVersionIn, const unsigned char *pbegin, const unsigned char *pend);
-
-public:
-    bool SetString(const char* psz, unsigned int nVersionBytes = 1);
-    bool SetString(const std::string& str);
-    std::string ToString() const;
-    int CompareTo(const CBase58Data& b58) const;
-
-    bool operator==(const CBase58Data& b58) const { return CompareTo(b58) == 0; }
-    bool operator<=(const CBase58Data& b58) const { return CompareTo(b58) <= 0; }
-    bool operator>=(const CBase58Data& b58) const { return CompareTo(b58) >= 0; }
-    bool operator< (const CBase58Data& b58) const { return CompareTo(b58) <  0; }
-    bool operator> (const CBase58Data& b58) const { return CompareTo(b58) >  0; }
-};
 
 /**
  * Base class for all base32-encoded data
@@ -182,7 +111,6 @@ public:
  */
 class CBitcoinAddress : public CBase32Data {
 public:
-    //bool Set(const CKeyID &id);
     bool Set(const CPubKey& id);
     bool Set(const CScriptID &id);
     bool Set(const CTxDestination &dest);

@@ -95,6 +95,8 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "getcontents", 1 },
     { "getcontentbylink", 1 },
     { "setfollow", 0 },
+//    { "encodebase32", 0 },
+//    { "decodebase32", 0 },
 };
 
 class CRPCConvertTable

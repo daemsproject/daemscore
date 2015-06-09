@@ -242,13 +242,24 @@ extern json_spirit::Value getcontentbylink(const json_spirit::Array& params, boo
 extern json_spirit::Value getlink(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getcontents(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getmessages(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getbrowserconf(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getfollowed(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value setfollow(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value encodebase32(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value decodebase32(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value encodebase32check(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value decodebase32check(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value standardizebase32(const json_spirit::Array& params, bool fHelp);
+
 extern json_spirit::Value devtest(const json_spirit::Array& params, bool fHelp); // to be deleted
+
+extern json_spirit::Value createcontent(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value decodecontent(const json_spirit::Array& params, bool fHelp);
+
 extern CContent _create_text_content(std::string str);
 extern CContent _create_file_content(std::string str);
 extern CContent _create_content(const json_spirit::Array& params);
-extern json_spirit::Value createcontent(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Object _decode_content(const json_spirit::Array& params);
-extern json_spirit::Value decodecontent(const json_spirit::Array& params, bool fHelp);
 extern bool _getTxFrBlock(const CBlock& block, const int nTx, CTransaction& txOut);
 extern bool _getVoutFrTx(const CTransaction& tx, const int nVout, CTxOut& vout);
 extern bool _getContentFrTx(const CTransaction& tx, const int nVout, CContent& content);
@@ -258,9 +269,7 @@ extern std::vector<CBitcoinAddress> _get_posters(CTransaction tx);
 extern bool _parse_getcontents_params(const json_spirit::Array& params, int& fbh, int& maxc, int& maxb, int& blkc, json_spirit::Array& withcc, json_spirit::Array& withoutcc, json_spirit::Array& firstcc, int& fContentFormat, unsigned char& cflag, int& mincsize, json_spirit::Array& addrs, bool& fAsc);
 extern bool _check_cc(const CContent& ctt, const json_spirit::Array& withcc, const json_spirit::Array& withoutcc, const json_spirit::Array& firstcc);
 
-extern json_spirit::Value getbrowserconf(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value getfollowed(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value setfollow(const json_spirit::Array& params, bool fHelp);
+
 
 // in rest.cpp
 extern bool HTTPReq_REST(AcceptedConnection *conn,

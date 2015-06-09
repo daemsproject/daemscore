@@ -330,6 +330,11 @@ static const CRPCCommand vRPCCommands[] =
     { "util",               "estimatefee",            &estimatefee,            true,      true,       false },
     { "util",               "estimatepriority",       &estimatepriority,       true,      true,       false },
     { "util",               "getmaturetime",          &getmaturetime,          false,     false,      false },
+    { "util",               "encodebase32",           &encodebase32,           true,      true,       false },
+    { "util",               "decodebase32",           &decodebase32,           true,      true,       false },
+    { "util",               "encodebase32check",      &encodebase32check,      true,      true,       false },
+    { "util",               "decodebase32check",      &decodebase32check,      true,      true,       false },
+    { "util",               "standardizebase32",      &standardizebase32,      true,      true,       false },
 
     /* Not shown in help */
     { "hidden",             "invalidateblock",        &invalidateblock,        true,      true,       false },
