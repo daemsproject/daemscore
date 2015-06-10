@@ -198,15 +198,20 @@ var Messenger = new function() {
         $("#add-contact").find(".btn-secondary").unbind().click(function() {               
             $("#add-contact").hide();
        });
-        $("#add-contact").find(".btn-primary").unbind().click(function() {
-            var arr=[{id:$("#add-contact").find('input[name="contact-id"]').val()}];
-            //var contact=;
-            //arr.concat();
-            BrowserAPI.add_contacts(accountID,arr,function(a){
-                
-            },function(e){
-                Messenger.makeNotice('error', 'add-contact-error',e);
-            })
+        $("#add-contact").find(".btn-primary").unbind().click(function() { 
+            var id=$("#add-contact").find('input[name="contact-id"]').val();
+            if(!BrowserAPI.checkNameKey(id))
+                return;
+            contacts[id]={};
+            addToContactList(contacts[id]);
+            
+            //var arr=[{id:$("#add-contact").find('input[name="contact-id"]').val()}];
+            
+//            BrowserAPI.add_contacts(accountID,arr,function(a){
+//                
+//            },function(e){
+//                Messenger.makeNotice('error', 'add-contact-error',e);
+//            })
             $("#add-contact").hide();
        });    
         

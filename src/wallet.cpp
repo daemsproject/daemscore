@@ -174,6 +174,7 @@ bool CWallet::SwitchToAccount(CPubKey idIn,bool fSetDefault){
         {        
       //  LogPrintf("wallet.cpp:SwitchToAccount 3 \n"); 
             id=idIn;
+            ClearPassword();
             bool fFirstRunRet;
             if (LoadWallet(fFirstRunRet)==DB_LOAD_OK)
             {

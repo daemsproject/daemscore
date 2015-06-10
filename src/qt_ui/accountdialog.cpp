@@ -103,6 +103,8 @@ AccountDialog::AccountDialog(Mode mode,QWidget *parent,WalletModel* walletModelI
             break;
         case Lock: // Ask passphrase
             ui->warningLabel->setText(tr("This operation will lock the wallet."));
+            ui->passLabel1->hide();
+            ui->passEdit1->hide();
             ui->passLabel2->hide();
             ui->passEdit2->hide();
             ui->passLabel3->hide();
@@ -228,6 +230,7 @@ void AccountDialog::textChanged()
             acceptable=(ui->checkBoxEncrypt->checkState()==Qt::Unchecked)||(!ui->passEdit2->text().isEmpty() && !ui->passEdit3->text().isEmpty()&&(ui->passEdit2->text()==ui->passEdit3->text()));            
         break;
     case Switch:
+    case Lock:
             acceptable=true;
             break;
     }
@@ -294,6 +297,8 @@ void AccountDialog::button1_clicked()
     {   
         case CreateNew:
             walletModel->stopVanityGen();
+        default:
+            break;
     }
     
     QDialog::reject();

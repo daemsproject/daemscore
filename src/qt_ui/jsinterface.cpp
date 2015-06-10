@@ -292,13 +292,19 @@ QString JsInterface::HandlePaymentRequest(Array arrData)
     pub.Set(address);
     pub.GetKey(id);
     //memcpy(&id, &pr.vFrom[0][1], 20);
-    CWallet* pwallet =new CWallet(id);    
+    CWallet* pwallet;
+    //LogPrintf("jsinterface:hadlepaymentrequest:id,pwalletmain id:%i",HexStr(id.begin(),id.end()),HexStr(pwalletMain->id.begin(),pwalletMain->id.end()));
+    if(id==pwalletMain->GetID())
+        pwallet=pwalletMain;
+    else
+        pwallet=new CWallet(id);    
     int nOP=0;//0::unencrypted,1::encrypted,2::offline
     if (!pwallet->HavePriv())
         nOP=2;
-    else if (pwallet->IsCrypted())
+    else if (pwallet->IsLocked())
         nOP=1;
     if (!pwallet->CreateTransactionUnsigned(pr,tx,strError)){
+        if(pwallet!=pwalletMain)
                 delete pwallet;
                 return QString().fromStdString("{\"error\":\""+strError+"\"}"); 
     }
@@ -308,11 +314,13 @@ QString JsInterface::HandlePaymentRequest(Array arrData)
     QString alert=getPaymentAlertMessage(tx); 
     QString title=QString(tr("Request Payment"));
     if (!gui->handleUserConfirm(title,alert,nOP,strError,ssInput)){
+        if(pwallet!=pwalletMain)
         delete pwallet;
         return QString().fromStdString("{\"error\":\""+strError+"\"}");             
         }    
     if(nOP==1)
         if(!pwallet->SetPassword(ssInput)){
+            if(pwallet!=pwalletMain)
             delete pwallet;
             return QString().fromStdString("{\"error\":\"wrong password\"}");
         }
@@ -320,6 +328,7 @@ QString JsInterface::HandlePaymentRequest(Array arrData)
     if(nOP==2){
         std::vector<CScript> sigs;
         if (!DecodeSigs(string(ssInput.begin(),ssInput.end()),sigs)){
+            if(pwallet!=pwalletMain)
             delete pwallet;
             return QString().fromStdString("{\"error\":\"invalid signatures\"}");
         }
@@ -330,6 +339,7 @@ QString JsInterface::HandlePaymentRequest(Array arrData)
         *static_cast<CTransaction*>(&wtxSigned) = CTransaction(mtx);
     }
     else if(!pwallet->SignTransaction(tx, wtxSigned,pr.nSigType)){
+        if(pwallet!=pwalletMain)
         delete pwallet;
         return QString().fromStdString("{\"error\":\"sign transaction failed\"}");            
     }
@@ -343,7 +353,8 @@ QString JsInterface::HandlePaymentRequest(Array arrData)
      LogPrintf("jsinterface:hadlepaymentrequest:acceptedto mempool\n");
      RelayTransaction(wtxSigned);
      LogPrintf("jsinterface:hadlepaymentrequest:sendtx :%s\n",EncodeHexTx(CTransaction(wtxSigned)));
-    delete pwallet;
+     if(pwallet!=pwalletMain)
+        delete pwallet;
     return QString("{\"success\":\"tx sent\"}");
             
 }
