@@ -93,17 +93,21 @@ var CBrowser = new function () {
     this.addContent = function (ctt, fType, fPos) {
         fPos = typeof fPos !== 'undefined' ? fPos : true;
         fType = typeof fType !== 'undefined' ? fType : CONTENT_TYPE_FEED;
+//        console.log('m1');
         if (ctt.content[0].content === "non-standard")
             return;
+//          console.log('m2');
         var sdiv
         switch (fType) {
             case CONTENT_TYPE_FEED:
                 sdiv = $("#standard").clone(true, true);
                 break;
             case CONTENT_TYPE_FOLLOW:
+            case CONTENT_TYPE_MINE:
                 sdiv = $("#followstd").clone(true, true);
                 break;
         }
+//          console.log('m3');
         sdiv.removeAttr("id");
         sdiv.find(".id").find(".text").attr("fullid", ctt.poster[0]);
         sdiv.find(".id").find(".text").html(this.shortenId(ctt.poster[0]));
@@ -117,14 +121,21 @@ var CBrowser = new function () {
             sdiv.find(".ctt").html(this.createAudioHtml(ctt.link, this.getFileContentFrJson(ctt)));
         else if (this.isContentText(ctt))
             sdiv.find(".ctt").html(atob(ctt.content[0].content[0].content));
-        else
-            return;
+        else{
+            console.log("err");
+            return false;
+        }
+//        console.log(sdiv);
+//        var test = $("#test");
+//        $("#mainframe").append(test);
         fPos ? $("#mainframe").prepend(sdiv.children()) : $("#mainframe").append(sdiv.children());
+        return true;
     };
     this.isContentImage = function (ctt) {
+//        console.log(ctt.content[0].content[1].content);
         return ctt.content[0].cc_name === "CC_FILE_P" &&
                 ctt.content[0].content[1].cc_name === "CC_FILE_TYPESTRING" &&
-                ctt.content[0].content[1].content === btoa("image/jpeg");
+                ctt.content[0].content[1].content === btoa("image/jpeg") ||   ctt.content[0].content[1].content === btoa("image/png") ;
     };
     this.isContentVideo = function (ctt) {
         return ctt.content[0].cc_name === "CC_FILE_P" &&
@@ -252,59 +263,3 @@ var CBrowser = new function () {
 //        console.log(tabid);
     };
 };
-var blkDisp;
-var fllDisp;
-$(document).ready(function () {
-
-    CBrowser.newAction();
-
-    $("#refresh-btn").click(function () {
-        CBrowser.refreshNew();
-    });
-    $("#refreshold-btn").click(function () {
-        CBrowser.refreshOld();
-    });
-    $(".tabbar").children("li").children("a").click(function () {
-        CBrowser.switchTab($(this).attr("id"));
-    });
-    $(".id").find("a.text").click(function () {
-        CBrowser.toggleFullId($(this).parent());
-    });
-    $(".id-follow-btn").click(function () {
-        var id = $(this).parent().parent().find(".text").attr("fullid");
-        var feedback = BrowserAPI.setFollow(id);
-        for (k in feedback) {
-            if (feedback[k] == id) {
-                CBrowser.showNotice("Successful");
-                return;
-            }
-        }
-        CBrowser.showNotice("Failed");
-        console.log(feedback);
-    });
-    $(".id-share-btn").click(function () {
-        alert("To Do");
-    });
-    $(".brctt").find("a.shrt").click(function () {
-        CBrowser.toggleCmt($(this).parent());
-    });
-    $(".ctt").click(function () {
-        CBrowser.showFullImg($(this));
-    });
-    $(".ctt-link-btn").click(function () {
-        CBrowser.toggleLink($(this));
-    });
-
-
-    $("#fullImage").click(function () {
-        $(this).html("");
-    });
-    $("#test-btn").click(function () {
-        console.log(BrowserAPI.getFollowed());
-    });
-    $(window).scroll(function () {
-        if ($(window).scrollTop() + $(window).height() == $(document).height()) {
-            CBrowser.bottomAction();
-        }
-    });
-});

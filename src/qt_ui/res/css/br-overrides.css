@@ -1,4 +1,6 @@
-.container{
+h1{
+    font: 20px arial,sans-serif;
+}.container{
     margin-top:10px;
 }.brimg{
     max-width:90%;

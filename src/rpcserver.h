@@ -239,6 +239,9 @@ extern json_spirit::Value getcontent(const json_spirit::Array& params, bool fHel
 
 // New
 extern json_spirit::Value getcontentbylink(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getcontentbystring(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value encodecontentunit(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value decodecontentunit(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getlink(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getcontents(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getmessages(const json_spirit::Array& params, bool fHelp);

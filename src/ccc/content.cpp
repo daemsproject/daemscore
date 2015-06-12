@@ -372,7 +372,7 @@ std::string GetCcName(const cctype cc)
     }
 }
 
-cctype GetCcValue(std::string ccName)
+cctype GetCcValue(const std::string& ccName)
 {
     /** Null * */
     if (ccName == "CC_NULL") return CC_NULL;
@@ -742,7 +742,7 @@ bool CContent::IsStandard()
     return (pc > end()) ? false : true;
 }
 
-Array CContent::ToJson(stringformat fFormat)
+Array CContent::ToJson(stringformat fFormat, bool fRecursive)
 {
     iterator pc = begin();
     Array result;
@@ -756,7 +756,7 @@ Array CContent::ToJson(stringformat fFormat)
         ccName = GetCcName(cc);
         ccUnit.push_back(Pair("cc_name", ccName));
         ccUnit.push_back(Pair("cc", GetCcHex(cc)));
-        if (IsCcParent(cc)) {
+        if (IsCcParent(cc) && fRecursive) {
             if (contentStr.IsStandard())
                 ccUnit.push_back(Pair("content", contentStr.ToJson(fFormat)));
             else
@@ -768,21 +768,21 @@ Array CContent::ToJson(stringformat fFormat)
                     if (fFormat == STR_FORMAT_BIN_SUM && contentStr.size() > STR_FORMAT_SUM_MAXSIZE)
                         ccUnit.push_back(Pair("length", contentStr.size()));
                     else
-                    ccUnit.push_back(Pair("content", contentStr));
+                        ccUnit.push_back(Pair("content", contentStr));
                     break;
                 case STR_FORMAT_HEX:
                 case STR_FORMAT_HEX_SUM:
                     if (fFormat == STR_FORMAT_HEX_SUM && contentStr.size() > STR_FORMAT_SUM_MAXSIZE)
                         ccUnit.push_back(Pair("length", contentStr.size()));
                     else
-                    ccUnit.push_back(Pair("content", HexStr(contentStr)));
+                        ccUnit.push_back(Pair("content", HexStr(contentStr)));
                     break;
                 case STR_FORMAT_B64:
                 case STR_FORMAT_B64_SUM:
                     if (fFormat == STR_FORMAT_B64_SUM && contentStr.size() > STR_FORMAT_SUM_MAXSIZE)
                         ccUnit.push_back(Pair("length", contentStr.size()));
                     else
-                    ccUnit.push_back(Pair("content", EncodeBase64(contentStr)));
+                        ccUnit.push_back(Pair("content", EncodeBase64(contentStr)));
                     break;
 
             }
@@ -865,7 +865,11 @@ bool CContent::HasCc(const cctype& ccIn) // Very costly !!! Try to use FirstCc()
 bool CContent::FirstCc(const cctype& ccIn)
 {
     iterator pc = begin();
-    cctype cc = (cctype) ReadVarInt(pc);
+    cctype cc;
+    u_int64_t n;
+    if (!ReadVarInt(pc, n))
+        return false;
+    cc = (cctype) n;
     if (cc != ccIn)
         return false;
     if (!IsStandard())
@@ -920,16 +924,38 @@ bool CContent::SetString(const vector<unsigned char>& cttVch)
     return SetString(str);
 }
 
+bool CContent::SetUnit(const cctype& cc, const std::string& cttStr)
+{
+    WriteVarInt(cc);
+    WriteCompactSize(cttStr.size());
+    append(cttStr);
+    return true;
+}
+
+bool CContent::SetUnit(const std::string& ccname, const std::string& cttStr)
+{
+    cctype cc = GetCcValue(ccname);
+    return SetUnit(cc, cttStr);
+}
+
 bool CContent::GetCcUnit(iterator& pc, cctype& ccRet, std::string& content)
 {
     ccRet = CC_NULL;
     if (pc >= end())
         return false;
-    ccRet = (cctype) ReadVarInt(pc);
-    int len = ReadCompactSize(pc);
-    if (len > 0 && len <= end() - pc)
-        content = ReadData(pc, len);
-    else if(len == 0)
+    u_int64_t n;
+    if (!ReadVarInt(pc, n))
+        return false;
+    ccRet = (cctype) n;
+    u_int64_t len;
+    if (!ReadCompactSize(pc, len))
+        return false;
+    if (len > 0) {
+        if (!ReadData(pc, len, content)) {
+            content = "";
+            return false;
+        }
+    } else if (len == 0)
         content = "";
     else
         return false;
@@ -955,18 +981,19 @@ bool CContent::WriteVarInt(u_int64_t n)
     return true;
 }
 
-u_int64_t CContent::ReadVarInt(iterator& pc)
+bool CContent::ReadVarInt(iterator& pc, u_int64_t& n)
 {
-    u_int64_t n = 0;
-    while (true) {
-        unsigned char chData;
+    n = 0;
+    unsigned char chData = 0xff;
+    while (pc < end()) {
         chData = *pc++;
         n = (n << 7) | (chData & 0x7F);
         if (chData & 0x80)
             n++;
         else
-            return n;
+            break;
     }
+    return (chData & 0x80) ? false : true;
 }
 
 bool CContent::WriteCompactSize(u_int64_t n)
@@ -1005,32 +1032,37 @@ bool CContent::WriteCompactSize(u_int64_t n)
     return true;
 }
 
-u_int64_t CContent::ReadCompactSize(iterator& pc)
+bool CContent::ReadCompactSize(iterator& pc, u_int64_t& nSizeRet)
 {
+    if (pc == end())
+        return false;
     unsigned char chSize;
     std::string chData;
     chSize = *pc++;
-    u_int64_t nSizeRet = 0;
+    nSizeRet = 0;
     if (chSize < 253) {
         nSizeRet = chSize;
     } else if (chSize == 253) {
-        chData = ReadDataReverse(pc, 2);
+        if (!ReadDataReverse(pc, 2, chData))
+            return false;
         nSizeRet = strtoull(HexStr(chData).data(), NULL, 16);
         if (nSizeRet < 253) {
             throw std::ios_base::failure("non-canonical ReadCompactSize()" + nSizeRet);
         }
     } else if (chSize == 254) {
-        chData = ReadDataReverse(pc, 4);
+        if (!ReadDataReverse(pc, 4, chData))
+            return false;
         nSizeRet = strtoull(HexStr(chData).data(), NULL, 16);
         if (nSizeRet < 0x10000u)
             throw std::ios_base::failure("non-canonical ReadCompactSize()");
     } else {
-        chData = ReadDataReverse(pc, 8);
+        if (!ReadDataReverse(pc, 8, chData))
+            return false;
         nSizeRet = strtoull(HexStr(chData).data(), NULL, 16);
         if (nSizeRet < 0x100000000ULL)
             throw std::ios_base::failure("non-canonical ReadCompactSize()");
     }
-    return nSizeRet;
+    return true;
 }
 
 bool CContent::WriteData(const std::string str)
@@ -1045,28 +1077,30 @@ bool CContent::WriteData(const std::string str, int len)
     return true;
 }
 
-std::string CContent::ReadData(iterator& pc, int len)
+bool CContent::ReadData(iterator& pc, int len, std::string& result)
 {
-    std::string result;
     int i = 0;
     while (i < len) {
         result += *pc++;
+        if (pc > end())
+            return false;
         i++;
     }
-    return result;
+    return true;
 }
 
-std::string CContent::ReadDataReverse(iterator& pc, int len)
+bool CContent::ReadDataReverse(iterator& pc, int len, std::string& result)
 {
-    std::string result;
     int i = len;
     iterator pc2 = pc + len;
+    if (pc2 > end())
+        return false;
     while (i > 0) {
         result += *--pc2;
         i--;
         pc++;
     }
-    return result;
+    return true;
 }
 
 bool CContent::IsCcParent(const cctype& cc)
@@ -1074,29 +1108,37 @@ bool CContent::IsCcParent(const cctype& cc)
     u_int64_t cc2 = cc;
     return (cc2 % 2 == 1) ? true : false;
 }
-bool CContent::Encode(int cc,std::vector<std::string>vData){
+
+bool CContent::Encode(int cc, std::vector<std::string>vData)
+{
     return false;
 }
-Value CMessage::ToJson(bool fLinkOnly){ // to test
-    json_spirit::Object obj;    
+
+Value CMessage::ToJson(bool fLinkOnly)
+{ // to test
+    json_spirit::Object obj;
     string strID;
-    ScriptPubKeyToString(IDFrom,strID);
-    obj.push_back(Pair("IDFrom", Value(strID)));    
-    ScriptPubKeyToString(IDTo,strID);
+    ScriptPubKeyToString(IDFrom, strID);
+    obj.push_back(Pair("IDFrom", Value(strID)));
+    ScriptPubKeyToString(IDTo, strID);
     obj.push_back(Pair("IDTo", Value(strID)));
     obj.push_back(Pair("txid", Value(txid.GetHex())));
     obj.push_back(Pair("nVout", Value(nVout)));
     obj.push_back(Pair("nBlockHeight", Value(nBlockHeight)));
-    obj.push_back(Pair("nTime", Value((uint64_t)nTime)));
+    obj.push_back(Pair("nTime", Value((uint64_t) nTime)));
     obj.push_back(Pair("nTx", Value(nTx)));
-    if(content!=CContent())        
-        obj.push_back(Pair("content", content.ToJson(fLinkOnly?STR_FORMAT_B64_SUM:STR_FORMAT_B64)));
+    if (content != CContent())
+        obj.push_back(Pair("content", content.ToJson(fLinkOnly ? STR_FORMAT_B64_SUM : STR_FORMAT_B64)));
     return Value(obj);
 }
-string CMessage::ToJsonString(bool fLinkOnly){
-    return write_string(ToJson(fLinkOnly),false);
+
+string CMessage::ToJsonString(bool fLinkOnly)
+{
+    return write_string(ToJson(fLinkOnly), false);
 
 }
-bool CMessage::SetJson(const Object& json){
+
+bool CMessage::SetJson(const Object& json)
+{
     return false;
 }

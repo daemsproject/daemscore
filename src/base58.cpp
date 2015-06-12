@@ -219,7 +219,7 @@ int CompareVch(const std::vector<unsigned char>& vch1, const std::vector<unsigne
         if (vch1.at(i) < vch2.at(i))
             return -1;
         if (vch1.at(i) > vch2.at(i))
-            return -1;
+            return 1;
     }
     if (s1 < s2)
         return -1;

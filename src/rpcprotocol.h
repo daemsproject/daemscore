@@ -78,7 +78,8 @@ enum RPCErrorCode
     RPC_WALLET_ALREADY_UNLOCKED     = -17, //! Wallet is already unlocked
     
     //! Content errors
-    RPC_LINK_ERROR                  = -256 //! Link format wrong
+    RPC_LINK_ERROR                  = -256,//! Link format wrong
+    RPC_CONTENT_ERROR               = -257 //! Content format wrong
 };
 
 /**

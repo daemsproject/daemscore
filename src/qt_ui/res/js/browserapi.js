@@ -25,22 +25,22 @@ var BrowserAPI = new function () {
     //! <!--  [ connect slots ] -->
 
     this.feedback = function (feedbackjson, func) {
-        console.log(feedbackjson);
-        console.log(func);
+        //console.log(feedbackjson);
+        //console.log(func);
         //var a=func;
         var msg = $.parseJSON(feedbackjson);
-        console.log(msg);
+        //console.log(msg);
         if (msg.error)
             msg = msg.error;
-        console.log(msg);
+        //console.log(msg);
         if (msg.message)
             msg = msg.message;
-        console.log(msg);
+        //console.log(msg);
         var cmd = 'var a=' + func + ';a("' + msg + '")';
         console.log(cmd);
         eval(cmd);
         //a($.parseJSON(feedbackjson));
-        console.log(1);
+        //console.log(1);
         //setStatus('Idle');
         //document.getElementById('testdiv').innerHTML = a;        
     }
@@ -88,13 +88,13 @@ var BrowserAPI = new function () {
     this.call = function (cmd, datajson, successfunc, errorfunc, async) {
         this.connectSlots();
         if (async) {
-            var callID = jsinterface.jscallasync(cmd, datajson, successfunc, errorfunc);
+            var callID = jsinterface.jscallasync(cmd, JSON.stringify(datajson), successfunc, errorfunc);
             callIDs.push(callID);
             console.log(callID);
             return;
         }
         var jsreply;
-        var jsreplyjson = jsinterface.jscall(cmd, datajson);
+        var jsreplyjson = jsinterface.jscall(cmd, JSON.stringify(datajson));
 //        console.log("browserapi.call:" + jsreplyjson);
         try {
             jsreply = $.parseJSON(jsreplyjson);
@@ -111,32 +111,40 @@ var BrowserAPI = new function () {
             if (jsreply.error.message)
                 errorfunc(jsreply.error.message);
             else
-            errorfunc(jsreply.error);
+                errorfunc(jsreply.error);
             return;
         }
 //        console.log("browserapi.call:" + jsreply);
         successfunc(jsreply);
     };
-    this.getAccountID = function () {
+    this.icall = function (cmd, datajson) {
         var jsreply;
-        this.call("getmainid", "", function (a) {
-            jsreply = a;
-        }, function (b) {
+        var jsreplyjson = jsinterface.jscall(cmd, JSON.stringify(datajson));
+        //console.log("browserapi.call:" + jsreplyjson);
+        if (!jsreplyjson) {
             return null;
-        });
-        console.log("accountid:" + jsreply);
+        }
+        try {
+            jsreply = $.parseJSON(jsreplyjson);
+        }
+        catch (e) {
+            console.log("icall error:" + cmd + e);
+            return false;
+        }
+        if (jsreply.error) {
+            if (jsreply.error.message)
+                console.log("icall error:" + cmd + jsreply.error.message);
+            else
+                console.log("icall error:" + cmd + jsreply.error);
+            return false;
+        }
         return jsreply;
     };
+    this.getAccountID = function () {
+        return this.icall("getmainid", []);
+    };
     this.getIDs = function (id) {
-        var jsreply;
-        var data = [id];
-        this.call("getidlist", JSON.stringify(data), function (a) {
-            jsreply = a;
-        }, function (b) {
-            console.log(b);
-            jsreply = null;
-        });
-        console.log("ids:" + jsreply.ids[0]);
+        var jsreply = this.icall("getidlist", [id]);
         return jsreply.ids;
     };
     this.requestPayment = function (fromIDs, toID, amount, content, success, error) {
@@ -174,117 +182,51 @@ var BrowserAPI = new function () {
         request.vout[0] = vout;
         data[0] = request;
         console.log(JSON.stringify(data));
-        this.call("requestpayment", JSON.stringify(data), success, error, false);
+        this.call("requestpayment", data, success, error, false);
+
     }
     this.get_history = function (id, success, error, offset, number) {
         var data = [];
         data[0] = id;
         data[1] = (number && isNaN(offset)) ? number : 10000;
         data[2] = (offset && isNaN(offset)) ? offset : 0;
-        this.call("listtransactions", JSON.stringify(data), function (result) {
-            console.log(result);
+        this.call("listtransactions", data, function (result) {
             if (success)
                 success(result);
         }, function (e) {
             if (error)
                 error(e);
         });
+
     }
-    this.getMatureTime = function (locktime) {
-        var result;
-        var data = [];
-        data[0] = locktime;
-        this.call("getmaturetime", JSON.stringify(data), function (r) {
-            console.log(r);
-            result = r;
-        }, function () {
-        });
-        return result;
-    }
+
     this.regNotifyBlocks = function (blocksfunc) {
         notifyblockfunc = blocksfunc;
-        //var data=[{blocks:blocksfunc}];
-        //this.call("regnotify",JSON.stringify(data),blocksfunc,blocksfunc,true);
     };
     this.regNotifyTxs = function (txfunc, ids) {
         notifytx.func = txfunc;
         notifytx.ids = ids;
-        console.log("notifytx registered:" + ids);
-        //var data=[{txs:txfunc,ids:ids}];
-        //this.call("regnotify",JSON.stringify(data),txfunc,txfunc,true);
     };
     this.regNotifyPeers = function (peerfunc) {
-        //var data=[{peers:peerfunc}];
-        //this.call("regnotify",JSON.stringify(data),peerfunc,peerfunc,true);
     }
     this.regNotifyAccount = function (accountfunc) {
-        notifyaccountfunc=accountfunc;
-        //var data = [{account: accountfunc}];
-       // this.call("regnotify", JSON.stringify(data), accountfunc, accountfunc, true);
+        notifyaccountfunc = accountfunc;
     }
     this.getInfo = function () {
-        var r;
-        this.call("getinfo", "", function (r1) {
-            r = JSON.stringify(r1);
-        });
-        return r;
+        return this.icall("getinfo", "")
     };
     this.getBlockCount = function () {
-        var r;
-        this.call("getblockcount", "", function (r1) {
-            r = JSON.stringify(r1);
-        });
-        return r;
-    };
-    this.decodeContent = function (c) {
-        var r;
-        var d = [c];
-        this.call("decodecontent", JSON.stringify(d), function (r1) {
-            r = JSON.stringify(r1);
-        }, function (e) {
-            r = e;
-        });
-        return r;
-    };
-    this.createContent = function (c) {
-        var r;
-        var d = [c];
-        this.call("createcontent", JSON.stringify(d), function (r1) {
-            r = JSON.stringify(r1);
-        }, function (e) {
-            r = e;
-        });
-        return r;
+        return JSON.stringify(this.icall("getblockcount", ""));
     };
     this.getContentByLink = function (c) {
-        var r;
-        var d = [c, 6];
-        this.call("getcontentbylink", JSON.stringify(d), function (r1) {
-            r = r1;
-        }, function (e) {
-            r = e;
-        });
-        return r;
+        return this.icall("getcontentbylink", [c, 6]);
     };
     this.setFollow = function (a) {
-        var r;
-        var d = [[a]];
-        this.call("setfollow", JSON.stringify(d), function (r1) {
-            r = r1;
-        }, function (e) {
-            r = e;
-        });
-        return r;
+        return this.icall("setfollow", [[a]]);
     };
+
     this.getFollowed = function () {
-        var r;
-        var d = [];
-        this.call("getfollowed", JSON.stringify(d), function (r1) {
-            r = r1;
-        }, function (e) {
-            r = e;
-        });
-        return r;
+        return this.icall("getfollowed", []);
     };
 
     this.getContents = function (fbh, blkc, fAsc, addrs) {
@@ -296,45 +238,29 @@ var BrowserAPI = new function () {
         var fcc = ["CC_FILE_P", "CC_TEXT_P", "CC_LINK_P", "CC_LINK"];
         var d = [{"fbh": fbh, "maxc": 20, "maxb": 3000000, "firstcc": fcc, "cformat": 6, "fAsc": fAsc, "mincsize": 3, "blkc": blkc}, addrs];
 
-        this.call("getcontents", JSON.stringify(d), function (r1) {
-            if (r1.length > 0)
-                console.log(JSON.stringify(d));
-            r = r1;
-        }, function (e) {
-            r = e;
-        });
-        return r;
+        return this.icall("getcontents", d);
     };
     this.testGetContents = function (fbh) {
-        var r;
         var fcc = ["CC_FILE_P", "CC_TEXT_P", "CC_LINK_P", "CC_LINK"];
         console.log(fbh);
         var d = [{"fbh": fbh, "maxc": 20, "maxb": 3000000, "firstcc": fcc, "cformat": 6, "fAsc": false, "mincsize": 3, "blkc": 10}];
-        this.call("getcontents", JSON.stringify(d), function (r1) {
-            r = r1;
-        }, function (e) {
-            r = e;
-        });
-        return r;
+        return this.icall("getcontents", d);
     };
-    this.getMessages = function (idsLocal, idsForeign, directionFilter,  fIncludeMempool, fLinkOnly,offset, number,success,error) {
-        var data=[];
+    this.getMessages = function (idsLocal, idsForeign, directionFilter, fIncludeMempool, fLinkOnly, offset, number, success, error) {
         var d = {};
-        if (!idsLocal){
-            error("no local IDs provided");
-            return;
+        if (!idsLocal) {
+            if (error)
+                error("no local IDs provided");
+            return false;
         }
         //never collects message to idslocal itself
-        data[0]=idsLocal;
-        if (Object.prototype.toString.call(idsLocal) != '[object Array]')            
-            data[0]=[idsLocal];        
+
+        if (Object.prototype.toString.call(idsLocal) != '[object Array]')
+            data[0] = [idsLocal];
         //if idsForeign is provided, only gets messages between local & foreign.
         if (idsForeign)
             d.IDsForeign = idsForeign;
-        //direction filter:
-        //0:both in/out
-        //1:incoming only
-        //2:outputs only
+        //direction filter:        0:both in/out        1:incoming only        2:outputs only
         if (directionFilter)
             d.directionFilter = directionFilter;
         //flinkonly:only provids link, don't decrypt
@@ -346,66 +272,26 @@ var BrowserAPI = new function () {
             d.offset = offset;
         if (number)
             d.number = number;
-        data[1]=d;
-        this.call("getmessages", JSON.stringify(data), function (m) {
-            if(success)
-                success(m);
-        }, function (e) {
+        var a = this.icall("getmessages", [idsLocal, d]);
+        if (a.error) {
             if (error)
-            error(e);
-        });
-
+                if (a.error.message)
+                    error(a.error.message)
+                else
+                    error(a.error);
+            return false;
+        }
+        if (success)
+            success(a);
+        return a;
     }
-    this.decryptMessages = function (idLocal,msgArr,success,error) {
-        //msgArr:[{IDForeign:"",messages:[""]}]
-        var data=[];        
-        data[0]=idLocal;
-        data[1]=msgArr;        
-        data[2]=false;
-        this.call("encryptmessages", JSON.stringify(data), function (m) {
-            if(success)
-                success(m);
-        }, function (e) {
-            if (error)
-            error(e);
-        });
 
-    }
-    this.encryptMessages = function (idLocal,msgArr,success,error) {
-        //msgArr:[{IDForeign:"",messages:[""]}]
-        var data=[];        
-        data[0]=idLocal;
-        data[1]=msgArr;                
-        this.call("encryptmessages", JSON.stringify(data), function (m) {
-            if(success)
-                success(m);
-        }, function (e) {
-            if (error)
-            error(e);
-        });
 
-    }
-    this.getMiningInfo = function (success, error) {
-        this.call("getmininginfo", "[]", function (info) {
-            if (success)
-                success(info);
-        }, function (e) {
-            if (error)
-                error(e);
-        });
+    this.getMiningInfo = function () {
+        return this.icall("getmininginfo", [])
     }
     this.setGenerate = function (generate, id, kernels, success, error) {
-        var data = [];
-        //var str={};
-        //str.generate=generate;
-        //str.id=id;
-        //str.kernels=kernels;
-        data[0] = generate;
-        data[1] = Number(kernels);
-        data[2] = id;
-        data[3] = false;
-        console.log(JSON.stringify(data));
-        this.call("setgenerate", JSON.stringify(data), function (a) {
+        this.call("setgenerate", [generate, Number(kernels), id, false], function (a) {
             if (success)
                 success(a);
         }, function (e) {
@@ -413,31 +299,72 @@ var BrowserAPI = new function () {
                 error(e);
         });
     }
-    this.read_contacts = function (id, success, error) {
-        var data = [];
-        data[0] = id;
-        this.call("readcontacts", JSON.stringify(data), function (a) {
-            if (success)
-                success(a);
-        }, function (e) {
-            if (error)
-                error(e);
-        });
+    this.read_contacts = function (id) {
+        return this.icall("readcontacts", [id]);
+    };
+    this.add_contacts = function (id, contacts) {
+        return this.icall("addcontacts", [id, contact])
     }
-    this.add_contacts = function (id, contacts, success, error) {
-        var data = [];
-        data[0] = id;        
-        //contacts as [{id:"",alias:""}]
-        console.log(contacts);
-        data[1] = contacts;
-        this.call("addcontacts", JSON.stringify(data), function (a) {
-            if (success)
-                success(a);
+    this.createTxByContent = function (hexctt) {
+        var accountID = BrowserAPI.getAccountID();
+        var IDs = BrowserAPI.getIDs(accountID);
+        console.log(IDs);
+        BrowserAPI.requestPayment(IDs, "", 0, hexctt, function () {
+            console.log("success");
         }, function (e) {
-            if (error)
-                error(e);
+            console.log(e);
         });
-    }
+    };
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    //Below is lib funcs
+    this.createContentS = function (c) {
+        return this.icall("createcontent", [c]);
+    };
+    this.decodeContent = function (c) {
+        return this.icall("decodecontent", [c]);
+    };
+    this.getContentByString = function (c) {
+        return this.icall("getcontentbystring", [c, 6]);
+    };
+    this.checkNameKey = function (id) {
+        return this.icall("isvalidpubkeyaddress", [id]);
+    };
+
+    this.getMatureTime = function (locktime) {
+        return this.icall("getmaturetime", [locktime]);
+    };
+    this.encryptMessages = function (idLocal, msgArr) {
+        return this.icall("encryptmessages", [idLocal, msgArr]);
+    };
+    this.decryptMessages = function (idLocal, msgArr) {
+        return this.icall("encryptmessages", [idLocal, msgArr, false]);
+    };
+    this.createContentC = function (t, c) {
+        console.log("t " + t);
+        switch (t)
+        {
+            case "text/plain":
+                var u1 = this.icall("encodecontentunit", ["CC_TEXT", c.data, 2]);
+                var u2 = this.icall("encodecontentunit", ["CC_TEXT_ENCODING_UTF8", "", 2]);
+                var s = u1.hex + u2.hex;
+                var r = this.icall("encodecontentunit", ["CC_TEXT_P", s, 0]);
+                break;
+            case "image/png":
+                var u1 = this.icall("encodecontentunit", ["CC_FILE_NAME", "t", 2]);
+                var u2 = this.icall("encodecontentunit", ["CC_FILE_TYPESTRING", t, 1]);
+                var u3 = this.icall("encodecontentunit", ["CC_FILE", c.data, 2]);
+                var s = u1.hex + u2.hex + u3.hex;
+                var r = this.icall("encodecontentunit", ["CC_FILE_P", s, 0]);
+                break;
+        }
+        console.log(u1);
+        console.log(u2);
+        console.log(r);
+        return r;
+    };
 };
 
 var CLink = new function () {
@@ -472,4 +399,24 @@ var CLink = new function () {
                 (this.nVout > 0 ? this.nHeight + "_" + this.nTx + "_" + this.nVout : this.nHeight + "_" + this.nTx) : "";
     };
 };
+
+var CUtil = new function () {
+    this.decodeDataUrl = function (s) {
+        var r = [];
+        var t1 = s.split(";");
+        var rctt = t1[1];
+        var t2 = t1[0].split(":");
+        r["type"] = t2[1];
+        var t3 = rctt.split(",");
+        r["data"] = t3[1];
+
+        return r;
+    };
+};
+function sleep(n) {
+    var start = new Date().getTime();
+    while (true)
+        if (new Date().getTime() - start > n)
+            break;
+}
 

@@ -2,68 +2,41 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">        
-        <meta http-equiv="X-UA-Compatible" cotent="IE=edge,chrome=1">
         <link rel="stylesheet" href="../css/bootstrap.min.css" type="text/css">
         <link rel="stylesheet" href="../css/bootstrap-responsive.min.css" type="text/css">
         <script src="../js/jquery.min.js" type="text/javascript"></script>
         <script type="text/javascript" src="../js/bootstrap.min.js"></script>        
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
         <link rel="stylesheet" href="../css/br-overrides.css" type="text/css">
-        <script type="text/javascript" src="../js/browser.js"></script>
+        <link rel="stylesheet" href="../css/pb-overrides.css" type="text/css">
+
         <script type="text/javascript" src="../js/browserapi.js"></script>
+        <script type="text/javascript" src="../js/browser.js"></script>
+        <script type="text/javascript" src="../js/publisher.js"></script>
     </head>
 
     <body >
 
-        <div class="quickstart">
-            <div class="container">                
-                <div class="row-fluid" style="margin-top:0px">
-                    <div class="span12 no-print">
-                        <ul class="nav nav-pills pull-left tabbar" style="margin-bottom: 3px">
-                            <li class="active"><a id="br-new-btn">New</a></li>
-                            <li><a id="br-followed-btn">Followed</a></li>
-                            <li><a id="br-mypage-btn">My page</a></li>
-                            <li><a id="br-hot-btn">Hot</a></li>
-                            <li><a id="br-setting-btn">Setting</a></li>                            
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
+
         <div class="container" style="width:100%;height:50px;"></div>
         <div id="main-notices-container"><span id="notices"></span></div>
 
-        <button id="refresh-btn">refresh new</button>
-        <button id="refreshold-btn">refresh old</button>
-        <button id="test-btn">test</button>
-        
+
+        <!--  <button id="test">test</button> <!-- -->
         <div id="mainframe">
-            <div id="standard">
-                <div class="container" >
-                    <div class = "post">
-                        <div class="domain"><a href=""></a></div>
-                        <div class="id">
-                            <ul>
-                                <a class="text" fullid=""></a>
-                                <li><a class="id-follow-btn idbtn">Follow</a></li>
-                                <li><a class="id-share-btn idbtn">Share</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="post">
-                        <div class="leftblock"></div>
-                        <div class="brctt">
-                            <div class="ctt"></div>
-                            <ul class="cmt">
-                                <li class="linkspan" clink=""></li>
-                                <li><a class="ctt-share-btn idbtn">Share</a></li>
-                                <li><a class="ctt-link-btn idbtn">Link</a></li>
-                                <a class="shrt idbtn short">...</a>
-                            </ul>
-                        </div>
-                    </div>
+            <div class="maininput">
+                <h1>Type some here or drag and drop a file</h1>
+                <form>
+                    <textarea class="maintext"></textarea>
+                </form>
+                <input type="file" id="theFile" style="display:none" multiple/>
+                <div id="fileholder" align="center">
                 </div>
-                <hr>
+
+                <div class="well" align="center">
+                    Click or drag the file into the area above
+                </div>
+                <button id="confirmpub" disabled>Confirm sending</button>
             </div>
             <div id="followstd">
                 <div class="container" >
@@ -92,10 +65,8 @@
                 <hr>
             </div>
         </div>
-
         <div id="video-tpl"><video controls id=""><source type="" src=""></video></div>
         <div id="image-tpl"><a><img id="" src="" type="" class="brimg"/></a></div>
-        <div id="fullImage"></div>
+        <div id="fullImage"></div> 
     </body>
-
 </html>

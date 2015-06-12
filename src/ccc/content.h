@@ -380,7 +380,7 @@ enum cctype
 };
 
 std::string GetCcName(const cctype cc);
-cctype GetCcValue(std::string ccName);
+cctype GetCcValue(const std::string& ccName);
 std::string GetCcHex(const cctype cc);
 
 class CContent : public std::string
@@ -406,20 +406,22 @@ public:
     {
         SetJson(cttJson);
     }
-    Array ToJson(stringformat fFormat = STR_FORMAT_BIN);
+    Array ToJson(stringformat fFormat = STR_FORMAT_BIN,bool fRecursive = true);
     bool ToJsonString(std::string& entry);
     bool SetEmpty();
     bool SetString(const std::string& cttStr);
     bool SetString(const vector<unsigned char>& cttVch);
     bool SetJson(const Array& cttJson);
+    bool SetUnit(const cctype& cc,const std::string& cttStr);
+    bool SetUnit(const std::string& ccname,const std::string& cttStr);
     std::string ToHumanString();
     bool GetCcUnit(iterator& pc, cctype& ccRet, std::string& content);
-    u_int64_t ReadVarInt(iterator& pc);
-    u_int64_t ReadCompactSize(iterator& pc);
+    bool ReadVarInt(iterator& pc,u_int64_t& n);
+    bool ReadCompactSize(iterator& pc,u_int64_t& n);
     bool WriteVarInt(u_int64_t num);
     bool WriteCompactSize(u_int64_t num);
-    std::string ReadData(iterator & pc, int len);
-    std::string ReadDataReverse(iterator & pc, int len);
+    bool ReadData(iterator & pc, int len, std::string& str);
+    bool ReadDataReverse(iterator & pc, int len, std::string& str);
     std::string TrimToHumanString(const std::string& str);
     bool WriteData(const std::string str);
     bool WriteData(const std::string str, int len);
