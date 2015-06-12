@@ -179,7 +179,7 @@ Value getmainid(const Array& params, bool fHelp)
 
     Value ret;
 
-    ret = CBitcoinAddress(pwalletMain->GetID()).ToString();
+    ret = pwalletMain->GetAddress();
 
     return ret;
 }
@@ -1361,7 +1361,7 @@ Value listtransactions(const Array& params, bool fHelp)
         else{
             CPubKey id;
             id=AccountFromValue(params[0]);
-            LogPrintf("rpcwallet listtxs new pwallet");
+            LogPrintf("rpcwallet listtxs new pwallet id:%s \n",HexStr(id.begin(),id.end()));
             pwallet=new CWallet(id);
         }
             

@@ -90,7 +90,6 @@
         <file alias="spinner-034">res/movies/spinner-034.png</file>
     </qresource>
     <qresource>
-        <file alias="wallet0.html">res/html/wallet.html</file>
         <file alias="wallet.html">res/html/wallet_en.html</file>
         <file alias="wallet.js">res/js/wallet.js</file>
     </qresource>

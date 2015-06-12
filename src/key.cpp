@@ -206,21 +206,22 @@ bool CKey::MakeSharedKey(const CPubKey& pubKey,CKey& sharedKey)
 {
     if(fEncrypted)
         return false;
-    unsigned char temp(pubKey.size());
-    memcpy(&temp,pubKey.begin(),pubKey.size());
-    //CPubKey temp=pubKey;
-    if(secp256k1_ec_pubkey_tweak_mul(&temp,pubKey.size(),(unsigned char*)begin())){
-        sharedKey.Set(&temp+1,&temp+33,true);
+    unsigned char temp[pubKey.size()];
+    memcpy(&temp[0],pubKey.begin(),pubKey.size());
+    //LogPrintf("key:MakeSharedKey 1\n"); 
+    if(secp256k1_ec_pubkey_tweak_mul(&temp[0],pubKey.size(),(unsigned char*)begin())){
+      //  LogPrintf("key:MakeSharedKey 2\n"); 
+        sharedKey.Set(&temp[0]+1,&temp[0]+33,true);
         sharedKey.GetPubKey(sharedKey.pubKey);
         return true;
     }
     return false;
 }
-bool CKey::MakeSimpleSig(const std::vector<unsigned char> nounce,uint256& sig)
+bool CKey::MakeSimpleSig(const std::vector<unsigned char>& nounce,uint256& sig)
 {
     if(fEncrypted)
         return false;
-    sig= Hash(BEGIN(vch), END(vch), BEGIN(nounce), END(nounce));
+    sig= Hash(begin(),end(), nounce.begin(), nounce.end());
     return true;
 }
 bool CExtKey::Derive(CExtKey &out, unsigned int nChild) const {

@@ -170,9 +170,9 @@ public:
     std::map<uint256, CWalletTx> GetWalletTxs(std::vector<CPubKey> vIds)const;
     //create a new wallet ,optional  writing to disk
     bool CreateNew(const SecureString& strKeyData="",bool fWriteToDisk=true);
-    bool Set(const CKey& baseKeyIn,const CKey& stepKeyIn,const SecureString& strKeyData="",bool fWriteToDisk=true);
+    bool Set(const CKey& baseKeyIn,const CKey& stepKeyIn,const SecureString& strKeyData="",std::string prettyAddress="",bool fWriteToDisk=true);
     CPubKey GetID(){return id;};
-    
+    std::string GetAddress();
     bool SwitchToAccount(CPubKey idIn,bool fSetDefault=false);
          
     bool SwitchToAccount(CKey keyIn);
@@ -241,7 +241,7 @@ public:
     bool GetContactPubKey(const std::string strContact,CPubKey& pubKey);
     bool GetSharedKeyFromAdb(const std::string strContact,CKey& sharedKey);
     bool MakeSharedKey(CPubKey& pub,CKey& sharedKey,CPubKey IDLocal);
-    bool EncryptMessages(const std::map<string,std::vector<string> > mapMessagesIn, std::map<string,std::vector<string> >mapMessagesOut,bool fEncrypt=true);
+    bool EncryptMessages(const std::map<string,std::vector<string> >& mapMessagesIn, std::map<string,std::vector<string> >& mapMessagesOut,bool fEncrypt=true);
     bool DecryptWallet(const SecureString& strWalletPassphrase);
     bool ChangeWalletPassphrase(const SecureString& strOldWalletPassphrase, const SecureString& strNewWalletPassphrase);
     bool EncryptWallet(const SecureString& strWalletPassphrase);    

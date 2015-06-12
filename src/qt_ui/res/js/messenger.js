@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 var Messenger = new function() {
-    var Messenger = this;
+    var i = this;
     var tx_page;
     this.skip_init = false; //Set on sign up page
     var cVisible; //currently visible view    
@@ -14,7 +14,7 @@ var Messenger = new function() {
     var archTimer; //Delayed Backup wallet timer
     var currentContact;
     var event_listeners = []; //Emits Did decrypt wallet event (used on claim page)
-    
+    var messages=[];
     var isInitialized = false;    
     var language = 'en'; //Current language    
     var haveBoundReady = false;
@@ -95,18 +95,25 @@ var Messenger = new function() {
             }, timeout ? timeout : 5000);
         })();
     }
-    function switchToContact(id){
-        console.log("swtich");
+    this.switchToContact=function(id){
+        $("#current-contact").html(id);
+        currentContact=id;
+        i.showMessages(id);
     }
-    function addToContactList(c){
-        var html='<div id='+c.id+' onclick="switchToContact('+c.id+')">';
-        if (c.image)
+    function addToContactList(c){        
+        if(contacts[c.id])
+            return;
+        contacts[c.id]=c;
+        var html='<div id="'+c.id+'" onclick="{Messenger.switchToContact(\''+c.id+'\')}" style="margin-top:20px">';
+        if (c.image)            
             html+=createImgHtml(c.image);
         if(c.alias)
         html+=c.alias;
-        html+=" "+c.id+"</div>";
-        $("#contact-list").prepend(html);
-    }
+        html+=" "+showID(c.id)+"<div class='nmsgs' style='float:right'></div></div>";
+        console.log(html);
+        $("#contact-list").append(html);
+        //Messenger.switchToContact(c.id);
+    }    
     function readContacts(func){
         BrowserAPI.read_contacts(accountID,function(data){
             contacts=data;
@@ -124,25 +131,61 @@ var Messenger = new function() {
         });
         
     }
-    function addMessage(msg){         
+    this.showMessage=function(msg,direction){
+        var html='<div style="text-align:'+direction+'">';
+        if(direction=="left")
+            html+="->";
+        else
+            html+="<-";
+                html+=msg+'</div>';
+        console.log(html);
+        $('#history-message').append(html);
+    }
+    this.showMessages=function(id){
+        $('#history-message').html(" ");
+        var msgs=[];
+        for(var j in messages[id]){
+            msgs.push(messages[id][j].content);
+        }
+        console.log(msgs);
+        i.decryptAndShow(id,msgs);
         
-            
+    }    
+    this.decryptAndShow=function(id,msgs){
+        BrowserAPI.decryptMessages(accountID,[{idForeign:id,messages:msgs}],function(decryptmsgs){
+            console.log(decryptmsgs);        
+            for(var j=decryptmsgs[0].messages.length-1;j>=0;j--){
+                if(decryptmsgs[0].messages[j]){
+                    console.log(messages[id][j].IDTo);
+                    console.log(id);
+                    console.log(BrowserAPI.areIDsEqual(messages[id][j].IDTo,id));
+                    var direction=BrowserAPI.areIDsEqual(messages[id][j].IDTo,id)?"right":"left";                
+                    i.showMessage(decryptmsgs[0].messages[j],direction);
+                }
+            }    
+        },function(){});
+    }
+    this.addMessage=function(msg){         
+        msg.IDForeign=BrowserAPI.areIDsEqual(msg.IDFrom,accountID)?msg.IDTo:msg.IDFrom;
+        addToContactList({id:msg.IDForeign});
+        if(!messages[msg.IDForeign])
+            messages[msg.IDForeign]=[];
+        messages[msg.IDForeign].push(msg);
+        $("#"+msg.IDForeign).find(".nmsgs").html(messages[msg.IDForeign].length);
     }
     
     this.getMessages=function(){
-        BrowserAPI.getMessages(accountID,null,function(data){
+        console.log("getMessages");         
+        BrowserAPI.getMessages(accountID,null,0,true,false,0,1000,function(data){
             if (!data||data.error){
                 if (error) error();
                 return;                
             }
-            console.log(data);    
-            
+            console.log(data); 
                 for(var i in data)                    
-                    addMessage(data[i]);
-                //showRevenues();
-           
-
+                    Messenger.addMessage(data[i]);
         }, function() {
+            console.log("getMessage error"); 
         });
     };
     
@@ -154,20 +197,28 @@ var Messenger = new function() {
         var ab=function(a){
             Messenger.notifiedTx(a);
         };
+        var ac=function(){
+            window.location.href=window.location.href;
+        }
         //BrowserAPI.regNotifyBlocks(aa);        
         BrowserAPI.regNotifyTxs(ab,[accountID]);
-//        BrowserAPI.regNotifyAccount(this.notifiedAccount);
+        BrowserAPI.regNotifyAccount(ac);
 //        BrowserAPI.regNotifyPeers(this.notifiedPeers);
     }
     this.notifiedTx=function(a){
         console.log("notified tx");
-            addMessages[a];
-                       
+        var data=BrowserAPI.getTxMessages(accountID,[a.tx.txid]);        
+        if (data||!data.error){
+            for(var i in data){   
+                msg=data[i];                
+               Messenger.addMessage(msg);        
+            }
+            if(BrowserAPI.areIDsEqual(msg.From,currentContact)&&BrowserAPI.areIDsEqual(msg.IDTo,accountID)){
+                   i.decryptAndShow(currentContact,data);
+           }
+        }               
     };
     
-    this.notifiedAccount=function(data){
-        
-    }
     this.notifiedPeers=function(data){
         
     }
@@ -200,10 +251,17 @@ var Messenger = new function() {
        });
         $("#add-contact").find(".btn-primary").unbind().click(function() { 
             var id=$("#add-contact").find('input[name="contact-id"]').val();
-            if(!BrowserAPI.checkNameKey(id))
+            if(contacts[id]){
+                Messenger.makeNotice('error', 'error', 'ID already in contact list');    
                 return;
-            contacts[id]={};
-            addToContactList(contacts[id]);
+            }
+            //console.log(BrowserAPI.checkNameKey(id));
+            if(!BrowserAPI.checkNameKey(id)){
+                 Messenger.makeNotice('error', 'error', 'ID is not valid');                 
+                return;
+            }
+            
+            addToContactList({id:id});
             
             //var arr=[{id:$("#add-contact").find('input[name="contact-id"]').val()}];
             
@@ -216,9 +274,17 @@ var Messenger = new function() {
        });    
         
         
-        $('.btn-send').unbind().click(function() {               
-            if(currentContact){
-                
+        $('#btn-send').unbind().click(function() {   
+            console.log($("#send-message-box").val());
+            var msg=$("#send-message-box").val();
+            if(currentContact&&msg){                
+                BrowserAPI.sendMessage(accountID,currentContact,msg,function(){
+                    i.showMessage(msg,"right");
+                },function(e){
+                    i.makeNotice('error', 'send-message-error', e);
+           
+                });
+                    
             }
        });
        $('#btn-add').unbind().click(function() { 

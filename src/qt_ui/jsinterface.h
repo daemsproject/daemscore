@@ -20,21 +20,20 @@ class JsInterface: public QObject
 public:
     JsInterface(BitcoinGUI *_gui=0);
     ~JsInterface();
-    BitcoinGUI *gui;
+    //BitcoinGUI *gui;
     void subscribeToCoreSignals();
     void setWalletModel(WalletModel *walletModelIn);
 public slots:    
     void notifyAccountSwitched(std::string id);
-    Q_INVOKABLE
-    void test();
-    QString jscall(QString command,QString dataJson);
-    QString jscallasync(QString command,QString dataJson,QString successfunc,QString errorfunc);
+    Q_INVOKABLE    
+    QString jscall(QString command,QString dataJson,int nPageID=0);
+    QString jscallasync(QString command,QString dataJson,QString successfunc,QString errorfunc,int nPageID=0);
     void jscallback(std::string strToken,bool fSuccess,QString dataJson);
     
 signals:
     //Q_SIGNAL
     void feedback(QString str,QString func);
-    void requestPayment(std::string strToken,PaymentRequest pr, CWalletTx tx,bool fRequestPassword);
+    //void requestPayment(std::string strToken,PaymentRequest pr, CWalletTx tx,bool fRequestPassword);
     void notify(QString result);
 private slots:
     void notifyBlockHeight(const uint256 blockHash);
@@ -45,11 +44,7 @@ private slots:
 
 private:
     std::map<std::string,std::pair<QString,QString> > mapAsync;
-    QString HandlePaymentRequest(json_spirit::Array arrData);
-    QString EncryptMessages(json_spirit::Array params);
-    bool handlePaymentRequest(CWalletTx tx,int nOP,string strError,SecureString& ssInput);  
-    QString getPaymentAlertMessage(CWalletTx tx);
-    QString getEncryptMessegeAlert(std::vector<string> vstrIDsForeign,bool fEncrypt);
+
     //CWallet *wallet;
     WalletModel *walletModel;
     

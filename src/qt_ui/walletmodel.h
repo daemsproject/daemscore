@@ -5,8 +5,6 @@
 #ifndef BITCOIN_QT_WALLETMODEL_H
 #define BITCOIN_QT_WALLETMODEL_H
 
-//#include "paymentrequestplus.h"
-//#include "walletmodeltransaction.h"
 
 #include "allocators.h" /* for SecureString */
 
@@ -16,18 +14,23 @@
 #include <QObject>
 #include "pubkey.h"
 #include "key.h"
+//#include "json/json_spirit_reader_template.h"
+#include "json/json_spirit_utils.h"
+//#include "json/json_spirit_writer_template.h"
 //class OptionsModel;
-//class WalletModelTransaction;
+
 
 //class CCoinControl;
-//class CKeyID;
+
 class COutPoint;
 class COutput;
 
 //class CKey;
 class CWallet;
 class uint256;
-
+class BitcoinGUI;
+class CWalletTx;
+class PaymentRequest;
 QT_BEGIN_NAMESPACE
 class QTimer;
 QT_END_NAMESPACE
@@ -40,7 +43,7 @@ class WalletModel : public QObject
     Q_OBJECT
 
 public:
-    explicit WalletModel(CWallet *walletIn,QObject *parent = 0);
+    explicit WalletModel(CWallet *walletIn,BitcoinGUI *guiIn,QObject *parent = 0);
     ~WalletModel();
 
     enum StatusCode // Returned by sendCoins
@@ -71,28 +74,14 @@ public:
     //CAmount getBalance(const CCoinControl *coinControl = NULL) const;
     //CAmount getUnconfirmedBalance() const;
     //CAmount getImmatureBalance() const;
-    //bool haveWatchOnly() const;
-    //CAmount getWatchBalance() const;
-    //CAmount getWatchUnconfirmedBalance() const;
-    //CAmount getWatchImmatureBalance() const;
+
+    
     EncryptionStatus getEncryptionStatus() const;
 
     // Check address for validity
-    //bool validateAddress(const QString &address);
+    
 
     // Return status record for SendCoins, contains error id + information
-//    struct SendCoinsReturn
-//    {
-//        SendCoinsReturn(StatusCode status = OK):
-//            status(status) {}
-//        StatusCode status;
-//    };
-
-    // prepare transaction for getting txfee before sending coins
-    //SendCoinsReturn prepareTransaction(WalletModelTransaction &transaction, const CCoinControl *coinControl = NULL);
-
-    // Send coins to a list of recipients
-    //SendCoinsReturn sendCoins(WalletModelTransaction &transaction);
 
     // Wallet encryption
     bool setWalletEncrypted(bool encrypted, const SecureString &passphrase);
@@ -106,6 +95,13 @@ public:
     bool stopVanityGen();
     QStringList GetAccountList();
     bool switchToAccount(QString ID);
+    QString HandlePaymentRequest(json_spirit::Array arrData);
+    QString EncryptMessages(json_spirit::Array params);
+    //bool handlePaymentRequest(CWalletTx tx,int nOP,string strError,SecureString& ssInput);  
+    QString getPaymentAlertMessage(CWalletTx tx);
+    QString getEncryptMessegeAlert(std::vector<std::string> vstrIDsForeign,bool fEncrypt);
+    QString SendMessage(json_spirit::Array arrData);
+    QString getSMSAlertMessage(const PaymentRequest& pr);
     // RAI object for unlocking wallet, returned by requestUnlock()
     class UnlockContext
     {
@@ -127,44 +123,19 @@ public:
     };
 
     UnlockContext requestUnlock();
-
-    //bool getPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const;
-    //void getOutputs(const std::vector<COutPoint>& vOutpoints, std::vector<COutput>& vOutputs);
-    //bool isSpent(const COutPoint& outpoint) const;
-    //void listCoins(std::map<QString, std::vector<COutput> >& mapCoins) const;
-
-    //bool isLockedCoin(uint256 hash, unsigned int n,CAmount value) const;
-    //void lockCoin(COutPoint& output);
-    //void unlockCoin(COutPoint& output);
-    //void listLockedCoins(std::vector<COutPoint>& vOutpts);
-
-    //void loadReceiveRequests(std::vector<std::string>& vReceiveRequests);
-    //bool saveReceiveRequest(const std::string &sAddress, const int64_t nId, const std::string &sRequest);
+    
 
 private:
+    BitcoinGUI *gui;
     CWallet *wallet;
     CWallet *wallet2;
     bool fSwitchToAccount;
     std::string strHeaderTarget;
     SecureString ssPassPhrase;
-    //bool fHaveWatchOnly;
-    //bool fForceCheckBalanceChanged;
 
     // Wallet has an options model for wallet-specific options
     // (transaction fee, for example)
     //OptionsModel *optionsModel;
-
-//    AddressTableModel *addressTableModel;
-//    TransactionTableModel *transactionTableModel;
-//    RecentRequestsTableModel *recentRequestsTableModel;
-
-    // Cache some values to be able to detect changes
-    //CAmount cachedBalance;
-    //CAmount cachedUnconfirmedBalance;
-    //CAmount cachedImmatureBalance;
-   // CAmount cachedWatchOnlyBalance;
-    //CAmount cachedWatchUnconfBalance;
-    //CAmount cachedWatchImmatureBalance;
     EncryptionStatus cachedEncryptionStatus;
     int cachedNumBlocks;
 
@@ -175,9 +146,8 @@ private:
     //void checkBalanceChanged();
 
 signals:
-    // Signal that balance in wallet changed
-    //void balanceChanged(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance,
-    //                    const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance);
+
+    
 
     // Encryption status of wallet changed
     void encryptionStatusChanged(int status);
@@ -198,8 +168,8 @@ signals:
 //    void showTx();
 //    void showOverrideTx();
 //    viod showHash();
-    // Watch-only address added
-    //void notifyWatchonlyChanged(bool fHaveWatchonly);
+    
+
     void vanitygenSuccess();
 private slots:
     void notifyEcMinerResult(const CPubKey basePub,const CKey stepKey,const std::string strHeader);

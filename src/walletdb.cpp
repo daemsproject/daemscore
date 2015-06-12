@@ -28,45 +28,71 @@ using namespace json_spirit;
 // CWalletDB
 //
 bool CWalletDB::GetDefaultWallet(CPubKey& id){  
+    std::string strAddress;
+    if(GetDefaultWallet(strAddress)){
+        //LogPrintf("walletdb.cpp:GetDefaultWallet6 %s \n",strAddress);         
+            return CBitcoinAddress(strAddress).GetKey(id);                    
+    }
+        
+    id=CPubKey();
+    return false;
+}
+bool CWalletDB::GetDefaultWallet(std::string& strAddress){  
     //LogPrintf("walletdb.cpp:GetDefaultWallet1 %s\n",fpWalletPath.string());
     vector<std::string> vstrFileNames;    
     if(GetFileNames(fpWalletPath, vstrFileNames )<=0)
         return false;       
-    
+    //LogPrintf("walletdb.cpp:GetDefaultWallet1 \n");
     json_spirit::Value valDefaultId;    
     if (GetWalletConf("defaultId",valDefaultId)){
-    
-                if (valDefaultId.type() == str_type){
-                    string strDefaultWallet = valDefaultId.get_str();                       
-                    CBitcoinAddress add;
-                    if(add.SetString(strDefaultWallet)){                    
-                        if (filesystem::exists(fpWalletPath / strDefaultWallet.append(".id"))){                         
-                            return add.GetKey(id);
-                                 
-                        }
-                         //the default Id file can't be found
-                    }
-                    //defaultID invalid , TODO delete defaultId setting
-                } 
+        //LogPrintf("walletdb.cpp:GetDefaultWallet2 \n");
+        if (valDefaultId.type() == str_type){
+            string strDefaultWallet = valDefaultId.get_str();                       
+            CBitcoinAddress add;
+            if(add.SetString(strDefaultWallet))   {
+                
+              //LogPrintf("walletdb.cpp:GetDefaultWallet3 %s \n",strDefaultWallet);   
+              std::string str=strDefaultWallet;
+              if(GetWalletName(strDefaultWallet,str))
+              //LogPrintf("walletdb.cpp:GetDefaultWallet31 %s \n",str);  
+                //if (filesystem::exists(fpWalletPath / str.append(".id")))                         
+                {
+                    // LogPrintf("walletdb.cpp:GetDefaultWallet4 %s \n",str);
+                    strAddress= strDefaultWallet;
+                    return true;
+                }
+                 //the default Id file can't be found
+            }
+            //defaultID invalid , TODO delete defaultId setting
+        } 
         
     }
     //LogPrintf("walletdb.cpp:GetDefaultWallet4 \n");
     BOOST_FOREACH(const std::string fileName ,vstrFileNames){
         if(fileName.substr(fileName.length()-3)==".id"){
+             
             std::vector<unsigned char> vchId;
             CBitcoinAddress add;
-            if(!add.SetString(fileName.substr(0,fileName.length()-2)))
+            strAddress=fileName.substr(0,fileName.length()-3);            
+            LogPrintf("walletdb.cpp:GetDefaultWallet5 %s\n",strAddress);
+            if(!add.SetString(strAddress))
                 continue;
-            return add.GetKey(id);            
+            return true;
         }
-    }   
-    id=CPubKey();
+    }     
+    strAddress="";
     return false;
 }
-bool CWalletDB::SetCurrentWallet(CPubKey& id){
+bool CWalletDB::SetCurrentWallet(const CPubKey& id){
     CBitcoinAddress add;
     add.Set(id);
     strCurrentWallet = add.ToString();
+    LogPrintf("walletdb.cpp:setcurrentwallet:%s \n",strCurrentWallet);
+    return true;
+}
+bool CWalletDB::SetCurrentWallet(const std::string& strAddress){
+    
+    strCurrentWallet = strAddress;
     LogPrintf("walletdb.cpp:setcurrentwallet:%s \n",strCurrentWallet);
     return true;
 }
@@ -76,13 +102,33 @@ bool CWalletDB::GetCurrentWallet(CPubKey& id){
         return false;
     return add.GetKey(id);    
 }
-bool CWalletDB::SetDefaultWallet(CPubKey& id){
+bool CWalletDB::GetCurrentWallet(std::string& strAddress){
+    CBitcoinAddress add;
+    if(!add.SetString(strCurrentWallet))
+        return false;
+    strAddress=strCurrentWallet;
+    return true;
+}
+bool CWalletDB::IsCurrentWallet(const CPubKey& id)
+{
+    CBitcoinAddress add;
+    LogPrintf("walletdb.cpp:IsCurrentWallet id size%i\n",id.size());
+    add.Set(id);
+    LogPrintf("walletdb.cpp:IsCurrentWallet 2\n");
+    return CompareBase32(CBitcoinAddress(id).ToString(),strCurrentWallet)==0;
+}
+bool CWalletDB::SetDefaultWallet(const CPubKey& id)
+{
     json_spirit::Value valDefaultId;
     CBitcoinAddress add;
     add.Set(id);
     string strDefaultWallet = add.ToString();
     LogPrintf("walletdb.cpp:setdefaultwallet id:%s\n",strDefaultWallet);
-    valDefaultId=json_spirit::Value(strDefaultWallet);
+    return SetDefaultWallet(strDefaultWallet);    
+}
+bool CWalletDB::SetDefaultWallet(const std::string& strAddress){
+    json_spirit::Value valDefaultId;        
+    valDefaultId=json_spirit::Value(strAddress);
     if (SetWalletConf("defaultId",valDefaultId))
         return true;
     LogPrintf("walletdb.cpp:setdefaultwallet fail\n");
@@ -255,7 +301,7 @@ bool CWalletDB::GetWalletConfObj(json_spirit::Object& objConf){
     return false;
 }
 
-bool CWalletDB::GetWalletList(std::vector<CPubKey>& vIds){     
+bool CWalletDB::GetWalletList(std::vector<std::string>& vIds){     
     //LogPrintf("CWalletDB::GetWalletList \n");
     vector<std::string> vstrFileNames;
     if(GetFileNames(fpWalletPath, vstrFileNames)<=0)
@@ -273,23 +319,40 @@ bool CWalletDB::GetWalletList(std::vector<CPubKey>& vIds){
             CPubKey pub;
             //LogPrintf("CWalletDB::GetWalletList addgetkey:%b\n",add.GetKey(pub));
             if(add.GetKey(pub))
-                vIds.push_back(pub);
+                vIds.push_back(fileName.substr(0,fileName.length()-3));
         }
     }   
     return (vIds.size()>0);
         
 }   
 bool CWalletDB::IsWalletExists(CPubKey& id){
+    std::string strName;
+    return GetWalletName(id,strName);
+}
+bool CWalletDB::GetWalletName(const CPubKey& id,std::string& strName){
+    std::vector<std::string> vIds;
+    if(!GetWalletList(vIds))
+        return false;
     CBitcoinAddress add;
     add.Set(id);
-    std::string strFileName=add.ToString().append(".id");
-    return boost::filesystem::exists(fpWalletPath / strFileName);
+    //std::string strFileName=add.ToString().append(".id");
+    for(unsigned int i=0;i<vIds.size();i++)
+    {
+        if (CompareBase32(vIds[i],add.ToString())==0){
+            strName=vIds[i];
+            return true;
+        }
+    }
+    return false;
 }
-bool CWalletDB::SwitchToWallet(CPubKey& id,CCryptoKeyStore* keyStore){
-    if (IsWalletExists(id)){
-        CBitcoinAddress add;
-        add.Set(id);
-        strCurrentWallet=add.ToString();
+bool CWalletDB::GetWalletName(const std::string& strNameIn,std::string& strNameOut){    
+    CPubKey pub;
+    if(!CBitcoinAddress(strNameIn).GetKey(pub))
+        return false;
+    return GetWalletName(pub,strNameOut);
+}
+bool CWalletDB::SwitchToWallet(const CPubKey& id,CCryptoKeyStore* keyStore){
+    if (GetWalletName(id,strCurrentWallet)){        
         //if(SetDefaultWallet(id)) TODO setdefault key here is wrong. because some once query will call this function
             return ReadKeyStore(keyStore);        
     }
@@ -302,6 +365,7 @@ bool CWalletDB::ReadKeyStore(CCryptoKeyStore* keyStore){
     CPubKey id;
     add.GetKey(id);
     keyStore->mapKeys[id]=0;
+     LogPrintf("walletdb.cpp:readkeystore strCurrentWallet:%s \n",strCurrentWallet);
     if (GetIdObj(strCurrentWallet,objId)){        
         
         //base key priv
@@ -452,6 +516,7 @@ bool CWalletDB::WriteKeyStore(CCryptoKeyStore* keyStore){
     }
     //LogPrintf("walletdb.cpp:WriteKeyStore currentwallet %s\n",strCurrentWallet);
     string filename=strCurrentWallet;
+    GetWalletName(strCurrentWallet,filename);
     filename.append(".id");
     filesystem::path fpFile=fpWalletPath / filename; 
     //LogPrintf("walletdb.cpp:WriteKeyStore currentwallet after%s\n",strCurrentWallet);
@@ -459,12 +524,14 @@ bool CWalletDB::WriteKeyStore(CCryptoKeyStore* keyStore){
 }
 bool CWalletDB::GetIdObj(const std::string& strId,json_spirit::Object& objId){    
     LogPrintf("walletdb.cpp:strId %s\n",strId);
-    std::string strFileName=strId;
-            strFileName.append(".id");   
+    std::string strFileName;
+    if(!GetWalletName(strId,strFileName))
+        return false;
+    strFileName.append(".id");   
     json_spirit::Value valId;
     filesystem::path fpFile=fpWalletPath / strFileName;
-    LogPrintf("walletdb.cpp:getIdObj:%b %s\n",filesystem::exists(fpFile),fpFile.string());
-    if(filesystem::exists(fpFile)&&ReadFileToJson(fpFile.string(),valId)){
+    LogPrintf("walletdb.cpp:getIdObj:%b %s\n",filesystem::exists(fpFile),fpFile.string());    
+    if(ReadFileToJson(fpFile.string(),valId)){
             if (valId.type()==obj_type){
                 objId = valId.get_obj();
                 return true;

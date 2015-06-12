@@ -360,7 +360,7 @@ Value setmocktime(const Array& params, bool fHelp)
     return Value::null;
 }
 
-PaymentRequest ParsePaymentRequest(json_spirit::Value paymentRequestJson){    
+PaymentRequest ParsePaymentRequest(const json_spirit::Value paymentRequestJson){    
     PaymentRequest pr;
     pr.fIsValid=false;    
     std::string strError;
@@ -520,6 +520,29 @@ PaymentRequest ParsePaymentRequest(json_spirit::Value paymentRequestJson){
             strError="fee rate is lower than limit";
             throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
         }        
+    pr.fIsValid=true;
+    return pr;
+    //valtmp=find_value(obj, "vins");
+}
+PaymentRequest MessageRequestToPaymentRequest(const std::string idLocal,const std::string idForeign,const CContent msg)
+{
+    PaymentRequest pr;
+    pr.fIsValid=false;    
+    std::string strError;
+    CScript scriptPubKey;        
+    if(!StringToScriptPubKey(idLocal,scriptPubKey)){
+            strError="id is not valid fromat";
+            throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+    }
+    LogPrintf("rpcmist MessageRequestToPaymentRequest script %s\n",scriptPubKey.ToString());
+    pr.vFrom.push_back(scriptPubKey); 
+    if(!StringToScriptPubKey(idForeign,scriptPubKey)){
+            strError="out id is not valid format";
+            throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+    }
+    LogPrintf("rpcmist MessageRequestToPaymentRequest vout scriptpubkey:%s\n",scriptPubKey.ToString());        
+    CAmount amount=0;
+    pr.vout.push_back(CTxOut(amount,scriptPubKey,msg));            
     pr.fIsValid=true;
     return pr;
     //valtmp=find_value(obj, "vins");

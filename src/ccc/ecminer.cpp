@@ -81,7 +81,7 @@ void EcMiner(CWallet* pwallet,const std::vector<std::string> vstrTarget,const CP
                     for(unsigned int i=0;i<vstrTarget.size();i++)  
                     {
                         //LogPrintf("ecminer result:%s\n",strB32.substr(0,vstrTarget[i].size()));
-                        if (strB32.substr(0,vstrTarget[i].size())== vstrTarget[i])
+                        if (B32Equal(strB32.substr(0,vstrTarget[i].size()), vstrTarget[i]))
                         {
                         // Found a solution
                         fEcHeaderFound=true;

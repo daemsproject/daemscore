@@ -352,7 +352,9 @@ namespace
 
 bool CBitcoinAddress::Set(const CPubKey& id)
 {
-    std::vector<unsigned char> s = Params().Base32Prefix((CChainParams::Base32Type) * id.begin());
+    if(!id.IsValid())
+        return false;
+    //std::vector<unsigned char> s = Params().Base32Prefix((CChainParams::Base32Type) * id.begin());
     ///LogPrintf("CBitcoinAddress::SetKey vchVersion %i \n",(int)s[0]);
     SetData(Params().Base32Prefix((CChainParams::Base32Type) * id.begin()), id.begin() + 1, id.size() - 1);
     //LogPrintf("CBitcoinAddress::SetKey vchVersion after %i \n",(int)vchVersion[0]);

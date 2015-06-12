@@ -56,7 +56,8 @@ enum cctype
     CC_PAYMENT_P = 0x11,
     CC_LANG = 0x12,
     CC_LANG_P = 0x13,
-
+    CC_ENCRYPT = 0x14,
+    CC_ENCRYPT_P = 0x15,
     /** Second Level Content Code * */
     // Tag
     CC_TAG_TEXT = 0x031004,
@@ -377,10 +378,26 @@ enum cctype
     CC_LANG_YO = 0x12016c,
     CC_LANG_ZA = 0x12016e,
     CC_LANG_ZU = 0x120170,
+    
+    
+    CC_ENCRYPT_PARAMS = 0x1402,
+CC_ENCRYPT_PARAMS_P = 0x1403,
+CC_ENCRYPT_PARAMS_IV = 0x140002,
+CC_ENCRYPT_PARAMS_SALT = 0x140004,
+CC_ENCRYPT_PARAMS_SCRYPT_N = 0x140006,
+CC_ENCRYPT_PARAMS_SCRYPT_P = 0x140008,
+CC_ENCRYPT_PARAMS_SCRYPT_R = 0x14000a,
+CC_ENCRYPT_PARAMS_AES_ITERATIONS = 0x14000c,
+CC_ENCRYPT_PARAMS_ALGORITHM_STRING = 0x1404,
+CC_ENCRYPT_PARAMS_ALGORITHM_SECRETCHAT = 0x140402,
+CC_ENCRYPT_PARAMS_ALGORITHM_AES = 0x140404,
+CC_ENCRYPT_PARAMS_ALGORITHM_SCRYPT = 0x140406,
+CC_ENCRYPT_PARAMS_ALGORITHM_MHASH = 0x140408,
+CC_ENCRYPT_PARAMS_MHASH_HEIGHT = 0x14000e,
 };
 
 std::string GetCcName(const cctype cc);
-cctype GetCcValue(const std::string& ccName);
+cctype GetCcValue(std::string ccName);
 std::string GetCcHex(const cctype cc);
 
 class CContent : public std::string
@@ -429,7 +446,9 @@ public:
     bool HasCc(const cctype& cc);
     bool FirstCc(const cctype& cc);
     bool IsStandard();
-    bool Encode(int cc,std::vector<std::string>vData);
+    bool EncodeP(const int cc,const std::vector<std::pair<int,string> >& vEncoding);
+    bool EncodeUnit(const int cc,const string& content);
+    bool Decode(std::vector<std::pair<int,string> >& vDecoded);
 };
 class CMessage
 {

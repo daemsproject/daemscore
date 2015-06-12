@@ -32,14 +32,11 @@ WebPage:: WebPage(QString languageIn,QWidget *parent,JsInterface *_js,QUrl urlIn
     // Signal is emitted before frame loads any web content:
     QObject::connect(page()->mainFrame(), SIGNAL(javaScriptWindowObjectCleared()),
                      this, SLOT(addJSObject()));
+    QObject::connect(jsInterface,  SIGNAL(feedback(QString,QString)),
+                     this,  SIGNAL(feedback(QString,QString)));
+    QObject::connect(jsInterface,  SIGNAL(notify(QString)),
+                     this,  SIGNAL(notify(QString)));
     
-    //QUrl startURL;
-    //if (language.indexOf("CN")>-1)        
-    //    startURL= QUrl("qrc:/wallet_cn.html");
-    //else
-        //urlIn= QUrl("file:///home/alan/projects/ccc/src/qt_ui/res/html/wallet_en.html");    
-    
-    //page()->mainFrame()->evaluateJavaScript("feedback()");
     // Load web content now!
     setUrl(urlIn);
    
@@ -49,6 +46,15 @@ WebPage::~WebPage()
    // delete ui;
 }
 void WebPage::addJSObject() {    
-    page()->mainFrame()->addToJavaScriptWindowObject(QString("jsinterface"), jsInterface);
+    //page()->mainFrame()->addToJavaScriptWindowObject(QString("jsinterface"), jsInterface);
+    page()->mainFrame()->addToJavaScriptWindowObject(QString("jsinterface"), this);
+}
+QString WebPage::jscall(QString command,QString dataJson)
+{
+    return jsInterface->jscall(command,dataJson,nPageID);
+}
+QString WebPage::jscallasync(QString command,QString dataJson,QString successfunc,QString errorfunc)
+{
+    return jsInterface->jscallasync(command,dataJson,successfunc,errorfunc,nPageID);
 }
 

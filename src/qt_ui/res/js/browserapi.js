@@ -10,9 +10,6 @@ var BrowserAPI = new function () {
     var notifypeerfunc;
     var notifyaccountfunc;
     var callIDs = [];
-    //We use this function because connect statements resolve their target once, imediately
-    //not at signal emission so they must be connected once the jsinterface object has been added to the frame
-    //! <!--  [ connect slots ] -->
     this.connectSlots = function ()
     {
         if (!apiconnected) {
@@ -67,11 +64,9 @@ var BrowserAPI = new function () {
                             break;
                         }
                     }
-                    if (found)
-                        break;
+                    if (found)                        break;
                 }
-                if (!found)
-                    return;
+                if (!found)                    return;
                 cmd = 'var a=' + notifytx.func + ';a(data);';
                 break;
             case "accountSwitch":
@@ -117,7 +112,7 @@ var BrowserAPI = new function () {
 //        console.log("browserapi.call:" + jsreply);
         successfunc(jsreply);
     };
-    this.icall = function (cmd, datajson) {
+    this.icall=function(cmd,datajson){
         var jsreply;
         var jsreplyjson = jsinterface.jscall(cmd, JSON.stringify(datajson));
         //console.log("browserapi.call:" + jsreplyjson);
@@ -128,7 +123,7 @@ var BrowserAPI = new function () {
             jsreply = $.parseJSON(jsreplyjson);
         }
         catch (e) {
-            console.log("icall error:" + cmd + e);
+            console.log("icall error:"+cmd+e);
             return false;
         }
         if (jsreply.error) {
@@ -140,9 +135,7 @@ var BrowserAPI = new function () {
         }
         return jsreply;
     };
-    this.getAccountID = function () {
-        return this.icall("getmainid", []);
-    };
+    this.getAccountID = function () {return this.icall("getmainid", []);};
     this.getIDs = function (id) {
         var jsreply = this.icall("getidlist", [id]);
         return jsreply.ids;
@@ -200,34 +193,16 @@ var BrowserAPI = new function () {
 
     }
 
-    this.regNotifyBlocks = function (blocksfunc) {
-        notifyblockfunc = blocksfunc;
-    };
-    this.regNotifyTxs = function (txfunc, ids) {
-        notifytx.func = txfunc;
-        notifytx.ids = ids;
-    };
-    this.regNotifyPeers = function (peerfunc) {
-    }
-    this.regNotifyAccount = function (accountfunc) {
-        notifyaccountfunc = accountfunc;
-    }
-    this.getInfo = function () {
-        return this.icall("getinfo", "")
-    };
-    this.getBlockCount = function () {
-        return JSON.stringify(this.icall("getblockcount", ""));
-    };
-    this.getContentByLink = function (c) {
-        return this.icall("getcontentbylink", [c, 6]);
-    };
-    this.setFollow = function (a) {
-        return this.icall("setfollow", [[a]]);
-    };
+    this.regNotifyBlocks = function (blocksfunc) {        notifyblockfunc = blocksfunc;  };
+    this.regNotifyTxs = function (txfunc, ids) {notifytx.func = txfunc;notifytx.ids = ids;};
+    this.regNotifyPeers = function (peerfunc) {}
+    this.regNotifyAccount = function (accountfunc) {        notifyaccountfunc=accountfunc;    }
+    this.getInfo = function () {return this.icall("getinfo", "")};
+    this.getBlockCount = function () {return JSON.stringify(this.icall("getblockcount", ""));};
+    this.getContentByLink = function (c) {                return this.icall("getcontentbylink", [c, 6]);    };
+    this.setFollow = function (a)  {        return this.icall("setfollow",[[a]]);    };
 
-    this.getFollowed = function () {
-        return this.icall("getfollowed", []);
-    };
+    this.getFollowed = function () {        return this.icall("getfollowed",[]);    };
 
     this.getContents = function (fbh, blkc, fAsc, addrs) {
         fbh = typeof fbh !== 'undefined' ? fbh : 0;
@@ -248,50 +223,59 @@ var BrowserAPI = new function () {
     };
     this.getMessages = function (idsLocal, idsForeign, directionFilter, fIncludeMempool, fLinkOnly, offset, number, success, error) {
         var d = {};
-        if (!idsLocal) {
-            if (error)
-                error("no local IDs provided");
+        if (!idsLocal){
+            if (error)        error("no local IDs provided");
             return false;
         }
         //never collects message to idslocal itself
 
         if (Object.prototype.toString.call(idsLocal) != '[object Array]')
-            data[0] = [idsLocal];
+            idsLocal=[idsLocal];        
         //if idsForeign is provided, only gets messages between local & foreign.
-        if (idsForeign)
-            d.IDsForeign = idsForeign;
+        if (idsForeign)           d.IDsForeign = idsForeign;
         //direction filter:        0:both in/out        1:incoming only        2:outputs only
-        if (directionFilter)
-            d.directionFilter = directionFilter;
+        if (directionFilter)     d.directionFilter = directionFilter;
         //flinkonly:only provids link, don't decrypt
-        if (fLinkOnly)
-            d.fLinkOnly = fLinkOnly;
-        if (fIncludeMempool)
-            d.fincludeMempool = fIncludeMempool;
-        if (offset)
-            d.offset = offset;
-        if (number)
-            d.number = number;
-        var a = this.icall("getmessages", [idsLocal, d]);
-        if (a.error) {
-            if (error)
-                if (a.error.message)
-                    error(a.error.message)
-                else
-                    error(a.error);
+        if (fLinkOnly)          d.fLinkOnly = fLinkOnly;
+        if (fIncludeMempool)     d.fincludeMempool = fIncludeMempool;
+        if (offset)             d.offset = offset;
+        if (number)             d.number = number;        
+        var a= this.icall("getmessages", [idsLocal,d]);
+        if(a.error){
+            if(error)
+                if (a.error.message)   error(a.error.message)
+                else                    error(a.error);
             return false;
         }
-        if (success)
-            success(a);
+        if(success) success(a);
         return a;
     }
-
-
-    this.getMiningInfo = function () {
-        return this.icall("getmininginfo", [])
+    this.getTxMessages = function (idsLocal,txs,success,error) {
+        if (!idsLocal){
+            if (error)        error("no local IDs provided");
+            return false;
+        }
+        //never collects message to idslocal itself        
+        if (Object.prototype.toString.call(idsLocal) != '[object Array]')            
+            idsLocal=[idsLocal];         
+        var a= this.icall("gettxmessages", [idsLocal,txs]);
+        if(a.error){
+            if(error)
+                if (a.error.message)   error(a.error.message)
+                else                    error(a.error);
+            return false;
+            }
+        if(success) success(a);
+        return a;
     }
-    this.setGenerate = function (generate, id, kernels, success, error) {
-        this.call("setgenerate", [generate, Number(kernels), id, false], function (a) {
+    this.sendMessage=function(idLocal,idForeign,msg,success,error){
+        this.call("sendmessage", [idLocal,idForeign,msg],success,error);
+    }
+
+
+    this.getMiningInfo = function () {return this.icall("getmininginfo", [])}
+    this.setGenerate = function (generate, id, kernels,success,error) {
+        this.call("setgenerate", [generate,Number(kernels),id,false], function (a) {
             if (success)
                 success(a);
         }, function (e) {
@@ -299,12 +283,9 @@ var BrowserAPI = new function () {
                 error(e);
         });
     }
-    this.read_contacts = function (id) {
-        return this.icall("readcontacts", [id]);
-    };
-    this.add_contacts = function (id, contacts) {
-        return this.icall("addcontacts", [id, contact])
-    }
+    this.read_contacts = function (id) {return this.icall("readcontacts", [id]);};
+    this.add_contacts = function (id, contacts) {return this.icall("addcontacts", [id, contact])}
+    
     this.createTxByContent = function (hexctt) {
         var accountID = BrowserAPI.getAccountID();
         var IDs = BrowserAPI.getIDs(accountID);
@@ -333,15 +314,11 @@ var BrowserAPI = new function () {
         return this.icall("isvalidpubkeyaddress", [id]);
     };
 
-    this.getMatureTime = function (locktime) {
-        return this.icall("getmaturetime", [locktime]);
-    };
-    this.encryptMessages = function (idLocal, msgArr) {
-        return this.icall("encryptmessages", [idLocal, msgArr]);
-    };
-    this.decryptMessages = function (idLocal, msgArr) {
-        return this.icall("encryptmessages", [idLocal, msgArr, false]);
-    };
+    this.getMatureTime = function (locktime) {        return this.icall("getmaturetime",[locktime]);    }
+    this.encryptMessages = function (idLocal,msgArr) {return this.icall("encryptmessages", [idLocal,msgArr]);    }
+    this.decryptMessages = function (idLocal,msgArr,success,error) {return this.call("encryptmessages", [idLocal,msgArr,false],success,error);    }
+    this.areIDsEqual=function(id1,id2){return this.icall("comparebase32",[id1,id2])==0};
+
     this.createContentC = function (t, c) {
         console.log("t " + t);
         switch (t)
@@ -415,8 +392,6 @@ var CUtil = new function () {
 };
 function sleep(n) {
     var start = new Date().getTime();
-    while (true)
-        if (new Date().getTime() - start > n)
-            break;
+    while(true)  if(new Date().getTime()-start > n) break;
 }
 

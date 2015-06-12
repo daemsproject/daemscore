@@ -45,7 +45,8 @@ std::string GetCcName(const cctype cc)
         case CC_PAYMENT_P: return "CC_PAYMENT_P";
         case CC_LANG: return "CC_LANG";
         case CC_LANG_P: return "CC_LANG_P";
-
+        case CC_ENCRYPT: return "CC_ENCRYPT";
+        case CC_ENCRYPT_P: return "CC_ENCRYPT_P";
             /** Second Level Content Code * */
             // Tag
         case CC_TAG_TEXT: return "CC_TAG_TEXT";
@@ -366,13 +367,26 @@ std::string GetCcName(const cctype cc)
         case CC_LANG_YO: return "CC_LANG_YO";
         case CC_LANG_ZA: return "CC_LANG_ZA";
         case CC_LANG_ZU: return "CC_LANG_ZU";
-
+        case CC_ENCRYPT_PARAMS: return "CC_ENCRYPT_PARAMS";
+        case CC_ENCRYPT_PARAMS_P: return "CC_ENCRYPT_PARAMS_P";
+        case CC_ENCRYPT_PARAMS_IV: return "CC_ENCRYPT_PARAMS_IV";
+        case CC_ENCRYPT_PARAMS_SALT: return "CC_ENCRYPT_PARAMS_SALT";
+        case CC_ENCRYPT_PARAMS_SCRYPT_N: return "CC_ENCRYPT_PARAMS_SCRYPT_N";
+        case CC_ENCRYPT_PARAMS_SCRYPT_P: return "CC_ENCRYPT_PARAMS_SCRYPT_P";
+        case CC_ENCRYPT_PARAMS_SCRYPT_R: return "CC_ENCRYPT_PARAMS_SCRYPT_R";
+        case CC_ENCRYPT_PARAMS_AES_ITERATIONS: return "CC_ENCRYPT_PARAMS_AES_ITERATIONS";
+        case CC_ENCRYPT_PARAMS_ALGORITHM_STRING: return "CC_ENCRYPT_PARAMS_ALGORITHM_STRING";
+        case CC_ENCRYPT_PARAMS_ALGORITHM_SECRETCHAT: return "CC_ENCRYPT_PARAMS_ALGORITHM_SECRETCHAT";
+        case CC_ENCRYPT_PARAMS_ALGORITHM_AES: return "CC_ENCRYPT_PARAMS_ALGORITHM_AES";
+        case CC_ENCRYPT_PARAMS_ALGORITHM_SCRYPT: return "CC_ENCRYPT_PARAMS_ALGORITHM_SCRYPT";
+        case CC_ENCRYPT_PARAMS_ALGORITHM_MHASH: return "CC_ENCRYPT_PARAMS_ALGORITHM_MHASH";
+        case CC_ENCRYPT_PARAMS_MHASH_HEIGHT: return "CC_ENCRYPT_PARAMS_MHASH_HEIGHT";
         default:
             return "CC_UNKNOWN";
     }
 }
 
-cctype GetCcValue(const std::string& ccName)
+cctype GetCcValue(std::string ccName)
 {
     /** Null * */
     if (ccName == "CC_NULL") return CC_NULL;
@@ -398,7 +412,8 @@ cctype GetCcValue(const std::string& ccName)
     else if (ccName == "CC_PAYMENT_P") return CC_PAYMENT_P;
     else if (ccName == "CC_LANG") return CC_LANG;
     else if (ccName == "CC_LANG_P") return CC_LANG_P;
-
+    else if (ccName == "CC_ENCRYPT") return CC_ENCRYPT;
+    else if (ccName == "CC_ENCRYPT_P") return CC_ENCRYPT_P;
         /** Second Level Content Code * */
         // Tag
     else if (ccName == "CC_TAG_TEXT") return CC_TAG_TEXT;
@@ -719,7 +734,20 @@ cctype GetCcValue(const std::string& ccName)
     else if (ccName == "CC_LANG_YO") return CC_LANG_YO;
     else if (ccName == "CC_LANG_ZA") return CC_LANG_ZA;
     else if (ccName == "CC_LANG_ZU") return CC_LANG_ZU;
-
+    else if (ccName == "CC_ENCRYPT_PARAMS") return CC_ENCRYPT_PARAMS;
+    else if (ccName == "CC_ENCRYPT_PARAMS_P") return CC_ENCRYPT_PARAMS_P;
+    else if (ccName == "CC_ENCRYPT_PARAMS_IV") return CC_ENCRYPT_PARAMS_IV;
+    else if (ccName == "CC_ENCRYPT_PARAMS_SALT") return CC_ENCRYPT_PARAMS_SALT;
+    else if (ccName == "CC_ENCRYPT_PARAMS_SCRYPT_N") return CC_ENCRYPT_PARAMS_SCRYPT_N;
+    else if (ccName == "CC_ENCRYPT_PARAMS_SCRYPT_P") return CC_ENCRYPT_PARAMS_SCRYPT_P;
+    else if (ccName == "CC_ENCRYPT_PARAMS_SCRYPT_R") return CC_ENCRYPT_PARAMS_SCRYPT_R;
+    else if (ccName == "CC_ENCRYPT_PARAMS_AES_ITERATIONS") return CC_ENCRYPT_PARAMS_AES_ITERATIONS;
+    else if (ccName == "CC_ENCRYPT_PARAMS_ALGORITHM_STRING") return CC_ENCRYPT_PARAMS_ALGORITHM_STRING;
+    else if (ccName == "CC_ENCRYPT_PARAMS_ALGORITHM_SECRETCHAT") return CC_ENCRYPT_PARAMS_ALGORITHM_SECRETCHAT;
+    else if (ccName == "CC_ENCRYPT_PARAMS_ALGORITHM_AES") return CC_ENCRYPT_PARAMS_ALGORITHM_AES;
+    else if (ccName == "CC_ENCRYPT_PARAMS_ALGORITHM_SCRYPT") return CC_ENCRYPT_PARAMS_ALGORITHM_SCRYPT;
+    else if (ccName == "CC_ENCRYPT_PARAMS_ALGORITHM_MHASH") return CC_ENCRYPT_PARAMS_ALGORITHM_MHASH;
+    else if (ccName == "CC_ENCRYPT_PARAMS_MHASH_HEIGHT") return CC_ENCRYPT_PARAMS_MHASH_HEIGHT;
     else return CC_NULL;
 }
 
@@ -754,6 +782,8 @@ Array CContent::ToJson(stringformat fFormat, bool fRecursive)
         Object ccUnit;
         std::string ccName;
         ccName = GetCcName(cc);
+        //LogPrintf("CContent Tojson cc:%i,ccname:%s\n",IntArray2HexStr(&cc,&cc+1),ccName);
+        ccUnit.push_back(Pair("encoding", fFormat));
         ccUnit.push_back(Pair("cc_name", ccName));
         ccUnit.push_back(Pair("cc", GetCcHex(cc)));
         if (IsCcParent(cc) && fRecursive) {
@@ -887,28 +917,73 @@ bool CContent::SetEmpty()
 bool CContent::SetJson(const Array& cttJson)
 {
     cctype cc = CC_NULL;
+    bool fSuccess = true;
 
     BOOST_FOREACH(const Value& input, cttJson)
     {
         const Object& cttObj = input.get_obj();
+        std::string ccName;
+        stringformat format = STR_FORMAT_BIN;
+        CContent content;
+        bool fHasName = false;
+        bool fHasContent = false;
+        Array arrContent;
 
         BOOST_FOREACH(const Pair& ccUnit, cttObj)
         {
-            std::string ccName;
-            CContent content;
+            //LogPrintf(" ccunit name:%s\n",ccUnit.name_);            
             if (ccUnit.name_ == "cc_name") {
                 ccName = ccUnit.value_.get_str();
                 cc = GetCcValue(ccName);
-                continue;
-            } else if (ccUnit.name_ == "content") {
-                IsCcParent(cc) ? content.SetJson(ccUnit.value_.get_array()) : content.SetString(ccUnit.value_.get_str());
-                WriteVarInt(cc);
-                WriteCompactSize(content.size());
-                append(content);
+                fHasName = true;
+            }
+            if (ccUnit.name_ == "encoding") {
+                format = (stringformat) ccUnit.value_.get_int();
             }
         }
+
+        BOOST_FOREACH(const Pair& ccUnit, cttObj)
+        {
+            if (ccUnit.name_ == "content") {
+                if (IsCcParent(cc)) {
+                    if (content.SetJson(ccUnit.value_.get_array()))
+                        fHasContent = true;
+                } else {
+                    string formatedcontent = ccUnit.value_.get_str();
+                    string bincontent;
+                    std::vector<unsigned char> vch1;
+                    switch (format) {
+                        case STR_FORMAT_BIN:
+                        case STR_FORMAT_BIN_SUM:
+                            bincontent = formatedcontent;
+                            break;
+                        case STR_FORMAT_B64:
+                        case STR_FORMAT_B64_SUM:
+                            bincontent = DecodeBase64(formatedcontent);
+                            break;
+                        case STR_FORMAT_HEX:
+                        case STR_FORMAT_HEX_SUM:
+                            vch1 = ParseHex(formatedcontent);
+                            bincontent = std::string(vch1.begin(), vch1.end());
+                            break;
+                        default:
+                            bincontent = formatedcontent;
+                    }
+                    content.SetString(bincontent);
+                    fHasContent = true;
+                }
+                break;
+            }
+        }
+        if (fHasName && fHasContent) {
+            //LogPrintf("setjson success:%s\n");
+            WriteVarInt(cc);
+            WriteCompactSize(content.size());
+            append(content);
+        } else
+            fSuccess = false;
     }
-    return true;
+    return fSuccess;
 }
 
 bool CContent::SetString(const std::string& cttStr)
@@ -1109,9 +1184,36 @@ bool CContent::IsCcParent(const cctype& cc)
     return (cc2 % 2 == 1) ? true : false;
 }
 
-bool CContent::Encode(int cc, std::vector<std::string>vData)
+bool CContent::EncodeP(const int cc, const std::vector<std::pair<int, string> >& vEncoding)
 {
-    return false;
+    CContent integrated;
+    for (unsigned int i = 0; i < vEncoding.size(); i++)
+        integrated.EncodeUnit(vEncoding[i].first, vEncoding[i].second);
+    EncodeUnit(cc, integrated);
+    return true;
+}
+
+bool CContent::EncodeUnit(int cc, const string& content)
+{
+    WriteVarInt(cc);
+    WriteCompactSize(content.size());
+    append(content);
+    return true;
+}
+
+bool CContent::Decode(std::vector<std::pair<int, string> >& vDecoded)
+{
+    iterator pc = begin();
+    while (pc < end()) {
+        cctype cc;
+        CContent contentStr;
+        if (!GetCcUnit(pc, cc, contentStr))
+            break;
+        vDecoded.push_back(make_pair(cc, contentStr));
+    }
+    if (pc > end())
+        return false;
+    return true;
 }
 
 Value CMessage::ToJson(bool fLinkOnly)

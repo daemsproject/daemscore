@@ -153,7 +153,7 @@ public:
     void MakeNewKey(bool fCompressed=true);
     bool MakeSharedKey(const CPubKey& pubKey,CKey& sharedKey);
     bool GetMultipliedTo(const uint64_t& steps,CKey& keyOut);
-    bool MakeSimpleSig(const std::vector<unsigned char> nounce,uint256& sig);
+    bool MakeSimpleSig(const std::vector<unsigned char>& nounce,uint256& sig);
     /**
      * Convert the private key to a CPrivKey (serialized OpenSSL private key data).
      * This is expensive. 

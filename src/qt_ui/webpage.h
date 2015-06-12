@@ -30,9 +30,18 @@ public:
 private slots:    
     void addJSObject();
 private:    
-    JsInterface* jsInterface;
+    JsInterface* jsInterface;    
     //WalletModel *walletModel;
     //QNetworkAccessManager * m_network;
     //QNetworkDiskCache * m_cache;
+public slots:    
+    Q_INVOKABLE    
+    QString jscall(QString command,QString dataJson);
+    QString jscallasync(QString command,QString dataJson,QString successfunc,QString errorfunc);
+signals:
+    //Q_SIGNAL
+    void feedback(QString str,QString func);    
+    void notify(QString result);
+    
 };
-#endif // BITCOIN_QT_WalletPage_H
+#endif // BROWSER_QT_WEBPAGE_H

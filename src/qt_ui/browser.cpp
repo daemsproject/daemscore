@@ -429,7 +429,7 @@ void BitcoinApplication::initializeResult(int retval)
 #ifdef ENABLE_WALLET
         if(pwalletMain)
         {
-            walletModel = new WalletModel(pwalletMain);
+            walletModel = new WalletModel(pwalletMain,window);
         LogPrintf("init result2 \n");
             window->addWallet(BitcoinGUI::DEFAULT_WALLET,walletModel);
             window->subscribeToCoreSignalsJs();//, walletModel);

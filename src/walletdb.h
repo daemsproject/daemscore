@@ -96,12 +96,19 @@ public:
     }    
     DBErrors LoadWallet(CWallet* pwallet,CPubKey id);    
     bool GetDefaultWallet(CPubKey& id);
-    bool SetDefaultWallet(CPubKey& id);
-    bool SetCurrentWallet(CPubKey& id);
+    bool GetDefaultWallet(std::string& strAddress);
+    bool SetDefaultWallet(const std::string& strAddress);
+    bool SetDefaultWallet(const CPubKey& id);
+    bool SetCurrentWallet(const CPubKey& id);
+    bool SetCurrentWallet(const std::string& strAddress);
     bool GetCurrentWallet(CPubKey& id);
-    bool GetWalletList(std::vector<CPubKey>& vIds);    
+    bool GetCurrentWallet(std::string& strAddress);
+    bool IsCurrentWallet(const CPubKey& id);
+    bool GetWalletList(std::vector<std::string>& vIds);    
     bool IsWalletExists(CPubKey& id);
-    bool SwitchToWallet(CPubKey& id,CCryptoKeyStore* keyStore);
+    bool GetWalletName(const std::string& strNameIn,std::string& strNameOut);
+    bool GetWalletName(const CPubKey& id,std::string& strName);
+    bool SwitchToWallet(const CPubKey& id,CCryptoKeyStore* keyStore);
     //bool SwitchToWallet(std::string strWalletName);
     //bool ReadKeyStore(CCryptoKeyStore* keyStore);
     bool WriteKeyStore(CCryptoKeyStore* keyStore);

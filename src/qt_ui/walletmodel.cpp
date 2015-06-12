@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "walletmodel.h"
+#include "bitcoingui.h"
 
 //#include "addresstablemodel.h"
 #include "guiconstants.h"
@@ -17,27 +18,26 @@
 #include "ui_interface.h"
 #include "wallet.h"
 #include "walletdb.h" // for BackupWallet
+#include "rpcserver.h"
+#include "core_io.h"
+#include "random.h"
+#include "bitcoinunits.h"
 #include <boost/thread.hpp>
 #include <stdint.h>
 //#include "key.h"
 #include <QDebug>
 #include <QSet>
 #include <QTimer>
-
+#include "json/json_spirit_value.h"
+#include "json/json_spirit_utils.h"
 using namespace std;
+using namespace json_spirit;
 
-WalletModel::WalletModel(CWallet *walletIn,QObject *parent) :
-    QObject(parent), wallet(walletIn), wallet2(0),fSwitchToAccount(false),strHeaderTarget(""),
-    cachedEncryptionStatus(Unencrypted),
-    cachedNumBlocks(0)
+WalletModel::WalletModel(CWallet *walletIn,BitcoinGUI *guiIn,QObject *parent) :
+    QObject(parent), wallet(walletIn), wallet2(0),gui(guiIn),fSwitchToAccount(false),strHeaderTarget(""),
+    cachedEncryptionStatus(Unencrypted),cachedNumBlocks(0)
 {
-    //fHaveWatchOnly = wallet->HaveWatchOnly();
-    //fForceCheckBalanceChanged = false;
-
-    //addressTableModel = new AddressTableModel(wallet, this);
-    //transactionTableModel = new TransactionTableModel(wallet, this);
-    //recentRequestsTableModel = new RecentRequestsTableModel(wallet, this);
-
+    
     // This timer will be fired repeatedly to update the balance
     pollTimer = new QTimer(this);
     //connect(pollTimer, SIGNAL(timeout()), this, SLOT(pollBalanceChanged()));
@@ -52,34 +52,6 @@ WalletModel::~WalletModel()
     unsubscribeFromCoreSignals();
 }
 
-//CAmount WalletModel::getBalance(const CCoinControl *coinControl) const
-//{
-//    if (coinControl)
-//    {
-//        CAmount nBalance = 0;
-//        std::vector<COutput> vCoins;
-//        wallet->AvailableCoins(vCoins, true, coinControl);
-//        BOOST_FOREACH(const COutput& out, vCoins)
-//            if(out.fSpendable)
-//                nBalance += out.tx->vout[out.i].nValue;
-//
-//        return nBalance;
-//    }
-//
-//    return wallet->GetBalance();
-//}
-//
-//CAmount WalletModel::getUnconfirmedBalance() const
-//{
-//    return wallet->GetUnconfirmedBalance();
-//}
-//
-//CAmount WalletModel::getImmatureBalance() const
-//{
-//    return wallet->GetImmatureBalance();
-//}
-//
-
 
 void WalletModel::updateStatus()
 {
@@ -93,34 +65,12 @@ void WalletModel::updateStatus()
 }
 
 
-
-
-
-//void WalletModel::updateTransaction()
-//{
-//    // Balance and number of transactions might have changed
-//    fForceCheckBalanceChanged = true;
-//}
-//
 //void WalletModel::updateAddressBook(const QString &address, const QString &label,
 //        bool isMine, const QString &purpose, int status)
 //{
 //    if(addressTableModel)
 //        addressTableModel->updateEntry(address, label, isMine, purpose, status);
 //}
-//
-//void WalletModel::updateWatchOnlyFlag(bool fHaveWatchonly)
-//{
-//    fHaveWatchOnly = fHaveWatchonly;
-//    emit notifyWatchonlyChanged(fHaveWatchonly);
-//}
-//
-//bool WalletModel::validateAddress(const QString &address)
-//{
-//    CBitcoinAddress addressParsed(address.toStdString());
-//    return addressParsed.IsValid();
-//}
-//
 
 //
 //OptionsModel *WalletModel::getOptionsModel()
@@ -128,63 +78,37 @@ void WalletModel::updateStatus()
 //    return optionsModel;
 //}
 //
-//AddressTableModel *WalletModel::getAddressTableModel()
-//{
-//    return addressTableModel;
-//}
-//
-//TransactionTableModel *WalletModel::getTransactionTableModel()
-//{
-//    return transactionTableModel;
-//}
-//
-//RecentRequestsTableModel *WalletModel::getRecentRequestsTableModel()
-//{
-//    return recentRequestsTableModel;
-//}
+
 
 WalletModel::EncryptionStatus WalletModel::getEncryptionStatus() const
 {
     if(!wallet->IsCrypted())
-    {
-        return Unencrypted;
-    }
-    else if(wallet->IsLocked())
-    {
-        return Locked;
-    }
-    else
-    {
+        return Unencrypted;    
+    else if(wallet->IsLocked())   
+        return Locked;    
+    else  
         return Unlocked;
-    }
 }
 
 bool WalletModel::setWalletEncrypted(bool encrypted, const SecureString &passphrase)
 {
-    if(encrypted)
-    {
+    if(encrypted)  
         // Encrypt
-        return wallet->EncryptWallet(passphrase);
-    }
+        return wallet->EncryptWallet(passphrase);   
     else
-    {
-        // Decrypt -- TODO; not supported yet
         return wallet->DecryptWallet(passphrase);        
-    }
+   
 }
 
 bool WalletModel::setWalletLocked(bool locked, const SecureString &passPhrase)
 {
-    if(locked)
-    {
+    if(locked)   
         // Lock
         return wallet->Lock();
-    }
+   
     else
-    {
         // Unlock
-        return wallet->Unlock(passPhrase);
-    }
+        return wallet->Unlock(passPhrase);   
 }
 
 bool WalletModel::changePassphrase(const SecureString &oldPass, const SecureString &newPass)
@@ -248,13 +172,6 @@ static void ShowProgress(WalletModel *walletmodel, const std::string &title, int
                               Q_ARG(QString, QString::fromStdString(title)),
                               Q_ARG(int, nProgress));
 }
-//
-//static void NotifyWatchonlyChanged(WalletModel *walletmodel, bool fHaveWatchonly)
-//{
-//    QMetaObject::invokeMethod(walletmodel, "updateWatchOnlyFlag", Qt::QueuedConnection,
-//                              Q_ARG(bool, fHaveWatchonly));
-//}
-
 void WalletModel::subscribeToCoreSignals()
 {
              qRegisterMetaType<CPubKey>("CPubKey");
@@ -266,10 +183,8 @@ void WalletModel::subscribeToCoreSignals()
     wallet->NotifyStatusChanged.connect(boost::bind(&NotifyKeyStoreStatusChanged, this, _1));
     wallet->NotifyAccountSwitched.connect(boost::bind(&NotifyAccountSwitched, this, _1));
     //wallet->NotifyAddressBookChanged.connect(boost::bind(NotifyAddressBookChanged, this, _1, _2, _3, _4, _5, _6));
-    //wallet->NotifyTransactionChanged.connect(boost::bind(NotifyTransactionChanged, this, _1, _2, _3));
-    
-    wallet->ShowProgress.connect(boost::bind(ShowProgress, this, _1, _2));
-    //wallet->NotifyWatchonlyChanged.connect(boost::bind(NotifyWatchonlyChanged, this, _1));
+    //wallet->NotifyTransactionChanged.connect(boost::bind(NotifyTransactionChanged, this, _1, _2, _3));    
+    wallet->ShowProgress.connect(boost::bind(ShowProgress, this, _1, _2));   
 }
 
 void WalletModel::unsubscribeFromCoreSignals()
@@ -279,8 +194,7 @@ void WalletModel::unsubscribeFromCoreSignals()
     wallet->NotifyAccountSwitched.disconnect(boost::bind(&NotifyAccountSwitched, this, _1));
     //wallet->NotifyAddressBookChanged.disconnect(boost::bind(NotifyAddressBookChanged, this, _1, _2, _3, _4, _5, _6));
     //wallet->NotifyTransactionChanged.disconnect(boost::bind(NotifyTransactionChanged, this, _1, _2, _3));
-    wallet->ShowProgress.disconnect(boost::bind(ShowProgress, this, _1, _2));
-    //wallet->NotifyWatchonlyChanged.disconnect(boost::bind(NotifyWatchonlyChanged, this, _1));
+    wallet->ShowProgress.disconnect(boost::bind(ShowProgress, this, _1, _2));   
 }
 
 // WalletModel::UnlockContext implementation
@@ -358,7 +272,7 @@ bool WalletModel::createNewAccount(const QString header,const SecureString &pass
         std::vector<std::string> vstr;
         
         //LogPrintf("WalletModel createNewAccount11 \n"); 
-        strHeaderTarget=ToStandardB32String(header.toStdString());
+        strHeaderTarget=header.toStdString();
         vstr.push_back(strHeaderTarget); 
         //LogPrintf("WalletModel createNewAccount2 \n"); 
          //qRegisterMetaType<uint256>("uint256");
@@ -396,8 +310,8 @@ bool WalletModel::stopVanityGen(){
 void WalletModel::notifyEcMinerResult(const CPubKey basePub,const CKey stepKey,const std::string strHeader)
 {
     LogPrintf("WalletModel notifyEcMinerResult basepub:%s,wallet2id:%s,strHeader:%s,target:%s \n",CBitcoinAddress(basePub).ToString(),CBitcoinAddress(wallet2->GetID()).ToString(),strHeader,strHeaderTarget);    
-    LogPrintf("WalletModel notifyEcMinerResult basepubvs wallet2id:%b,strHeader vs target:%b \n",wallet2->GetID()==basePub,strHeader==strHeaderTarget);
-    if(wallet2->GetID()==basePub&&strHeader==strHeaderTarget)
+    LogPrintf("WalletModel notifyEcMinerResult basepubvs wallet2id:%b,strHeader vs target:%b \n",wallet2->GetID()==basePub,B32Equal(strHeader,strHeaderTarget));
+    if(wallet2->GetID()==basePub&&B32Equal(strHeader,strHeaderTarget))
     {
         CKey resultKey;
         CKey baseKey;
@@ -405,22 +319,27 @@ void WalletModel::notifyEcMinerResult(const CPubKey basePub,const CKey stepKey,c
         wallet2->GetBaseKey(baseKey);
         //LogPrintf("WalletModel notifyEcMinerResult3 \n");     
         baseKey.AddSteps(stepKey,1,resultKey);
-        CPubKey tmppub;
-        resultKey.GetPubKey(tmppub);
-        LogPrintf("WalletModel notifyEcMinerResult4 result:%s\n",CBitcoinAddress(tmppub).ToString());
-        CKey originalStepKey;
-        wallet2->GetStepKey(originalStepKey);      
+        CPubKey resultPub;
+        resultKey.GetPubKey(resultPub);
+        std::string add=CBitcoinAddress(resultPub).ToString();        
+        if(B32Equal(add.substr(0,strHeaderTarget.size()),strHeaderTarget))
+        { 
+            std::string resultAdd=strHeaderTarget.append(add.substr(strHeaderTarget.size()));
+            LogPrintf("WalletModel notifyEcMinerResult4 result:%s\n",resultAdd);
+            CKey originalStepKey;
+            wallet2->GetStepKey(originalStepKey);      
         //LogPrintf("WalletModel notifyEcMinerResult5 \n");
-        wallet2->Set(resultKey,originalStepKey,ssPassPhrase,true);        
+            wallet2->Set(resultKey,originalStepKey,ssPassPhrase,resultAdd,true);        
         //LogPrintf("WalletModel notifyEcMinerResult6 \n");
-        if(fSwitchToAccount)
-        {
-            wallet->SwitchToAccount(wallet2->GetID(),true);        
+            if(fSwitchToAccount)
+            {
+                wallet->SwitchToAccount(wallet2->GetID(),true);        
             //emit(accountChanged());
             //updateStatus();
-        }
+            }
         //LogPrintf("WalletModel notifyEcMinerResult7 \n");
-        emit vanitygenSuccess();
+            emit vanitygenSuccess();
+        }
     }
     //LogPrintf("WalletModel notifyEcMinerResult8 \n");
     delete wallet2;
@@ -438,7 +357,7 @@ QStringList WalletModel::GetAccountList()
 }
 bool WalletModel::switchToAccount(QString ID)
 {
-    if(ID.toStdString()==CBitcoinAddress(wallet->GetID()).ToString())
+    if(CompareBase32(ID.toStdString(),CBitcoinAddress(wallet->GetID()).ToString())==0)
         return false;
     CPubKey pub;
     if(!CBitcoinAddress(ID.toStdString()).GetKey(pub))
@@ -451,4 +370,399 @@ void WalletModel::notifyAccountSwitched(const std::string id)
 {
     emit accountSwitched(id);
      updateStatus();
+}
+
+QString WalletModel::HandlePaymentRequest(Array arrData)
+{
+    PaymentRequest pr=ParsePaymentRequest(arrData[0]);
+    CWalletTx tx;
+    string strError;    
+    CPubKey id;    
+    CTxDestination address;
+    if(!ExtractDestination(pr.vFrom[0],address))        
+            return QString().fromStdString("{\"error\":\"wrong idfrom\"}");
+    CBitcoinAddress pub;
+    pub.Set(address);
+    pub.GetKey(id);
+    //memcpy(&id, &pr.vFrom[0][1], 20);
+    CWallet* pwallet;
+    //LogPrintf("jsinterface:hadlepaymentrequest:id,pwalletmain id:%i",HexStr(id.begin(),id.end()),HexStr(wallet->id.begin(),wallet->id.end()));
+    if(id==wallet->GetID())
+        pwallet=wallet;
+    else
+        pwallet=new CWallet(id);    
+    int nOP=0;//0::unencrypted,1::encrypted,2::offline
+    if (!pwallet->HavePriv())
+        nOP=2;
+    else if (pwallet->IsLocked())
+        nOP=1;
+    if (!pwallet->CreateTransactionUnsigned(pr,tx,strError)){
+        if(pwallet!=wallet)
+                delete pwallet;
+                return QString().fromStdString("{\"error\":\""+strError+"\"}"); 
+    }
+    //tx=CreateRawTransaction(pr,fRequestPassword,pwallet);
+    LogPrintf("jsinterface:hadlepaymentrequest:tx created,pwallet:%i",pwallet);
+    SecureString ssInput;
+    QString alert=getPaymentAlertMessage(tx); 
+    QString title=QString(tr("Request Payment"));
+    if (!gui->handleUserConfirm(title,alert,nOP,strError,ssInput)){
+        if(pwallet!=wallet)
+        delete pwallet;
+        return QString().fromStdString("{\"error\":\""+strError+"\"}");             
+        }    
+    if(nOP==1)
+        if(!pwallet->SetPassword(ssInput)){
+            if(pwallet!=wallet)
+            delete pwallet;
+            return QString().fromStdString("{\"error\":\"wrong password\"}");
+        }
+    CWalletTx wtxSigned; 
+    if(nOP==2){
+        std::vector<CScript> sigs;
+        if (!DecodeSigs(string(ssInput.begin(),ssInput.end()),sigs)){
+            if(pwallet!=wallet)
+            delete pwallet;
+            return QString().fromStdString("{\"error\":\"invalid signatures\"}");
+        }
+        
+        CMutableTransaction mtx=CMutableTransaction(tx);        
+        for(unsigned int i=0;i<mtx.vin.size();i++)
+            mtx.vin[i].scriptSig=sigs[i];
+        *static_cast<CTransaction*>(&wtxSigned) = CTransaction(mtx);
+    }
+    else if(!pwallet->SignTransaction(tx, wtxSigned,pr.nSigType)){
+        if(pwallet!=wallet)
+        delete pwallet;
+        return QString().fromStdString("{\"error\":\"sign transaction failed\"}");            
+    }
+     LogPrintf("jsinterface:hadlepaymentrequest:signOK\n");
+    if (!wtxSigned.AcceptToMemoryPool(false))
+        {            
+            LogPrintf("jsinterface:hadlepaymentrequest:sendtx : Error: Transaction not valid\n");
+            delete pwallet;
+            return QString().fromStdString("{\"error\":\"tx rejected\"}");;
+        }
+     LogPrintf("jsinterface:hadlepaymentrequest:acceptedto mempool\n");
+     RelayTransaction(wtxSigned);
+     LogPrintf("jsinterface:hadlepaymentrequest:sendtx :%s\n",EncodeHexTx(CTransaction(wtxSigned)));
+     if(pwallet!=wallet)
+        delete pwallet;
+    return QString("{\"success\":\"tx sent\"}");
+            
+}
+QString WalletModel::getPaymentAlertMessage(CWalletTx tx)
+{
+    
+    // Format confirmation message
+    QStringList formatted;
+    foreach(const CTxOut &rcp, tx.vout)
+    {
+        // generate bold amount string
+        QString amount = "<b>" + BitcoinUnits::formatHtmlWithUnit(0, rcp.nValue);
+        amount.append("</b>");
+        //LogPrintf(amount.toStdString());
+        // generate monospace address string
+        string add;
+        ScriptPubKeyToString(rcp.scriptPubKey,add);
+        QString address = "<span style='font-family: monospace;'>" + QString().fromStdString(add);
+        address.append("</span>");
+        //LogPrintf(address.toStdString());
+        QString recipientElement;
+          
+            {
+                recipientElement = tr("%1 to %2").arg(amount, address);
+            }
+
+        formatted.append(recipientElement);
+        
+        QString content=QString().fromStdString(CContent(rcp.strContent).ToHumanString());
+        if (content.size()>100)
+            content=content.left(100);
+        if (content.size()>0){
+            recipientElement = tr("    message:%1").arg(content);
+            formatted.append(recipientElement);
+        }
+    }
+    CAmount txFee = tx.GetFee();
+    QString questionString = tr("Are you sure you want to send?");
+    questionString.append("<br /><br />");
+    questionString.append(formatted.join("<br />"));
+        // append fee string if a fee is required
+        questionString.append("<hr /><span style='color:#aa0000;'>");
+        questionString.append(BitcoinUnits::formatHtmlWithUnit(0, txFee));
+        questionString.append("</span> ");
+        questionString.append(tr("added as transaction fee"));
+
+        // append transaction size
+        questionString.append(" (" + QString::number((double)(tx.CTransaction::GetSerializeSize(SER_NETWORK, CTransaction::CURRENT_VERSION)+tx.vin.size()*67) / 1000) + " kB)");
+    
+
+    // add total amount in all subdivision units
+    questionString.append("<hr />");
+    CAmount totalAmount = tx.GetValueOut() + txFee;
+    
+    
+    questionString.append(tr("Total Amount %1")
+        .arg(BitcoinUnits::formatHtmlWithUnit(0, totalAmount)));
+    //questionString.arg();
+    return questionString;
+}
+QString WalletModel::getEncryptMessegeAlert(std::vector<string> vstrIDsForeign,bool fEncrypt)
+{
+    
+    // Format confirmation message
+    QStringList formatted;
+    foreach(const string ID, vstrIDsForeign)
+    {
+        QString address = "<span style='font-family: monospace;'>" + QString().fromStdString(ID);
+        address.append("</span>");        
+        formatted.append(address);                
+    }    
+    
+    
+    QString questionString = tr("Are you sure you want to decrypt messages related to IDs below?");
+    if(fEncrypt)
+        questionString = tr("Are you sure you want to encrypt messages related to IDs below?");
+    questionString.append("<br /><br />");
+    questionString.append(formatted.join("<br />"));
+
+    questionString.append("<hr />");
+    
+    return questionString;
+}
+QString WalletModel::EncryptMessages(Array params)
+{
+    
+    if (params.size() <2)
+        throw runtime_error("Wrong number of parameters");
+    if (params[0].type() != str_type)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter1, expected string");
+    CPubKey IDLocal=AccountFromValue(params[0]);
+    //string strIDLocal=params[0].get_str();
+    if (params[1].type() != array_type)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter2, expected array");    
+    bool fEncrypt=true;
+    if(params.size()>2)
+    {
+        if (params[2].type()!=bool_type)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter3, expected boolean");    
+        fEncrypt=params[2].get_bool();
+    }
+    Array arrIDMsg=params[1].get_array();  
+    //id-(pubkey,alias)
+    std::map<string,std::vector<string> > mapMessages;
+    std::vector<string> vstrIDsForeign;
+    for(unsigned int i=0;i<arrIDMsg.size();i++){
+        if(arrIDMsg[i].type()!=obj_type)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter contact, expected object");
+        Object obj=arrIDMsg[i].get_obj();        
+        Value tmp;
+        tmp=find_value(obj, "idForeign");
+        if (tmp.type()!=str_type)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter id, expected string");        
+        vstrIDsForeign.push_back(tmp.get_str());
+        //CPubKey IDForeign=AccountFromValue(tmp.get_str());
+        string IDForeign=tmp.get_str();
+        tmp=find_value(obj, "messages");
+        if (tmp.type()!=array_type)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter messages, expected array");      
+        Array arrMsg=tmp.get_array();
+        std::vector<string> vMsg;
+        for(unsigned int i=0;i<arrMsg.size();i++){
+            if(arrMsg[i].type()!=array_type)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter message, expected array");
+            CContent cc;
+            if(!cc.SetJson(arrMsg[i].get_array())){
+                LogPrintf("jsinterface:encryptMessages fail:%s\n",HexStr(cc.begin(),cc.end()));
+                
+            }
+            vMsg.push_back(cc);
+            LogPrintf("jsinterface:encryptMessages:content:%s\n",HexStr(cc.begin(),cc.end()));
+        }
+        mapMessages.insert(make_pair(IDForeign,vMsg));  
+    }
+    CWallet* pwallet =new CWallet(IDLocal,false);    
+    int nOP=0;//0::unencrypted,1::encrypted,2::offline
+    if (!pwallet->HavePriv())
+        nOP=2;
+    else if (pwallet->IsCrypted())
+        nOP=1;        
+    LogPrintf("jsinterface:encryptMessages:pwallet:%i\n",pwallet);
+    SecureString ssInput;    
+    string strError;
+    QString alert=getEncryptMessegeAlert(vstrIDsForeign,fEncrypt); 
+    QString title=QString(tr("Confirm encrypt messages"));
+    if(!fEncrypt)
+        title=QString(tr("Confirm decrypt messages"));
+    if (!gui->handleUserConfirm(title,alert,nOP,strError,ssInput)){
+        delete pwallet;
+        return QString().fromStdString("{\"error\":\""+strError+"\"}");             
+    } 
+    if(nOP==1)
+        if(!pwallet->SetPassword(ssInput)){
+            delete pwallet;
+            return QString().fromStdString("{\"error\":\"wrong password\"}");
+        }
+    std::map<string,std::vector<string> > mapMsgOut;
+    if(nOP==2){
+        //TODO show json of messages to get decoded,and collect decoded messages from signer
+        return QString().fromStdString("{\"error\":\"encryption failed\"}");    
+    }
+    else if(!pwallet->EncryptMessages(mapMessages, mapMsgOut,fEncrypt)){
+        delete pwallet;
+        return QString().fromStdString("{\"error\":\"encryption failed\"}");            
+    }
+    //Value result;
+    Array arrResult;
+    for(std::map<string,std::vector<string> >::iterator it=mapMsgOut.begin();it!=mapMsgOut.end();it++)
+    {
+        Object objMsg;
+        objMsg.push_back(Pair("id",it->first));
+        Array arrMsg;
+        for(unsigned int i=0;i<it->second.size();i++)
+        {
+            arrMsg.push_back(it->second[i]);
+        }
+        objMsg.push_back(Pair("messages",arrMsg));
+        arrResult.push_back(objMsg);
+    }
+    delete pwallet;
+    return QString().fromStdString(write_string(Value(arrResult),false));  
+}
+
+
+QString WalletModel::SendMessage(Array arrData)
+{
+    if ( arrData.size() !=3)
+        throw runtime_error("");
+    string idLocal=arrData[0].get_str();
+    string idForeign=arrData[1].get_str();
+    CContent msg=_create_text_content(arrData[2].get_str());    
+    PaymentRequest pr=MessageRequestToPaymentRequest(idLocal,idForeign,msg);
+    CWalletTx tx;
+    string strError;    
+    CPubKey id;        
+    if(!CBitcoinAddress(idLocal).GetKey(id))
+    {
+        return QString().fromStdString("{\"error\":\"wrong idlocal\"}");
+    }
+    
+    CWallet* pwallet;
+    LogPrintf("jsinterface:hadlepaymentrequest:id%s,pwalletmain id:%s size:%i\n",HexStr(id.begin(),id.end()),HexStr(wallet->GetID().begin(),wallet->GetID().end()),wallet->GetID().size());
+    if(id==wallet->GetID())
+        pwallet=wallet;
+    else
+        pwallet=new CWallet(id);    
+    int nOP=0;//0::unencrypted,1::encrypted,2::offline
+    if (!pwallet->HavePriv())
+        nOP=2;
+    else if (pwallet->IsLocked())
+        nOP=1;
+    SecureString ssInput;
+    QString alert=getSMSAlertMessage(pr);  
+    QString title=QString(tr("Request Send Message"));
+    if (!gui->handleUserConfirm(title,alert,nOP,strError,ssInput)){
+        if(pwallet!=wallet)
+            delete pwallet;
+        return QString().fromStdString("{\"error\":\""+strError+"\"}");             
+    } 
+   
+    if(nOP==1)
+        if(!pwallet->SetPassword(ssInput)){
+            if(pwallet!=wallet)
+            delete pwallet;
+            return QString().fromStdString("{\"error\":\"wrong password\"}");
+        }
+    CWalletTx wtxSigned; 
+    if(nOP==2){
+        std::vector<CScript> sigs;
+        if (!DecodeSigs(string(ssInput.begin(),ssInput.end()),sigs)){
+            if(pwallet!=wallet)
+                delete pwallet;
+            return QString().fromStdString("{\"error\":\"invalid signatures\"}");
+        }
+        
+        CMutableTransaction mtx=CMutableTransaction(tx);        
+        for(unsigned int i=0;i<mtx.vin.size();i++)
+            mtx.vin[i].scriptSig=sigs[i];
+        *static_cast<CTransaction*>(&wtxSigned) = CTransaction(mtx);
+    }
+    else
+    {
+        std::map<string,std::vector<string> > mapMsgOut;
+        std::map<string,std::vector<string> > mapMessages;
+        std::vector<string> vmsg;
+        vmsg.push_back(msg);
+        mapMessages[idForeign]=vmsg;
+    
+        if(!pwallet->EncryptMessages(mapMessages, mapMsgOut,true))
+        {
+            LogPrintf("jsinterface:SendMessage:encryption failed\n");
+            if(pwallet!=wallet)
+                delete pwallet;
+            return QString().fromStdString("{\"error\":\"encryption failed\"}");;
+        }
+        LogPrintf("jsinterface:SendMessage:encryption done:%s\n",mapMsgOut[idForeign].size());
+        if(mapMsgOut[idForeign].size()>0)
+         pr.vout[0].strContent=mapMsgOut[idForeign][0];
+     
+        if (!pwallet->CreateTransactionUnsigned(pr,tx,strError))
+        {   
+            if(pwallet!=wallet)        
+                delete pwallet;
+            return QString().fromStdString("{\"error\":\""+strError+"\"}"); 
+        }    
+        LogPrintf("jsinterface:SendMessage:createtransaction done\n");
+        if(!pwallet->SignTransaction(tx, wtxSigned,pr.nSigType))
+        {
+            if(pwallet!=wallet)        
+                delete pwallet;
+            return QString().fromStdString("{\"error\":\"sign transaction failed\"}");  
+        }
+    }
+     LogPrintf("jsinterface:SendMessage:signOK\n");
+    if (!wtxSigned.AcceptToMemoryPool(false))
+        {            
+            LogPrintf("jsinterface:SendMessage:sendtx : Error: Transaction not valid\n");
+            if(pwallet!=wallet)    
+                delete pwallet;
+            return QString().fromStdString("{\"error\":\"tx rejected\"}");;
+        }
+     LogPrintf("jsinterface:SendMessage:acceptedto mempool\n");
+     RelayTransaction(wtxSigned);
+     LogPrintf("jsinterface:SendMessage:sendtx :%s\n",EncodeHexTx(CTransaction(wtxSigned)));
+     if(pwallet!=wallet)
+        delete pwallet;
+    return QString("{\"success\":\"tx sent\"}");
+            
+}
+QString WalletModel::getSMSAlertMessage(const PaymentRequest& pr)
+{    
+    // Format confirmation message
+    QStringList formatted;
+    foreach(const CTxOut &rcp, pr.vout)
+    {
+        string add;
+        ScriptPubKeyToString(rcp.scriptPubKey,add);
+        QString address = "<span style='font-family: monospace;'>" + QString().fromStdString(add);
+        address.append("</span>");
+        //LogPrintf(address.toStdString());
+        QString recipientElement;
+        QString content=QString().fromStdString(CContent(rcp.strContent).ToHumanString());
+        if (content.size()>100)
+            content=content.left(100);
+        recipientElement = tr("%1 to %2").arg(content, address);           
+        formatted.append(recipientElement);
+    }
+    CAmount txFee = ::minRelayTxFee.GetFee(pr.vout[0].strContent.size()+180);
+    QString questionString = tr("Are you sure you want to send message?");
+    questionString.append("<br /><br />");
+    questionString.append(formatted.join("<br />"));
+        // append fee string if a fee is required
+        questionString.append("<hr /><span style='color:#aa0000;'>");
+        questionString.append(BitcoinUnits::formatHtmlWithUnit(0, txFee));
+        questionString.append("</span> ");
+        questionString.append(tr("transaction fee"));
+    return questionString;
 }

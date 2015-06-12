@@ -141,3 +141,14 @@ Value comparebase32(const Array& params, bool fHelp) // TO DO: Help msg
     std::string s2 = params[1].get_str();
     return CompareBase32(s1,s2);
 }
+Value isvalidpubkeyaddress(const Array& params, bool fHelp) // TO DO: Help msg
+{
+    if (fHelp || params.size() > 1)
+        return Value(false);
+    std::string b32 = params[0].get_str();
+    std::vector<unsigned char> raw;
+    CPubKey pub;
+    if (!CBitcoinAddress(b32).GetKey(pub))
+        return Value(false);
+    return Value(true);
+}
