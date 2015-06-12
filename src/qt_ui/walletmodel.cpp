@@ -372,9 +372,9 @@ void WalletModel::notifyAccountSwitched(const std::string id)
      updateStatus();
 }
 
-QString WalletModel::HandlePaymentRequest(Array arrData)
+QString WalletModel::HandlePaymentRequest(const Array arrData)
 {
-    PaymentRequest pr=ParsePaymentRequest(arrData[0]);
+    PaymentRequest pr=ParseJsonPaymentRequest(arrData[0]);
     CWalletTx tx;
     string strError;    
     CPubKey id;    
@@ -396,8 +396,9 @@ QString WalletModel::HandlePaymentRequest(Array arrData)
         nOP=2;
     else if (pwallet->IsLocked())
         nOP=1;
+    bool fDelete=(pwallet!=wallet);
     if (!pwallet->CreateTransactionUnsigned(pr,tx,strError)){
-        if(pwallet!=wallet)
+        if(fDelete)
                 delete pwallet;
                 return QString().fromStdString("{\"error\":\""+strError+"\"}"); 
     }
@@ -407,50 +408,16 @@ QString WalletModel::HandlePaymentRequest(Array arrData)
     QString alert=getPaymentAlertMessage(tx); 
     QString title=QString(tr("Request Payment"));
     if (!gui->handleUserConfirm(title,alert,nOP,strError,ssInput)){
-        if(pwallet!=wallet)
+        if(fDelete)
         delete pwallet;
         return QString().fromStdString("{\"error\":\""+strError+"\"}");             
-        }    
-    if(nOP==1)
-        if(!pwallet->SetPassword(ssInput)){
-            if(pwallet!=wallet)
-            delete pwallet;
-            return QString().fromStdString("{\"error\":\"wrong password\"}");
-        }
+    }  
+    std::string result;
     CWalletTx wtxSigned; 
-    if(nOP==2){
-        std::vector<CScript> sigs;
-        if (!DecodeSigs(string(ssInput.begin(),ssInput.end()),sigs)){
-            if(pwallet!=wallet)
-            delete pwallet;
-            return QString().fromStdString("{\"error\":\"invalid signatures\"}");
-        }
-        
-        CMutableTransaction mtx=CMutableTransaction(tx);        
-        for(unsigned int i=0;i<mtx.vin.size();i++)
-            mtx.vin[i].scriptSig=sigs[i];
-        *static_cast<CTransaction*>(&wtxSigned) = CTransaction(mtx);
-    }
-    else if(!pwallet->SignTransaction(tx, wtxSigned,pr.nSigType)){
-        if(pwallet!=wallet)
-        delete pwallet;
-        return QString().fromStdString("{\"error\":\"sign transaction failed\"}");            
-    }
-     LogPrintf("jsinterface:hadlepaymentrequest:signOK\n");
-    if (!wtxSigned.AcceptToMemoryPool(false))
-        {            
-            LogPrintf("jsinterface:hadlepaymentrequest:sendtx : Error: Transaction not valid\n");
-            delete pwallet;
-            return QString().fromStdString("{\"error\":\"tx rejected\"}");;
-        }
-     LogPrintf("jsinterface:hadlepaymentrequest:acceptedto mempool\n");
-     RelayTransaction(wtxSigned);
-     LogPrintf("jsinterface:hadlepaymentrequest:sendtx :%s\n",EncodeHexTx(CTransaction(wtxSigned)));
-     if(pwallet!=wallet)
-        delete pwallet;
-    return QString("{\"success\":\"tx sent\"}");
-            
+    SignAndSendTx(pwallet,tx,pr.nSigType,nOP,ssInput,fDelete,wtxSigned,result);
+    return QString().fromStdString(result);
 }
+
 QString WalletModel::getPaymentAlertMessage(CWalletTx tx)
 {
     
@@ -622,7 +589,7 @@ QString WalletModel::EncryptMessages(Array params)
         Array arrMsg;
         for(unsigned int i=0;i<it->second.size();i++)
         {
-            arrMsg.push_back(it->second[i]);
+            arrMsg.push_back(CContent(it->second[i]).ToJson(STR_FORMAT_B64));
         }
         objMsg.push_back(Pair("messages",arrMsg));
         arrResult.push_back(objMsg);

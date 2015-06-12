@@ -285,7 +285,7 @@ class PaymentRequest :public CMutableTransaction
     public:
     PaymentRequest(){
         nSigType=129;//anyonecanpay
-        feeRate=1000;    
+        dFeeRate=1000;    
         fIsValid=false;    
         overridedTxid=uint256(0);
         CMutableTransaction();
@@ -295,7 +295,7 @@ class PaymentRequest :public CMutableTransaction
     std::vector<CScript> vFrom;
     int nSigType;
     CScript changeAddress;
-    double feeRate;
+    double dFeeRate;
     uint256 overridedTxid;
     
     std::string strError;

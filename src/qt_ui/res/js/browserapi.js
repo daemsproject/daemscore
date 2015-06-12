@@ -318,7 +318,12 @@ var BrowserAPI = new function () {
     this.encryptMessages = function (idLocal,msgArr) {return this.icall("encryptmessages", [idLocal,msgArr]);    }
     this.decryptMessages = function (idLocal,msgArr,success,error) {return this.call("encryptmessages", [idLocal,msgArr,false],success,error);    }
     this.areIDsEqual=function(id1,id2){return this.icall("comparebase32",[id1,id2])==0};
-
+    this.createTextContent=function(text,format){
+         var u1 = this.icall("encodecontentunit", ["CC_TEXT", text, 2]);
+         var u2 = this.icall("encodecontentunit", ["CC_TEXT_ENCODING_UTF8", "", 2]);
+         var s = u1.hex + u2.hex;
+         return this.icall("encodecontentunit", ["CC_TEXT_P", s, 0]);                
+    }
     this.createContentC = function (t, c) {
         console.log("t " + t);
         switch (t)

@@ -14,7 +14,7 @@
 #include "timedata.h"
 #include "util.h"
 #include "utilmoneystr.h"
-
+#include "core_io.h"
 #include <assert.h>
 
 #include <boost/algorithm/string/replace.hpp>
@@ -1636,7 +1636,7 @@ bool CWallet::CreateTransactionUnsigned(const PaymentRequest& pr,
                     strFailReason = _("Transaction too large");
                     return false;
                 }
-                CAmount nFeeNeeded = int64_t(pr.feeRate*nBytes);
+                CAmount nFeeNeeded = int64_t(pr.dFeeRate*nBytes);
 
                 if (nFeeRet >= nFeeNeeded)
                     break; // Done, enough fee included.
@@ -1665,7 +1665,52 @@ bool CWallet::SignTransaction(const CWalletTx& wtxIn,CWalletTx& wtxSigned,int nS
                 *static_cast<CTransaction*>(&wtxSigned) = CTransaction(txSigned);
                 return true;
 }
-
+bool SignAndSendTx(CWallet* pwallet,const CWalletTx& tx,const int nSigType, const int nOP,const SecureString& ssInput,const bool fDelete,CWalletTx& wtxSigned,std::string& result)
+{      
+    if(nOP==1)
+        if(!pwallet->SetPassword(ssInput)){
+            if(fDelete)
+            delete pwallet;
+            result= ("{\"error\":\"wrong password\"}");
+            return false;
+        }    
+    if(nOP==2){
+        //TODO signer funcs
+        std::vector<CScript> sigs;
+//        if (!DecodeSigs(string(ssInput.begin(),ssInput.end()),sigs)){
+//            if(fDelete)
+//            delete pwallet;
+//            result=("{\"error\":\"invalid signatures\"}");
+//            return false;
+//        }        
+        CMutableTransaction mtx=CMutableTransaction(tx);        
+        for(unsigned int i=0;i<mtx.vin.size();i++)
+            mtx.vin[i].scriptSig=sigs[i];
+        *static_cast<CTransaction*>(&wtxSigned) = CTransaction(mtx);
+    }
+    else if(!pwallet->SignTransaction(tx, wtxSigned,nSigType)){
+        if(fDelete)
+        delete pwallet;
+        result= ("{\"error\":\"sign transaction failed\"}");            
+        return false;
+    }
+     LogPrintf("SignAndSendTx:signOK\n");
+    if (!wtxSigned.AcceptToMemoryPool(false))
+        {            
+            LogPrintf("SignAndSendTx:sendtx : Error: Transaction not valid\n");
+           if(fDelete)
+            delete pwallet;
+            result =("{\"error\":\"tx rejected\"}");
+            return false;            
+        }
+     LogPrintf("SignAndSendTx:acceptedto mempool\n");
+     RelayTransaction(wtxSigned);
+     LogPrintf("SignAndSendTx:sendtx :%s\n",EncodeHexTx(CTransaction(wtxSigned)));
+     if(fDelete)
+        delete pwallet;
+    result= ("{\"success\":\"tx sent\"}");
+    return true;            
+}
 
 bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
                                 CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRet, std::string& strFailReason, const CCoinControl* coinControl)

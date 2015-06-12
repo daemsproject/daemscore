@@ -283,7 +283,7 @@ extern bool HTTPReq_REST(AcceptedConnection *conn,
 class PaymentRequest;
 class CWalletTx;
 class CWallet;
-extern PaymentRequest ParsePaymentRequest(const json_spirit::Value paymentRequestJson);
+extern PaymentRequest ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJson);
 extern PaymentRequest MessageRequestToPaymentRequest(const std::string idLocal,const  std::string idForeign,const CContent msg);
 extern CWalletTx CreateRawTransaction(PaymentRequest pr,bool& fRequestPassword,CWallet*& pwallet);
 extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, json_spirit::Object& entry);

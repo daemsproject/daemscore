@@ -864,7 +864,7 @@ public:
 
     std::set<uint256> GetConflicts() const;
 };
-
+bool SignAndSendTx(CWallet* pwallet,const CWalletTx& tx,const int nSigType,const int nOP,const SecureString& ssInput,const bool fDelete,CWalletTx& wtxSigned,std::string& result);
 
 
 

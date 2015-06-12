@@ -360,7 +360,7 @@ Value setmocktime(const Array& params, bool fHelp)
     return Value::null;
 }
 
-PaymentRequest ParsePaymentRequest(const json_spirit::Value paymentRequestJson){    
+PaymentRequest ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJson){    
     PaymentRequest pr;
     pr.fIsValid=false;    
     std::string strError;
@@ -376,7 +376,7 @@ PaymentRequest ParsePaymentRequest(const json_spirit::Value paymentRequestJson){
         LogPrintf("rpcmist processpayment id %s\n",valtmp.get_str());
         CScript scriptPubKey;        
         if(!StringToScriptPubKey(valtmp.get_str(),scriptPubKey)){
-                strError="id is not valid fromat";
+                strError="id is not valid format";
                 throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
         }
         LogPrintf("rpcmist processpayment script %s\n",scriptPubKey.ToString());
@@ -497,12 +497,12 @@ PaymentRequest ParsePaymentRequest(const json_spirit::Value paymentRequestJson){
     switch (valtmp.type()){
         case real_type:
         {
-             pr.feeRate=valtmp.get_real();
+             pr.dFeeRate=valtmp.get_real();
             break;
         }
         case str_type:
         {
-            pr.feeRate=atof(valtmp.get_str().c_str());
+            pr.dFeeRate=atof(valtmp.get_str().c_str());
             break;
         }
         case null_type:
@@ -515,7 +515,7 @@ PaymentRequest ParsePaymentRequest(const json_spirit::Value paymentRequestJson){
             throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
         }
     }      
-    if (pr.feeRate<1000)
+    if (pr.dFeeRate<1000)
         {
             strError="fee rate is lower than limit";
             throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
