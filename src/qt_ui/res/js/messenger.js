@@ -159,8 +159,9 @@ var Messenger = new function() {
                     console.log(messages[id][j].IDTo);
                     console.log(id);
                     console.log(BrowserAPI.areIDsEqual(messages[id][j].IDTo,id));
-                    var direction=BrowserAPI.areIDsEqual(messages[id][j].IDTo,id)?"right":"left";                
-                    i.showMessage(decryptmsgs[0].messages[j],direction);
+                    var direction=BrowserAPI.areIDsEqual(messages[id][j].IDTo,id)?"right":"left";   
+                    if(decryptmsgs[0].messages[j][0])
+                    i.showMessage(base64.decode(decryptmsgs[0].messages[j][0].content[0].content),direction);
                 }
             }    
         },function(){});
