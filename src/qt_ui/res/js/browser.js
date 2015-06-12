@@ -120,7 +120,7 @@ var CBrowser = new function () {
         else if (this.isContentAudio(ctt))
             sdiv.find(".ctt").html(this.createAudioHtml(ctt.link, this.getFileContentFrJson(ctt)));
         else if (this.isContentText(ctt))
-            sdiv.find(".ctt").html(atob(ctt.content[0].content[0].content));
+            sdiv.find(".ctt").html(base64.decode(ctt.content[0].content[0].content));
         else{
             console.log("err");
             return false;
