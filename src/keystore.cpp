@@ -51,4 +51,41 @@ bool CBasicKeyStore::GetCScript(const CScriptID &hash, CScript& redeemScriptOut)
     }
     return false;
 }
-
+bool CBasicKeyStore::GetSharedKey(const CPubKey IDLocal,const CPubKey IDForeign,CKey& sharedKey)
+{
+    if(!HasSharedKey(IDLocal,IDForeign))
+        return false;        
+    sharedKey=mapSharedKeys[IDLocal][IDForeign];
+    return true;
+}
+bool CBasicKeyStore::HasSharedKey(const CPubKey IDLocal,const CPubKey IDForeign)
+{
+    SharedKeyMap::iterator it=mapSharedKeys.find(IDLocal);
+    if(it==mapSharedKeys.end())
+        return false;
+    std::map<CPubKey, CKey>::iterator it2=it->second.find(IDForeign);
+    if(it2==it->second.end())
+        return false;    
+    return true;
+}
+void CBasicKeyStore::ClearSharedKey(const CPubKey IDLocal,const CPubKey IDForeign)
+{
+    if (IDLocal==CPubKey())
+        mapSharedKeys.clear();
+    else if(IDForeign==CPubKey())
+        mapSharedKeys.erase(IDLocal);
+    else        
+        if(mapSharedKeys.find(IDLocal)!=mapSharedKeys.end())
+              mapSharedKeys[IDLocal].erase(IDForeign);
+}
+void CBasicKeyStore::StoreSharedKey(const CPubKey IDLocal,const CPubKey IDForeign,const CKey& sharedKey)
+{
+    if(mapSharedKeys.find(IDLocal)!=mapSharedKeys.end())
+        mapSharedKeys[IDLocal][IDForeign]=sharedKey;
+    else
+    {
+         std::map<CPubKey, CKey> mapkey;
+         mapkey[IDForeign]=sharedKey;
+         mapSharedKeys[IDLocal]=mapkey;
+    }
+}

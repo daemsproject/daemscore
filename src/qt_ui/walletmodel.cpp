@@ -520,6 +520,17 @@ QString WalletModel::EncryptMessages(Array params)
     //id-(pubkey,alias)
     std::map<string,std::vector<string> > mapMessages;
     std::vector<string> vstrIDsForeign;
+    bool fHasAllSharedKeys=true;    
+    bool fIsWalletMain;
+    CWallet* pwallet;
+    //LogPrintf("jsinterface:hadlepaymentrequest:id%s,pwalletmain id:%s size:%i\n",HexStr(id.begin(),id.end()),HexStr(wallet->GetID().begin(),wallet->GetID().end()),wallet->GetID().size());
+    if(IDLocal==wallet->GetID())
+    {
+        pwallet=wallet;
+        fIsWalletMain=true;
+    }
+    else
+        pwallet=new CWallet(IDLocal,false); 
     for(unsigned int i=0;i<arrIDMsg.size();i++){
         if(arrIDMsg[i].type()!=obj_type)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter contact, expected object");
@@ -531,6 +542,8 @@ QString WalletModel::EncryptMessages(Array params)
         vstrIDsForeign.push_back(tmp.get_str());
         //CPubKey IDForeign=AccountFromValue(tmp.get_str());
         string IDForeign=tmp.get_str();
+        CPubKey pubForeign=AccountFromValue(tmp);
+        fHasAllSharedKeys=pwallet->HasSharedKey(IDLocal,pubForeign);        
         tmp=find_value(obj, "messages");
         if (tmp.type()!=array_type)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter messages, expected array");      
@@ -545,29 +558,36 @@ QString WalletModel::EncryptMessages(Array params)
                 
             }
             vMsg.push_back(cc);
-            LogPrintf("jsinterface:encryptMessages:content:%s\n",HexStr(cc.begin(),cc.end()));
+            //LogPrintf("jsinterface:encryptMessages:content:%s\n",HexStr(cc.begin(),cc.end()));
         }
         mapMessages.insert(make_pair(IDForeign,vMsg));  
     }
-    CWallet* pwallet =new CWallet(IDLocal,false);    
+    
     int nOP=0;//0::unencrypted,1::encrypted,2::offline
-    if (!pwallet->HavePriv())
-        nOP=2;
-    else if (pwallet->IsCrypted())
-        nOP=1;        
-    LogPrintf("jsinterface:encryptMessages:pwallet:%i\n",pwallet);
     SecureString ssInput;    
     string strError;
-    QString alert=getEncryptMessegeAlert(vstrIDsForeign,fEncrypt); 
-    QString title=QString(tr("Confirm encrypt messages"));
-    if(!fEncrypt)
-        title=QString(tr("Confirm decrypt messages"));
-    if (!gui->handleUserConfirm(title,alert,nOP,strError,ssInput)){
-        delete pwallet;
-        return QString().fromStdString("{\"error\":\""+strError+"\"}");             
-    } 
+    
+         
+    //LogPrintf("jsinterface:encryptMessages:pwallet:%i\n",pwallet);
+    if(!fHasAllSharedKeys)
+    {
+        if (!pwallet->HavePriv())
+            nOP=2;
+        else if (pwallet->IsCrypted())
+            nOP=1;   
+        QString alert=getEncryptMessegeAlert(vstrIDsForeign,fEncrypt); 
+        QString title=QString(tr("Confirm encrypt messages"));
+        if(!fEncrypt)
+            title=QString(tr("Confirm decrypt messages"));
+        if (!gui->handleUserConfirm(title,alert,nOP,strError,ssInput)){
+            if(!fIsWalletMain)
+            delete pwallet;
+            return QString().fromStdString("{\"error\":\""+strError+"\"}");             
+        } 
+    }
     if(nOP==1)
         if(!pwallet->SetPassword(ssInput)){
+            if(!fIsWalletMain)
             delete pwallet;
             return QString().fromStdString("{\"error\":\"wrong password\"}");
         }
@@ -577,6 +597,7 @@ QString WalletModel::EncryptMessages(Array params)
         return QString().fromStdString("{\"error\":\"encryption failed\"}");    
     }
     else if(!pwallet->EncryptMessages(mapMessages, mapMsgOut,fEncrypt)){
+        if(!fIsWalletMain)
         delete pwallet;
         return QString().fromStdString("{\"error\":\"encryption failed\"}");            
     }
@@ -594,6 +615,7 @@ QString WalletModel::EncryptMessages(Array params)
         objMsg.push_back(Pair("messages",arrMsg));
         arrResult.push_back(objMsg);
     }
+    if(!fIsWalletMain)
     delete pwallet;
     return QString().fromStdString(write_string(Value(arrResult),false));  
 }
@@ -609,35 +631,41 @@ QString WalletModel::SendMessage(Array arrData)
     PaymentRequest pr=MessageRequestToPaymentRequest(idLocal,idForeign,msg);
     CWalletTx tx;
     string strError;    
-    CPubKey id;        
-    if(!CBitcoinAddress(idLocal).GetKey(id))
-    {
+    CPubKey pub;
+    if(!CBitcoinAddress(idLocal).GetKey(pub))    
         return QString().fromStdString("{\"error\":\"wrong idlocal\"}");
-    }
-    
+    CPubKey pubForeign;         
+    if(!CBitcoinAddress(idForeign).GetKey(pubForeign))    
+        return QString().fromStdString("{\"error\":\"wrong idforeign\"}");
+    bool fIsWalletMain;
     CWallet* pwallet;
-    LogPrintf("jsinterface:hadlepaymentrequest:id%s,pwalletmain id:%s size:%i\n",HexStr(id.begin(),id.end()),HexStr(wallet->GetID().begin(),wallet->GetID().end()),wallet->GetID().size());
-    if(id==wallet->GetID())
+    //LogPrintf("jsinterface:hadlepaymentrequest:id%s,pwalletmain id:%s size:%i\n",HexStr(id.begin(),id.end()),HexStr(wallet->GetID().begin(),wallet->GetID().end()),wallet->GetID().size());
+    if(pub==wallet->GetID())
+    {
         pwallet=wallet;
+        fIsWalletMain=true;
+    }
     else
-        pwallet=new CWallet(id);    
+        pwallet=new CWallet(pub,false);    
     int nOP=0;//0::unencrypted,1::encrypted,2::offline
-    if (!pwallet->HavePriv())
-        nOP=2;
-    else if (pwallet->IsLocked())
-        nOP=1;
     SecureString ssInput;
-    QString alert=getSMSAlertMessage(pr);  
-    QString title=QString(tr("Request Send Message"));
-    if (!gui->handleUserConfirm(title,alert,nOP,strError,ssInput)){
-        if(pwallet!=wallet)
-            delete pwallet;
-        return QString().fromStdString("{\"error\":\""+strError+"\"}");             
-    } 
-   
+    if (!pwallet->HavePriv())
+            nOP=2;
+        else if (pwallet->IsLocked())
+            nOP=1;
+    if(!pwallet->HasSharedKey(pub,pubForeign)||nOP>0||msg.size()>1000)
+    {
+        QString alert=getSMSAlertMessage(pr);  
+        QString title=QString(tr("Request Send Message"));
+        if (!gui->handleUserConfirm(title,alert,nOP,strError,ssInput)){
+            if(!fIsWalletMain)
+                delete pwallet;
+            return QString().fromStdString("{\"error\":\""+strError+"\"}");             
+        } 
+    }
     if(nOP==1)
         if(!pwallet->SetPassword(ssInput)){
-            if(pwallet!=wallet)
+            if(!fIsWalletMain)
             delete pwallet;
             return QString().fromStdString("{\"error\":\"wrong password\"}");
         }
@@ -645,7 +673,7 @@ QString WalletModel::SendMessage(Array arrData)
     if(nOP==2){
         std::vector<CScript> sigs;
         if (!DecodeSigs(string(ssInput.begin(),ssInput.end()),sigs)){
-            if(pwallet!=wallet)
+            if(!fIsWalletMain)
                 delete pwallet;
             return QString().fromStdString("{\"error\":\"invalid signatures\"}");
         }
@@ -666,40 +694,40 @@ QString WalletModel::SendMessage(Array arrData)
         if(!pwallet->EncryptMessages(mapMessages, mapMsgOut,true))
         {
             LogPrintf("jsinterface:SendMessage:encryption failed\n");
-            if(pwallet!=wallet)
+            if(!fIsWalletMain)
                 delete pwallet;
             return QString().fromStdString("{\"error\":\"encryption failed\"}");;
         }
-        LogPrintf("jsinterface:SendMessage:encryption done:%s\n",mapMsgOut[idForeign].size());
+        //LogPrintf("jsinterface:SendMessage:encryption done:%s\n",mapMsgOut[idForeign].size());
         if(mapMsgOut[idForeign].size()>0)
          pr.vout[0].strContent=mapMsgOut[idForeign][0];
      
         if (!pwallet->CreateTransactionUnsigned(pr,tx,strError))
         {   
-            if(pwallet!=wallet)        
+            if(!fIsWalletMain)        
                 delete pwallet;
             return QString().fromStdString("{\"error\":\""+strError+"\"}"); 
         }    
-        LogPrintf("jsinterface:SendMessage:createtransaction done\n");
+        //LogPrintf("jsinterface:SendMessage:createtransaction done\n");
         if(!pwallet->SignTransaction(tx, wtxSigned,pr.nSigType))
         {
-            if(pwallet!=wallet)        
+            if(!fIsWalletMain)        
                 delete pwallet;
             return QString().fromStdString("{\"error\":\"sign transaction failed\"}");  
         }
     }
-     LogPrintf("jsinterface:SendMessage:signOK\n");
+     //LogPrintf("jsinterface:SendMessage:signOK\n");
     if (!wtxSigned.AcceptToMemoryPool(false))
         {            
             LogPrintf("jsinterface:SendMessage:sendtx : Error: Transaction not valid\n");
-            if(pwallet!=wallet)    
+            if(!fIsWalletMain)    
                 delete pwallet;
             return QString().fromStdString("{\"error\":\"tx rejected\"}");;
         }
-     LogPrintf("jsinterface:SendMessage:acceptedto mempool\n");
+     //LogPrintf("jsinterface:SendMessage:acceptedto mempool\n");
      RelayTransaction(wtxSigned);
      LogPrintf("jsinterface:SendMessage:sendtx :%s\n",EncodeHexTx(CTransaction(wtxSigned)));
-     if(pwallet!=wallet)
+     if(!fIsWalletMain)
         delete pwallet;
     return QString("{\"success\":\"tx sent\"}");
             

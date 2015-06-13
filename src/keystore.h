@@ -44,7 +44,8 @@ public:
     
 };
 
-typedef std::map<CPubKey, uint64_t>  KeyMap;//uint645 is step
+typedef std::map<CPubKey, uint64_t>  KeyMap;//uint64_t is step
+typedef std::map<CPubKey,std::map<CPubKey, CKey> > SharedKeyMap;
 typedef std::map<CScriptID, CScript > ScriptMap;
 
 /** Basic key store, that keeps keys in an address->secret map */
@@ -60,6 +61,7 @@ public:
     uint32_t nStartTime;
     uint64_t nMaxSteps;        
     KeyMap mapKeys; 
+    SharedKeyMap mapSharedKeys;
     bool fHasPriv;
     bool fHasPub;
     bool fHasStepPub;
@@ -74,6 +76,13 @@ public:
         fHasStepPub=false;
         fHasStepPriv=false;
     }
+    bool GetSharedKey(const CPubKey IDLocal,const CPubKey IDForeign,CKey& sharedKey);
+    bool HasSharedKey(const CPubKey IDLocal,const CPubKey IDForeign);
+    
+    void ClearSharedKey(const CPubKey IDLocal=CPubKey(),const CPubKey IDForeign=CPubKey());
+    
+    void StoreSharedKey(const CPubKey IDLocal,const CPubKey IDForeign,const CKey& sharedKey);
+    
     bool HavePriv(){return fHasPriv;};
     bool HavePub(){return fHasPub;};
     bool CanExtendKeys(){return fHasPub&&fHasStepPub;};

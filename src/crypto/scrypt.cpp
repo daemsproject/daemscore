@@ -334,7 +334,7 @@ bool scrypt_sp_generic(const char *ucInput, unsigned long nInputSize, const unsi
     //LogPrintf("scrypt_sp_generic10\n");
     delete [] V;
     V=NULL;
-    LogPrintf("scrypt_sp_generic\n");
+    //LogPrintf("scrypt_sp_generic\n");
     return true;
 }
 

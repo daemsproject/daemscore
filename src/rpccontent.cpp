@@ -722,7 +722,7 @@ Value getmessages(const json_spirit::Array& params, bool fHelp)
         CScript script;
         if (arrIDs[i].type() != str_type)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter id, expected str");
-        LogPrintf("getmessages idlocal:%s \n", arrIDs[i].get_str());
+        //LogPrintf("getmessages idlocal:%s \n", arrIDs[i].get_str());
         StringToScriptPubKey(arrIDs[i].get_str(), script);
         vIDsLocal.push_back(script);
     }
@@ -772,12 +772,12 @@ Value getmessages(const json_spirit::Array& params, bool fHelp)
 
     }
     std::vector<CTransaction> vMemTx;
-    if (fIncludeMempool)
-        mempool.GetUnconfirmedTransactions(vIDsLocal, vMemTx);
-    LogPrintf("getmessages mempooltxs:%u \n", vMemTx.size());
     std::vector<CDiskTxPos> vTxPos;
     GetDiskTxPoses(vIDsLocal, vTxPos);
-    LogPrintf("getmessages blockchaintxs:%u \n", vTxPos.size());
+    if (fIncludeMempool)
+        mempool.GetUnconfirmedTransactions(vIDsLocal, vMemTx);
+    //LogPrintf("getmessages mempooltxs:%u \n", vMemTx.size());
+    //LogPrintf("getmessages blockchaintxs:%u \n", vTxPos.size());
     if (vIDsForeign.size() > 0) {
         std::vector<CDiskTxPos> vTxPosForeign;
         GetDiskTxPoses(vIDsForeign, vTxPosForeign);
@@ -793,7 +793,7 @@ Value getmessages(const json_spirit::Array& params, bool fHelp)
                 if (find(vMemTxForeign.begin(), vMemTxForeign.end(), *it) == vMemTxForeign.end())
                     vMemTx.erase(it);
             }
-            LogPrintf("getmessages filtered mempooltxs:%u \n", vMemTx.size());
+            //LogPrintf("getmessages filtered mempooltxs:%u \n", vMemTx.size());
         }
     }
     Array arrMsg;
@@ -844,7 +844,7 @@ Value getmessages(const json_spirit::Array& params, bool fHelp)
     //LogPrintf("getmessages sorted:%i\n",vMessages.size());
     BOOST_FOREACH(CMessage& msg, vMessages)
     arrMsg.push_back(msg.ToJson(fLinkOnly));
-    LogPrintf("getmessages toJson%i \n", arrMsg.size());
+    LogPrintf("getmessages:%i \n", arrMsg.size());
     return Value(arrMsg);
 
 }
@@ -958,7 +958,7 @@ void GetMessagesFromTx(std::vector<CMessage>& vMessages, const CTransaction& tx,
     }
     //LogPrintf("getmessagesFromtx2\n");
     CScript IDFrom = prevTx.vout[tx.vin[0].prevout.n].scriptPubKey;
-    LogPrintf("getmessagesFromtx,idfrom:%s\n", IDFrom.ToString());
+    //LogPrintf("getmessagesFromtx,idfrom:%s\n", IDFrom.ToString());
     if (find(vIDsLocal.begin(), vIDsLocal.end(), IDFrom) != vIDsLocal.end()) {
         fIncoming = false;
         LogPrintf("getmessagesFromtx:output msg\n");
@@ -970,7 +970,7 @@ void GetMessagesFromTx(std::vector<CMessage>& vMessages, const CTransaction& tx,
     //LogPrintf("getmessagesFromtx5\n");
     if ((nDirectionFilter == OUTPUT_ONLY && fIncoming) || (nDirectionFilter == INCOMING_ONLY && !fIncoming))
         return;
-    LogPrintf("getmessagesFromtx msg:%i\n", vRawMsg.size());
+    //LogPrintf("getmessagesFromtx msg:%i\n", vRawMsg.size());
     uint256 hash = tx.GetHash();
     for (unsigned int i = 0; i < vRawMsg.size(); i++) {
         CScript scriptPubKey = tx.vout[vRawMsg[i].first].scriptPubKey;

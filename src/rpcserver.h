@@ -291,4 +291,5 @@ extern void GetMessagesFromTx(std::vector<CMessage>& vMessages,const CTransactio
         const std::vector<CScript>& vIDsForeign,int nDirectionFilter,bool fLinkonly,int nPos,int nOffset,int nCount);
 
 extern void SortMessages(std::vector<CMessage>& vMsg,std::vector<CScript> vIDsLocal);
+extern Value gettxmessages(const json_spirit::Array& params, bool fHelp);
 #endif // BITCOIN_RPCSERVER_H

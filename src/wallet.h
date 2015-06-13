@@ -239,8 +239,8 @@ public:
     bool GetDestData(const CTxDestination &dest, const std::string &key, std::string *value) const;
     bool AddContacts(const std::map<string,json_spirit::Object>mapContact);
     bool GetContactPubKey(const std::string strContact,CPubKey& pubKey);
-    bool GetSharedKeyFromAdb(const std::string strContact,CKey& sharedKey);
-    bool MakeSharedKey(CPubKey& pub,CKey& sharedKey,CPubKey IDLocal);
+    //bool GetSharedKeyFromAdb(const std::string strContact,CKey& sharedKey);
+    bool MakeSharedKey(const CPubKey& IDLocal,const CPubKey& IDForeign,CKey& sharedKey,bool fStore=true);
     bool EncryptMessages(const std::map<string,std::vector<string> >& mapMessagesIn, std::map<string,std::vector<string> >& mapMessagesOut,bool fEncrypt=true);
     bool DecryptWallet(const SecureString& strWalletPassphrase);
     bool ChangeWalletPassphrase(const SecureString& strOldWalletPassphrase, const SecureString& strNewWalletPassphrase);

@@ -85,7 +85,7 @@ void JsInterface::notifyBlockHeight(const uint256 blockHash)
     obj.push_back(Pair("blockHeight",Value((int)mi->second->nBlockHeight)));        
     //string result="{\:\"block\",\"blockHash\":\""++"\",\"blockHeight\":"+mi->second->nBlockHeight+"}";
     emit notify(QString().fromStdString(write_string(Value(obj),false)));
-    LogPrintf("jsinterface:notifyblockheight\n");
+    //LogPrintf("jsinterface:notifyblockheight\n");
     //QMetaObject::invokeMethod(JsInterface, "notifyBlockHeight", Qt::QueuedConnection,                              
     //                          Q_ARG(uint256, blockHash));
 }
@@ -93,7 +93,7 @@ void JsInterface::notifyBlockHeight(const uint256 blockHash)
 
 void JsInterface::notifyTransactionChanged(const uint256 txid,const uint256 hashBlock)
 {
-    LogPrintf("jsinterface:notifytx\n");
+    //LogPrintf("jsinterface:notifytx\n");
     //CCoinsViewCache view(pcoinsTip);
     //LogPrintf("jsinterface:notifytx1\n");
     Array arrAddresses;

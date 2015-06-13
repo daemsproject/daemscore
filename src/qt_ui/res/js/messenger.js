@@ -109,7 +109,7 @@ var Messenger = new function() {
             html+=createImgHtml(c.image);
         if(c.alias)
         html+=c.alias;
-        html+=" "+showID(c.id)+"<div class='nmsgs' style='float:right'></div></div>";
+        html+=" "+showID(c.id)+"<div class='nmsgs' style='text-align:right'></div></div>";
         console.log(html);
         $("#contact-list").append(html);
         //Messenger.switchToContact(c.id);
@@ -131,8 +131,11 @@ var Messenger = new function() {
         });
         
     }
-    this.showMessage=function(msg,direction){
-        var html='<div style="text-align:'+direction+'">';
+    this.showMessage=function(msg,time,direction){    
+        if(!time)
+            time= new Date();
+        var html='<div style="color:green;text-align:'+direction+'">'+dateToString(time)+'</div>';        
+        html+='<div style="text-align:'+direction+';margin-'+(direction=='right'?'left':'right')+':100px">';
         if(direction=="left")
             html+="->";
         else
@@ -160,8 +163,12 @@ var Messenger = new function() {
                     console.log(id);
                     console.log(BrowserAPI.areIDsEqual(messages[id][j].IDTo,id));
                     var direction=BrowserAPI.areIDsEqual(messages[id][j].IDTo,id)?"right":"left";   
-                    if(decryptmsgs[0].messages[j][0])
-                    i.showMessage(base64.decode(decryptmsgs[0].messages[j][0].content[0].content),direction);
+                    if(decryptmsgs[0].messages[j][0]){
+                        messages[id][j].decrypted=base64.decode(decryptmsgs[0].messages[j][0].content[0].content);                        
+                        //var msg=base64.decode(decryptmsgs[0].messages[j][0].content[0].content);
+                        var t=new Date(messages[id][j].nTime * 1000);
+                        i.showMessage(messages[id][j].decrypted,t,direction);
+                    }
                 }
             }    
         },function(){});
@@ -195,16 +202,28 @@ var Messenger = new function() {
 //        var aa=function(a){
 //            MyWallet.notifiedBlock(a);
 //        };
+        console.log("regnotifications");
         var ab=function(a){
             Messenger.notifiedTx(a);
         };
-        var ac=function(){
+        var ac=function(a){
+            console.log("refresh");
             window.location.href=window.location.href;
         }
         //BrowserAPI.regNotifyBlocks(aa);        
         BrowserAPI.regNotifyTxs(ab,[accountID]);
         BrowserAPI.regNotifyAccount(ac);
+        console.log("regnotifications success");
 //        BrowserAPI.regNotifyPeers(this.notifiedPeers);
+    }
+    this.hasMessage=function(msg){
+        if(!messages[msg.IDForeign])
+            return false;
+        for(var j in messages[msg.IDForeign]){
+            if (messages[msg.IDForeign][j].txid==msg.txid&&messages[msg.IDForeign][j].nVout==msg.nVout)
+                return true;
+        }
+            return false;
     }
     this.notifiedTx=function(a){
         console.log("notified tx");
@@ -214,7 +233,7 @@ var Messenger = new function() {
                 msg=data[i];                
                Messenger.addMessage(msg);        
             }
-            if(BrowserAPI.areIDsEqual(msg.From,currentContact)&&BrowserAPI.areIDsEqual(msg.IDTo,accountID)){
+            if(BrowserAPI.areIDsEqual(msg.From,currentContact)&&BrowserAPI.areIDsEqual(msg.IDTo,accountID)&&!i.hasMessage(msg)){
                    i.decryptAndShow(currentContact,data);
            }
         }               
@@ -280,7 +299,8 @@ var Messenger = new function() {
             var msg=$("#send-message-box").val();
             if(currentContact&&msg){                
                 BrowserAPI.sendMessage(accountID,currentContact,msg,function(){
-                    i.showMessage(msg,"right");
+                    i.showMessage(msg,0,"right");
+                    $("#send-message-box").val("");
                 },function(e){
                     i.makeNotice('error', 'send-message-error', e);
            

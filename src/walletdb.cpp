@@ -74,7 +74,7 @@ bool CWalletDB::GetDefaultWallet(std::string& strAddress){
             std::vector<unsigned char> vchId;
             CBitcoinAddress add;
             strAddress=fileName.substr(0,fileName.length()-3);            
-            LogPrintf("walletdb.cpp:GetDefaultWallet5 %s\n",strAddress);
+            //LogPrintf("walletdb.cpp:GetDefaultWallet5 %s\n",strAddress);
             if(!add.SetString(strAddress))
                 continue;
             return true;
@@ -87,13 +87,13 @@ bool CWalletDB::SetCurrentWallet(const CPubKey& id){
     CBitcoinAddress add;
     add.Set(id);
     strCurrentWallet = add.ToString();
-    LogPrintf("walletdb.cpp:setcurrentwallet:%s \n",strCurrentWallet);
+    //LogPrintf("walletdb.cpp:setcurrentwallet:%s \n",strCurrentWallet);
     return true;
 }
 bool CWalletDB::SetCurrentWallet(const std::string& strAddress){
     
     strCurrentWallet = strAddress;
-    LogPrintf("walletdb.cpp:setcurrentwallet:%s \n",strCurrentWallet);
+    //LogPrintf("walletdb.cpp:setcurrentwallet:%s \n",strCurrentWallet);
     return true;
 }
 bool CWalletDB::GetCurrentWallet(CPubKey& id){
@@ -112,9 +112,9 @@ bool CWalletDB::GetCurrentWallet(std::string& strAddress){
 bool CWalletDB::IsCurrentWallet(const CPubKey& id)
 {
     CBitcoinAddress add;
-    LogPrintf("walletdb.cpp:IsCurrentWallet id size%i\n",id.size());
+    //LogPrintf("walletdb.cpp:IsCurrentWallet id size%i\n",id.size());
     add.Set(id);
-    LogPrintf("walletdb.cpp:IsCurrentWallet 2\n");
+    //LogPrintf("walletdb.cpp:IsCurrentWallet 2\n");
     return CompareBase32(CBitcoinAddress(id).ToString(),strCurrentWallet)==0;
 }
 bool CWalletDB::SetDefaultWallet(const CPubKey& id)
@@ -123,7 +123,7 @@ bool CWalletDB::SetDefaultWallet(const CPubKey& id)
     CBitcoinAddress add;
     add.Set(id);
     string strDefaultWallet = add.ToString();
-    LogPrintf("walletdb.cpp:setdefaultwallet id:%s\n",strDefaultWallet);
+    //LogPrintf("walletdb.cpp:setdefaultwallet id:%s\n",strDefaultWallet);
     return SetDefaultWallet(strDefaultWallet);    
 }
 bool CWalletDB::SetDefaultWallet(const std::string& strAddress){
@@ -131,7 +131,7 @@ bool CWalletDB::SetDefaultWallet(const std::string& strAddress){
     valDefaultId=json_spirit::Value(strAddress);
     if (SetWalletConf("defaultId",valDefaultId))
         return true;
-    LogPrintf("walletdb.cpp:setdefaultwallet fail\n");
+    //LogPrintf("walletdb.cpp:setdefaultwallet fail\n");
     return false;
 }
 bool CWalletDB::GetWalletConf(const std::string& strConfName,json_spirit::Value& valConfValue){
@@ -365,7 +365,7 @@ bool CWalletDB::ReadKeyStore(CCryptoKeyStore* keyStore){
     CPubKey id;
     add.GetKey(id);
     keyStore->mapKeys[id]=0;
-     LogPrintf("walletdb.cpp:readkeystore strCurrentWallet:%s \n",strCurrentWallet);
+     //LogPrintf("walletdb.cpp:readkeystore strCurrentWallet:%s \n",strCurrentWallet);
     if (GetIdObj(strCurrentWallet,objId)){        
         
         //base key priv
@@ -390,7 +390,7 @@ bool CWalletDB::ReadKeyStore(CCryptoKeyStore* keyStore){
                 std::string str=valTemp.get_str();
                  
                 if(CBitcoinAddress(str).GetKey(keyStore->baseKey.pubKey))  {
-                    LogPrintf("walletdb.cpp:readkeysotre basepub:%s,size:%i \n",HexStr(keyStore->baseKey.pubKey.begin(),keyStore->baseKey.pubKey.end()),keyStore->baseKey.pubKey.size());
+                    //LogPrintf("walletdb.cpp:readkeysotre basepub:%s,size:%i \n",HexStr(keyStore->baseKey.pubKey.begin(),keyStore->baseKey.pubKey.end()),keyStore->baseKey.pubKey.size());
                     keyStore->fHasPub=true;                    
                 }              
                     
@@ -400,7 +400,7 @@ bool CWalletDB::ReadKeyStore(CCryptoKeyStore* keyStore){
                 //std::vector<unsigned char> vchTmp;
                 std::string str=valTemp.get_str();               
                 if(CBitcoinAddress(str).GetKey(keyStore->stepKey.pubKey)){
-                    LogPrintf("walletdb.cpp:readkeysotre steppub:%s,size:%i \n",HexStr(keyStore->stepKey.pubKey.begin(),keyStore->stepKey.pubKey.end()),keyStore->stepKey.pubKey.size());
+                    //LogPrintf("walletdb.cpp:readkeysotre steppub:%s,size:%i \n",HexStr(keyStore->stepKey.pubKey.begin(),keyStore->stepKey.pubKey.end()),keyStore->stepKey.pubKey.size());
                     keyStore->fHasStepPub=true;                
                 }
         }
@@ -446,9 +446,10 @@ bool CWalletDB::ReadKeyStore(CCryptoKeyStore* keyStore){
             keyStore->encParams=CEncryptParameters();
         //create id map
         
-        LogPrintf("walletdb.cpp:readkeystore:%u \n",keyStore->mapKeys.size());
-        if (keyStore->CanExtendKeys()&&keyStore->nMaxSteps>0){
-            LogPrintf("walletdb.cpp:nmaxsteps:%u \n",keyStore->nMaxSteps);
+        //LogPrintf("walletdb.cpp:readkeystore:%u \n",keyStore->mapKeys.size());
+        if (keyStore->CanExtendKeys()&&keyStore->nMaxSteps>0)
+        {
+            //LogPrintf("walletdb.cpp:nmaxsteps:%u \n",keyStore->nMaxSteps);
             CPubKey extPub=keyStore->baseKey.pubKey;
             extPub.Decompress();
             CPubKey decompressedStepPub=keyStore->stepKey.pubKey;
@@ -468,23 +469,23 @@ bool CWalletDB::ReadKeyStore(CCryptoKeyStore* keyStore){
 bool CWalletDB::WriteKeyStore(CCryptoKeyStore* keyStore){
     json_spirit::Object objId;    
     if(keyStore->fHasPriv)    {
-        LogPrintf("walletdb.cpp:WriteKeyStore basekey:%s,size:%i\n",HexStr(keyStore->baseKey.begin(),keyStore->baseKey.end()),keyStore->baseKey.size());
+        //LogPrintf("walletdb.cpp:WriteKeyStore basekey:%s,size:%i\n",HexStr(keyStore->baseKey.begin(),keyStore->baseKey.end()),keyStore->baseKey.size());
         objId.push_back(Pair("basepriv", json_spirit::Value(CBitcoinSecret(keyStore->baseKey).ToString())));
     }
     
     //LogPrintf("walletdb.cpp:WriteKeyStore%2\n");
     if(keyStore->fHasStepPriv){
-       LogPrintf("walletdb.cpp:WriteKeyStore stepKey:%s,size:%i\n",HexStr(keyStore->stepKey.begin(),keyStore->stepKey.end()),keyStore->stepKey.size());
+       //LogPrintf("walletdb.cpp:WriteKeyStore stepKey:%s,size:%i\n",HexStr(keyStore->stepKey.begin(),keyStore->stepKey.end()),keyStore->stepKey.size());
         objId.push_back(Pair("steppriv", json_spirit::Value(CBitcoinSecret(keyStore->stepKey).ToString())));
     }
     //LogPrintf("walletdb.cpp:WriteKeyStore%3\n");
     
     if(keyStore->fHasPub){
-        LogPrintf("walletdb.cpp:WriteKeyStore basepub:%s,size:%i\n",HexStr(keyStore->baseKey.pubKey.begin(),keyStore->baseKey.pubKey.end()),keyStore->baseKey.pubKey.size());
+        //LogPrintf("walletdb.cpp:WriteKeyStore basepub:%s,size:%i\n",HexStr(keyStore->baseKey.pubKey.begin(),keyStore->baseKey.pubKey.end()),keyStore->baseKey.pubKey.size());
         objId.push_back(Pair("basepub", json_spirit::Value(CBitcoinAddress(keyStore->baseKey.pubKey).ToString())));
     }    
     if(keyStore->fHasStepPub){
-        LogPrintf("walletdb.cpp:WriteKeyStore steppub:%s,size:%i\n",HexStr(keyStore->stepKey.pubKey.begin(),keyStore->stepKey.pubKey.end()),keyStore->stepKey.pubKey.size());
+        //LogPrintf("walletdb.cpp:WriteKeyStore steppub:%s,size:%i\n",HexStr(keyStore->stepKey.pubKey.begin(),keyStore->stepKey.pubKey.end()),keyStore->stepKey.pubKey.size());
         objId.push_back(Pair("steppub", json_spirit::Value(CBitcoinAddress(keyStore->stepKey.pubKey).ToString())));
     }
     //LogPrintf("walletdb.cpp:WriteKeyStore%4\n");
@@ -523,14 +524,14 @@ bool CWalletDB::WriteKeyStore(CCryptoKeyStore* keyStore){
     return WriteJsonToFile(json_spirit::Value(objId),fpFile.string());
 }
 bool CWalletDB::GetIdObj(const std::string& strId,json_spirit::Object& objId){    
-    LogPrintf("walletdb.cpp:strId %s\n",strId);
+    //LogPrintf("walletdb.cpp:strId %s\n",strId);
     std::string strFileName;
     if(!GetWalletName(strId,strFileName))
         return false;
     strFileName.append(".id");   
     json_spirit::Value valId;
     filesystem::path fpFile=fpWalletPath / strFileName;
-    LogPrintf("walletdb.cpp:getIdObj:%b %s\n",filesystem::exists(fpFile),fpFile.string());    
+    //LogPrintf("walletdb.cpp:getIdObj:%b %s\n",filesystem::exists(fpFile),fpFile.string());    
     if(ReadFileToJson(fpFile.string(),valId)){
             if (valId.type()==obj_type){
                 objId = valId.get_obj();

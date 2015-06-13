@@ -43,7 +43,7 @@ bool CCrypter::SetKeyFromPassphrase(const SecureString& strKeyData, const CEncry
     memcpy(&chIV[0], &params.chIV[0], sizeof chIV);    
     ////LogPrintf("SetKeyFromPassphrase strkeydata:%s\n",HexStr(&strKeyData[0],&strKeyData[0]+strKeyData.size()));
     std::string str=HexStr(params.vchSalt.begin(),params.vchSalt.end());
-        LogPrintf("SetKeyFromPassphrase salt %s,length%i\n",str,params.vchSalt.size());
+        //LogPrintf("SetKeyFromPassphrase salt %s,length%i\n",str,params.vchSalt.size());
         //LogPrintf("SetKeyFromPassphrase N: %i,p:%i,r:%i\n",params.N,params.p,params.r);
     if(!scrypt_sp_generic(&strKeyData[0], strKeyData.size(), &params.vchSalt[0], params.vchSalt.size(),params.N,params.r,params.p, &chKey[0], sizeof(chKey)))           
     {
@@ -52,7 +52,7 @@ bool CCrypter::SetKeyFromPassphrase(const SecureString& strKeyData, const CEncry
         OPENSSL_cleanse(chIV, sizeof chIV);
         return false;
     }
-    LogPrintf("SetKeyFromPassphrase2\n");
+    //LogPrintf("SetKeyFromPassphrase2\n");
     fKeySet = true;
     return true;
 }

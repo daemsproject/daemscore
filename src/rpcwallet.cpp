@@ -1361,8 +1361,13 @@ Value listtransactions(const Array& params, bool fHelp)
         else{
             CPubKey id;
             id=AccountFromValue(params[0]);
-            LogPrintf("rpcwallet listtxs new pwallet id:%s \n",HexStr(id.begin(),id.end()));
-            pwallet=new CWallet(id);
+            if(id==pwalletMain->GetID())
+                pwallet=pwalletMain;
+            else
+            {
+                LogPrintf("rpcwallet listtxs new pwallet id:%s \n",HexStr(id.begin(),id.end()));
+                pwallet=new CWallet(id);
+            }
         }
             
     }else{

@@ -69,37 +69,37 @@ const CWalletTx* CWallet::GetWalletTx(const uint256& hash) const
 }
 DBErrors CWallet::LoadWallet(bool& fFirstRunRet,bool fLoadTxs)
 {
-    LogPrintf("wallet.cpp:loadwallet1 \n");
+    //LogPrintf("wallet.cpp:loadwallet \n");
     fFirstRunRet = false;    
     
     CPubKey defaultID;
     if (!pwalletdb->GetDefaultWallet(defaultID)){
        
-        LogPrintf("wallet.cpp:loadwallet2 \n");
+        LogPrintf("wallet.cpp:loadwallet firstrun \n");
         fFirstRunRet =true;        
     }
     else
     {       
-        LogPrintf("wallet.cpp:loadwallet3 \n");
+        //LogPrintf("wallet.cpp:loadwallet3 \n");
         if(!pwalletdb->IsCurrentWallet(id)){
             if(id!=CPubKey())
                 pwalletdb->SetCurrentWallet(id);
             else
                 pwalletdb->SetCurrentWallet(defaultID);        
         }
-        LogPrintf("wallet.cpp:loadwallet4 \n");
+        //LogPrintf("wallet.cpp:loadwallet4 \n");
         LoadKeyStore();
-        LogPrintf("wallet.cpp:loadwallet5 \n");
+        //LogPrintf("wallet.cpp:loadwallet5 \n");
         LoadAddressBook();
-        LogPrintf("wallet.cpp:loadwallet6 \n");
+        //LogPrintf("wallet.cpp:loadwallet6 \n");
         if (fLoadTxs)
             LoadTxs();
-        LogPrintf("wallet.cpp:loadwallet7 \n");
+        //LogPrintf("wallet.cpp:loadwallet7 \n");
         LoadScripts();
         //LogPrintf("wallet.cpp:loadwallet8 \n");        
     }
     uiInterface.LoadWallet(this);
-    LogPrintf("wallet.cpp:loadwallet9 \n");
+    LogPrintf("wallet.cpp:loadwallet done \n");
     return DB_LOAD_OK;        
 }
 
@@ -182,8 +182,9 @@ bool CWallet::SwitchToAccount(CPubKey idIn,bool fSetDefault){
       //  LogPrintf("wallet.cpp:SwitchToAccount 3 \n"); 
             id=idIn;
             ClearPassword();
+            ClearSharedKey();
             bool fFirstRunRet;
-            if (LoadWallet(fFirstRunRet)==DB_LOAD_OK)
+            if (LoadWallet(fFirstRunRet,false)==DB_LOAD_OK)
             {
         //        LogPrintf("wallet.cpp:SwitchToAccount 4 \n"); 
                 if(fSetDefault)
@@ -229,30 +230,35 @@ bool CWallet::GetContactPubKey(const std::string strContact,CPubKey& pubKey)
     return CBitcoinAddress(val.get_str()).GetKey(pubKey);
     
 }
-bool CWallet::GetSharedKeyFromAdb(const std::string strContact,CKey& sharedKey)
-{
-    json_spirit::Object objInfo;
-    if(!pwalletdb->GetContactInfo(strContact,objInfo))
-        return false;
-    json_spirit::Value val;
-    val=find_value(objInfo, "sharedKey");
-    if(val.type()!=json_spirit::str_type)
-        return false;
-    CBitcoinSecret keytmp;
-    keytmp.SetString(val.get_str());
-    sharedKey=keytmp.GetKey();
-    if(fUseCrypto)
-    {
-        CKey tmp=sharedKey;
-        return DecryptKey(tmp,sharedKey);
-    }
-    return true;
-}
-bool CWallet::MakeSharedKey(CPubKey& pub,CKey& sharedKey,CPubKey IDLocal)
+//bool CWallet::GetSharedKeyFromAdb(const std::string strContact,CKey& sharedKey)
+//{
+//    json_spirit::Object objInfo;
+//    if(!pwalletdb->GetContactInfo(strContact,objInfo))
+//        return false;
+//    json_spirit::Value val;
+//    val=find_value(objInfo, "sharedKey");
+//    if(val.type()!=json_spirit::str_type)
+//        return false;
+//    CBitcoinSecret keytmp;
+//    keytmp.SetString(val.get_str());
+//    sharedKey=keytmp.GetKey();
+//    if(fUseCrypto)
+//    {
+//        CKey tmp=sharedKey;
+//        return DecryptKey(tmp,sharedKey);
+//    }
+//    return true;
+//}
+bool CWallet::MakeSharedKey(const CPubKey& IDLocal,const CPubKey& IDForeign,CKey& sharedKey,bool fStore)
 {
     CKey decryptedKey;    
-    CCryptoKeyStore::GetKey(IDLocal, decryptedKey);
-    return decryptedKey.MakeSharedKey(pub,sharedKey);    
+    if(!CCryptoKeyStore::GetKey(IDLocal, decryptedKey))
+        return false;
+    if(!decryptedKey.MakeSharedKey(IDForeign,sharedKey))
+        return false;
+    if(fStore)
+        StoreSharedKey(IDLocal,IDForeign,sharedKey);
+    return true;
 }
 bool CWallet::EncryptMessages(const std::map<string,std::vector<string> >& mapMessagesIn, std::map<string,std::vector<string> >& mapMessagesOut,bool fEncrypt)
 {
@@ -260,10 +266,11 @@ bool CWallet::EncryptMessages(const std::map<string,std::vector<string> >& mapMe
     {
         CPubKey pub;
         CBitcoinAddress(it->first).GetKey(pub);
-         LogPrintf("CWallet::EncryptMessages pub\n");       
+         //LogPrintf("CWallet::EncryptMessages pub\n");       
         CKey sharedKey;        
-        MakeSharedKey(pub,sharedKey,id);
-         LogPrintf("CWallet::EncryptMessages sharedKey:%s\n",HexStr(sharedKey.begin(),sharedKey.end()));       
+        if(!GetSharedKey(id,pub,sharedKey))
+            MakeSharedKey(id,pub,sharedKey,true);
+         //LogPrintf("CWallet::EncryptMessages sharedKey:%s\n",HexStr(sharedKey.begin(),sharedKey.end()));       
         std::vector<string> vMsg=it->second;
         std::vector<string> vMsgOut;
         for(unsigned int i=0;i<vMsg.size();i++){
@@ -278,26 +285,26 @@ bool CWallet::EncryptMessages(const std::map<string,std::vector<string> >& mapMe
                 sharedKey.MakeSimpleSig(vchIV,hash);     
                 
                 copy(hash.begin(),hash.end(),simpleSig.begin());
-                LogPrintf("CWallet::EncryptMessages simplesig:%s\n",HexStr(simpleSig.begin(),simpleSig.end())); 
+                //LogPrintf("CWallet::EncryptMessages simplesig:%s\n",HexStr(simpleSig.begin(),simpleSig.end())); 
                 CCrypter crypter;
                 if (crypter.SetKey(simpleSig,vchIV))
                 {
                     std::vector<unsigned char>  encrypted;
                     CKeyingMaterial origin(strMsg.size());
                     copy(strMsg.begin(),strMsg.end(),origin.begin()); 
-                    LogPrintf("CWallet::EncryptMessages origin:%s\n",HexStr(origin.begin(),origin.end())); 
+                    //LogPrintf("CWallet::EncryptMessages origin:%s\n",HexStr(origin.begin(),origin.end())); 
                     if(crypter.Encrypt(origin, encrypted))
                     {
-                         LogPrintf("CWallet::EncryptMessages encrypted:%s\n",HexStr(encrypted.begin(),encrypted.end())); 
+                         //LogPrintf("CWallet::EncryptMessages encrypted:%s\n",HexStr(encrypted.begin(),encrypted.end())); 
                         CContent ccmsg;
                         std::vector<std::pair<int,string> > vEncoding;
                         string str(vchIV.begin(),vchIV.end());
                         vEncoding.push_back(make_pair(0x140002,str));
                         string str2(encrypted.begin(),encrypted.end());  
                         vEncoding.push_back(make_pair(0x14,str2));
-                        LogPrintf("CWallet::EncryptMessages vstr\n"); 
+                        //LogPrintf("CWallet::EncryptMessages vstr\n"); 
                         ccmsg.EncodeP(0X15,vEncoding);
-                        LogPrintf("CWallet::EncryptMessages ccmsg %s\n",HexStr(ccmsg.begin(),ccmsg.end())); 
+                        //LogPrintf("CWallet::EncryptMessages ccmsg %s\n",HexStr(ccmsg.begin(),ccmsg.end())); 
                         vMsgOut.push_back(ccmsg);
                         continue;
                     }
@@ -351,23 +358,23 @@ bool CWallet::EncryptMessages(const std::map<string,std::vector<string> >& mapMe
                                 }
                                 if(fHasIV&&fHasContent)
                                 {
-                                    LogPrintf("decode message:effective msg found:iv:%s,content:%s\n",HexStr(vchIV.begin(),vchIV.end()),strEncrypted);                            
+                                    //LogPrintf("decode message:effective msg found:iv:%s,content:%s\n",HexStr(vchIV.begin(),vchIV.end()),strEncrypted);                            
                                     CKeyingMaterial simpleSig(32);
                                     uint256 hash;
                                     sharedKey.MakeSimpleSig(vchIV,hash);                             
                                     copy(hash.begin(),hash.end(),simpleSig.begin());
-                                    LogPrintf("CWallet::EncryptMessages simplesig:%s\n",HexStr(simpleSig.begin(),simpleSig.end())); 
+                                    //LogPrintf("CWallet::EncryptMessages simplesig:%s\n",HexStr(simpleSig.begin(),simpleSig.end())); 
                                     CCrypter crypter;
                                     if (crypter.SetKey(simpleSig,vchIV))
                                     {
                                         CKeyingMaterial decrypted;
                                         std::vector<unsigned char> encrypted(strEncrypted.size());
                                         copy(strEncrypted.begin(),strEncrypted.end(),encrypted.begin()); 
-                                        LogPrintf("CWallet::EncryptMessages encrypted:%s\n",HexStr(encrypted.begin(),encrypted.end())); 
+                                        //LogPrintf("CWallet::EncryptMessages encrypted:%s\n",HexStr(encrypted.begin(),encrypted.end())); 
                                         if(crypter.Decrypt(encrypted, decrypted))
                                         {
                                             string strDecrypted(decrypted.begin(),decrypted.end());
-                                            LogPrintf("decode message:decoded msg %s\n",strDecrypted);  
+                                            //LogPrintf("decode message:decoded msg %s\n",strDecrypted);  
                                             vMsgOut.push_back(CContent(strDecrypted));
                                             continue;
                                         }

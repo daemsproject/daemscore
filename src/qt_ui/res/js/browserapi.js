@@ -193,10 +193,10 @@ var BrowserAPI = new function () {
 
     }
 
-    this.regNotifyBlocks = function (blocksfunc) {        notifyblockfunc = blocksfunc;  };
-    this.regNotifyTxs = function (txfunc, ids) {notifytx.func = txfunc;notifytx.ids = ids;};
+    this.regNotifyBlocks = function (blocksfunc) { this.connectSlots();       notifyblockfunc = blocksfunc;  };
+    this.regNotifyTxs = function (txfunc, ids) {this.connectSlots();notifytx.func = txfunc;notifytx.ids = ids;};
     this.regNotifyPeers = function (peerfunc) {}
-    this.regNotifyAccount = function (accountfunc) {        notifyaccountfunc=accountfunc;    }
+    this.regNotifyAccount = function (accountfunc) { this.connectSlots();       notifyaccountfunc=accountfunc;    }
     this.getInfo = function () {return this.icall("getinfo", "")};
     this.getBlockCount = function () {return JSON.stringify(this.icall("getblockcount", ""));};
     this.getContentByLink = function (c) {                return this.icall("getcontentbylink", [c, 6]);    };
