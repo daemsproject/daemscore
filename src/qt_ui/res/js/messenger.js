@@ -141,40 +141,58 @@ var Messenger = new function() {
         else
             html+="<-";
                 html+=msg+'</div>';
-        console.log(html);
+        //console.log(html);
         $('#history-message').append(html);
     }
     this.showMessages=function(id){
         $('#history-message').html(" ");
-        var msgs=[];
-        for(var j in messages[id]){
-            msgs.push(messages[id][j].content);
-        }
-        console.log(msgs);
-        i.decryptAndShow(id,msgs);
+//        var msgs=[];
+//        for(var j in messages[id]){
+//            msgs.push(messages[id][j].content);
+//        }
+//        console.log(msgs);
+        i.decryptAndShow(id,messages[id]);
         
     }    
     this.decryptAndShow=function(id,msgs){
-        BrowserAPI.decryptMessages(accountID,[{idForeign:id,messages:msgs}],function(decryptmsgs){
-            console.log(decryptmsgs);        
+        //console.log(msgs);
+        var msgs2=[];
+        for(var j in msgs){
+            msgs2.push(msgs[j].content);
+        }
+        BrowserAPI.decryptMessages(accountID,[{idForeign:id,messages:msgs2}],function(decryptmsgs){
+            //console.log(decryptmsgs);        
             for(var j=decryptmsgs[0].messages.length-1;j>=0;j--){
                 if(decryptmsgs[0].messages[j]){
-                    console.log(messages[id][j].IDTo);
-                    console.log(id);
-                    console.log(BrowserAPI.areIDsEqual(messages[id][j].IDTo,id));
-                    var direction=BrowserAPI.areIDsEqual(messages[id][j].IDTo,id)?"right":"left";   
+                    //console.log(messages[id][j]);
+                    //console.log(id);
+                    //console.log(BrowserAPI.areIDsEqual(messages[id][j].IDTo,id));
+                    var direction=BrowserAPI.areIDsEqual(msgs[j].IDTo,id)?"right":"left";   
                     if(decryptmsgs[0].messages[j][0]){
-                        messages[id][j].decrypted=base64.decode(decryptmsgs[0].messages[j][0].content[0].content);                        
+                        msgs[j].decrypted=base64.decode(decryptmsgs[0].messages[j][0].content[0].content);                        
+                        i.updateMessage(msgs[j]);
+                        //console.log(msgs[j]);
                         //var msg=base64.decode(decryptmsgs[0].messages[j][0].content[0].content);
-                        var t=new Date(messages[id][j].nTime * 1000);
-                        i.showMessage(messages[id][j].decrypted,t,direction);
+                        var t=new Date(msgs[j].nTime * 1000);
+                        i.showMessage(msgs[j].decrypted,t,direction);
                     }
                 }
             }    
-        },function(){});
+        },function(e){console.log(e)});
+    }
+    this.updateMessage=function(msg){
+        if(msg.IDForeign){
+            for( var j in messages[msg.IDForeign]){
+                var msg2=messages[msg.IDForeign][j];
+                if(msg2.txid==msg.txid&&msg2.nVout==msg.nVout)
+                    msg2.decrypted=msg.decrypted;
+            }
+        }
     }
     this.addMessage=function(msg){         
         msg.IDForeign=BrowserAPI.areIDsEqual(msg.IDFrom,accountID)?msg.IDTo:msg.IDFrom;
+        if(i.hasMessage(msg))
+            return;
         addToContactList({id:msg.IDForeign});
         if(!messages[msg.IDForeign])
             messages[msg.IDForeign]=[];
@@ -225,15 +243,23 @@ var Messenger = new function() {
         }
             return false;
     }
-    this.notifiedTx=function(a){
-        console.log("notified tx");
-        var data=BrowserAPI.getTxMessages(accountID,[a.tx.txid]);        
+    this.notifiedTx=function(x){
+        console.log(x);
+        var data=BrowserAPI.getTxMessages(accountID,[x.tx.txid]);     
+        console.log(data);
         if (data||!data.error){
-            for(var i in data){   
-                msg=data[i];                
+            var msgs=[];
+            for(var j in data){   
+                msg=data[j];                
+                msgs.push(msg);
                Messenger.addMessage(msg);        
             }
-            if(BrowserAPI.areIDsEqual(msg.From,currentContact)&&BrowserAPI.areIDsEqual(msg.IDTo,accountID)&&!i.hasMessage(msg)){
+            //console.log(msg.IDFrom);
+            //console.log(currentContact);
+            //console.log(msg.IDTo);
+            //console.log(accountID);           
+            if(BrowserAPI.areIDsEqual(msg.IDFrom,currentContact)&&BrowserAPI.areIDsEqual(msg.IDTo,accountID)){
+               // console.log(JSON.stringify(data));
                    i.decryptAndShow(currentContact,data);
            }
         }               

@@ -880,13 +880,16 @@ Value gettxmessages(const json_spirit::Array& params, bool fHelp)
 
         LogPrintf("gettxmessages txid:%s \n", arrTxs[i].get_str());
         //vector<unsigned char> vch=;
-        uint256 txid(ParseHex(arrTxs[i].get_str()));
+        uint256 txid;
+        txid.SetHex(arrTxs[i].get_str());
         CTransaction tx;
         uint256 hashBlock;
         int nTime = GetTime();
         int nHeight = -1;
         int nTx = -1;
-        GetTransaction(txid, tx, hashBlock, true);
+        if(!GetTransaction(txid, tx, hashBlock, true))
+            LogPrintf("gettxmessages tx not found \n");
+        LogPrintf("gettxmessages tx:%s \n",tx.ToString());
         BlockMap::iterator mi = mapBlockIndex.find(hashBlock);
         if (mi != mapBlockIndex.end()) {
             const CBlockIndex* pindex = (*mi).second;
@@ -898,7 +901,7 @@ Value gettxmessages(const json_spirit::Array& params, bool fHelp)
         vMessages.empty();
         GetMessagesFromTx(vMessages, tx, nHeight, nTx, nTime, vIDsLocal, vIDsForeign, nDirectionFilter, fLinkOnly, 0, 0, 65536);
         BOOST_FOREACH(CMessage msg, vMessages)
-        arrMsg.push_back(msg.ToJson(fLinkOnly));
+            arrMsg.push_back(msg.ToJson(fLinkOnly));
     }
     LogPrintf("getmessages toJson%i \n", arrMsg.size());
     return Value(arrMsg);
@@ -919,14 +922,14 @@ void GetMessagesFromTx(std::vector<CMessage>& vMessages, const CTransaction& tx,
             if (CContent(txout.strContent).Decode(vContent)) {
                 for (unsigned int j = 0; j < vContent.size(); j++) {
                     if (vContent[j].first == 0x15) {
-                        //LogPrintf("getmessagesFromtx:effective msg found:%s\n",vContent[j].second);
+                        LogPrintf("getmessagesFromtx:effective msg found:%s\n",vContent[j].second);
                         std::vector<std::pair<int, string> > vInnerContent;
                         if (CContent(vContent[j].second).Decode(vInnerContent)) {
 
                             bool hasIV = false;
                             bool hasContent = false;
                             for (unsigned int k = 0; k < vInnerContent.size(); k++) {
-                                //LogPrintf("getmessagesFromtx:effective msg found:%s\n",vInnerContent[k].second);
+                                LogPrintf("getmessagesFromtx:effective msg found:%s\n",vInnerContent[k].second);
                                 if (vInnerContent[k].first == 0x140002)
                                     hasIV = true;
                                 else if (vInnerContent[k].first == 0x14)
@@ -944,33 +947,33 @@ void GetMessagesFromTx(std::vector<CMessage>& vMessages, const CTransaction& tx,
         }
 
     }
-    //LogPrintf("getmessagesFromtx:effective msg:%i\n",vRawMsg.size());
+    LogPrintf("getmessagesFromtx:effective msg:%i\n",vRawMsg.size());
     if (vRawMsg.size() == 0)
         return;
     bool fIncoming = true;
     CTransaction prevTx;
     uint256 tmphash;
-    //LogPrintf("getmessagesFromtx: prevout hash:%s \n",tx.vin[0].prevout.hash.GetHex());
-    //LogPrintf("getmessagesFromtx1\n");
+    LogPrintf("getmessagesFromtx: prevout hash:%s \n",tx.vin[0].prevout.hash.GetHex());
+    LogPrintf("getmessagesFromtx1\n");
     if (!GetTransaction(tx.vin[0].prevout.hash, prevTx, tmphash, true)) {
-        //LogPrintf("getmessagesFromtx: null vin prevout\n");
+        LogPrintf("getmessagesFromtx: null vin prevout\n");
         return;
     }
-    //LogPrintf("getmessagesFromtx2\n");
+    LogPrintf("getmessagesFromtx2\n");
     CScript IDFrom = prevTx.vout[tx.vin[0].prevout.n].scriptPubKey;
-    //LogPrintf("getmessagesFromtx,idfrom:%s\n", IDFrom.ToString());
+    LogPrintf("getmessagesFromtx,idfrom:%s\n", IDFrom.ToString());
     if (find(vIDsLocal.begin(), vIDsLocal.end(), IDFrom) != vIDsLocal.end()) {
         fIncoming = false;
         LogPrintf("getmessagesFromtx:output msg\n");
     } else if (vIDsForeign.size() > 0)
         if (find(vIDsForeign.begin(), vIDsForeign.end(), IDFrom) == vIDsForeign.end())
             return;
-    //LogPrintf("getmessagesFromtx: IDFrom:%s \n",tx.vin[0].prevout.hash.GetHex());
+    LogPrintf("getmessagesFromtx: IDFrom:%s \n",tx.vin[0].prevout.hash.GetHex());
 
-    //LogPrintf("getmessagesFromtx5\n");
+    LogPrintf("getmessagesFromtx5\n");
     if ((nDirectionFilter == OUTPUT_ONLY && fIncoming) || (nDirectionFilter == INCOMING_ONLY && !fIncoming))
         return;
-    //LogPrintf("getmessagesFromtx msg:%i\n", vRawMsg.size());
+    LogPrintf("getmessagesFromtx msg:%i\n", vRawMsg.size());
     uint256 hash = tx.GetHash();
     for (unsigned int i = 0; i < vRawMsg.size(); i++) {
         CScript scriptPubKey = tx.vout[vRawMsg[i].first].scriptPubKey;
@@ -988,7 +991,7 @@ void GetMessagesFromTx(std::vector<CMessage>& vMessages, const CTransaction& tx,
                     msg.nTx = nTx;
                     msg.nTime = nTime;
                     vMessages.push_back(msg);
-                    //LogPrintf("getmessagesFromtx8\n");
+                    LogPrintf("getmessagesFromtx8\n");
                 }
                 nPos++;
             }
@@ -997,7 +1000,7 @@ void GetMessagesFromTx(std::vector<CMessage>& vMessages, const CTransaction& tx,
                 if (find(vIDsForeign.begin(), vIDsForeign.end(), scriptPubKey) == vIDsForeign.end())
                     continue;
             if (nPos >= nOffset && nPos < (nOffset + nCount)) {
-                //LogPrintf("getmessagesFromtx9\n");
+                LogPrintf("getmessagesFromtx9\n");
                 CMessage msg;
                 msg.txid = hash;
                 msg.nVout = i;
@@ -1008,7 +1011,7 @@ void GetMessagesFromTx(std::vector<CMessage>& vMessages, const CTransaction& tx,
                 msg.nTx = nTx;
                 msg.nTime = nTime;
                 vMessages.push_back(msg);
-                //LogPrintf("getmessagesFromtx10\n");
+                LogPrintf("getmessagesFromtx10\n");
             }
             nPos++;
         }
