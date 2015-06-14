@@ -418,6 +418,47 @@ QString WalletModel::HandlePaymentRequest(const Array arrData)
     return QString().fromStdString(result);
 }
 
+QString WalletModel::HandlePaymentRequest2(const Array arrData)
+{
+    std::vector<unsigned char> raw = ParseHexV(arrData[2], "parameter 3");
+    CContent ctt(raw);
+    PaymentRequest pr = GetPublisherPaymentRequest(arrData[0].get_str(), arrData[1].get_str(), ctt);
+    CWalletTx tx;
+    string strError;
+    CPubKey id;
+    CBitcoinAddress pub;
+    pub.SetString(arrData[1].get_str());
+    pub.GetKey(id);
+    CWallet* pwallet;
+    if (id == wallet->GetID())
+        pwallet = wallet;
+    else
+        pwallet = new CWallet(id);
+    int nOP = 0; //0::unencrypted,1::encrypted,2::offline
+    if (!pwallet->HavePriv())
+        nOP = 2;
+    else if (pwallet->IsLocked())
+        nOP = 1;
+    bool fDelete = (pwallet != wallet);
+    if (!pwallet->CreateTransactionUnsigned(pr, tx, strError)) {
+        if (fDelete)
+            delete pwallet;
+        return QString().fromStdString("{\"error\":\"" + strError + "\"}");
+    }
+    SecureString ssInput;
+    QString alert = getPaymentAlertMessage(tx);
+    QString title = QString(tr("Request Payment"));
+    if (!gui->handleUserConfirm(title, alert, nOP, strError, ssInput)) {
+        if (fDelete)
+            delete pwallet;
+        return QString().fromStdString("{\"error\":\"" + strError + "\"}");
+    }
+    std::string result;
+    CWalletTx wtxSigned;
+    SignAndSendTx(pwallet, tx, pr.nSigType, nOP, ssInput, fDelete, wtxSigned, result);
+    return QString().fromStdString(result);
+}
+
 QString WalletModel::getPaymentAlertMessage(CWalletTx tx)
 {
     

@@ -547,3 +547,48 @@ PaymentRequest MessageRequestToPaymentRequest(const std::string idLocal,const st
     return pr;
     //valtmp=find_value(obj, "vins");
 }
+
+PaymentRequest GetPublisherPaymentRequest(const std::string idLocal, const std::string idTarget, const CContent& ctt)
+{
+    PaymentRequest pr;
+    pr.fIsValid = false;
+    std::string strError;
+    CScript scriptPubKey;
+    if (!StringToScriptPubKey(idLocal, scriptPubKey)) {
+        strError = "id is not valid fromat";
+        throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+    }
+    LogPrintf("rpcmist MessageRequestToPaymentRequest script %s\n", scriptPubKey.ToString());
+    pr.vFrom.push_back(scriptPubKey);
+
+    if (idTarget == "")
+        scriptPubKey = CScript();
+    else {
+        CBitcoinAddress address = CBitcoinAddress(idTarget);
+        if (address.IsValid())
+            scriptPubKey = GetScriptForDestination(address.Get());
+        else {
+            strError = "out id is not valid format";
+            throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+        }
+    }
+    LogPrintf("rpcmist MessageRequestToPaymentRequest vout scriptpubkey:%s\n", scriptPubKey.ToString());
+    CAmount amount = 0;
+    pr.vout.push_back(CTxOut(amount, scriptPubKey, ctt));
+    pr.fIsValid = true;
+    return pr;
+}
+
+//Value createsimplepr(const json_spirit::Array& params, bool fHelp)
+//{
+//    if (fHelp || params.size() < 1 || params.size() > 3)
+//        throw runtime_error("Wrong number of parameters");
+//    Object r;
+//    std::string frIds = params[0].get_str();
+//    std::string toIds = params[1].get_str();
+//    std::vector<unsigned char> raw  = ParseHexV(params[2], "parameter 3");
+//    CContent ctt(raw);
+//    PaymentRequest pr = GetPublisherPaymentRequest(frIds, toIds, ctt);
+//    r.push_back(Pair("paymentRequest", EncodeHexTx(pr)));
+//    return r;
+//}

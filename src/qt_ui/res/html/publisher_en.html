@@ -10,6 +10,7 @@
         <link rel="stylesheet" href="../css/br-overrides.css" type="text/css">
         <link rel="stylesheet" href="../css/pb-overrides.css" type="text/css">
 
+        <script type="text/javascript" src="../js/base64.js"></script>
         <script type="text/javascript" src="../js/browserapi.js"></script>
         <script type="text/javascript" src="../js/browser.js"></script>
         <script type="text/javascript" src="../js/publisher.js"></script>
@@ -27,7 +28,7 @@
             <div class="maininput">
                 <h1>Type some here or drag and drop a file</h1>
                 <form>
-                    <textarea class="maintext"></textarea>
+                    <textarea id="theText" class="maintext"></textarea>
                 </form>
                 <input type="file" id="theFile" style="display:none" multiple/>
                 <div id="fileholder" align="center">

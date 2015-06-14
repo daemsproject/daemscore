@@ -155,6 +155,8 @@ QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
             arrData=valData.get_array();
             if (command.toStdString()==string("requestpayment"))
                 return walletModel->HandlePaymentRequest(arrData);
+            if (command.toStdString()==string("requestpayment2"))
+                return walletModel->HandlePaymentRequest2(arrData);
             if (command.toStdString()==string("encryptmessages"))
                 return walletModel->EncryptMessages(arrData);
             if (command.toStdString()==string("sendmessage"))

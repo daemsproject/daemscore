@@ -128,9 +128,9 @@ var BrowserAPI = new function () {
         }
         if (jsreply.error) {
             if (jsreply.error.message)
-                console.log("icall error:" + cmd + jsreply.error.message);
+                console.log("icall error:" + cmd + " " + jsreply.error.message);
             else
-                console.log("icall error:" + cmd + jsreply.error);
+                console.log("icall error:" + cmd + " " + jsreply.error);
             return false;
         }
         return jsreply;
@@ -178,6 +178,21 @@ var BrowserAPI = new function () {
         this.call("requestpayment", data, success, error, false);
 
     }
+   
+    this.createTxByContent = function (ctt) {
+        var accountID = BrowserAPI.getAccountID();
+        var IDs = BrowserAPI.getIDs(accountID);
+        var pr = this.icall("createsimplepr",[ctt.poster,"",ctt.hex]);
+        console.log(pr.paymentRequest);
+        this.call("requestpayment2",[ctt.poster,"",ctt.hex],function(r){
+            console.log('r');
+            console.log(r);
+        },function(e){
+            console.log('e');
+            console.log(e);
+        },false);
+        console.log(pr);
+    };
     this.get_history = function (id, success, error, offset, number) {
         var data = [];
         data[0] = id;
@@ -198,7 +213,7 @@ var BrowserAPI = new function () {
     this.regNotifyPeers = function (peerfunc) {}
     this.regNotifyAccount = function (accountfunc) { this.connectSlots();       notifyaccountfunc=accountfunc;    }
     this.getInfo = function () {return this.icall("getinfo", "")};
-    this.getBlockCount = function () {return JSON.stringify(this.icall("getblockcount", ""));};
+    this.getBlockCount = function () {return JSON.stringify(this.icall("getblockcount", []));};
     this.getContentByLink = function (c) {                return this.icall("getcontentbylink", [c, 6]);    };
     this.setFollow = function (a)  {        return this.icall("setfollow",[[a]]);    };
 
@@ -286,16 +301,6 @@ var BrowserAPI = new function () {
     this.read_contacts = function (id) {return this.icall("readcontacts", [id]);};
     this.add_contacts = function (id, contacts) {return this.icall("addcontacts", [id, contact])}
     
-    this.createTxByContent = function (hexctt) {
-        var accountID = BrowserAPI.getAccountID();
-        var IDs = BrowserAPI.getIDs(accountID);
-        console.log(IDs);
-        BrowserAPI.requestPayment(IDs, "", 0, hexctt, function () {
-            console.log("success");
-        }, function (e) {
-            console.log(e);
-        });
-    };
 
 
 

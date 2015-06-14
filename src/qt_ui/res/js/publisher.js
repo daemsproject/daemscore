@@ -20,26 +20,27 @@ var CPublisher = new function () {
                         console.log(rctt);
 
                         var ctthex = BrowserAPI.createContentC(rctt.type, rctt);
-                        var start = new Date().getTime();
-                        console.log(start);
+//                        var start = new Date().getTime();
+//                        console.log(start);
                         console.log(ctthex.hex.substr(0, 20) + "...(" + ctthex.hex.length / 2 + " bytes)");
-                        var end = new Date().getTime();
-                        console.log(end);
+//                        var end = new Date().getTime();
+//                        console.log(end);
                         var ctt = BrowserAPI.getContentByString(ctthex.hex);
-                        ctt.poster = [BrowserAPI.getAccountID()];
-                        CPublisher.handleContent(ctt, ctthex.hex);
+                        ctt.poster = BrowserAPI.getAccountID();
+                        ctt.hex = ctthex.hex;
+                        CPublisher.handleContent(ctt);
                     };
                 })(f);
             }
         }
     };
-    this.handleContent = function (ctt, hexctt) {
+    this.handleContent = function (ctt) {
         ctt.link = "";
         console.log(ctt);
         if (!CBrowser.addContent(ctt, CONTENT_TYPE_MINE, false))
             return false;
         $("#confirmpub").removeAttr('disabled');
-        var rawtx = BrowserAPI.createTxByContent(hexctt);
+        var rawtx = BrowserAPI.createTxByContent(ctt);
         console.log(rawtx);
     };
     this.handleDragOver = function (evt) {
@@ -85,6 +86,9 @@ $(document).ready(function () {
     $(".id").find("a.text").click(function () {
         CBrowser.toggleFullId($(this).parent());
     });
+    $("#theText").bind('input propertychange', function() {
+        $("#confirmpub").removeAttr('disabled');
+    })
 });
 
 

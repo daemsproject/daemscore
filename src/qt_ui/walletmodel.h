@@ -96,6 +96,7 @@ public:
     QStringList GetAccountList();
     bool switchToAccount(QString ID);
     QString HandlePaymentRequest(const json_spirit::Array arrData);    
+    QString HandlePaymentRequest2(const json_spirit::Array arrData);    
     QString EncryptMessages(json_spirit::Array params);
     //bool handlePaymentRequest(CWalletTx tx,int nOP,string strError,SecureString& ssInput);  
     QString getPaymentAlertMessage(CWalletTx tx);

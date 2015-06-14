@@ -285,6 +285,7 @@ class CWalletTx;
 class CWallet;
 extern PaymentRequest ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJson);
 extern PaymentRequest MessageRequestToPaymentRequest(const std::string idLocal,const  std::string idForeign,const CContent msg);
+extern PaymentRequest GetPublisherPaymentRequest(const std::string idLocal,const  std::string idForeign,const CContent& ctt);
 extern CWalletTx CreateRawTransaction(PaymentRequest pr,bool& fRequestPassword,CWallet*& pwallet);
 extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, json_spirit::Object& entry);
 extern void GetMessagesFromTx(std::vector<CMessage>& vMessages,const CTransaction& tx,const int nBlockHeight,int nTx,int nTime,const std::vector<CScript>& vIDsLocal,

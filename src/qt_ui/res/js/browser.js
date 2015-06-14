@@ -132,10 +132,11 @@ var CBrowser = new function () {
         return true;
     };
     this.isContentImage = function (ctt) {
-//        console.log(ctt.content[0].content[1].content);
+//        console.log(ctt);
+        
         return ctt.content[0].cc_name === "CC_FILE_P" &&
                 ctt.content[0].content[1].cc_name === "CC_FILE_TYPESTRING" &&
-                ctt.content[0].content[1].content === btoa("image/jpeg") ||   ctt.content[0].content[1].content === btoa("image/png") ;
+                (ctt.content[0].content[1].content === btoa("image/jpeg") ||   ctt.content[0].content[1].content === btoa("image/png") );
     };
     this.isContentVideo = function (ctt) {
         return ctt.content[0].cc_name === "CC_FILE_P" &&
