@@ -1087,20 +1087,20 @@ bool CContent::WriteCompactSize(u_int64_t n)
         std::string tmp;
         tmp += n & 0xFF;
         tmp += (n >> 8) & 0xFF;
-        tmp += (n >> 8) & 0xFF;
-        tmp += (n >> 8) & 0xFF;
+        tmp += (n >> 16) & 0xFF;
+        tmp += (n >> 24) & 0xFF;
         os << (char) 254 << tmp;
         WriteData(os.str());
     } else {
         std::string tmp;
         tmp += n & 0xFF;
         tmp += (n >> 8) & 0xFF;
-        tmp += (n >> 8) & 0xFF;
-        tmp += (n >> 8) & 0xFF;
-        tmp += (n >> 8) & 0xFF;
-        tmp += (n >> 8) & 0xFF;
-        tmp += (n >> 8) & 0xFF;
-        tmp += (n >> 8) & 0xFF;
+        tmp += (n >> 16) & 0xFF;
+        tmp += (n >> 24) & 0xFF;
+        tmp += (n >> 32) & 0xFF;
+        tmp += (n >> 40) & 0xFF;
+        tmp += (n >> 48) & 0xFF;
+        tmp += (n >> 56) & 0xFF;
         os << (char) 255 << tmp;
         WriteData(os.str());
     }

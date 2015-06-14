@@ -91,6 +91,7 @@ var CBrowser = new function () {
         return id.substr(0, 10) + "...";
     };
     this.addContent = function (ctt, fType, fPos) {
+        console.log(ctt);
         fPos = typeof fPos !== 'undefined' ? fPos : true;
         fType = typeof fType !== 'undefined' ? fType : CONTENT_TYPE_FEED;
 //        console.log('m1');

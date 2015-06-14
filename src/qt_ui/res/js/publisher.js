@@ -26,7 +26,7 @@ var CPublisher = new function () {
 //                        var end = new Date().getTime();
 //                        console.log(end);
                         var ctt = BrowserAPI.getContentByString(ctthex.hex);
-                        ctt.poster = BrowserAPI.getAccountID();
+                        ctt.poster = [BrowserAPI.getAccountID()];
                         ctt.hex = ctthex.hex;
                         CPublisher.handleContent(ctt);
                     };

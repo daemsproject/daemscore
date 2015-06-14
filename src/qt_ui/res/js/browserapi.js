@@ -42,7 +42,7 @@ var BrowserAPI = new function () {
         //document.getElementById('testdiv').innerHTML = a;        
     }
     this.notify = function (notifyjson) {
-        console.log("notify:" + notifyjson);
+//        console.log("notify:" + notifyjson);
         var data = $.parseJSON(notifyjson);
         var cmd;
         if (!data | !data.type)
@@ -182,9 +182,10 @@ var BrowserAPI = new function () {
     this.createTxByContent = function (ctt) {
         var accountID = BrowserAPI.getAccountID();
         var IDs = BrowserAPI.getIDs(accountID);
-        var pr = this.icall("createsimplepr",[ctt.poster,"",ctt.hex]);
-        console.log(pr.paymentRequest);
-        this.call("requestpayment2",[ctt.poster,"",ctt.hex],function(r){
+//        var pr = this.icall("createsimplepr",[ctt.poster[0],"",ctt.hex]);
+//        console.log(pr.paymentRequest);  
+//        console.log(ctthex.hex.substr(0, 20) + "...(" + ctthex.hex.length / 2 + " bytes)");
+        this.call("requestpayment2",[ctt.poster[0],"",ctt.hex],function(r){
             console.log('r');
             console.log(r);
         },function(e){
@@ -343,6 +344,10 @@ var BrowserAPI = new function () {
                 var u1 = this.icall("encodecontentunit", ["CC_FILE_NAME", "t", 2]);
                 var u2 = this.icall("encodecontentunit", ["CC_FILE_TYPESTRING", t, 1]);
                 var u3 = this.icall("encodecontentunit", ["CC_FILE", c.data, 2]);
+                console.log(u1.hex.length);
+                console.log(u2.hex.length);
+                console.log(u3.hex.length);
+                console.log(c.data.length);
                 var s = u1.hex + u2.hex + u3.hex;
                 var r = this.icall("encodecontentunit", ["CC_FILE_P", s, 0]);
                 break;
