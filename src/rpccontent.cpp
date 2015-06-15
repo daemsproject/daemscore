@@ -597,13 +597,15 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
     bool fAsc;
     if (!_parse_getcontents_params(params, fbh, maxc, maxb, blkc, withcc, withoutcc, firstcc, cformat, cflag, minsz, gAddrs, fAsc))
         throw runtime_error("Error parsing parameters");
+    // DONOT delete the next line
+//    std::cout << "fbh " << fbh << ",maxc " << maxc << ",maxb " << maxb << ",blkc " << blkc << ",cformat " << cformat << ",cflag " << cflag << ",minsz " << minsz << ",fAsc " << fAsc << "\n";
     Array r;
     int c = 0;
     int b = 0;
+    int nHeight = fAsc ? fbh : std::min(chainActive.Height(), fbh + blkc);
+    int totalM = chainActive.Height() - fbh + 1;
+    int total = totalM > blkc ? blkc : totalM;
     if (gAddrs.size() == 0) {
-        int nHeight = fAsc ? fbh : std::min(chainActive.Height(), fbh + blkc);
-        int totalM = chainActive.Height() - fbh + 1;
-        int total = totalM > blkc ? blkc : totalM;
         for (int i = 0; i < total; i++) {
             CBlockIndex* pblockindex;
             CBlock block;
@@ -668,7 +670,7 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
                     if (c >= maxc)
                         return r;
                     CBlockIndex* pindex = (*mi).second;
-                    if (pindex->nHeight > fbh) {
+                    if ((fAsc ? pindex->nHeight >= fbh : pindex->nHeight <= fbh) && std::abs(pindex->nHeight - fbh) <= total) { // make sure the tx is in block range
                         int nTx = GetNTx(it->first.GetHash()); // Very inefficient
                         CLink clink(pindex->nHeight, nTx, i);
                         CContent ctt;
@@ -887,9 +889,9 @@ Value gettxmessages(const json_spirit::Array& params, bool fHelp)
         int nTime = GetTime();
         int nHeight = -1;
         int nTx = -1;
-        if(!GetTransaction(txid, tx, hashBlock, true))
+        if (!GetTransaction(txid, tx, hashBlock, true))
             LogPrintf("gettxmessages tx not found \n");
-        LogPrintf("gettxmessages tx:%s \n",tx.ToString());
+        LogPrintf("gettxmessages tx:%s \n", tx.ToString());
         BlockMap::iterator mi = mapBlockIndex.find(hashBlock);
         if (mi != mapBlockIndex.end()) {
             const CBlockIndex* pindex = (*mi).second;
@@ -901,7 +903,7 @@ Value gettxmessages(const json_spirit::Array& params, bool fHelp)
         vMessages.empty();
         GetMessagesFromTx(vMessages, tx, nHeight, nTx, nTime, vIDsLocal, vIDsForeign, nDirectionFilter, fLinkOnly, 0, 0, 65536);
         BOOST_FOREACH(CMessage msg, vMessages)
-            arrMsg.push_back(msg.ToJson(fLinkOnly));
+        arrMsg.push_back(msg.ToJson(fLinkOnly));
     }
     LogPrintf("getmessages toJson%i \n", arrMsg.size());
     return Value(arrMsg);
@@ -922,14 +924,14 @@ void GetMessagesFromTx(std::vector<CMessage>& vMessages, const CTransaction& tx,
             if (CContent(txout.strContent).Decode(vContent)) {
                 for (unsigned int j = 0; j < vContent.size(); j++) {
                     if (vContent[j].first == 0x15) {
-                        LogPrintf("getmessagesFromtx:effective msg found:%s\n",vContent[j].second);
+                        LogPrintf("getmessagesFromtx:effective msg found:%s\n", vContent[j].second);
                         std::vector<std::pair<int, string> > vInnerContent;
                         if (CContent(vContent[j].second).Decode(vInnerContent)) {
 
                             bool hasIV = false;
                             bool hasContent = false;
                             for (unsigned int k = 0; k < vInnerContent.size(); k++) {
-                                LogPrintf("getmessagesFromtx:effective msg found:%s\n",vInnerContent[k].second);
+                                LogPrintf("getmessagesFromtx:effective msg found:%s\n", vInnerContent[k].second);
                                 if (vInnerContent[k].first == 0x140002)
                                     hasIV = true;
                                 else if (vInnerContent[k].first == 0x14)
@@ -947,13 +949,13 @@ void GetMessagesFromTx(std::vector<CMessage>& vMessages, const CTransaction& tx,
         }
 
     }
-    LogPrintf("getmessagesFromtx:effective msg:%i\n",vRawMsg.size());
+    LogPrintf("getmessagesFromtx:effective msg:%i\n", vRawMsg.size());
     if (vRawMsg.size() == 0)
         return;
     bool fIncoming = true;
     CTransaction prevTx;
     uint256 tmphash;
-    LogPrintf("getmessagesFromtx: prevout hash:%s \n",tx.vin[0].prevout.hash.GetHex());
+    LogPrintf("getmessagesFromtx: prevout hash:%s \n", tx.vin[0].prevout.hash.GetHex());
     LogPrintf("getmessagesFromtx1\n");
     if (!GetTransaction(tx.vin[0].prevout.hash, prevTx, tmphash, true)) {
         LogPrintf("getmessagesFromtx: null vin prevout\n");
@@ -968,7 +970,7 @@ void GetMessagesFromTx(std::vector<CMessage>& vMessages, const CTransaction& tx,
     } else if (vIDsForeign.size() > 0)
         if (find(vIDsForeign.begin(), vIDsForeign.end(), IDFrom) == vIDsForeign.end())
             return;
-    LogPrintf("getmessagesFromtx: IDFrom:%s \n",tx.vin[0].prevout.hash.GetHex());
+    LogPrintf("getmessagesFromtx: IDFrom:%s \n", tx.vin[0].prevout.hash.GetHex());
 
     LogPrintf("getmessagesFromtx5\n");
     if ((nDirectionFilter == OUTPUT_ONLY && fIncoming) || (nDirectionFilter == INCOMING_ONLY && !fIncoming))

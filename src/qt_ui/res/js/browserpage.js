@@ -1,6 +1,7 @@
+var newDisp = []; // array to host block range shown on new page
+var fllDisp = []; // follow page
+var mypDisp = []; // mypage
 
-var blkDisp;
-var fllDisp;
 $(document).ready(function () {
 
     CBrowser.newAction();
@@ -14,41 +15,21 @@ $(document).ready(function () {
     $(".tabbar").children("li").children("a").click(function () {
         CBrowser.switchTab($(this).attr("id"));
     });
-    $(".id").find("a.text").click(function () {
-        CBrowser.toggleFullId($(this).parent());
-    });
-    $(".id-follow-btn").click(function () {
-        var id = $(this).parent().parent().find(".text").attr("fullid");
-        var feedback = BrowserAPI.setFollow(id);
-        for (k in feedback) {
-            if (feedback[k] == id) {
-                CBrowser.showNotice("Successful");
-                return;
-            }
-        }
-        CBrowser.showNotice("Failed");
-        console.log(feedback);
-    });
-    $(".id-share-btn").click(function () {
-        alert("To Do");
-    });
-    $(".brctt").find("a.shrt").click(function () {
-        CBrowser.toggleCmt($(this).parent());
-    });
-    $(".ctt").click(function () {
-        CBrowser.showFullImg($(this));
+    $(".linkspan").click(function () {
+        copyToClipboard($(this).find("a").html());
     });
     $(".ctt-link-btn").click(function () {
-        CBrowser.toggleLink($(this));
+        var link = $(this).parent().parent().find(".linkspan").attr("clink");
+        copyToClipboard(link);
     });
-
-
     $("#fullImage").click(function () {
         $(this).html("");
     });
-    $("#test-btn").click(function () {
-        console.log(BrowserAPI.getFollowed());
-    });
+//    $("#test-btn").click(function () {
+//        var addrs = [BrowserAPI.getAccountID()];
+//        var bh = 4231;
+//        console.log(BrowserAPI.getContents(bh, 10, false, addrs));
+//    });
     $(window).scroll(function () {
         if ($(window).scrollTop() + $(window).height() == $(document).height()) {
             CBrowser.bottomAction();

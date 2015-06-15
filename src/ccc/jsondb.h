@@ -41,6 +41,7 @@ public:
     bool isFollowed(const std::string& addrStr);
     bool getFollowed(std::vector<CBitcoinAddress>& followList);
     bool setFollow(const CBitcoinAddress& addr);
+    bool setUnfollow(const CBitcoinAddress& addr);
 };
 
 #endif	// CCC_BROWSERDB_H 

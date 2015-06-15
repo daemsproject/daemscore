@@ -75,11 +75,6 @@ var BrowserAPI = new function () {
         console.log(cmd);
         eval(cmd);
     }
-//    function test() {    
-//        document.getElementById('testdiv').innerHTML = jsinterface.str;        
-//        this.connectSlots();
-//        jsinterface.test();
-//    }
     this.call = function (cmd, datajson, successfunc, errorfunc, async) {
         this.connectSlots();
         if (async) {
@@ -178,7 +173,7 @@ var BrowserAPI = new function () {
         this.call("requestpayment", data, success, error, false);
 
     }
-   
+
     this.createTxByContent = function (ctt) {
         var accountID = BrowserAPI.getAccountID();
         var IDs = BrowserAPI.getIDs(accountID);
@@ -191,8 +186,7 @@ var BrowserAPI = new function () {
         },function(e){
             console.log('e');
             console.log(e);
-        },false);
-        console.log(pr);
+        }, false);
     };
     this.get_history = function (id, success, error, offset, number) {
         var data = [];
@@ -207,7 +201,7 @@ var BrowserAPI = new function () {
                 error(e);
         });
 
-    }
+    };
 
     this.regNotifyBlocks = function (blocksfunc) { this.connectSlots();       notifyblockfunc = blocksfunc;  };
     this.regNotifyTxs = function (txfunc, ids) {this.connectSlots();notifytx.func = txfunc;notifytx.ids = ids;};
@@ -217,7 +211,7 @@ var BrowserAPI = new function () {
     this.getBlockCount = function () {return JSON.stringify(this.icall("getblockcount", []));};
     this.getContentByLink = function (c) {                return this.icall("getcontentbylink", [c, 6]);    };
     this.setFollow = function (a)  {        return this.icall("setfollow",[[a]]);    };
-
+    this.setUnfollow = function (a) {        return this.icall("setunfollow", [[a]]);    };
     this.getFollowed = function () {        return this.icall("getfollowed",[]);    };
 
     this.getContents = function (fbh, blkc, fAsc, addrs) {
@@ -272,7 +266,7 @@ var BrowserAPI = new function () {
             return false;
         }
         //never collects message to idslocal itself        
-        if (Object.prototype.toString.call(idsLocal) != '[object Array]')            
+        if (Object.prototype.toString.call(idsLocal) != '[object Array]')
             idsLocal=[idsLocal];         
         var a= this.icall("gettxmessages", [idsLocal,txs]);
         if(a.error){
@@ -280,7 +274,7 @@ var BrowserAPI = new function () {
                 if (a.error.message)   error(a.error.message)
                 else                    error(a.error);
             return false;
-            }
+        }
         if(success) success(a);
         return a;
     }
@@ -301,7 +295,7 @@ var BrowserAPI = new function () {
     }
     this.read_contacts = function (id) {return this.icall("readcontacts", [id]);};
     this.add_contacts = function (id, contacts) {return this.icall("addcontacts", [id, contact])}
-    
+
 
 
 
@@ -325,10 +319,10 @@ var BrowserAPI = new function () {
     this.decryptMessages = function (idLocal,msgArr,success,error) {return this.call("encryptmessages", [idLocal,msgArr,false],success,error);    }
     this.areIDsEqual=function(id1,id2){return this.icall("comparebase32",[id1,id2])==0};
     this.createTextContent=function(text,format){
-         var u1 = this.icall("encodecontentunit", ["CC_TEXT", text, 2]);
-         var u2 = this.icall("encodecontentunit", ["CC_TEXT_ENCODING_UTF8", "", 2]);
-         var s = u1.hex + u2.hex;
-         return this.icall("encodecontentunit", ["CC_TEXT_P", s, 0]);                
+        var u1 = this.icall("encodecontentunit", ["CC_TEXT", text, 2]);
+        var u2 = this.icall("encodecontentunit", ["CC_TEXT_ENCODING_UTF8", "", 2]);
+        var s = u1.hex + u2.hex;
+        return this.icall("encodecontentunit", ["CC_TEXT_P", s, 0]);
     }
     this.createContentC = function (t, c) {
         console.log("t " + t);
@@ -355,6 +349,13 @@ var BrowserAPI = new function () {
         console.log(u1);
         console.log(u2);
         console.log(r);
+        return r;
+    };
+    this.createTextContent = function (t) {
+        var u1 = this.icall("encodecontentunit", ["CC_TEXT", t, 1]);
+        var u2 = this.icall("encodecontentunit", ["CC_TEXT_ENCODING_UTF8", "", 2]);
+        var s = u1.hex + u2.hex;
+        var r = this.icall("encodecontentunit", ["CC_TEXT_P", s, 0]);
         return r;
     };
 };

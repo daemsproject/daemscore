@@ -248,6 +248,7 @@ extern json_spirit::Value getmessages(const json_spirit::Array& params, bool fHe
 extern json_spirit::Value getbrowserconf(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getfollowed(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value setfollow(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value setunfollow(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value encodebase32(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value decodebase32(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value encodebase32check(const json_spirit::Array& params, bool fHelp);

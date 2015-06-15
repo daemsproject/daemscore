@@ -57,6 +57,16 @@ bool CBrowserFollow::setFollow(const CBitcoinAddress& addr)
     return true;
 }
 
+bool CBrowserFollow::setUnfollow(const CBitcoinAddress& addr)
+{
+    for (json_spirit::Array::iterator it = value.get_array().begin(); it <= value.get_array().end(); it++) {
+        if ((*it).get_str() == addr.ToString()) {
+            value.get_array().erase(it);
+        }
+    }
+    return save();
+}
+
 bool CBrowserFollow::isFollowed(const CBitcoinAddress& addr)
 {
     return isFollowed(addr.ToString());

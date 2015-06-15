@@ -4,17 +4,23 @@ var CONTENT_TYPE_MINE = 2;
 
 var CBrowser = new function () {
     var CBrowser = this;
+    this.getShortPId = function (fullId) {
+        return fullId.substr(0, 10) + "..." + fullId.substr(fullId.length - 2);
+    };
+    this.getLongPId = function (fullId) {
+        return fullId.substr(0, 25) + "..." + fullId.substr(fullId.length - 2);
+    };
     this.showFullId = function (div, fullId) {
-        div.find("a.text").html(fullId.substring(0, 25) + "...");
+        div.find("a.text").html(this.getLongPId(fullId));
         div.find("li").find("a").css('display', 'inline-block');
     };
     this.hideFullId = function (div, fullId) {
-        div.find("a.text").html(fullId.substring(0, 10) + "...");
+        div.find("a.text").html(this.getShortPId(fullId));
         div.find("li").find("a").hide();
     };
     this.toggleFullId = function (div) {
         var fullId = div.find("a.text").attr("fullid");
-        if (fullId.substring(0, 25) + "..." === div.find("a.text").html())
+        if (this.getLongPId(fullId) === div.find("a.text").html())
             this.hideFullId(div, fullId);
         else
             this.showFullId(div, fullId);
@@ -65,6 +71,7 @@ var CBrowser = new function () {
     this.toggleCmt = function (div) {
         var s = div.find("a.shrt").hasClass("short");
         if (s) {
+            div.find("li.linkspan").html(this.getLinkA(div.find("li.linkspan").attr("clink")));
             div.find("li").find("a").show();
             div.find("a.shrt").removeClass("short");
 
@@ -79,25 +86,18 @@ var CBrowser = new function () {
             $("#fullImage").find("img").removeClass("brimg");
         }
     };
-    this.toggleLink = function (div) {
-        var cl = div.parent().parent().find(".linkspan");
-        if (cl.html() === "")
-            cl.html(cl.attr("clink"));
-        else
-            cl.html("");
-    };
-
-    this.shortenId = function (id) {
-        return id.substr(0, 10) + "...";
+    this.getLinkA = function (l) {
+        var ldiv = $("#linka").clone(true, true);
+        ldiv.find("a").html(l).show();
+        console.log(ldiv.html());
+        return ldiv.html();
     };
     this.addContent = function (ctt, fType, fPos) {
-        console.log(ctt);
+//        console.log(ctt);
         fPos = typeof fPos !== 'undefined' ? fPos : true;
         fType = typeof fType !== 'undefined' ? fType : CONTENT_TYPE_FEED;
-//        console.log('m1');
         if (ctt.content[0].content === "non-standard")
             return;
-//          console.log('m2');
         var sdiv
         switch (fType) {
             case CONTENT_TYPE_FEED:
@@ -108,10 +108,9 @@ var CBrowser = new function () {
                 sdiv = $("#followstd").clone(true, true);
                 break;
         }
-//          console.log('m3');
         sdiv.removeAttr("id");
         sdiv.find(".id").find(".text").attr("fullid", ctt.poster[0]);
-        sdiv.find(".id").find(".text").html(this.shortenId(ctt.poster[0]));
+        sdiv.find(".id").find(".text").html(this.getShortPId(ctt.poster[0]));
         sdiv.find(".linkspan").attr("clink", ctt.link);
 
         if (this.isContentImage(ctt))
@@ -122,22 +121,18 @@ var CBrowser = new function () {
             sdiv.find(".ctt").html(this.createAudioHtml(ctt.link, this.getFileContentFrJson(ctt)));
         else if (this.isContentText(ctt))
             sdiv.find(".ctt").html(base64.decode(ctt.content[0].content[0].content));
-        else{
-            console.log("err");
+        else {
+            console.log("err addcontent");
             return false;
         }
-//        console.log(sdiv);
-//        var test = $("#test");
-//        $("#mainframe").append(test);
+//        console.log(sdiv.html());
         fPos ? $("#mainframe").prepend(sdiv.children()) : $("#mainframe").append(sdiv.children());
         return true;
     };
     this.isContentImage = function (ctt) {
-//        console.log(ctt);
-        
         return ctt.content[0].cc_name === "CC_FILE_P" &&
                 ctt.content[0].content[1].cc_name === "CC_FILE_TYPESTRING" &&
-                (ctt.content[0].content[1].content === btoa("image/jpeg") ||   ctt.content[0].content[1].content === btoa("image/png") );
+                (ctt.content[0].content[1].content === btoa("image/jpeg") || ctt.content[0].content[1].content === btoa("image/png"));
     };
     this.isContentVideo = function (ctt) {
         return ctt.content[0].cc_name === "CC_FILE_P" &&
@@ -156,13 +151,13 @@ var CBrowser = new function () {
     };
 
     this.refreshNew = function () {
-        var ctts = this.getNewContents();
+        var ctts = this.getNewContents("new");
         for (k in ctts) {
             this.addContent(ctts[k], CONTENT_TYPE_FEED, false);
         }
     };
     this.refreshOld = function () {
-        var ctts = this.getOldContents();
+        var ctts = this.getOldContents("new");
         for (k in ctts) {
             this.addContent(ctts[k], CONTENT_TYPE_FEED, false);
         }
@@ -173,53 +168,96 @@ var CBrowser = new function () {
             this.showNotice("You need to follow someone first");
             return;
         }
-        var ctts = this.getNewContents(flist);
+        var ctts = this.getNewContents("fll", flist);
         for (k in ctts) {
-            this.addContent(ctts[k], CONTENT_TYPE_FEED, false);
+            this.addContent(ctts[k], CONTENT_TYPE_FOLLOW, false);
+        }
+    };
+    this.refreshNewMypage = function () {
+        var myid = [BrowserAPI.getAccountID()];
+        if (myid.length == 0) {
+            this.showNotice("You need to register ID first");
+            return;
+        }
+        var ctts = this.getNewContents("myp", myid);
+        for (k in ctts) {
+            this.addContent(ctts[k], CONTENT_TYPE_MINE, false);
         }
     };
     this.refreshOldFollowed = function () {
         var flist = BrowserAPI.getFollowed();
-        var ctts = this.getOldContents(flist);
+        var ctts = this.getOldContents("fll", flist);
         for (k in ctts) {
-            this.addContent(ctts[k], CONTENT_TYPE_FEED, false);
+            this.addContent(ctts[k], CONTENT_TYPE_FOLLOW, false);
         }
     };
-    this.getNewContents = function (addrs) {
+    this.refreshOldMypage = function () {
+        var myid = [BrowserAPI.getAccountID()];
+        var ctts = this.getOldContents("myp", myid);
+        for (k in ctts) {
+            this.addContent(ctts[k], CONTENT_TYPE_MINE, false);
+        }
+    };
+    this.getNewContents = function (page, addrs) {
+        return this.getContents(true, page, addrs);
+    };
+    this.getOldContents = function (page, addrs) {
+        return this.getContents(false, page, addrs);
+    };
+    this.getContents = function (fNewOld, page, addrs) {
         addrs = typeof addrs !== 'undefined' ? addrs : [];
+        fNewOld = typeof fNewOld !== 'undefined' ? fNewOld : true;
+        page = typeof page !== 'undefined' ? page : "new";
         var rc = 3;
-        var lbh = parseInt(BrowserAPI.getBlockCount());
-        var bh = lbh;
-        bh -= 10;
-        var ctts = BrowserAPI.getContents(bh, 10, false, addrs);
-        bh -= 10;
-        while (ctts.length < rc && bh > 0) {
-            var tmp = BrowserAPI.getContents(bh, 10, false, addrs);
+        var sbh; // start block height
+        var lbh; // last block height
+        switch (page) {
+            case "new":
+                sbh = fNewOld ? parseInt(BrowserAPI.getBlockCount()) : newDisp[0];
+                lbh = fNewOld ? sbh : newDisp[1];
+                break;
+            case "fll":
+                sbh = fNewOld ? parseInt(BrowserAPI.getBlockCount()) : fllDisp[0];
+                lbh = fNewOld ? sbh : fllDisp[1];
+                break;
+            case "myp":
+                sbh = fNewOld ? parseInt(BrowserAPI.getBlockCount()) : mypDisp[0];
+                lbh = fNewOld ? sbh : mypDisp[1];
+                break;
+        }
+//        console.log(fNewOld + " " + sbh);
+        var cbh = sbh; // current block height
+        var ctts = [];
+        while (ctts.length < rc && cbh > 0) {
+            var tmp = BrowserAPI.getContents(cbh, 10, false, addrs);
             ctts = ctts.concat(tmp);
-            bh -= 10;
+            cbh -= 10;
 
         }
-        blkDisp = [bh + 10, lbh];
-        return ctts;
-    };
-    this.getOldContents = function (addrs) {
-        addrs = typeof addrs !== 'undefined' ? addrs : [];
-        var rc = 3;
-        var lbh = blkDisp[0];
-        var bh = lbh;
-        bh -= 10;
-        var ctts = BrowserAPI.getContents(bh, 10, false, addrs);
-        bh -= 10;
-        while (ctts.length < rc && bh > 0) {
-            var tmp = BrowserAPI.getContents(bh, 10, false, addrs);
-            ctts = ctts.concat(tmp);
-            bh -= 10;
-
+//        cbh += 10;
+//        console.log(fNewOld + " " + cbh);
+        switch (page) {
+            case "new":
+                var fbh = newDisp.length > 0 ? newDisp[0] : cbh;
+//                console.log(fbh + " " + fNewOld + " " + cbh);
+                newDisp = fNewOld ? [fbh, lbh] : [cbh, lbh];
+                break;
+            case "fll":
+                var fbh = fllDisp.length > 0 ? fllDisp[0] : cbh;
+                fllDisp = fNewOld ? [fbh, lbh] : [cbh, lbh];
+                break;
+            case "myp":
+                var fbh = mypDisp.length > 0 ? mypDisp[0] : cbh;
+                mypDisp = fNewOld ? [fbh, lbh] : [cbh, lbh];
+                break;
         }
-//        console.log(blkDisp);
-        blkDisp = [bh + 10, lbh];
+//        console.log(newDisp);
+//        console.log(fllDisp);
+//        console.log(mypDisp);
+
         return ctts;
-    };
+
+    }
     this.switchTab = function (tabid) {
 //        console.log(tabid);
         if ($("#" + tabid).parent().hasClass("active"))
@@ -235,17 +273,24 @@ var CBrowser = new function () {
             case "br-followed-btn":
                 this.followedAction();
                 break;
+            case "br-mypage-btn":
+                this.mypageAction();
+                break;
         }
-//        blkDisp = [];
+//        newDisp = [];
 
 
     };
     this.newAction = function () {
+        newDisp = [];
         this.refreshNew();
-        this.refreshOld();
+//        this.refreshOld();
     };
     this.followedAction = function () {
         this.refreshNewFollowed();
+    };
+    this.mypageAction = function () {
+        this.refreshNewMypage();
     };
     this.showNotice = function (n) {
         $("#notices").html(n).show();
@@ -256,12 +301,91 @@ var CBrowser = new function () {
 //        var page = this.findPage();
         switch (tabid) {
             case "br-new-btn":
-                this.newAction();
+                this.refreshOld();
                 break;
             case "br-followed-btn":
-                this.refreshOldFollowed();
+                this.refreshOldFollowed("fll");
+                break;
+            case "br-mypage-btn":
+                this.refreshOldMypage();
                 break;
         }
 //        console.log(tabid);
+//        console.log(newDisp);
+    };
+};
+
+var CPublisher = new function () {
+    var CPublisher = this;
+
+    this.handleFiles = function (files) {
+        for (var i = 0, f; f = files[i]; i++) {
+            if (f.size > 1000000) {
+                CBrowser.showNotice("The maximum file size is 10MB");
+                return;
+            }
+            if (f.name) {
+                var r = new FileReader();
+                r.readAsDataURL(f);
+                r.onload = (function (f) {
+                    return function (e) {
+                        var raw = e.target.result;
+                        var rctt = CUtil.decodeDataUrl(raw);
+                        rctt["filename"] = f.name;
+                        console.log("rctt ");
+                        console.log(rctt);
+
+                        var ctthex = BrowserAPI.createContentC(rctt.type, rctt);
+//                        var start = new Date().getTime();
+//                        console.log(start);
+                        console.log(ctthex.hex.substr(0, 20) + "...(" + ctthex.hex.length / 2 + " bytes)");
+//                        var end = new Date().getTime();
+//                        console.log(end);
+                        var ctt = BrowserAPI.getContentByString(ctthex.hex);
+                        ctt.poster = [BrowserAPI.getAccountID()];
+                        ctt.hex = ctthex.hex;
+                        CPublisher.handleContent(ctt);
+                    };
+                })(f);
+            }
+        }
+    };
+    this.handleContent = function (ctt) {
+        ctt.link = "";
+        console.log(ctt);
+        if (!CBrowser.addContent(ctt, CONTENT_TYPE_MINE, false))
+            return false;
+        $("#confirmpub").removeAttr('disabled');
+        var rawtx = BrowserAPI.createTxByContent(ctt);
+        console.log(rawtx);
+    };
+    this.handleDragOver = function (evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+        evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+    };
+    this.handleFileInput = function (elemId) {
+        var elem = document.getElementById(elemId);
+        if (elem && document.createEvent) {
+            var evt = document.createEvent("MouseEvents");
+            evt.initEvent("click", true, false);
+            elem.dispatchEvent(evt);
+        }
+
+        input = document.getElementById('theFile');
+        this.handleFiles(input.files);
+    };
+    this.handleFileSelect = function (evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+        CPublisher.handleFiles(evt.dataTransfer.files);
+        return;
+    };
+    this.handleText = function (t) {
+        var ctthex = BrowserAPI.createTextContent(t);
+        var ctt = BrowserAPI.getContentByString(ctthex.hex);
+        ctt.poster = [BrowserAPI.getAccountID()];
+        ctt.hex = ctthex.hex;
+        CPublisher.handleContent(ctt);
     };
 };
