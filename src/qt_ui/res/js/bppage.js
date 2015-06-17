@@ -1,5 +1,5 @@
 function copyToClipboard(text) {
-    window.prompt("Copy to clipboard: Ctrl+C, Enter", text);
+    window.prompt("Copy to clipboard: Ctrl+C (Cmd+C for mac), Enter", text);
 }
 $(document).ready(function () {
     $(".id").find("a.text").click(function () {
