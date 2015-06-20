@@ -837,6 +837,12 @@ bool WriteJsonToFile(const json_spirit::Value& valContent,const string file_name
     //os.write( valContent.get_str(), strlen(valContent.get_str()));
     return true;
 }
+bool StringToFile(const std::string& filename,const std::string& str)
+{
+    std::ofstream out(filename.c_str());  
+    out<<str;
+    return true;
+}
 bool FileExists(const std::string& filename)
 {
     boost::filesystem::ifstream file(filename.c_str());

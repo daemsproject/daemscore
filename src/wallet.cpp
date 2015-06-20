@@ -642,9 +642,9 @@ bool CWallet::EncryptWallet(const SecureString& strWalletPassphrase)
         LOCK(cs_wallet);
         if (!Encrypt(crypter))
             return false;
-        LogPrintf("CWallet::EncryptWallet2,basepub size:%i,steppub size:%i\n",baseKey.pubKey.size(),stepKey.pubKey.size());
+        //LogPrintf("CWallet::EncryptWallet2,basepub size:%i,steppub size:%i\n",baseKey.pubKey.size(),stepKey.pubKey.size());
         pwalletdb->WriteKeyStore(this);
-        LogPrintf("CWallet::EncryptWallet2\n");
+        //LogPrintf("CWallet::EncryptWallet2\n");
     }
         
     //NotifyStatusChanged(this);
@@ -866,7 +866,7 @@ void CWallet::SyncTransaction(const CTransaction& tx, const CBlock* pblock)
     //LogPrintf("notfiytransactionchanged\n");
     if(!fReindex){
         NotifyTransactionChanged(tx.GetHash(),blockHash);
-        LogPrintf("notfiytransactionchanged\n");
+        //LogPrintf("notfiytransactionchanged\n");
     }
     if (!AddToWalletIfInvolvingMe(tx, pblock, true))
         return; // Not one of ours

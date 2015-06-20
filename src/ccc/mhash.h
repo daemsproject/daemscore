@@ -5,6 +5,6 @@
 #include "uint256.h"
 void mixHash(uint256* input,const unsigned int height);
 void mixAdd(uint256* roller);
-void getRandom(uint256* mHashRnd);
+void getMHashRandom(uint256* mHashRnd);
 
 #endif

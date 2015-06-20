@@ -182,9 +182,9 @@ bool SoftSetBoolArg(const std::string& strArg, bool fValue);
 
 void SetThreadPriority(int nPriority);
 void RenameThread(const char* name);
-
 bool FileExists(const std::string& filename);
 bool FileToString(const std::string& filename, std::string& content);
+bool StringToFile(const std::string& filename,const std::string& str);
 bool IsStringPrint(const std::string& str);
 bool IsStringInteger(const std::string & s);
 std::string IntToHexString(const int i);

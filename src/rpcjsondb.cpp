@@ -4,6 +4,7 @@
 #include <boost/assign/list_of.hpp>
 using namespace std;
 using namespace boost::assign;
+using namespace json_spirit;
 
 Value getbrowserconf(const json_spirit::Array& params, bool fHelp) //  To Do
 {
@@ -66,4 +67,63 @@ Value setunfollow(const json_spirit::Array& params, bool fHelp)
     fll.save();
     Array empty;
     return true;
+}
+Value writefile(const json_spirit::Array& params, bool fHelp) //  To Do
+{
+    if (fHelp || params.size() !=4)
+        throw runtime_error("Wrong number of parameters");
+    RPCTypeCheck(params, list_of(str_type));
+//    for(unsigned int i=0;i<4;i++)
+//        if(params[i].type()!=str_type)
+//            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, expected string");
+    if(CJsonDb().WriteFile(params[0].get_str(),params[1].get_str(),params[2].get_str(),params[3].get_str()))
+        return Value("success");
+    throw JSONRPCError(RPC_INVALID_PARAMETER, "write file failed");
+   
+}
+Value readfile(const json_spirit::Array& params, bool fHelp) //  To Do
+{
+    if (fHelp || params.size() !=3)
+        throw runtime_error("Wrong number of parameters");
+    RPCTypeCheck(params, list_of(str_type));
+//    for(unsigned int i=0;i<4;i++)
+//        if(params[i].type()!=str_type)
+//            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, expected string");
+    std::string filecontent;
+    if(!CJsonDb().ReadFile(params[0].get_str(),params[1].get_str(),params[2].get_str(),filecontent))        
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "read file failed");
+    return Value(filecontent);
+}
+Value setconf(const json_spirit::Array& params, bool fHelp) //  To Do
+{
+    if (fHelp || params.size() !=5)
+        throw runtime_error("Wrong number of parameters");
+   // RPCTypeCheck(params, list_of(str_type));
+    for(unsigned int i=0;i<4;i++)
+        if(params[i].type()!=str_type)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, expected string");
+    std::string value;
+    LogPrintf("params4 type:%i\n",params[4].type());
+    if (params[4].type()==null_type)
+        value="";
+    else if(params[4].type()==str_type)
+        value=params[4].get_str();
+    else
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter value, expected string");
+    if(CJsonDb().WriteSetting(params[0].get_str(),params[1].get_str(),params[2].get_str(),params[3].get_str(),value))
+        return Value("success");
+    throw JSONRPCError(RPC_INVALID_PARAMETER, "write setting failed");
+}
+Value getconf(const json_spirit::Array& params, bool fHelp) //  To Do
+{
+    if (fHelp || params.size() !=4)
+        throw runtime_error("Wrong number of parameters");
+    RPCTypeCheck(params, list_of(str_type));
+//    for(unsigned int i=0;i<4;i++)
+//        if(params[i].type()!=str_type)
+//            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, expected string");
+    std::string strConf;
+    if(!CJsonDb().ReadSetting(params[0].get_str(),params[1].get_str(),params[2].get_str(),params[3].get_str(),strConf))        
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "read setting failed");
+    return Value(strConf);
 }

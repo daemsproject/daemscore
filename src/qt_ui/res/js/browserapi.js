@@ -293,12 +293,19 @@ var BrowserAPI = new function () {
                 error(e);
         });
     }
-    this.read_contacts = function (id) {return this.icall("readcontacts", [id]);};
-    this.add_contacts = function (id, contacts) {return this.icall("addcontacts", [id, contact])}
-
-
-
-
+    //this.read_contacts = function (id) {return this.icall("readcontacts", [id]);};
+    //this.add_contacts = function (id, contacts) {return this.icall("addcontacts", [id, contact])}
+    this.setConf=function(app,idlocal,idforeign,conf,value){
+        if(!value)
+            value="";
+        var result=this.icall("setconf",[app,idlocal,idforeign,conf,String(value)]);
+        return (result=="success")?true:false;
+    }
+    this.getConf=function(app,idlocal,idforeign,conf){
+        var result=this.icall("getconf",[app,idlocal,idforeign,conf]);
+        if (result.error) return "";
+        return $.parseJSON(result);
+    }
     ////////////////////////////////////////////////////////////////////////////////////////////
     //Below is lib funcs
     this.createContentS = function (c) {

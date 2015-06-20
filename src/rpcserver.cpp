@@ -303,6 +303,10 @@ static const CRPCCommand vRPCCommands[] =
     { "conf",               "getfollowed",            &getfollowed,            true,      true,       false },
     { "conf",               "setfollow",              &setfollow,              true,      true,       false },
     { "conf",               "setunfollow",            &setunfollow,            true,      true,       false },
+    { "conf",               "setconf",                &setconf,                true,      true,       false },
+    { "conf",               "getconf",                &getconf,                true,      true,       false },
+    { "conf",               "readfile",               &readfile,               true,      true,       false },
+    { "conf",               "writefile",              &writefile,              true,      true,       false },
 
     /* Mining */
     { "mining",             "getblocktemplate",       &getblocktemplate,       true,      false,      false },

@@ -21,6 +21,11 @@ public:
         init();
     }
     void init();
+    bool WriteFile(const std::string appName,const std::string path,const std::string filename,const std::string filecontent);
+    bool ReadFile(const std::string appName,const std::string path,const std::string filename,std::string& filecontent);
+    bool WriteSetting(const std::string appName,const std::string IDLocal,const std::string IDForeign,const std::string key,const std::string value);
+    bool ReadSetting(const std::string appName,const std::string IDLocal,const std::string IDForeign,const std::string& key,std::string& value);
+    bool GetConfObj(const std::string appName,const std::string IDLocal,const std::string IDForeign,json_spirit::Object& objConf,boost::filesystem::path& file);
     bool getValueFrFile();
     Value getValue();
     bool setValue(const Value& value);

@@ -96,45 +96,59 @@ var Messenger = new function() {
         })();
     }
     this.switchToContact=function(id){
-        $("#current-contact").html(id);
+        updateCurrentContactDisplay(id);
+        //$("#current-contact").html(id);
+        $('#'+currentContact).attr('class', '');
+        $('#'+id).attr('class', 'active');
         currentContact=id;
+        $("#btn-currentcontact").show();
         i.showMessages(id);
     }
-    function addToContactList(c){        
-        if(contacts[c.id])
+    function updateCurrentContactDisplay(id){        
+        var c=contacts[id];  
+        var html="";
+        if (c.image)            
+            html+=createImgHtml(c.image);        
+        if(c.alias)
+        html+=c.alias+'<br>';
+        if(c.domainName)
+            html+=c.domainName+'<br>';
+        html+=id; 
+        $("#current-contact").html(html);
+    }
+    function addContact(id){        
+        if(contacts[id])
             return;
-        contacts[c.id]=c;
-        var html='<div id="'+c.id+'" onclick="{Messenger.switchToContact(\''+c.id+'\')}" style="margin-top:20px">';
+        contacts[id]={};
+        contacts[id]=i.readContactInfo(id);
+        //contacts[id].id=id;            
+        var html='<div id="'+id+'" onclick="{Messenger.switchToContact(\''+id+'\')}" style="margin-top:20px"></div';
+        $("#contact-list").append(html);
+        i.updateContactDisplay(id);
+    }    
+    this.updateContactDisplay=function(id){
+        if(!contacts[id])
+            return;
+        var c=contacts[id];  
+        var html="";
         if (c.image)            
             html+=createImgHtml(c.image);
+        //c.alias=i.getAlias(c.id);
         if(c.alias)
-        html+=c.alias;
-        html+=" "+showID(c.id)+"<div class='nmsgs' style='text-align:right'></div></div>";
-        console.log(html);
-        $("#contact-list").append(html);
-        //Messenger.switchToContact(c.id);
-    }    
-    function readContacts(func){
-        BrowserAPI.read_contacts(accountID,function(data){
-            contacts=data;
-            contacts[1]={id:"abc"};
-            for(var i in contacts){
-                addToContactList(contacts[i]);
-            }
-            if(contacts.length>0)
-                currentContact=contacts[0].id;
-            func();
-        },function(e){
-          console.log(e);                    
-          Messenger.makeNotice('error', 'read-contacts-error',e);  
-          func();
-        });
-        
+        html+='<div style="float:left">'+c.alias+'&nbsp  </div>';
+        else
+        html+=" "+showID(id);
+        html+="<div class='nmsgs' style='text-align:right'></div>";        
+        $("#"+id).html(html);
+        i.updateUnreadLen(id);
+        if(currentContact==id){
+            updateCurrentContactDisplay(id);
+        }
     }
-    this.showMessage=function(msg,time,direction){    
+    this.showMessage=function(msg,time,mode,direction){    
         if(!time)
             time= new Date();
-        var html='<div style="color:green;text-align:'+direction+'">'+dateToString(time)+'</div>';        
+        var html='<div style="color:green;text-align:'+direction+'">'+dateToString(time)+" "+mode+'</div>';        
         html+='<div style="text-align:'+direction+';margin-'+(direction=='right'?'left':'right')+':100px">';
         if(direction=="left")
             html+="->";
@@ -143,8 +157,10 @@ var Messenger = new function() {
                 html+=msg+'</div>';
         //console.log(html);
         $('#history-message').append(html);
+        $('#history-message').scrollTop($('#history-message').scrollTop()+$('#history-message').innerHeight());
     }
     this.showMessages=function(id){
+        
         $('#history-message').html(" ");
 //        var msgs=[];
 //        for(var j in messages[id]){
@@ -155,11 +171,16 @@ var Messenger = new function() {
         
     }    
     this.decryptAndShow=function(id,msgs){
-        //console.log(msgs);
+        
         var msgs2=[];
         for(var j in msgs){
+//            if (Object.prototype.toString.call(msgs[j].content) != '[object Array]')   {
+//                console.log(j);
+//                console.log(msgs[j]);
+//            }
             msgs2.push(msgs[j].content);
         }
+        //console.log(msgs2);
         BrowserAPI.decryptMessages(accountID,[{idForeign:id,messages:msgs2}],function(decryptmsgs){
             //console.log(decryptmsgs);        
             for(var j=decryptmsgs[0].messages.length-1;j>=0;j--){
@@ -174,10 +195,12 @@ var Messenger = new function() {
                         //console.log(msgs[j]);
                         //var msg=base64.decode(decryptmsgs[0].messages[j][0].content[0].content);
                         var t=new Date(msgs[j].nTime * 1000);
-                        i.showMessage(msgs[j].decrypted,t,direction);
+                        i.showMessage(msgs[j].decrypted,t,msgs[j].mode,direction);
                     }
                 }
-            }    
+            } 
+            i.setLastUpdateTime(id);
+            i.updateUnreadLen(id);
         },function(e){console.log(e)});
     }
     this.updateMessage=function(msg){
@@ -193,28 +216,94 @@ var Messenger = new function() {
         msg.IDForeign=BrowserAPI.areIDsEqual(msg.IDFrom,accountID)?msg.IDTo:msg.IDFrom;
         if(i.hasMessage(msg))
             return;
-        addToContactList({id:msg.IDForeign});
-        if(!messages[msg.IDForeign])
+        addContact(msg.IDForeign);
+        if(!messages[msg.IDForeign]){
             messages[msg.IDForeign]=[];
+            //messages[msg.IDForeign].updateTime=i.getLastUpdateTime(msg.IDForeign);
+        }
         messages[msg.IDForeign].push(msg);
-        $("#"+msg.IDForeign).find(".nmsgs").html(messages[msg.IDForeign].length);
+        //msg.unreadLen=i.getUnreadLen(msg.IDForeign);
+        //if(msg.unreadLen)
+            i.updateUnreadLen(msg.IDForeign);
     }
-    
-    this.getMessages=function(){
-        console.log("getMessages");         
+    this.getLastUpdateTime=function(id){
+        var t=BrowserAPI.getConf("messenger",accountID,id,"updatetime");  
+        if(!t||isNaN(t))
+            return 0;
+        return t;
+    }
+    this.setLastUpdateTime=function(id){
+        return BrowserAPI.setConf("messenger",accountID,id,"updatetime",String(new Date().getTime()));        
+    }
+    this.updateUnreadLen=function(id){    
+        var a=i.getUnreadLen(id);
+        if(!a)
+            a=".";
+         $("#"+id).find(".nmsgs").html(a);
+    }
+    this.getUnreadLen=function(id){
+        if(!messages[id])
+            return 0;                            
+        var t0=i.getLastUpdateTime(id);
+        //console.log(t0);
+        var n=0;
+        for(var j in messages[id]){
+            //var t=new Date(messages[id][j].nTime * 1000);
+            if(messages[id][j].nTime*1000>t0)
+                n++;
+        }
+        //console.log(n);
+        return n;
+    }
+    this.getAlias=function(id){
+        var alias=BrowserAPI.getConf("messenger",accountID,id,"alias");   
+        if(alias.error)
+            alias="";
+        return alias;
+    }
+    this.setAlias=function(id,alias){
+        var result=BrowserAPI.setConf("messenger",accountID,id,"alias",alias);   
+        if(result=="success")
+            return true;
+        return false;
+    }
+    this.getCategory=function(id){
+        var category=BrowserAPI.getConf("messenger",accountID,id,"category");   
+        if(category.error)
+            category="";
+        return category;
+    }
+    this.setCategory=function(id,category){
+        var result=BrowserAPI.setConf("messenger",accountID,id,"category",category);   
+        if(result=="success")
+            return true;
+        return false;
+    }
+    this.readContactInfo=function(id){
+        var c={};
+        c.alias=i.getAlias(id);
+        c.updateTime=i.getLastUpdateTime(id);
+        c.category=i.getCategory(id);        
+        return c;
+    }
+    this.getMessagesAll=function(){
+        console.log("getMessages");      
+        
         BrowserAPI.getMessages(accountID,null,0,true,false,0,1000,function(data){
             if (!data||data.error){
                 if (error) error();
                 return;                
             }
             console.log(data); 
-                for(var i in data)                    
-                    Messenger.addMessage(data[i]);
+                for(var l in data){                    
+                    data[l].mode="onchain";
+                    i.addMessage(data[l]);
+                }
         }, function() {
             console.log("getMessage error"); 
         });
     };
-    
+
     function registerNotifications(){
         //var aa=fuction(a){(a);};
 //        var aa=function(a){
@@ -285,48 +374,92 @@ var Messenger = new function() {
         //Only build when visible
         return cVisible.attr('id');
     }
+    function changeCategory(id) {
+        //if (id === cVisible)
+        //    return;
+
+        if (cVisible != null) {
+            if ($('#' + cVisible.attr('id') ).length > 0)
+                $('#' + cVisible.attr('id') ).parent().attr('class', '');
+
+           // cVisible.hide();
+        }
+        cVisible = id;
+        //cVisible.show();
+        if ($('#' + cVisible.attr('id') ).length > 0)
+            $('#' + cVisible.attr('id') ).parent().attr('class', 'active');        
+        switch (id.attr('id')){
+            case "list-all":        
+                for(var j in contacts){   
+                    $("#"+j).hide();
+                     if(contacts[j].category!="black")
+                    $("#"+j).show();
+                }
+            break;
+        case "list-friends":
+                for(var j in contacts){                    
+                    $("#"+j).hide();
+                    if(contacts[j].category=="friend")
+                        $("#"+j).show();
+                }       
+            break;
+        case "list-black":
+                for(var j in contacts){                    
+                    $("#"+j).hide();
+                    if(contacts[j].category=="black")
+                        $("#"+j).show();
+                }       
+            break;
+        }
     
+    }
     function bindReady() {
         if (haveBoundReady) {
             return;
         }
         
         haveBoundReady = true;
+        $("#list-all").click(function() {
+            changeCategory($("#list-all"));
+        });
+        $("#list-friends").click(function() {
+            changeCategory($("#list-friends"));
+        });
+        $("#list-black").click(function() {
+            changeCategory($("#list-black"));
+        });
         $("#add-contact").find(".btn-secondary").unbind().click(function() {               
-            $("#add-contact").hide();
+            $("#add-contact").modal("hide");
        });
         $("#add-contact").find(".btn-primary").unbind().click(function() { 
             var id=$("#add-contact").find('input[name="contact-id"]').val();
             if(contacts[id]){
                 Messenger.makeNotice('error', 'error', 'ID already in contact list');    
                 return;
-            }
-            //console.log(BrowserAPI.checkNameKey(id));
+            }            
             if(!BrowserAPI.checkNameKey(id)){
                  Messenger.makeNotice('error', 'error', 'ID is not valid');                 
                 return;
-            }
-            
-            addToContactList({id:id});
-            
-            //var arr=[{id:$("#add-contact").find('input[name="contact-id"]').val()}];
-            
+            }            
+            addContact(id);            
+            //var arr=[{id:$("#add-contact").find('input[name="contact-id"]').val()}];            
 //            BrowserAPI.add_contacts(accountID,arr,function(a){
-//                
 //            },function(e){
 //                Messenger.makeNotice('error', 'add-contact-error',e);
 //            })
-            $("#add-contact").hide();
+            $("#add-contact").modal("hide");
        });    
         
         
         $('#btn-send').unbind().click(function() {   
-            console.log($("#send-message-box").val());
+            //console.log($("#send-message-box").val());
             var msg=$("#send-message-box").val();
             if(currentContact&&msg){                
                 BrowserAPI.sendMessage(accountID,currentContact,msg,function(){
                     i.showMessage(msg,0,"right");
+                    i.setLastUpdateTime(currentContact);
                     $("#send-message-box").val("");
+                    
                 },function(e){
                     i.makeNotice('error', 'send-message-error', e);
            
@@ -335,9 +468,76 @@ var Messenger = new function() {
             }
        });
        $('#btn-add').unbind().click(function() { 
-           $("#add-contact").show();
+           $("#add-contact").modal({backdrop: "static", show: true});
+           //$("#add-contact").show();
            $("#add-contact").center();
-       });      
+           
+       });    
+       $("#btn-currentcontact").unbind().click(function() { 
+           $("#edit-modal-contact").html(currentContact);
+           $("#edit-contact").find("input[name='contact-alias']").val(contacts[currentContact].alias);           
+           var cc=contacts[currentContact].category;
+           if(!cc)
+               cc="none";
+           $('#contact-category').html(cc);
+           switch(cc){
+               case "none":
+                $("#btn-friend").text("Add To Friends");
+                 $("#btn-black").text("Add To blacklist");
+                 break;
+             case "friend":
+                 $("#btn-friend").text("Add To blacklist");
+                 $("#btn-black").text("Remove from Friends");
+                 break;
+             case "black":
+                 $("#btn-friend").text("Add To Friends");
+                 $("#btn-black").text("Remove from blacklist");
+           }
+           $("#edit-contact").modal({backdrop: "static", show: true});
+           $("#edit-contact").center();
+       });
+        $("#edit-contact").find(".btn-secondary").unbind().click(function() {               
+            $("#edit-contact").modal("hide");
+       });
+        $("#btn-friend").unbind().click(function() {              
+            if(contacts[currentContact].category!="friend"){
+                contacts[currentContact].category="friend";
+                i.setCategory(currentContact,"friend");
+                $('#contact-category').html("friend");
+                $("#btn-friend").text("Remove from Friends");
+                $("#btn-black").text("Add To blacklist");
+            }else{
+                contacts[currentContact].category="none";
+                i.setCategory(currentContact,"none");
+                $('#contact-category').html("none");
+                $("#btn-friend").text("Add To Friends");
+                $("#btn-black").text("Add To blacklist");
+            }
+            changeCategory(cVisible);
+       });
+        $("#btn-black").unbind().click(function() {               
+            if(contacts[currentContact].category!="black"){
+                contacts[currentContact].category="black";
+                i.setCategory(currentContact,"black");
+                $('#contact-category').html("black");
+                $("#btn-black").text("Remove from blacklist");
+                $("#btn-friend").text("Add To Friends");
+            }else{
+                contacts[currentContact].category="none";
+                i.setCategory(currentContact,"none");
+                $('#contact-category').html("none");
+                $("#btn-black").text("Add To blacklist");
+                $("#btn-friend").text("Add To Friends");
+            }
+            changeCategory(cVisible);
+       });
+       $("#btn-alias").unbind().click(function() { 
+           //console.log($("#edit-contact").find("input[name='contact-alias']").val());
+           var alias=$("#edit-contact").find("input[name='contact-alias']").val();
+           i.setAlias(currentContact,alias);
+           contacts[currentContact].alias=alias;
+           i.updateContactDisplay(currentContact);
+       });
     }
 
     function initAccount(){
@@ -347,7 +547,7 @@ var Messenger = new function() {
         //BrowserAPI.getNewID(accountID);
         registerNotifications();
         //readContacts(Messenger.get_history);    
-        Messenger.getMessages();
+        Messenger.getMessagesAll();
     }
     
     
@@ -375,6 +575,7 @@ var Messenger = new function() {
         bindInitial();  
         initAccount(); 
         bindReady();
+        changeCategory($("#list-all"));
         //Frame break
         if (top.location != self.location) {
             top.location = self.location.href

@@ -139,7 +139,18 @@ void JsInterface::notifyAccountSwitched(std::string id){
     notifyObj.push_back(Pair("id",Value(id)));
     emit notify(QString().fromStdString(write_string(Value(notifyObj),false)));
 }
-
+enum pageid
+{
+    WALLETPAGE_ID=1,
+    BROWSERPAGE_ID=2,
+    PUBLISHERPAGE_ID=3,
+    MESSENGERPAGE_ID=4,
+    MINERPAGE_ID=5,
+    DOMAINPAGE_ID=6,
+    SETTINGPAGE_ID=7,
+    SERVICEPAGE_ID=8
+};
+std::string appNames[9]={"null","wallet","browser","publisher","messenger","miner","domainname","setting","service"};
 QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
     json_spirit::Value valData;
     json_spirit::Array arrData;
@@ -161,6 +172,18 @@ QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
                 return walletModel->EncryptMessages(arrData);
             if (command.toStdString()==string("sendmessage"))
                 return walletModel->SendMessage(arrData);
+            if (command.toStdString()==string("writefile")||command.toStdString()==string("readfile")
+                    ||command.toStdString()==string("getconf")||command.toStdString()==string("setconf"))
+            {
+                if(arrData[0].type()!=str_type)
+                    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, expected string");
+                std::string appName=arrData[0].get_str();
+                if (nPageID==WALLETPAGE_ID)
+                    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid pageID, wallet page setting is forbidden");
+                if (nPageID<9&&appNames[nPageID]!=appName)
+                    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid appName, not corresponds to pageid");
+            }
+                
         }
         //return QString("{\"error\":\"empty data\"}");
         valResult= tableRPC.execute(command.toStdString(),arrData);            

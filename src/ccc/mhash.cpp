@@ -31,7 +31,7 @@
  */
 void mixHash(uint256* input, const unsigned int height) {
     uint256 mHashRnd[8];
-    getRandom(mHashRnd);
+    getMHashRandom(mHashRnd);
     uint256 roller;
     roller = *input;
     int r;
@@ -54,7 +54,7 @@ void mixHash(uint256* input, const unsigned int height) {
     delete[] mixer;
 }
 
-void getRandom(uint256* mHashRnd) {
+void getMHashRandom(uint256* mHashRnd) {
     mHashRnd[0].SetHex("0x95faaa7b5ccde209b9cdebd1de254102795a295a883354449555f5a4e8f7493e");
     mHashRnd[1].SetHex("0xd89d9124591df8a0e45fe616535627a61302f599c882f4aa622c2a9223661937");
     mHashRnd[2].SetHex("0xc9a7798889ffe05159c37b769a1b914ddd5e94610463d029acf288f37649c772");
@@ -73,6 +73,5 @@ void mixAdd(uint256* roller) {
     r1 |= lchunk;
     *roller += r1;
 }
-
 
 

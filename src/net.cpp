@@ -1227,7 +1227,7 @@ void ThreadOpenConnections()
     {
         ProcessOneShot();
 
-        MilliSleep(500);
+        MilliSleep(5000);
 
         CSemaphoreGrant grant(*semOutbound);
         boost::this_thread::interruption_point();

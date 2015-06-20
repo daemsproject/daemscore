@@ -758,34 +758,45 @@ void BitcoinGUI::changePassphrase()
         if(dlg.exec()){
         }
 }
+enum pageid
+{
+    WALLETPAGE_ID=1,
+    BROWSERPAGE_ID=2,
+    PUBLISHERPAGE_ID=3,
+    MESSENGERPAGE_ID=4,
+    MINERPAGE_ID=5,
+    DOMAINPAGE_ID=6,
+    SETTINGPAGE_ID=7,
+    SERVICEPAGE_ID=8
+};
 void BitcoinGUI::gotoWalletPage()
 {
     walletAction->setChecked(true);
-    if (mainView) mainView->gotoWebPage(1);
+    if (mainView) mainView->gotoWebPage(WALLETPAGE_ID);
 }
 void BitcoinGUI::gotoBrowserPage()
 {
     QUrl browserUrl= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/browser_en.html"); 
     browserAction->setChecked(true);
-    if (mainView) mainView->gotoWebPage(2,browserUrl);
+    if (mainView) mainView->gotoWebPage(BROWSERPAGE_ID,browserUrl);
 }
 void BitcoinGUI::gotoPublisherPage()
 {
     QUrl url=QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/publisher_en.html"); 
     publisherAction->setChecked(true);
-    if (mainView) mainView->gotoWebPage(3,url);
+    if (mainView) mainView->gotoWebPage(PUBLISHERPAGE_ID,url);
 }
 void BitcoinGUI::gotoMessengerPage()
 {
     QUrl messengerUrl= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/messenger_en.html"); 
     messengerAction->setChecked(true);
-    if (mainView) mainView->gotoWebPage(4,messengerUrl);
+    if (mainView) mainView->gotoWebPage(MESSENGERPAGE_ID,messengerUrl);
 }
 void BitcoinGUI::gotoMinerPage()
 {
     minerAction->setChecked(true);
     QUrl minerUrl= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/miner_en.html"); 
-    if (mainView) mainView->gotoWebPage(5,minerUrl);
+    if (mainView) mainView->gotoWebPage(MINERPAGE_ID,minerUrl);
 }
 
 
