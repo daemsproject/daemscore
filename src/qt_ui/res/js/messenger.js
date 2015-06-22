@@ -106,14 +106,17 @@ var Messenger = new function() {
     }
     function updateCurrentContactDisplay(id){        
         var c=contacts[id];  
-        var html="";
+        var html="<table><tr><td>";
         if (c.icon){     
             console.log(c.icon);
-            if(!c.icon.data&&c.icon.link){
-                //c.icon.data=CBrowser.getB64DataFromLink(c.icon.link);                
+            if(!c.icon.data&&c.icon.link)
+                c.icon.data=CBrowser.getB64DataFromLink(c.icon.link);  
+            
             //console.log(c.icon.data);
-            html+=CBrowser.getImage(c.icon.link);   
-            }
+            if (c.icon.data)
+            html+=CBrowser.createIconHtml(c.icon.data)+'</td><td>';
+            //html+=CBrowser.getImage(c.icon.link);   
+            
         }
         if(c.alias)
         html+=c.alias+'<br>';
@@ -121,7 +124,7 @@ var Messenger = new function() {
             html+=c.domainName+'<br>';
         html+=id+'<br>'; 
         if(c.intro)
-            html+=c.intro+'<br>';
+            html+=c.intro+'<br></tr><table>';
         $("#current-contact").html(html);
     }
     function addContact(id){        
@@ -158,11 +161,13 @@ var Messenger = new function() {
         var html="";
         if (c.icon){     
             console.log(c.icon);
-            if(!c.icon.data&&c.icon.link){
-                //c.icon.data=CBrowser.getB64DataFromLink(c.icon.link);                
+            if(!c.icon.data&&c.icon.link)
+                c.icon.data=CBrowser.getB64DataFromLink(c.icon.link);                
             //console.log(c.icon.data);
-            html+=CBrowser.getImage(c.icon.link);   
-            }
+            if (c.icon.data)
+            html+='<div style="float:left">'+CBrowser.createIconHtml(c.icon.data)+'</div>';
+            //html+=CBrowser.getImage(c.icon.link);   
+            
         }
         //c.alias=i.getAlias(c.id);
         if(c.alias)

@@ -63,8 +63,8 @@ var CBrowser = new function () {
     this.createIconHtml=function(imgB64Data,clink) {
         var html='<a ><img';
         if (clink)
-            html+=' id="' + clink;
-        html+='" src="data:image/jpg;base64,' + imgB64Data + '" type="image/jpeg" class="brimg"/></a>';
+            html+=' id="' + clink+'"';
+        html+=' src="data:image/jpg;base64,' + imgB64Data + '" type="image/jpeg" class="brimg" height="40" width="40"/></a>';
         return html; 
     };
     this.createVideoHtml = function (clink, vdoB64Data, type) {
