@@ -44,12 +44,15 @@ var CBrowser = new function () {
         return this.createImgHtml(clink, r);
 
     };
+    this.createImgSrc = function (type, b64) {
+        return   "data:" + type + ";base64," + b64;
+    };
     this.createImgHtml = function (clink, imgB64Data, type) {
         type = typeof type !== 'undefined' ? type : "image/jpeg";
         var idiv = $("#image-tpl").clone(true, true);
         idiv.find("img").attr("id", CLink.setString(clink).toHtmlId());
         idiv.find("img").attr("type", type);
-        idiv.find("img").attr("src", "data:" + type + ";base64," + imgB64Data);
+        idiv.find("img").attr("src", this.createImgSrc(type, imgB64Data));
         return idiv.html();
     };
     this.createVideoHtml = function (clink, vdoB64Data, type) {
@@ -57,7 +60,7 @@ var CBrowser = new function () {
         var vdiv = $("#video-tpl").clone(true, true);
         vdiv.find("video").attr("id", CLink.setString(clink).toHtmlId());
         vdiv.find("source").attr("type", type);
-        vdiv.find("source").attr("src", "data:" + type + ";base64," + vdoB64Data);
+        vdiv.find("source").attr("src", this.createImgSrc(type, vdoB64Data));
         return vdiv.html();
     };
     this.createAudioHtml = function (clink, adoB64Data, type) {
@@ -65,7 +68,7 @@ var CBrowser = new function () {
         var vdiv = $("#video-tpl").clone(true, true);
         vdiv.find("video").attr("id", CLink.setString(clink).toHtmlId());
         vdiv.find("source").attr("type", type);
-        vdiv.find("source").attr("src", "data:" + type + ";base64," + adoB64Data);
+        vdiv.find("source").attr("src", this.createImgSrc(type, adoB64Data));
         return vdiv.html();
     };
     this.toggleCmt = function (div) {
@@ -125,7 +128,6 @@ var CBrowser = new function () {
             console.log("err addcontent");
             return false;
         }
-//        console.log(sdiv.html());
         fPos ? $("#mainframe").prepend(sdiv.children()) : $("#mainframe").append(sdiv.children());
         return true;
     };
@@ -228,10 +230,11 @@ var CBrowser = new function () {
 //        console.log(fNewOld + " " + sbh);
         var cbh = sbh; // current block height
         var ctts = [];
+        var blkPR = 1000;
         while (ctts.length < rc && cbh > 0) {
-            var tmp = BrowserAPI.getContents(cbh, 10, false, addrs);
+            var tmp = BrowserAPI.getContents(cbh, blkPR, false, addrs);
             ctts = ctts.concat(tmp);
-            cbh -= 10;
+            cbh -= blkPR;
 
         }
 //        cbh += 10;
@@ -267,6 +270,9 @@ var CBrowser = new function () {
         $("#mainframe").children(".container").remove();
         $("#mainframe").children("hr").remove();
         switch (tabid) {
+            case "br-home-btn":
+                this.newAction();
+                break;
             case "br-new-btn":
                 this.newAction();
                 break;
@@ -300,6 +306,9 @@ var CBrowser = new function () {
         var tabid = $(".tabbar").children("li.active").children("a").attr("id");
 //        var page = this.findPage();
         switch (tabid) {
+            case "br-home-btn":
+                this.refreshOld();
+                break;
             case "br-new-btn":
                 this.refreshOld();
                 break;
@@ -312,6 +321,26 @@ var CBrowser = new function () {
         }
 //        console.log(tabid);
 //        console.log(newDisp);
+    };
+    this.getNewImages = function () {
+        return BrowserAPI.getImages(0, 100000, false);
+    };
+    this.createSliderImage = function (ctt) {
+       var type = "image/jpeg";
+        var idiv = $("#s-image-tpl").clone(true, true);
+        idiv.find("img").attr("id", CLink.setString(ctt.link).toHtmlId());
+        idiv.find("img").attr("type", type);
+        idiv.find("img").attr("src", this.createImgSrc(type, this.getFileContentFrJson(ctt)));
+        return idiv.html();
+    };
+    this.addSlideImage = function (imgs) {
+        console.log(imgs);
+        console.log(sld);
+        for (var i = 0, t; t = imgs[i]; i++) {
+            var h = this.createSliderImage(t);
+            console.log(h);
+            $("#slider ul").append(h);
+        }
     };
 };
 

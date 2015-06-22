@@ -219,18 +219,40 @@ var BrowserAPI = new function () {
         blkc = typeof blkc !== 'undefined' ? blkc : 10;
         fAsc = typeof fAsc !== 'undefined' ? fAsc : true;
         addrs = typeof addrs !== 'undefined' ? addrs : [];
-        var r;
         var fcc = ["CC_FILE_P", "CC_TEXT_P", "CC_LINK_P", "CC_LINK"];
         var d = [{"fbh": fbh, "maxc": 20, "maxb": 3000000, "firstcc": fcc, "cformat": 6, "fAsc": fAsc, "mincsize": 3, "blkc": blkc}, addrs];
-
         return this.icall("getcontents", d);
     };
-    this.testGetContents = function (fbh) {
-        var fcc = ["CC_FILE_P", "CC_TEXT_P", "CC_LINK_P", "CC_LINK"];
-        console.log(fbh);
-        var d = [{"fbh": fbh, "maxc": 20, "maxb": 3000000, "firstcc": fcc, "cformat": 6, "fAsc": false, "mincsize": 3, "blkc": 10}];
-        return this.icall("getcontents", d);
+    this.isContentImage = function (ctt) {
+//        console.log(atob(ctt.content[0].content[1].content));
+        var imgMIME = ["image/jpeg", "image/png", "image/gif", "image/bmp", "image/tiff"];
+        if (ctt.content[0].cc_name !== "CC_FILE_P")
+            return false;
+        for (var i = 0, t; t = ctt.content[0].content[i]; i++) {
+            if (t.cc_name === "CC_FILE_TYPESTRING" && jQuery.inArray(atob(t.content), imgMIME) > 0) {
+                return true;
+            }
+        }
+        return false;
     };
+    this.getImages = function (fbh, blkc, fAsc, addrs) {
+        fbh = typeof fbh !== 'undefined' ? fbh : 0;
+        blkc = typeof blkc !== 'undefined' ? blkc : 10;
+        fAsc = typeof fAsc !== 'undefined' ? fAsc : true;
+        addrs = typeof addrs !== 'undefined' ? addrs : [];
+        var d = [{"fbh": fbh, "maxc": 4, "maxb": 3000000, "firstcc":["CC_FILE_P"], "cformat": 6, "fAsc": fAsc, "mincsize": 3, "blkc": blkc}, addrs];
+        var r = this.icall("getcontents", d);
+        for (var i = 0, t; t = r[i]; i++) {
+            if(!this.isContentImage(t))
+                r.splice(i,1);
+        }
+        return r;
+    };
+//    this.testGetContents = function (fbh) {
+//        var fcc = ["CC_FILE_P", "CC_TEXT_P", "CC_LINK_P", "CC_LINK"];
+//        var d = [{"fbh": fbh, "maxc": 20, "maxb": 3000000, "firstcc": fcc, "cformat": 6, "fAsc": false, "mincsize": 3, "blkc": 10}];
+//        return this.icall("getcontents", d);
+//    };
     this.getMessages = function (idsLocal, idsForeign, directionFilter, fIncludeMempool, fLinkOnly, offset, number, success, error) {
         var d = {};
         if (!idsLocal){
@@ -342,6 +364,7 @@ var BrowserAPI = new function () {
                 var r = this.icall("encodecontentunit", ["CC_TEXT_P", s, 0]);
                 break;
             case "image/png":
+            default:
                 var u1 = this.icall("encodecontentunit", ["CC_FILE_NAME", "t", 2]);
                 var u2 = this.icall("encodecontentunit", ["CC_FILE_TYPESTRING", t, 1]);
                 var u3 = this.icall("encodecontentunit", ["CC_FILE", c.data, 2]);

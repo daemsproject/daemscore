@@ -21,11 +21,12 @@
                 <div class="row-fluid" style="margin-top:0px">
                     <div class="span12 no-print">
                         <ul class="nav nav-pills pull-left tabbar" style="margin-bottom: 3px">
-                            <li class="active"><a id="br-new-btn">New</a></li>
+                            <li class="active"><a id="br-home-btn">Home</a></li>
+                            <li><a id="br-new-btn">New</a></li>
                             <li><a id="br-followed-btn">Followed</a></li>
                             <li><a id="br-mypage-btn">My page</a></li>
-                            <li><a id="br-hot-btn" style="color:#ccc">Hot</a></li>
-                            <li><a id="br-setting-btn" style="color:#ccc">Setting</a></li>                            
+                            <li><a id="br-hot-btn" style="color:#444">Hot</a></li>
+                            <li><a id="br-setting-btn" style="color:#444">Setting</a></li>                            
                         </ul>
                     </div>
                 </div>
@@ -33,74 +34,91 @@
         </div>
         <div class="container ph"></div>
         <div id="main-notices-container"><span id="notices"></span></div>
-        
+
         <!--
         <button id="refresh-btn">refresh new</button>
         <button id="refreshold-btn">refresh old</button>
         <button id="test-btn">test</button>
-       <!--  -->
-        
-        <div id="mainframe">
-            <div id="standard">
-                <div class="container" >
-                    <div class = "post">
-                        <div class="domain"><a href=""></a></div>
-                        <div class="id">
-                            <ul>
-                                <a class="text" fullid=""></a>
-                                <li><a class="id-copyid-btn idbtn">Copy ID</a></li>
-                                <li><a class="id-follow-btn idbtn">Follow</a></li>
-                                <li><a class="id-share-btn idbtn">Share</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="post">
-                        <div class="leftblock"></div>
-                        <div class="brctt">
-                            <div class="ctt"></div>
-                            <ul class="cmt">
-                                <li class="linkspan" clink=""></li>
-                                <li><a class="ctt-link-btn idbtn">Copy Link</a></li>
-                                <li><a class="ctt-share-btn idbtn">Share</a></li>
-                                <a class="shrt idbtn short">...</a>
-                            </ul>
-                        </div>
+        <!--  -->
+
+
+        <div class="column column1" id="shdr">
+            <div class="slideholder">
+
+                <div id="slider">
+                    <a href="#" class="control_next">></a>
+                    <a href="#" class="control_prev"><</a>
+                    <ul></ul>  
+                </div>
+            </div>
+        </div>
+        <div class="column vph"></div>
+        <div class="column column2">
+            <div id="mainframe"></div>
+        </div>
+
+
+
+        <div id="standard">
+            <div class="container" >
+                <div class = "post">
+                    <div class="domain"><a href=""></a></div>
+                    <div class="id">
+                        <ul>
+                            <a class="text" fullid=""></a>
+                            <li><a class="id-copyid-btn idbtn">Copy ID</a></li>
+                            <li><a class="id-follow-btn idbtn">Follow</a></li>
+                            <li><a class="id-share-btn idbtn">Share</a></li>
+                        </ul>
                     </div>
                 </div>
-                <hr>
-            </div>
-            <div id="followstd">
-                <div class="container" >
-                    <div class = "post">
-                        <div class="domain"><a href=""></a></div>
-                        <div class="id">
-                            <ul>
-                                <a class="text" fullid=""></a>
-                                <li><a class="id-copyid-btn idbtn">Copy ID</a></li>
-                                <li><a class="id-unfollow-btn idbtn">Unfollow</a></li>
-                                <li><a class="id-share-btn idbtn">Share</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="post">
-                        <div class="leftblock"></div>
-                        <div class="brctt">
-                            <div class="ctt"></div>
-                            <ul class="cmt">
-                                <li class="linkspan" clink=""></li>
-                                <li><a class="ctt-link-btn idbtn">Copy Link</a></li>
-                                <li><a class="ctt-share-btn idbtn">Share</a></li>
-                                <a class="shrt idbtn short">...</a>
-                            </ul>
-                        </div>
+                <div class="post">
+                    <div class="leftblock"></div>
+                    <div class="brctt">
+                        <div class="ctt"></div>
+                        <ul class="cmt">
+                            <li class="linkspan" clink=""></li>
+                            <li><a class="ctt-link-btn idbtn">Copy Link</a></li>
+                            <li><a class="ctt-share-btn idbtn">Share</a></li>
+                            <a class="shrt idbtn short">...</a>
+                        </ul>
                     </div>
                 </div>
-                <hr>
             </div>
+            <hr>
+        </div>
+        <div id="followstd">
+            <div class="container" >
+                <div class = "post">
+                    <div class="domain"><a href=""></a></div>
+                    <div class="id">
+                        <ul>
+                            <a class="text" fullid=""></a>
+                            <li><a class="id-copyid-btn idbtn">Copy ID</a></li>
+                            <li><a class="id-unfollow-btn idbtn">Unfollow</a></li>
+                            <li><a class="id-share-btn idbtn">Share</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="post">
+                    <div class="leftblock"></div>
+                    <div class="brctt">
+                        <div class="ctt"></div>
+                        <ul class="cmt">
+                            <li class="linkspan" clink=""></li>
+                            <li><a class="ctt-link-btn idbtn">Copy Link</a></li>
+                            <li><a class="ctt-share-btn idbtn">Share</a></li>
+                            <a class="shrt idbtn short">...</a>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <hr>
         </div>
 
         <div id="video-tpl"><video controls id=""><source type="" src=""></video></div>
         <div id="image-tpl"><a><img id="" src="" type="" class="brimg"/></a></div>
+        <div id="s-image-tpl"><li><a><img id="" src="" type="" class="brimgs"/></a></li></div>
         <div id="fullImage"></div>
         <div id="linka"><a class="link"></a></div>
     </body>
