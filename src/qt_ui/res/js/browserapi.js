@@ -303,8 +303,6 @@ var BrowserAPI = new function () {
     this.sendMessage=function(idLocal,idForeign,msg,success,error){
         this.call("sendmessage", [idLocal,idForeign,msg],success,error);
     }
-
-
     this.getMiningInfo = function () {return this.icall("getmininginfo", [])}
     this.setGenerate = function (generate, id, kernels,success,error) {
         this.call("setgenerate", [generate,Number(kernels),id,false], function (a) {
@@ -314,6 +312,58 @@ var BrowserAPI = new function () {
             if (error)
                 error(e);
         });
+    }
+    this.getDomainsByOwner=function(id){
+         if (Object.prototype.toString.call(id) != '[object Array]') id=[id];   
+        return this.icall("getdomainsbyowner",[id]);
+    }
+    this.getDomainsByForward=function(id){
+         if (Object.prototype.toString.call(id) != '[object Array]') id=[id];   
+        return this.icall("getdomainsbyforward",[id]);
+    }
+    this.getDomainInfo=function(d){
+         if (Object.prototype.toString.call(d) != '[object Array]') d=[d];   
+         var domain= this.icall("getdomaininfo",[d]);return domain[0]?domain[0]:"";}
+    this.registerDomain=function(id,domain, locktime,success,error){
+        this.call("registerdomain", [id,domain,locktime], function (a) {
+            if (success)
+                success(a);
+        }, function (e) {
+            if (error)
+                error(e);
+        });
+    }
+    this.renewDomain=function(id,domain, locktime,success,error){
+        this.call("renewdomain", [id,domain,locktime], function (a) {
+            if (success)
+                success(a);
+        }, function (e) {
+            if (error)
+                error(e);
+        });
+    }
+    this.updateDomain=function(id, d,info,success,error){
+        this.call("updatedomain", [id,d,info], function (a) {
+            if (success)
+                success(a);
+        }, function (e) {
+            if (error)
+                error(e);
+        });
+    }
+    this.transferDomain=function(id,domain,idto,success,error){
+        this.call("transferdomain", [id,domain,idto], function (a) {
+            if (success)
+                success(a);
+        }, function (e) {
+            if (error)
+                error(e);
+        });
+    }
+    this.getUnspent=function(id){
+        if (Object.prototype.toString.call(id) != '[object Array]')            
+            id=[id];   
+        return this.icall("getunspent",[id]);
     }
     //this.read_contacts = function (id) {return this.icall("readcontacts", [id]);};
     //this.add_contacts = function (id, contacts) {return this.icall("addcontacts", [id, contact])}
@@ -368,10 +418,6 @@ var BrowserAPI = new function () {
                 var u1 = this.icall("encodecontentunit", ["CC_FILE_NAME", "t", 2]);
                 var u2 = this.icall("encodecontentunit", ["CC_FILE_TYPESTRING", t, 1]);
                 var u3 = this.icall("encodecontentunit", ["CC_FILE", c.data, 2]);
-                console.log(u1.hex.length);
-                console.log(u2.hex.length);
-                console.log(u3.hex.length);
-                console.log(c.data.length);
                 var s = u1.hex + u2.hex + u3.hex;
                 var r = this.icall("encodecontentunit", ["CC_FILE_P", s, 0]);
                 break;

@@ -279,7 +279,18 @@ struct CMutableTransaction
     uint256 GetHash() const;
 };
 //the standard paymentrequest format for creating and overriding transactions
-
+enum PaymentRequestType
+{
+    PR_NORMAL=0,
+    PR_PUBLISH,
+    PR_MESSAGE,
+    PR_DOMAIN_REGISTER,
+    PR_DOMAIN_TRANSFER,
+    PR_DOMAIN_UPDATE,
+    PR_DOMAIN_RENEW,
+    PR_COMMENT,
+    PR_SHOP_BUY
+};
 class PaymentRequest :public CMutableTransaction
 {
     public:
@@ -289,15 +300,16 @@ class PaymentRequest :public CMutableTransaction
         fIsValid=false;    
         overridedTxid=uint256(0);
         CMutableTransaction();
+        nRequestType=PR_NORMAL;
     }
-
+    int nRequestType;
     bool fIsValid;
     std::vector<CScript> vFrom;
     int nSigType;
     CScript changeAddress;
     double dFeeRate;
-    uint256 overridedTxid;
-    
+    uint256 overridedTxid;    
+    std::map<string,string> info;
     std::string strError;
 };
 #endif // BITCOIN_PRIMITIVES_TRANSACTION_H

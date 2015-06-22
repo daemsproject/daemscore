@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 //
-//#include "serialize.h"
+#include "serialize.h"
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_value.h"
 //
@@ -30,8 +30,8 @@ class CLink
 {
 public:
     int nHeight;
-    int nTx;
-    int nVout;
+    unsigned short nTx;
+    unsigned short nVout;
 
     CLink()
     {
@@ -48,18 +48,28 @@ public:
         SetString(linkVch);
     }
 
-    CLink(const int nHeightIn,const int nTxIn,const int nVoutIn = 0)
+    CLink(const int nHeightIn, const int nTxIn, const int nVoutIn = 0)
     {
         nHeight = nHeightIn;
-        nTx = nTxIn;
-        nVout = nVoutIn;
+        nTx = (unsigned short) nTxIn;
+        nVout = (unsigned short) nVoutIn;
     }
-    
-    Array ToJson();
-    bool ToJsonString(std::string& entry);
-    std::string ToString(linkformat linkFormat = LINK_FORMAT_DEC);
+    string Serialize()const;
+    bool Unserialize(const std::string& str);
+    //    ADD_SERIALIZE_METHODS;    
+    //    
+    //    template <typename Stream, typename Operation>
+    //    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {        
+    //        READWRITE(nHeight);
+    //        READWRITE(nTx);
+    //        READWRITE(nVout);
+    //    }
+    Array ToJson()const;
+    bool ToJsonString(std::string& entry)const;
+    std::string ToString(linkformat linkFormat = LINK_FORMAT_DEC)const;
     void SetEmpty();
-    bool SetInt(const int nHeightIn,const int nTxIn,const int nVoutIn = 0);
+    bool IsEmpty() const;
+    bool SetInt(const int nHeightIn, const int nTxIn, const int nVoutIn = 0);
     bool SetString(const std::string linkStr);
     bool SetString(const vector<unsigned char>& linkVch);
     bool SetJson(const Array& linkJson);

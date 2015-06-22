@@ -798,7 +798,11 @@ void BitcoinGUI::gotoMinerPage()
     QUrl minerUrl= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/miner_en.html"); 
     if (mainView) mainView->gotoWebPage(MINERPAGE_ID,minerUrl);
 }
-
+void BitcoinGUI::domainNameClicked()
+{
+    QUrl domainUrl= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/domain_en.html"); 
+    if (mainView) mainView->gotoWebPage(DOMAINPAGE_ID,domainUrl);
+}
 
 //void BitcoinGUI::gotoSignMessageTab(QString addr)
 //{

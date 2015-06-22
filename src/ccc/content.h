@@ -10,6 +10,7 @@
 #include "json/json_spirit_value.h"
 #include "uint256.h"
 #include "script/script.h"
+#include "ccc/link.h"
 using namespace json_spirit;
 using namespace std;
 using std::string;
@@ -23,18 +24,20 @@ enum stringformat
     STR_FORMAT_HEX_SUM = 4,
     STR_FORMAT_B64_SUM = 5,
 };
+
 enum directionFilter
 {
-    BI_DIRECTION =0,
-    INCOMING_ONLY =1,
-    OUTPUT_ONLY =2,    
+    BI_DIRECTION = 0,
+    INCOMING_ONLY = 1,
+    OUTPUT_ONLY = 2,
 };
+
 /** Content codes */
 enum cctype
 {
     /** Null * */
     CC_NULL = 0x00,
-
+    CC_P = 0x01,
     /** Tag * */
     CC_TAG = 0x02,
     CC_TAG_P = 0x03,
@@ -58,6 +61,8 @@ enum cctype
     CC_LANG_P = 0x13,
     CC_ENCRYPT = 0x14,
     CC_ENCRYPT_P = 0x15,
+    CC_PRODUCT = 0x16,
+    CC_PRODUCT_P = 0x17,
     /** Second Level Content Code * */
     // Tag
     CC_TAG_TEXT = 0x031004,
@@ -132,10 +137,11 @@ enum cctype
     CC_FILE_NAME = 0x0702,
     CC_FILE_NAME_P = 0x0703,
     CC_FILE_TYPESTRING = 0x0710,
+    CC_FILE_ZIPPED = 0x0720,
     // Link
     CC_LINK_TYPESTRING = 0x0900,
-    CC_LINK_TYPE_TXIDOUT = 0x0910,
-    CC_LINK_TYPE_TXID = 0x0912,
+    CC_LINK_TYPE_BLOCKCHAIN = 0x0910,
+    CC_LINK_TYPE_TXIDOUT = 0x0912,
     CC_LINK_TYPE_COINTO = 0x091e,
     CC_LINK_TYPE_HTTP = 0x0920,
     CC_LINK_TYPE_HTTPS = 0x0922,
@@ -145,6 +151,8 @@ enum cctype
     CC_LINK_TYPE_CRID = 0x092a,
     CC_LINK_TYPE_ED2K = 0x0930,
     CC_LINK_TYPE_MAGNET = 0x0932,
+    CC_LINK_TYPE_SCRIPTPUBKEY = 0x0934,
+    CC_LINK_TYPE_DOMAIN = 0x0936,
     // Domain
     CC_DOMAIN_REG = 0x0b00,
     CC_DOMAIN_REG_P = 0x0b01,
@@ -152,6 +160,13 @@ enum cctype
     CC_DOMAIN_FORWARD_P = 0x0b03,
     CC_DOMAIN_TRANSFER = 0x0b04,
     CC_DOMAIN_TRANSFER_P = 0x0b05,
+
+    CC_DOMAIN_INFO = 0x0B06,
+    CC_DOMAIN_INFO_P = 0x0B07,
+    CC_DOMAIN_INFO_ALIAS = 0x0B0700,
+    CC_DOMAIN_INFO_INTRO = 0x0B0702,
+    CC_DOMAIN_INFO_ICON = 0x0B0704,
+    CC_DOMAIN_INFO_ICON_P = 0x0B0705,
     // Comment
     CC_COMMENT_CONTENT = 0x0d00,
     CC_COMMENT_CONTENT_P = 0x0d01,
@@ -378,27 +393,37 @@ enum cctype
     CC_LANG_YO = 0x12016c,
     CC_LANG_ZA = 0x12016e,
     CC_LANG_ZU = 0x120170,
-    
-    
+
     CC_ENCRYPT_PARAMS = 0x1402,
-CC_ENCRYPT_PARAMS_P = 0x1403,
-CC_ENCRYPT_PARAMS_IV = 0x140002,
-CC_ENCRYPT_PARAMS_SALT = 0x140004,
-CC_ENCRYPT_PARAMS_SCRYPT_N = 0x140006,
-CC_ENCRYPT_PARAMS_SCRYPT_P = 0x140008,
-CC_ENCRYPT_PARAMS_SCRYPT_R = 0x14000a,
-CC_ENCRYPT_PARAMS_AES_ITERATIONS = 0x14000c,
-CC_ENCRYPT_PARAMS_ALGORITHM_STRING = 0x1404,
-CC_ENCRYPT_PARAMS_ALGORITHM_SECRETCHAT = 0x140402,
-CC_ENCRYPT_PARAMS_ALGORITHM_AES = 0x140404,
-CC_ENCRYPT_PARAMS_ALGORITHM_SCRYPT = 0x140406,
-CC_ENCRYPT_PARAMS_ALGORITHM_MHASH = 0x140408,
-CC_ENCRYPT_PARAMS_MHASH_HEIGHT = 0x14000e,
+    CC_ENCRYPT_PARAMS_P = 0x1403,
+    CC_ENCRYPT_PARAMS_IV = 0x140002,
+    CC_ENCRYPT_PARAMS_SALT = 0x140004,
+    CC_ENCRYPT_PARAMS_SCRYPT_N = 0x140006,
+    CC_ENCRYPT_PARAMS_SCRYPT_P = 0x140008,
+    CC_ENCRYPT_PARAMS_SCRYPT_R = 0x14000a,
+    CC_ENCRYPT_PARAMS_AES_ITERATIONS = 0x14000c,
+    CC_ENCRYPT_PARAMS_ALGORITHM_STRING = 0x1404,
+    CC_ENCRYPT_PARAMS_ALGORITHM_SECRETCHAT = 0x140402,
+    CC_ENCRYPT_PARAMS_ALGORITHM_AES = 0x140404,
+    CC_ENCRYPT_PARAMS_ALGORITHM_SCRYPT = 0x140406,
+    CC_ENCRYPT_PARAMS_ALGORITHM_MHASH = 0x140408,
+    CC_ENCRYPT_PARAMS_MHASH_HEIGHT = 0x14000e,
+    //PRODUCT
+    CC_PRODUCT_PRICE = 0x1600,
+    CC_PRODUCT_NAME = 0x1602,
+    CC_PRODUCT_PAYTO = 0x1604,
+    CC_PRODUCT_INTRO = 0x1606,
+    CC_PRODUCT_ICON = 0x1608,
+    CC_PRODUCT_ATTIRBUTES = 0x160a,
+    CC_PRODUCT_ATTIRBUTES_P = 0x160b,
+    CC_PRODUCT_UNITSTRING = 0x160c,
+    CC_PRODUCT_UNIT_PIECE = 0x160c02,
 };
 
 std::string GetCcName(const cctype cc);
 cctype GetCcValue(std::string ccName);
 std::string GetCcHex(const cctype cc);
+bool IsCcParent(const cctype& cc);
 
 class CContent : public std::string
 {
@@ -423,33 +448,36 @@ public:
     {
         SetJson(cttJson);
     }
-    Array ToJson(stringformat fFormat = STR_FORMAT_BIN,bool fRecursive = true);
-    bool ToJsonString(std::string& entry);
+    Array ToJson(stringformat fFormat = STR_FORMAT_BIN, bool fRecursive = true)const;
+    bool ToJsonString(std::string& entry)const;
     bool SetEmpty();
     bool SetString(const std::string& cttStr);
     bool SetString(const vector<unsigned char>& cttVch);
     bool SetJson(const Array& cttJson);
-    bool SetUnit(const cctype& cc,const std::string& cttStr);
-    bool SetUnit(const std::string& ccname,const std::string& cttStr);
+    bool SetUnit(const cctype& cc, const std::string& cttStr);
+    bool SetUnit(const std::string& ccname, const std::string& cttStr);
     std::string ToHumanString();
-    bool GetCcUnit(iterator& pc, cctype& ccRet, std::string& content);
-    bool ReadVarInt(iterator& pc,u_int64_t& n);
-    bool ReadCompactSize(iterator& pc,u_int64_t& n);
+    bool GetCcUnit(const_iterator& pc, cctype& ccRet, std::string& content) const;
+    bool ReadVarInt(const_iterator& pc, u_int64_t& n)const;
+    bool ReadCompactSize(const_iterator& pc, u_int64_t& n)const;
     bool WriteVarInt(u_int64_t num);
     bool WriteCompactSize(u_int64_t num);
-    bool ReadData(iterator & pc, int len, std::string& str);
-    bool ReadDataReverse(iterator & pc, int len, std::string& str);
-    std::string TrimToHumanString(const std::string& str);
+    bool ReadData(const_iterator & pc, int len, std::string& str)const;
+    bool ReadDataReverse(const_iterator & pc, int len, std::string& str)const;
+    std::string TrimToHumanString(const std::string& str)const;
     bool WriteData(const std::string str);
     bool WriteData(const std::string str, int len);
-    bool IsCcParent(const cctype& cc);
-    bool HasCc(const cctype& cc);
-    bool FirstCc(const cctype& cc);
-    bool IsStandard();
-    bool EncodeP(const int cc,const std::vector<std::pair<int,string> >& vEncoding);
-    bool EncodeUnit(const int cc,const string& content);
-    bool Decode(std::vector<std::pair<int,string> >& vDecoded);
+
+    bool HasCc(const cctype& cc)const;
+    bool FirstCc(const cctype& cc)const;
+    bool IsStandard()const;
+    bool EncodeP(const int cc, const std::vector<std::pair<int, string> >& vEncoding);
+    bool EncodeUnit(const int cc, const string& content);
+    bool Decode(std::vector<std::pair<int, string> >& vDecoded)const;
+    bool DecodeDomainInfo(string& strAlias, string& strIntro, CLink& iconLink, std::vector<string>& vTags)const;
+    bool DecodeLink(int& redirectType, string& redirectTo)const;
 };
+
 class CMessage
 {
 public:
@@ -462,19 +490,20 @@ public:
     CContent content;
     unsigned int nTime;
     //bool fIncoming=true;
+
     CMessage()
     {
-    nBlockHeight=-1;
-    txid=0;
-    nTx=-1;
-    nVout=0;
-    CScript IDFrom;
-    CScript IDTo;
-    CContent content;
-    nTime=GetTime();
+        nBlockHeight = -1;
+        txid = 0;
+        nTx = -1;
+        nVout = 0;
+        CScript IDFrom;
+        CScript IDTo;
+        CContent content;
+        nTime = GetTime();
     };
-    Value ToJson(bool fLinkOnly=false);
-    string ToJsonString(bool fLinkOnly=false);
+    Value ToJson(bool fLinkOnly = false)const;
+    string ToJsonString(bool fLinkOnly = false)const;
     bool SetJson(const Object& json);
 };
 #endif

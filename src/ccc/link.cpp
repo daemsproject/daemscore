@@ -17,76 +17,111 @@ using namespace std;
 void CLink::SetEmpty()
 {
     nHeight = -1;
-    nTx = -1;
-    nVout = -1;
+    nTx = 0;
+    nVout = 0;
+}
+
+bool CLink::IsEmpty() const
+{
+    return (nHeight == -1 && nTx == 0 && nVout == 0);
 }
 
 bool CLink::SetInt(const int nHeightIn, const int nTxIn, const int nVoutIn)
 {
     nHeight = nHeightIn;
-    nTx = nTxIn;
-    nVout = nVoutIn;
+    nTx = (unsigned short) nTxIn;
+    nVout = (unsigned short) nVoutIn;
     return true;
 }
 
 bool CLink::SetString(const std::string linkStr)
 {
     nHeight = -1;
-    nTx = -1;
-    nVout = -1;
+    nTx = 0;
+    nVout = 0;
     // Process Scheme name
     std::size_t posColon = linkStr.find(URI_COLON);
     std::string str;
     if (posColon != std::string::npos) { // full link with colon
         std::string sn = linkStr.substr(0, posColon);
-        if (sn != URI_SCHEME_NAME)
-            return error("%s: Non-standard link", __func__);
+        if (sn != URI_SCHEME_NAME) {
+            LogPrintf("%s: Non-standard link header %s", __func__, sn);
+            return false;
+        }
         str = linkStr.substr(posColon + 1);
     } else
         str = linkStr;
 
     // Process link content
     std::size_t posFirstDot = str.find(URI_SEPERATOR);
-    if (posFirstDot == std::string::npos)
-        return error("%s: Non-standard link", __func__);
+    if (posFirstDot == std::string::npos) {
+        LogPrintf("%s: Non-standard link2", __func__);
+        return false;
+    }
     std::string nHeightS = str.substr(0, posFirstDot);
     std::size_t posSecondDot = str.find(".", posFirstDot + 1);
     std::string nTxS = (posSecondDot == std::string::npos) ? str.substr(posFirstDot + 1) :
             str.substr(posFirstDot + 1, posSecondDot - posFirstDot - 1);
     if (nHeightS.substr(0, 1) == URI_HEX_HEADER) {
         nHeight = HexStringToInt(nHeightS.substr(1));
-        nTx = HexStringToInt(nTxS);
+        nTx = (unsigned short) HexStringToInt(nTxS);
         if (posSecondDot == std::string::npos) {
             nVout = 0;
         } else {
             std::string nVoutS = str.substr(posSecondDot + 1);
-            nVout = HexStringToInt(nVoutS);
+            nVout = (unsigned short) HexStringToInt(nVoutS);
         }
     } else if (nHeightS.substr(0, 1) == URI_B32_HEADER) {
         nHeight = DecodeBase32ToInt(nHeightS.substr(1));
-        nTx = DecodeBase32ToInt(nTxS);
+        nTx = (unsigned short) DecodeBase32ToInt(nTxS);
         if (posSecondDot == std::string::npos) {
             nVout = 0;
         } else {
             std::string nVoutS = str.substr(posSecondDot + 1);
-            nVout = DecodeBase32ToInt(nVoutS);
+            nVout = (unsigned short) DecodeBase32ToInt(nVoutS);
         }
     } else {
-        if (!IsStringInteger(nHeightS))
-            return error("%s: Non-standard link (nHeight)", __func__);
+        if (!IsStringInteger(nHeightS)) {
+            LogPrintf("%s: Non-standard link (nHeight)", __func__);
+            return false;
+        }
         nHeight = atoi(nHeightS.c_str());
         if (!IsStringInteger(nTxS))
             return error("%s: Non-standard link (nTx)", __func__);
-        nTx = atoi(nTxS.c_str());
+        nTx = (unsigned short) atoi(nTxS.c_str());
         if (posSecondDot == std::string::npos) {
             nVout = 0;
         } else {
             std::string nVoutS = str.substr(posSecondDot + 1);
-            if (!IsStringInteger(nVoutS))
-                return error("%s: Non-standard link (nVout)", __func__);
-            nVout = atoi(nVoutS.c_str());
+            if (!IsStringInteger(nVoutS)) {
+                LogPrintf("%s: Non-standard link (nVout)", __func__);
+                return false;
+            }
+
+            nVout = (unsigned short) atoi(nVoutS.c_str());
         }
     }
+    return true;
+}
+
+string CLink::Serialize()const
+{
+    string str;
+    str.append((char*) &(nHeight), sizeof (nHeight));
+    str.append((char*) &(nTx), sizeof (nTx));
+    str.append((char*) &(nVout), sizeof (nVout));
+    LogPrintf("CLink::Serialize() %s", HexStr(str.begin(), str.end()));
+    return str;
+}
+
+bool CLink::Unserialize(const string& str)
+{
+    if (str.size() != 8)
+        return false;
+    nHeight = str[3] << 24 | (unsigned char) str[2] << 16 | (unsigned char) str[1] << 8 | (unsigned char) str[0];
+    nTx = (unsigned char) str[5] << 8 | (unsigned char) str[4];
+    nVout = (unsigned char) str[7] << 8 | (unsigned char) str[6];
+    LogPrintf("CLink::UnSerialize() %s,%i,%i,%i", HexStr(str.begin(), str.end()), nHeight, nTx, nVout);
     return true;
 }
 
@@ -96,9 +131,9 @@ bool CLink::SetString(const vector<unsigned char>& linkVch)
     return SetString(str);
 }
 
-std::string CLink::ToString(linkformat linkFormat)
+std::string CLink::ToString(linkformat linkFormat)const
 {
-    if (nHeight == -1 || nTx == -1 || nVout == -1)
+    if (IsEmpty())
         return "";
     std::string r = URI_SCHEME_NAME;
     r += URI_COLON;

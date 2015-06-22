@@ -21,6 +21,7 @@
 #include "rpcserver.h"
 #include "core_io.h"
 #include "random.h"
+#include "txdb.h"
 #include "bitcoinunits.h"
 #include <boost/thread.hpp>
 #include <stdint.h>
@@ -374,7 +375,11 @@ void WalletModel::notifyAccountSwitched(const std::string id)
 
 QString WalletModel::HandlePaymentRequest(const Array arrData)
 {
-    PaymentRequest pr=ParseJsonPaymentRequest(arrData[0]);
+    PaymentRequest pr=ParseJsonPaymentRequest(arrData[0],0);
+    return DoPayment(pr); 
+}
+QString WalletModel::DoPayment(const PaymentRequest& pr)
+{
     CWalletTx tx;
     string strError;    
     CPubKey id;    
@@ -403,10 +408,35 @@ QString WalletModel::HandlePaymentRequest(const Array arrData)
                 return QString().fromStdString("{\"error\":\""+strError+"\"}"); 
     }
     //tx=CreateRawTransaction(pr,fRequestPassword,pwallet);
-    LogPrintf("jsinterface:hadlepaymentrequest:tx created,pwallet:%i",pwallet);
+    LogPrintf("walletmodel:dopayment:tx created,pwallet:%i",pwallet);
     SecureString ssInput;
-    QString alert=getPaymentAlertMessage(tx); 
-    QString title=QString(tr("Request Payment"));
+    QString alert; 
+    QString title;
+    switch (pr.nRequestType)
+    {
+        case PR_PUBLISH:
+            alert = getPaymentAlertMessage(tx);
+            title = QString(tr("Publish Content"));
+            break;
+        case PR_DOMAIN_REGISTER:
+            alert = getDomainRegisterAlertMessage(tx,pr);
+            title = QString(tr("Register Domain"));
+        case PR_DOMAIN_RENEW:
+            alert = getDomainRegisterAlertMessage(tx,pr);
+            title = QString(tr("Renew Domain"));
+            break;
+        case PR_DOMAIN_UPDATE:
+            alert = getDomainUpdateAlertMessage(tx,pr);
+            title = QString(tr("Update Domain"));
+            break;
+        case PR_DOMAIN_TRANSFER:
+            alert = getDomainTransferAlertMessage(tx,pr);
+            title = QString(tr("Transfer Domain"));
+            break;
+        default:
+        alert=getPaymentAlertMessage(tx); 
+        title=QString(tr("Request Payment"));
+    }
     if (!gui->handleUserConfirm(title,alert,nOP,strError,ssInput)){
         if(fDelete)
         delete pwallet;
@@ -417,49 +447,15 @@ QString WalletModel::HandlePaymentRequest(const Array arrData)
     SignAndSendTx(pwallet,tx,pr.nSigType,nOP,ssInput,fDelete,wtxSigned,result);
     return QString().fromStdString(result);
 }
-
 QString WalletModel::HandlePaymentRequest2(const Array arrData)
 {
     std::vector<unsigned char> raw = ParseHexV(arrData[2], "parameter 3");
     CContent ctt(raw);
     PaymentRequest pr = GetPublisherPaymentRequest(arrData[0].get_str(), arrData[1].get_str(), ctt);
-    CWalletTx tx;
-    string strError;
-    CPubKey id;
-    CBitcoinAddress pub;
-    pub.SetString(arrData[1].get_str());
-    pub.GetKey(id);
-    CWallet* pwallet;
-    if (id == wallet->GetID())
-        pwallet = wallet;
-    else
-        pwallet = new CWallet(id);
-    int nOP = 0; //0::unencrypted,1::encrypted,2::offline
-    if (!pwallet->HavePriv())
-        nOP = 2;
-    else if (pwallet->IsLocked())
-        nOP = 1;
-    bool fDelete = (pwallet != wallet);
-    if (!pwallet->CreateTransactionUnsigned(pr, tx, strError)) {
-        if (fDelete)
-            delete pwallet;
-        return QString().fromStdString("{\"error\":\"" + strError + "\"}");
-    }
-    SecureString ssInput;
-    QString alert = getPaymentAlertMessage(tx);
-    QString title = QString(tr("Request Payment"));
-    if (!gui->handleUserConfirm(title, alert, nOP, strError, ssInput)) {
-        if (fDelete)
-            delete pwallet;
-        return QString().fromStdString("{\"error\":\"" + strError + "\"}");
-    }
-    std::string result;
-    CWalletTx wtxSigned;
-    SignAndSendTx(pwallet, tx, pr.nSigType, nOP, ssInput, fDelete, wtxSigned, result);
-    return QString().fromStdString(result);
+    return DoPayment(pr);    
 }
 
-QString WalletModel::getPaymentAlertMessage(CWalletTx tx)
+QString WalletModel::getPaymentAlertMessage(const CWalletTx& tx)
 {
     
     // Format confirmation message
@@ -516,7 +512,7 @@ QString WalletModel::getPaymentAlertMessage(CWalletTx tx)
     //questionString.arg();
     return questionString;
 }
-QString WalletModel::getEncryptMessegeAlert(std::vector<string> vstrIDsForeign,bool fEncrypt)
+QString WalletModel::getEncryptMessegeAlert(const std::vector<string>& vstrIDsForeign,const bool fEncrypt)
 {
     
     // Format confirmation message
@@ -537,6 +533,92 @@ QString WalletModel::getEncryptMessegeAlert(std::vector<string> vstrIDsForeign,b
 
     questionString.append("<hr />");
     
+    return questionString;
+}
+QString WalletModel::getDomainUpdateAlertMessage(const CWalletTx& tx,const PaymentRequest& pr)
+{
+    QStringList formatted;
+    //string str1="domain";
+    std::map<string,string> p=pr.info;
+    QString domain = "<span style='font-family: monospace;'>"+tr("Domain name:")+QString().fromStdString(p["domain"]);
+    domain.append("</span>");        
+    formatted.append(domain);
+    string add;
+    ScriptPubKeyToString(pr.vFrom[0],add);
+    QString address = "<span style='font-family: monospace;'>" +tr("Registered by:") +QString().fromStdString(add);
+    address.append("</span>");
+    formatted.append(address);  
+    
+    QString questionString = tr("Please confirm to update domain info:");    
+    questionString.append("<br /><br />");
+    questionString.append(formatted.join("<br />"));
+    questionString.append("<hr /><span style='color:#aa0000;'>");
+        questionString.append(BitcoinUnits::formatHtmlWithUnit(0, tx.GetFee()));
+        questionString.append("</span> ");
+        questionString.append(tr("added as transaction fee"));
+
+        // append transaction size
+        questionString.append(" (" + QString::number((double)(tx.CTransaction::GetSerializeSize(SER_NETWORK, CTransaction::CURRENT_VERSION)+tx.vin.size()*67) / 1000) + " kB)");
+    
+    questionString.append("<hr />");  
+    
+    return questionString;
+}
+QString WalletModel::getDomainTransferAlertMessage(const CWalletTx& tx,const PaymentRequest& pr)
+{
+    //string str1="domain";
+    std::map<string,string> p=pr.info;
+    QStringList formatted;
+    QString domain = "<span style='font-family: monospace;'>"+tr("Domain name:")+QString().fromStdString(p["domain"]);
+    domain.append("</span>");        
+    formatted.append(domain);
+    string add;
+    ScriptPubKeyToString(pr.vFrom[0],add);
+    QString address = "<span style='font-family: monospace;'>" +tr("Registered by:") +QString().fromStdString(add);
+    address.append("</span>");
+    formatted.append(address);  
+    //string str2="transfer";
+    QString address1 = "<span style='font-family: monospace;'>" +tr("Transfer to:") +QString().fromStdString(p["transfer"]);
+    address1.append("</span>");
+    formatted.append(address1); 
+    QString questionString = tr("Please confirm to transfer domain:");    
+    questionString.append("<br /><br />");
+    questionString.append(formatted.join("<br />"));
+    questionString.append("<hr /><span style='color:#aa0000;'>");
+        questionString.append(BitcoinUnits::formatHtmlWithUnit(0, tx.GetFee()));
+        questionString.append("</span> ");
+        questionString.append(tr("added as transaction fee"));
+
+        // append transaction size
+        questionString.append(" (" + QString::number((double)(tx.CTransaction::GetSerializeSize(SER_NETWORK, CTransaction::CURRENT_VERSION)+tx.vin.size()*67) / 1000) + " kB)");
+    
+    questionString.append("<hr />");  
+    
+    return questionString;
+}
+QString WalletModel::getDomainRegisterAlertMessage(const CWalletTx& tx,const PaymentRequest& pr)
+{
+    //string str1="domain";
+    std::map<string,string> p=pr.info;
+    QStringList formatted;
+    QString domain = "<span style='font-family: monospace;'>"+tr("Domain name:")+QString().fromStdString(p["domain"]);
+    domain.append("</span>");        
+    formatted.append(domain);
+    string add;
+    ScriptPubKeyToString(pr.vFrom[0],add);
+    QString address = "<span style='font-family: monospace;'>" +tr("Register by:") +QString().fromStdString(add);
+    address.append("</span>");
+    formatted.append(address);  
+    QString amount = "<span style='font-family: monospace;color:#aa0000;'>" +tr("Locked value:") +"<b>" + BitcoinUnits::formatHtmlWithUnit(0, tx.GetValueOut());
+    amount.append("</b></span>");
+    formatted.append(amount);
+    QString timelasting = "<span style='font-family: monospace;color:#aa0000;'>" +tr("Lock for:") +QString().fromStdString(num2str((GetLockLasting(tx.nLockTime)/3600/24))) +tr("days");
+    timelasting.append("</b></span>");
+    formatted.append(timelasting);
+    QString questionString = tr("Please check domain registration details:");    
+    questionString.append("<br /><br />");
+    questionString.append(formatted.join("<br />"));
+    questionString.append("<hr />");    
     return questionString;
 }
 QString WalletModel::EncryptMessages(Array params)
@@ -801,4 +883,134 @@ QString WalletModel::getSMSAlertMessage(const PaymentRequest& pr)
         questionString.append("</span> ");
         questionString.append(tr("transaction fee"));
     return questionString;
+}
+QString WalletModel::RegisterDomain(json_spirit::Array arrData)
+{
+    LogPrintf("walletmodel:RegisterDomain");
+    if ( arrData.size() !=3)
+        throw runtime_error("");
+    CPubKey id=AccountFromValue(arrData[0]);
+    CScript scriptPubKey;
+    StringToScriptPubKey(arrData[0].get_str(),scriptPubKey);
+    string strDomain=arrData[1].get_str();
+    uint32_t nLockTime=(uint32_t)arrData[2].get_int();    
+    PaymentRequest pr = GetRegisterDomainPaymentRequest(arrData[0].get_str(), strDomain, nLockTime);   
+    
+    CDomain cdomain;
+    if(pDomainDBView->GetDomainByName(strDomain,cdomain)&&(GetLockLasting(cdomain.nExpireTime)>0))
+        return QString().fromStdString("{\"error:domain already registered\"}");  
+    if(IsLevel2Domain(strDomain))
+    {
+        LogPrintf("walletmodel:RegisterDomain level1domain:%s",GetLevel1Domain(strDomain));
+        if(!pDomainDBView->GetDomainByName(GetLevel1Domain(strDomain),cdomain)||(GetLockLasting(cdomain.nExpireTime)==0))
+            return QString().fromStdString("{\"error: level1 domain not exists\"}");  
+        if(cdomain.owner!=scriptPubKey)
+            return QString().fromStdString("{\"error: level1 domain not belonged to sending id\"}");  
+    }
+    else
+    {
+        
+    }
+    return DoPayment(pr);
+}
+QString WalletModel::UpdateDomain(json_spirit::Array arrData)
+{
+    LogPrintf("walletmodel:UpdateDomain \n");
+    if ( arrData.size() !=3)
+        throw runtime_error("");
+    CPubKey id=AccountFromValue(arrData[0]);
+    CScript scriptPubKey;
+    StringToScriptPubKey(arrData[0].get_str(),scriptPubKey);
+    LogPrintf("walletmodel:UpdateDomain scriptPubkey:s% \n",scriptPubKey.ToString());
+    string strDomain=arrData[1].get_str();
+    Object objInfo=arrData[2].get_obj();    
+    PaymentRequest pr = GetUpdateDomainPaymentRequest(arrData);       
+    CDomain cdomain;
+    if(!pDomainDBView->GetDomainByName(strDomain,cdomain)||(GetLockLasting(cdomain.nExpireTime)==0))
+        return QString().fromStdString("{\"error:domain not registered\"}");  
+    if(IsLevel2Domain(strDomain))
+    {
+        if(!pDomainDBView->GetDomainByName(GetLevel1Domain(strDomain),cdomain)||(GetLockLasting(cdomain.nExpireTime)==0))
+            return QString().fromStdString("{\"error: level1 domain not exists\"}");  
+        if(cdomain.owner!=scriptPubKey)
+            return QString().fromStdString("{\"error: level1 domain not belonged to sending id\"}");  
+    }
+    else
+    {        
+        LogPrintf("walletmodel:UpdateDomain scriptPubkey:%s \n",scriptPubKey.ToString());
+        if(cdomain.owner!=scriptPubKey)
+            return QString().fromStdString("{\"error:domain not belonged to sending id\"}");  
+    }
+    return DoPayment(pr);      
+    
+}
+QString WalletModel::RenewDomain(json_spirit::Array arrData)
+{
+      LogPrintf("walletmodel:RenewDomain \n");
+    if ( arrData.size() !=3)
+        throw runtime_error("");
+    CPubKey id=AccountFromValue(arrData[0]);
+    CScript scriptPubKey;
+    StringToScriptPubKey(arrData[0].get_str(),scriptPubKey);    
+    LogPrintf("walletmodel:RenewDomain scriptPubkey:s% \n",scriptPubKey.ToString());
+    string strDomain=arrData[1].get_str();    
+    uint32_t nLockTime=arrData[2].get_int64();
+    PaymentRequest pr = GetRegisterDomainPaymentRequest(arrData[0].get_str(), strDomain, nLockTime); 
+    
+    CDomain cdomain;
+    if(IsLevel2Domain(strDomain))
+        {
+            if(!pDomainDBView->GetDomainByName(GetLevel1Domain(strDomain),cdomain)||(GetLockLasting(cdomain.nExpireTime)==0))
+                return QString().fromStdString("{\"error: level1 domain not exists\"}");  
+            if(cdomain.owner!=scriptPubKey)
+                return QString().fromStdString("{\"error: level1 domain not belonged to sending id\"}");  
+        }
+    if(pDomainDBView->GetDomainByName(strDomain,cdomain)&&(GetLockLasting(cdomain.nExpireTime)>0))
+    {
+        if(cdomain.owner!=scriptPubKey)
+                return QString().fromStdString("{\"error:domain not belonged to sending id\"}");  
+        if(LockTimeToTime(nLockTime)<LockTimeToTime(cdomain.nExpireTime))
+            return QString().fromStdString("{\"error:domain renew time earlier than expire time\"}");  
+        pr.nRequestType=PR_DOMAIN_RENEW;
+    }
+    return DoPayment(pr);    
+}
+QString WalletModel::TransferDomain(json_spirit::Array arrData)
+{
+     LogPrintf("walletmodel:TransferDomain \n");
+    if ( arrData.size() !=3)
+        throw runtime_error("");
+    //CPubKey id=AccountFromValue(arrData[0]);
+    CScript scriptPubKey;
+    StringToScriptPubKey(arrData[0].get_str(),scriptPubKey);    
+    LogPrintf("walletmodel:TransferDomain scriptPubkey:s% \n",scriptPubKey.ToString());    
+    string strDomain=arrData[1].get_str();    
+    string idTo=arrData[2].get_str();
+    CScript scriptPubKey2;         
+    if(!StringToScriptPubKey(idTo,scriptPubKey2))        
+        return QString().fromStdString("{\"error: tranfer target id invalid\"}");  
+    Object objInfo; 
+    objInfo.push_back(Pair("transfer",idTo));
+    Array arr=arrData;
+    arr[2]=Value(objInfo);
+    PaymentRequest pr = GetUpdateDomainPaymentRequest(arr); 
+    pr.nRequestType=PR_DOMAIN_TRANSFER;
+    pr.info["transfer"]=arrData[2].get_str();
+    CDomain cdomain;
+    if(!pDomainDBView->GetDomainByName(strDomain,cdomain)||(GetLockLasting(cdomain.nExpireTime)==0))
+        return QString().fromStdString("{\"error:domain not registered\"}");  
+    if(IsLevel2Domain(strDomain))
+    {
+        if(!pDomainDBView->GetDomainByName(GetLevel1Domain(strDomain),cdomain)||(GetLockLasting(cdomain.nExpireTime)==0))
+            return QString().fromStdString("{\"error: level1 domain not exists\"}");  
+        if(cdomain.owner!=scriptPubKey)
+            return QString().fromStdString("{\"error: level1 domain not belonged to sending id\"}");  
+    }
+    else
+    {        
+        LogPrintf("walletmodel:TransferDomain scriptPubkey:s% \n",scriptPubKey.ToString());
+        if(cdomain.owner!=scriptPubKey)
+            return QString().fromStdString("{\"error:domain not belonged to sending id\"}");  
+    }
+    return DoPayment(pr);     
 }

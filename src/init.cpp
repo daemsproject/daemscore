@@ -134,6 +134,7 @@ public:
 static CCoinsViewDB *pcoinsdbview = NULL;
 static CCoinsViewErrorCatcher *pcoinscatcher = NULL;
 static CTxAddressMapViewDB *pTxAddressMapDBView = NULL;
+//static CDomainViewDB *pDomainDBView = NULL;
 
 
 void Shutdown()
@@ -187,6 +188,8 @@ void Shutdown()
         pTxAddressMapDBView = NULL;
         delete pTxAddressMap;
         pTxAddressMap=NULL;
+        delete pDomainDBView;
+        pDomainDBView = NULL;        
     }
 #ifdef ENABLE_WALLET
     //if (pwalletMain)
@@ -1027,6 +1030,8 @@ bool AppInit2(boost::thread_group& threadGroup)
                 delete pblocktree;
                 delete pTxAddressMapDBView;
                 delete pTxAddressMap;
+                delete pDomainDBView;
+                
         
             
 
@@ -1036,6 +1041,8 @@ bool AppInit2(boost::thread_group& threadGroup)
                 pcoinsTip = new CCoinsViewCache(pcoinscatcher);
                 pTxAddressMapDBView = new CTxAddressMapViewDB(nBlockTreeDBCache, false, fReindex);                
                 pTxAddressMap=new CTxAddressMap(pTxAddressMapDBView);
+                pDomainDBView = new CDomainViewDB(fReindex);                
+                
                 if (fReindex)
                     pblocktree->WriteReindexing(true);
 

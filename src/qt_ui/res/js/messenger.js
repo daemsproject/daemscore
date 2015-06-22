@@ -107,20 +107,45 @@ var Messenger = new function() {
     function updateCurrentContactDisplay(id){        
         var c=contacts[id];  
         var html="";
-        if (c.image)            
-            html+=createImgHtml(c.image);        
+        if (c.icon){     
+            console.log(c.icon);
+            if(!c.icon.data&&c.icon.link){
+                //c.icon.data=CBrowser.getB64DataFromLink(c.icon.link);                
+            //console.log(c.icon.data);
+            html+=CBrowser.getImage(c.icon.link);   
+            }
+        }
         if(c.alias)
         html+=c.alias+'<br>';
         if(c.domainName)
             html+=c.domainName+'<br>';
-        html+=id; 
+        html+=id+'<br>'; 
+        if(c.intro)
+            html+=c.intro+'<br>';
         $("#current-contact").html(html);
     }
     function addContact(id){        
         if(contacts[id])
             return;
         contacts[id]={};
-        contacts[id]=i.readContactInfo(id);
+        var a=i.readContactInfo(id);
+        if(a.alias)
+            contacts[id].alias=a.alias;
+        if(a.icon)
+            contacts[id].icon=a.icon;
+        if(a.intro)
+            contacts[id].intro=a.intro;
+        if(a.category)
+            contacts[id].category=a.category;
+        var domains=BrowserAPI.getDomainsByForward(id);
+        console.log(domains);
+        if(domains&&domains[0]&&domains[0].domain){
+            contacts[id].domainName=domains[0].domain;
+            if(!contacts.intro&&domains[0].intro)
+                contacts[id].intro=domains[0].intro;
+            if(!contacts.icon&&domains[0].icon)
+                contacts[id].icon={link:domains[0].icon};            
+        }
         //contacts[id].id=id;            
         var html='<div id="'+id+'" onclick="{Messenger.switchToContact(\''+id+'\')}" style="margin-top:20px"></div';
         $("#contact-list").append(html);
@@ -131,11 +156,19 @@ var Messenger = new function() {
             return;
         var c=contacts[id];  
         var html="";
-        if (c.image)            
-            html+=createImgHtml(c.image);
+        if (c.icon){     
+            console.log(c.icon);
+            if(!c.icon.data&&c.icon.link){
+                //c.icon.data=CBrowser.getB64DataFromLink(c.icon.link);                
+            //console.log(c.icon.data);
+            html+=CBrowser.getImage(c.icon.link);   
+            }
+        }
         //c.alias=i.getAlias(c.id);
         if(c.alias)
         html+='<div style="float:left">'+c.alias+'&nbsp  </div>';
+        else if(c.domainName)
+            html+='<div style="float:left">'+c.domainName+'&nbsp  </div>';
         else
         html+=" "+showID(id);
         html+="<div class='nmsgs' style='text-align:right'></div>";        

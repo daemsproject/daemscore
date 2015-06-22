@@ -7,6 +7,7 @@
 #define BITCOIN_TXDB_H
 
 #include "leveldbwrapper.h"
+#include "ccc/sqlitewrapper.h"
 #include "main.h"
 
 #include <map>
@@ -74,5 +75,35 @@ public:
     bool BatchWrite(const std::map<CScript,std::vector<CDiskTxPos> > &mapTamList);  
     bool Write(const CScript &scriptPubKey,const std::vector<CDiskTxPos> &vTxPos);
 };
+class CDomainViewDB //:public CDomainView
+{
+protected:
+    CSqliteWrapper db;
+public:
+    //std::string strtest="db loaded";
+    CDomainViewDB( bool fWipe = false);
+     //bool GetForward(const std::string strDomainName,CContent& forward)const ;   
+     bool _GetDomainByForward(const int nExtension,const CScript scriptPubKey,std::vector<CDomain> &vDomain)const ; 
+     bool _GetDomainByOwner(const int nExtension,const CScript scriptPubKey,std::vector<CDomain> &vDomain)const ;
+     bool GetDomainByForward(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupportFAI=true)const ;
+     bool GetDomainByOwner(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupportFAI)const ;
+     bool GetDomainByName(const string strDomainName,CDomain& domain)const ;
+     
+    //l bool GetDomainNameByForward(const CScript scriptPubKey,std::vector<string> &vDomainName);    
+//      bool GetDomainByName(const std::string strDomainName,CDomain &domain);    
+//     bool GetDomainByTags(const std::vector<std::string> vTag,std::vector<CDomain> &vDomain,bool FSupportFAI=true);    
+//     bool GetDomainByAlias(const std::string strAlias,std::vector<CDomain> &vDomain,bool FSupportFAI=true);    
+//     bool GetDomainByOwner(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupportFAI=true);    
+//     bool GetDomainNamesToExpire(std::vector<CDomain> &vDomain,const int nMax=1000,const uint32_t nExpireIn=3600*24,bool FSupportFAI=true);    
+//     bool GetDomainNamesExpired(std::vector<CDomain> &vDomain,const int nMax=1000,const uint32_t nExpiredFor=3600*24,bool FSupportFAI=true);       
+     bool Update(const CScript ownerIn,const string& strDomainContent,const uint64_t lockedValue,const uint32_t nLockTimeIn,const CLink link);
 
+     bool Reverse(const string& strDomainContent);
+    //! Do a bulk modification (multiple tam changes).
+    //! The passed mapTam can be modified.
+     //bool BatchWrite(const std::vector<CDomain> &vDomain);
+     bool Write(const CDomain &domain);
+    //! As we use CDomainView polymorphically, have a virtual destructor
+     ~CDomainViewDB() {}
+};
 #endif // BITCOIN_TXDB_H

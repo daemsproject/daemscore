@@ -45,7 +45,7 @@ EXTRA_LIBRARIES = \
   libbitcoin_server.a \
   libbitcoin_cli.a
 if ENABLE_WALLET
-BITCOIN_INCLUDES += $(BDB_CPPFLAGS)
+# BITCOIN_INCLUDES += $(BDB_CPPFLAGS)
 EXTRA_LIBRARIES += libbitcoin_wallet.a
 endif
 
@@ -78,7 +78,7 @@ BITCOIN_CORE_H = \
   bloom.h \
   ccc/content.h \
   ccc/link.h \
-  ccc/jsondb.h \
+  ccc/jsondb.h \  
   chain.h \
   chainparams.h \
   chainparamsbase.h \
@@ -89,6 +89,7 @@ BITCOIN_CORE_H = \
   coincontrol.h \
   coins.h \
   ccc/txaddressmap.h \
+  ccc/domain.h \
   compat.h \
   compressor.h \
   primitives/block.h \
@@ -104,6 +105,7 @@ BITCOIN_CORE_H = \
   key.h \
   keystore.h \
   leveldbwrapper.h \
+  ccc/sqlitewrapper.h \
   limitedmap.h \
   main.h \
   merkleblock.h \
@@ -174,6 +176,7 @@ libbitcoin_server_a_SOURCES = \
   ccc/ecminer.cpp \
   init.cpp \
   leveldbwrapper.cpp \
+  ccc/sqlitewrapper.cpp \
   main.cpp \
   merkleblock.cpp \
   miner.cpp \
@@ -253,6 +256,7 @@ libbitcoin_common_a_SOURCES = \
   ccc/jsondb.cpp \
   coins.cpp \
   ccc/txaddressmap.cpp \
+  ccc/domain.cpp \
   compressor.cpp \
   primitives/block.cpp \
   primitives/transaction.cpp \
@@ -328,7 +332,7 @@ if TARGET_WINDOWS
 cccoind_SOURCES += bitcoind-res.rc
 endif
 
-cccoind_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS)
+cccoind_LDADD += $(BOOST_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS)
 cccoind_CPPFLAGS = $(BITCOIN_INCLUDES)
 cccoind_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 

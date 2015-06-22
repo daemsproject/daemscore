@@ -10,7 +10,7 @@
 #include "util.h"
 #include "ccc/content.h"
 #include "ccc/link.h"
-
+#include "txdb.h"
 #include <stdint.h>
 
 #include "json/json_spirit_value.h"
@@ -215,7 +215,7 @@ Object _decode_content(const Array& params)
 
 Value decodecontent(const Array& params, bool fHelp)
 {
-    if (fHelp || params.size() > 2) {
+    if (fHelp || params.size()<1||params.size() > 2) {
         string msg = "decodecontent \"content string\""
                 + HelpExampleCli("decodecontent", "0513040e5468697320697320612074657374890200") +
                 "\nAs a json rpc call\n"
@@ -597,14 +597,12 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
     bool fAsc;
     if (!_parse_getcontents_params(params, fbh, maxc, maxb, blkc, withcc, withoutcc, firstcc, cformat, cflag, minsz, gAddrs, fAsc))
         throw runtime_error("Error parsing parameters");
-    // DONOT delete the next line
-//    std::cout << "fbh " << fbh << ",maxc " << maxc << ",maxb " << maxb << ",blkc " << blkc << ",cformat " << cformat << ",cflag " << cflag << ",minsz " << minsz << ",fAsc " << fAsc << "\n";
     Array r;
     int c = 0;
     int b = 0;
-    int nHeight = fAsc ? fbh : std::min(chainActive.Height(), fbh + blkc);
-    int totalM = chainActive.Height() - fbh + 1;
-    int total = totalM > blkc ? blkc : totalM;
+        int nHeight = fAsc ? fbh : std::min(chainActive.Height(), fbh + blkc);
+        int totalM = chainActive.Height() - fbh + 1;
+        int total = totalM > blkc ? blkc : totalM;
     if (gAddrs.size() == 0) {
         for (int i = 0; i < total; i++) {
             CBlockIndex* pblockindex;
@@ -903,7 +901,7 @@ Value gettxmessages(const json_spirit::Array& params, bool fHelp)
         vMessages.empty();
         GetMessagesFromTx(vMessages, tx, nHeight, nTx, nTime, vIDsLocal, vIDsForeign, nDirectionFilter, fLinkOnly, 0, 0, 65536);
         BOOST_FOREACH(CMessage msg, vMessages)
-        arrMsg.push_back(msg.ToJson(fLinkOnly));
+            arrMsg.push_back(msg.ToJson(fLinkOnly));
     }
     LogPrintf("getmessages toJson%i \n", arrMsg.size());
     return Value(arrMsg);
@@ -1091,4 +1089,68 @@ void SortMessages(std::vector<CMessage>& vMsg, std::vector<CScript> vIDsLocal)
     }
     // LogPrintf("SortMessages :%i\n",vMsgOut.size());
     vMsg = vMsgOut;
+}
+json_spirit::Value getdomaininfo(const json_spirit::Array& params, bool fHelp){
+    if (fHelp || params.size() != 1)
+        throw runtime_error("Wrong number of parameters");
+    if (params[0].type() != array_type)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter ids, expected array");
+    Array arrDomainNames = params[0].get_array();    
+    std::vector<CScript> vIDs;  
+    Array arrDomains;
+    for (unsigned int i = 0; i < arrDomainNames.size(); i++) {
+        if (arrDomainNames[i].type() != str_type)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter id, expected str");        
+        CDomain domain;
+        pDomainDBView->GetDomainByName(arrDomainNames[i].get_str(),domain);
+        arrDomains.push_back(domain.ToJson());
+    }    
+    LogPrintf("getdomaininfo toJson%i \n", arrDomains.size());
+    return Value(arrDomains);
+}
+json_spirit::Value getdomainsbyowner(const json_spirit::Array& params, bool fHelp){
+    if (fHelp || params.size() != 1)
+        throw runtime_error("Wrong number of parameters");
+    if (params[0].type() != array_type)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter ids, expected array");
+    Array arrIDs = params[0].get_array();    
+    std::vector<CScript> vIDs;
+    std::vector<CDomain> vDomain;
+    for (unsigned int i = 0; i < arrIDs.size(); i++) {
+        if (arrIDs[i].type() != str_type)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter id, expected str");
+        CScript script;        
+        StringToScriptPubKey(arrIDs[i].get_str(), script);
+        pDomainDBView->GetDomainByOwner(script,vDomain,true);
+    }
+    Array arrDomains;
+   for (unsigned int i = 0; i < vDomain.size(); i++) 
+   {
+       arrDomains.push_back(vDomain[i].ToJson());
+   }
+    LogPrintf("getdomainsbyowner toJson%i \n", arrDomains.size());
+    return Value(arrDomains);
+}
+json_spirit::Value getdomainsbyforward(const json_spirit::Array& params, bool fHelp){
+    if (fHelp || params.size() != 1)
+        throw runtime_error("Wrong number of parameters");
+    if (params[0].type() != array_type)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter ids, expected array");
+    Array arrIDs = params[0].get_array();    
+    std::vector<CScript> vIDs; 
+    std::vector<CDomain> vDomain;
+    for (unsigned int i = 0; i < arrIDs.size(); i++) {
+        if (arrIDs[i].type() != str_type)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter id, expected str");
+        CScript script;        
+        StringToScriptPubKey(arrIDs[i].get_str(), script);
+        pDomainDBView->GetDomainByForward(script,vDomain,true);
+    }
+    Array arrDomains;
+   for (unsigned int i = 0; i < vDomain.size(); i++) 
+   {
+       arrDomains.push_back(vDomain[i].ToJson());
+   }
+    LogPrintf("getdomainsbyoForward toJson%i \n", arrDomains.size());
+    return Value(arrDomains);
 }

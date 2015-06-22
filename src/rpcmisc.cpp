@@ -360,7 +360,7 @@ Value setmocktime(const Array& params, bool fHelp)
     return Value::null;
 }
 
-PaymentRequest ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJson){    
+PaymentRequest ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJson,const int nType){    
     PaymentRequest pr;
     pr.fIsValid=false;    
     std::string strError;
@@ -447,26 +447,29 @@ PaymentRequest ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJs
         
         CContent ctt=CContent("");
         valtmp=find_value(objvout, "content");
-        if(valtmp.type()==obj_type){            
-            Object objContent=valtmp.get_obj();
-            valtmp=find_value(objContent, "type");
-            if (valtmp.type()!=str_type){
-                strError="content type is not valid format";
-                throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
-            }
-            if(valtmp.get_str()=="file"){
-                valtmp=find_value(objContent, "value");
-                if (valtmp.type()!=str_type){
-                    strError="content value is not valid format";
-                    throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
-                }    
-                std::string str = valtmp.get_str();
-                if(!FileExists(str)){
-                    strError="content file not found";
-                    throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
-                }
-                CContent ctt = _create_file_content(str);
-            }
+        if(valtmp.type()==array_type){               
+            
+            if(!ctt.SetJson(valtmp.get_array()))
+                throw JSONRPCError(RPC_INVALID_PARAMETER, "wrong content format");
+            //Object objContent=valtmp.get_obj();
+//            valtmp=find_value(objContent, "type");
+//            if (valtmp.type()!=str_type){
+//                strError="content type is not valid format";
+//                throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+//            }
+//            if(valtmp.get_str()=="file"){
+//                valtmp=find_value(objContent, "value");
+//                if (valtmp.type()!=str_type){
+//                    strError="content value is not valid format";
+//                    throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+//                }    
+//                std::string str = valtmp.get_str();
+//                if(!FileExists(str)){
+//                    strError="content file not found";
+//                    throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+//                }
+//                ctt = _create_file_content(str);
+//            }
         }
         else if (valtmp.type()==str_type){
             std::string str = valtmp.get_str();
@@ -520,6 +523,7 @@ PaymentRequest ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJs
             strError="fee rate is lower than limit";
             throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
         }        
+    pr.nRequestType=nType;
     pr.fIsValid=true;
     return pr;
     //valtmp=find_value(obj, "vins");
@@ -592,3 +596,175 @@ PaymentRequest GetPublisherPaymentRequest(const std::string idLocal, const std::
 //    r.push_back(Pair("paymentRequest", EncodeHexTx(pr)));
 //    return r;
 //}
+PaymentRequest GetRegisterDomainPaymentRequest(const string id, const std::string domain, const uint32_t nLockTime)
+{
+    PaymentRequest pr;
+    pr.fIsValid = false;
+    std::string strError;   
+     CScript scriptPubKey;        
+        if(!StringToScriptPubKey(id,scriptPubKey)){
+                strError="id is not valid format";
+                throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+        }
+    
+    LogPrintf("rpcmist GetRegisterDomainPaymentRequest script %s\n", scriptPubKey.ToString());
+    pr.vFrom.push_back(scriptPubKey);    
+    CContent ctt;
+    std::vector<std::pair<int,string> > vcc;
+    vcc.push_back(make_pair(CC_DOMAIN,domain));
+    vcc.push_back(make_pair(CC_DOMAIN_REG,""));
+    ctt.EncodeP(CC_DOMAIN_P,vcc);
+    CAmount amount = GetDomainGroup(domain)*COIN;
+    if(amount==0)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "invalid domain name");
+    pr.vout.push_back(CTxOut(amount, scriptPubKey, ctt));
+    if(GetBlocksToMaturity(nLockTime)<480)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "invalid nLocktime");
+    pr.nLockTime=nLockTime;
+    pr.nRequestType=PR_DOMAIN_REGISTER;
+    pr.info["domain"]=domain;
+    pr.fIsValid = true;
+    return pr;
+}
+PaymentRequest GetUpdateDomainPaymentRequest(const Array arr)
+{
+    PaymentRequest pr;
+    pr.fIsValid = false;
+    std::string strError;   
+     CScript scriptPubKey;        
+        if(!StringToScriptPubKey(arr[0].get_str(),scriptPubKey)){
+                strError="id is not valid format";
+                throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+        }
+    
+    LogPrintf("rpcmist GetUpdateDomainPaymentRequest script %s\n", scriptPubKey.ToString());
+    pr.vFrom.push_back(scriptPubKey);    
+    
+    //std::vector<std::pair<int,string> > vcInfo;
+    //std::vector<std::pair<int,string> > vcForward;
+    Object obj=arr[2].get_obj();
+    CContent cForward;
+    CContent cInfo;   
+    CContent cTransfer;   
+    CLink link; 
+    Value tmp = find_value(obj, "forward");
+    if (tmp.type() != null_type) {            
+            
+       // CPubKey pub;
+        if(StringToScriptPubKey(tmp.get_str(),scriptPubKey))
+        {
+            //vcForward.push_back(make_pair(CC_LINK_TYPE_SCRIPTPUBKEY,""));                
+            //vcForward.push_back(make_pair(CC_LINK,string(scriptPubKey.begin(),scriptPubKey.end())));
+            cForward.EncodeUnit(CC_LINK_TYPE_SCRIPTPUBKEY,"");
+            cForward.EncodeUnit(CC_LINK,string(scriptPubKey.begin(),scriptPubKey.end()));
+        }
+
+         else if (link.SetString(tmp.get_str()))
+        {
+            cForward.EncodeUnit(CC_LINK_TYPE_BLOCKCHAIN,"");
+            //vcForward.push_back(make_pair(CC_LINK_TYPE_BLOCKCHAIN,""));          
+//            CDataStream s(0,0);
+//            s<<link;
+//            char strlink[s.size()];
+//            s.read(strlink,s.size());
+            //vcForward.push_back(make_pair(CC_LINK,strlink));
+            cForward.EncodeUnit(CC_LINK,link.Serialize());
+        }
+    }
+    tmp = find_value(obj, "transfer");
+    if (tmp.type() != null_type) {    
+        CScript scriptPubKey2;         
+        if(StringToScriptPubKey(tmp.get_str(),scriptPubKey2))        
+            cTransfer=string(scriptPubKey2.begin(),scriptPubKey2.end());
+    }
+    tmp = find_value(obj, "alias");
+    if (tmp.type() != null_type)     
+            cInfo.EncodeUnit(CC_DOMAIN_INFO_ALIAS,tmp.get_str());
+            //vcInfo.push_back(make_pair(CC_DOMAIN_INFO_ALIAS,str)); 
+    tmp = find_value(obj, "intro");
+    if (tmp.type() != null_type)         
+        cInfo.EncodeUnit(CC_DOMAIN_INFO_INTRO,tmp.get_str());
+            //vcInfo.push_back(make_pair(CC_DOMAIN_INFO_INTRO,str));  
+    tmp = find_value(obj, "icon");
+    if (tmp.type() != null_type&&link.SetString(tmp.get_str()))              
+    {
+            LogPrintf("domain info request link nheight %i,ntx %i,nvout %i\n",link.nHeight,link.nTx,link.nVout);
+//            CDataStream s(0,0);
+//            //link.Serialize(s,0,0);
+//            s<<link;
+//            char strlink[s.size()];
+//            s.read(strlink,s.size());         
+            string str=link.Serialize();
+            LogPrintf("domain info reuest link %s\n",HexStr(str.begin(),str.end()));
+            //vcInfo.push_back(make_pair(CC_DOMAIN_INFO_ICON,strlink));
+            cInfo.EncodeUnit(CC_DOMAIN_INFO_ICON,link.Serialize());
+    }        
+
+    std::vector<std::pair<int,string> > vcc;
+    vcc.push_back(make_pair(CC_DOMAIN,arr[1].get_str()));
+    if(cForward.size()>0)
+        vcc.push_back(make_pair(CC_DOMAIN_FORWARD_P,cForward));
+    if(cInfo.size()>0)
+        vcc.push_back(make_pair(CC_DOMAIN_INFO_P,cInfo));
+    if(cTransfer.size()>0)
+        vcc.push_back(make_pair(CC_DOMAIN_TRANSFER,cTransfer));
+    if(vcc.size()==1)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "no info available");
+    CContent ctt;
+    ctt.EncodeP(CC_DOMAIN_P,vcc);    
+    pr.vout.push_back(CTxOut(0, CScript(), ctt));
+    pr.nRequestType=PR_DOMAIN_UPDATE;
+    pr.info["domain"]=arr[1].get_str();
+    pr.fIsValid = true;
+    return pr;
+}
+extern PaymentRequest GetRenewPaymentRequest(const Array arr)
+{
+    PaymentRequest pr;
+    return pr;
+}
+extern PaymentRequest GetTransferPaymentRequest(const Array arr)
+{
+    PaymentRequest pr;
+    return pr;
+}
+int GetBlocksToMaturity(const unsigned int nLockTime)
+{
+    if (nLockTime!=0){        
+        if ((int64_t)nLockTime < LOCKTIME_THRESHOLD )
+            return max(0, (int)((int)nLockTime+1 - (int)chainActive.Height()));  
+        else{
+            int lockBlocks;
+            lockBlocks=(int)(((int64_t)nLockTime-GetAdjustedTime())/Params().TargetSpacing());
+            return max(0, lockBlocks);
+        }
+    }
+        return 0;
+}
+//this function is relative time to chainactive.tip
+int GetLockLasting(uint32_t nLockTime)
+{
+    int64_t blocks = 0;
+    if (nLockTime != 0) {
+        if (nLockTime < LOCKTIME_THRESHOLD) { 
+            blocks = max(0, (int) ((int) nLockTime + 1 - (int) chainActive.Height()));
+            return blocks * Params().TargetSpacing();
+        } else {
+            return (int) max((int) 0, (int)(nLockTime - chainActive.Tip()->nTime));                
+        }
+    }
+    return 0;
+}
+uint32_t LockTimeToTime(uint32_t nLockTime)
+{
+    int64_t blocks = 0;
+    if (nLockTime != 0) {
+        if (nLockTime < LOCKTIME_THRESHOLD) { 
+            blocks = max(0, (int) ((int) nLockTime + 1 - (int) chainActive.Height()));
+            return (uint32_t)(blocks * Params().TargetSpacing()+GetAdjustedTime());
+        } else {
+            return (uint32_t) nLockTime;                
+        }
+    }
+    return 0;
+}

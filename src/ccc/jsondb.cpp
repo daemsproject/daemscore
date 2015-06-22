@@ -25,7 +25,7 @@ void CJsonDb::init()
     confPath = GetDataDir() / "conf";
     boost::filesystem::create_directories(confPath);
     confFile = GetDataDir() / "conf" / (category + ".conf");
-    getValueFrFile();
+    //getValueFrFile();
 }
 
 bool CJsonDb::setValue(const Value& valueIn)
@@ -117,6 +117,7 @@ bool CJsonDb::GetConfObj(const std::string appName,const std::string IDLocal,con
     if (!boost::filesystem::exists(fullPath))   
         boost::filesystem::create_directories(fullPath);
     std::string strConfFileName=file.string();    
+    //LogPrintf("getconfobj file:%s \n",strConfFileName);
     json_spirit::Value valConf;    
     if(boost::filesystem::exists(file)&&ReadFileToJson(strConfFileName,valConf)){        
             if (valConf.type()==obj_type){

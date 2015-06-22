@@ -529,6 +529,7 @@ CBlockIndex* FindForkInGlobalIndex(const CChain& chain, const CBlockLocator& loc
 CCoinsViewCache *pcoinsTip = NULL;
 CBlockTreeDB *pblocktree = NULL;
 CTxAddressMap *pTxAddressMap=NULL;
+CDomainViewDB *pDomainDBView = NULL;
 //////////////////////////////////////////////////////////////////////////////
 //
 // mapOrphanTransactions
@@ -734,8 +735,7 @@ bool IsFrozen(const CTransaction &tx, int nBlockHeight, int64_t nBlockTime){
         nBlockTime = chainActive.Tip()->nTime;
     if ((int64_t)tx.nLockTime < ((int64_t)tx.nLockTime < LOCKTIME_THRESHOLD ? (int64_t)nBlockHeight : nBlockTime))
         return false;
-        return true;
-
+    return true;
 }
 bool IsFrozen(const CCoins &tx){
     AssertLockHeld(cs_main);
@@ -1691,6 +1691,32 @@ void UpdateTxAddressMap(const CTransaction& tx,const CDiskTxPos& pos,CValidation
         ret = pTxAddressMap->AddNewTxs(mapTam);    
     assert(ret);    
 }
+void UpdateDomainDB(const CTransaction& tx,const CBlock& block,const int nTx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse)
+{
+    if(tx.IsCoinBase())//coinbase is not allowed to register domain
+        return;
+    for(unsigned int i=0;i<tx.vout.size();i++) {
+        string str=tx.vout[i].strContent.substr(0,1);
+        if(HexStr(str)=="0b")
+        {
+            std::vector<std::pair<int,std::string> >vContent;
+            if(CContent(tx.vout[i].strContent).Decode(vContent))
+            {                              
+                const COutPoint &prevout = tx.vin[0].prevout;            
+                const CCoins *coins = inputs.AccessCoins(prevout.hash);  
+                if(fReverse)
+                {                    
+                    //bool ret=pDomainDBView->Reverse(coins->vout[prevout.n].scriptPubKey,vContent[0].second);
+                }
+                else
+                {
+                    CLink link(block.nBlockHeight,nTx,i);
+                    pDomainDBView->Update(coins->vout[prevout.n].scriptPubKey,vContent[0].second,(uint64_t)tx.vout[i].nValue,IsFrozen(tx,block.nBlockHeight,block.nTime)?tx.nLockTime:0,link);
+                }                
+            }
+        }
+    }
+}
 bool CScriptCheck::operator()() {
     const CScript &scriptSig = ptxTo->vin[nIn].scriptSig;
     if (!VerifyScript(scriptSig, scriptPubKey, nFlags, CachingTransactionSignatureChecker(ptxTo, nIn, cacheStore), &error)) {
@@ -2056,7 +2082,10 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
         }
         ///LogPrintf("%s : 21", __func__);
         if(fUpdateTam)
+        {
             UpdateTxAddressMap(tx,pos,state,view,false);
+            UpdateDomainDB(tx,block,i,state,view,false);
+        }
         UpdateCoins(tx, state, view, i == 0 ? undoDummy : blockundo.vtxundo.back(), pindex->nHeight);        
         //LogPrintf("%s : 22", __func__);
         vPos.push_back(std::make_pair(tx.GetHash(), pos));

@@ -216,7 +216,7 @@ private slots:
    void switchAccountClicked();
    void unlockAccountClicked();
    void lockAccountClicked();
-   void domainNameClicked(){};
+   void domainNameClicked();
     void gotoBrowserPage();  
     /** Show about dialog */    
     void aboutClicked();

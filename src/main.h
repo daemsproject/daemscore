@@ -15,6 +15,7 @@
 #include "chainparams.h"
 #include "coins.h"
 #include "ccc/txaddressmap.h"
+#include "ccc/domain.h"
 #include "primitives/block.h"
 #include "primitives/transaction.h"
 #include "net.h"
@@ -41,6 +42,7 @@
 
 class CBlockIndex;
 class CBlockTreeDB;
+class CDomainViewDB;
 class CBloomFilter;
 class CInv;
 class CScriptCheck;
@@ -281,6 +283,8 @@ bool CheckInputs(const CTransaction& tx,const CTransaction& tx4CheckVins, CValid
 void UpdateCoins(const CTransaction& tx, CValidationState &state, CCoinsViewCache &inputs, CTxUndo &txundo, int nHeight);
 /** Apply tx changes to txaddressmap db*/
 void UpdateTxAddressMap(const CTransaction& tx,const CDiskTxPos& pos,CValidationState &state,const CCoinsViewCache& inputs,bool fErase=false);
+void UpdateDomainDB(const CTransaction& tx,const CBlock& block,const int nTx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse);
+
 /** Context-independent validity checks */
 bool CheckTransaction(const CTransaction& tx, CValidationState& state);
 
@@ -520,6 +524,7 @@ extern CChain chainActive;
 extern CCoinsViewCache *pcoinsTip;
 /** Global variable that points to the active TxAddressMapView (protected by cs_main) */
 extern CTxAddressMap *pTxAddressMap;
+extern CDomainViewDB *pDomainDBView;
 
 /** Global variable that points to the active block tree (protected by cs_main) */
 extern CBlockTreeDB *pblocktree;

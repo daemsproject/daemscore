@@ -250,6 +250,10 @@ extern json_spirit::Value getfollowed(const json_spirit::Array& params, bool fHe
 extern json_spirit::Value setfollow(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value setunfollow(const json_spirit::Array& params, bool fHelp);
 
+extern json_spirit::Value getdomaininfo(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getdomainsbyowner(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getdomainsbyforward(const json_spirit::Array& params, bool fHelp);
+
 extern json_spirit::Value setconf(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getconf(const json_spirit::Array& params, bool fHelp); 
 extern json_spirit::Value readfile(const json_spirit::Array& params, bool fHelp);
@@ -291,14 +295,20 @@ extern bool HTTPReq_REST(AcceptedConnection *conn,
 class PaymentRequest;
 class CWalletTx;
 class CWallet;
-extern PaymentRequest ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJson);
+extern PaymentRequest ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJson,int nType=0);
 extern PaymentRequest MessageRequestToPaymentRequest(const std::string idLocal,const  std::string idForeign,const CContent msg);
 extern PaymentRequest GetPublisherPaymentRequest(const std::string idLocal,const  std::string idForeign,const CContent& ctt);
+extern PaymentRequest GetRegisterDomainPaymentRequest(const std::string id, const std::string domain, const uint32_t nLockTime);
+extern PaymentRequest GetUpdateDomainPaymentRequest(const Array arr);
+extern PaymentRequest GetRenewPaymentRequest(const Array arr);
+extern PaymentRequest GetTransferPaymentRequest(const Array arr);
 extern CWalletTx CreateRawTransaction(PaymentRequest pr,bool& fRequestPassword,CWallet*& pwallet);
 extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, json_spirit::Object& entry);
 extern void GetMessagesFromTx(std::vector<CMessage>& vMessages,const CTransaction& tx,const int nBlockHeight,int nTx,int nTime,const std::vector<CScript>& vIDsLocal,
         const std::vector<CScript>& vIDsForeign,int nDirectionFilter,bool fLinkonly,int nPos,int nOffset,int nCount);
-
+extern int GetBlocksToMaturity(const unsigned int nLockTime);
+extern int GetLockLasting(uint32_t nLockTime);
+extern uint32_t LockTimeToTime(uint32_t nLockTime);
 extern void SortMessages(std::vector<CMessage>& vMsg,std::vector<CScript> vIDsLocal);
 extern Value gettxmessages(const json_spirit::Array& params, bool fHelp);
 #endif // BITCOIN_RPCSERVER_H

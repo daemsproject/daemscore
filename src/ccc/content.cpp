@@ -8,6 +8,7 @@
 #include "util.h"
 #include "utiltime.h"
 #include "base58.h"
+#include "streams.h"
 
 #include "json/json_spirit_writer_template.h"
 using namespace boost;
@@ -23,7 +24,7 @@ std::string GetCcName(const cctype cc)
     switch (cc) {
             /** Null * */
         case CC_NULL: return "CC_NULL";
-
+        case CC_P: return "CC_P";
             /** Tag * */
         case CC_TAG: return "CC_TAG";
         case CC_TAG_P: return "CC_TAG_P";
@@ -47,6 +48,8 @@ std::string GetCcName(const cctype cc)
         case CC_LANG_P: return "CC_LANG_P";
         case CC_ENCRYPT: return "CC_ENCRYPT";
         case CC_ENCRYPT_P: return "CC_ENCRYPT_P";
+        case CC_PRODUCT: return "CC_PRODUCT";
+        case CC_PRODUCT_P: return "CC_PRODUCT_P";
             /** Second Level Content Code * */
             // Tag
         case CC_TAG_TEXT: return "CC_TAG_TEXT";
@@ -121,10 +124,11 @@ std::string GetCcName(const cctype cc)
         case CC_FILE_NAME: return "CC_FILE_NAME";
         case CC_FILE_NAME_P: return "CC_FILE_NAME_P";
         case CC_FILE_TYPESTRING: return "CC_FILE_TYPESTRING";
+        case CC_FILE_ZIPPED: return "CC_FILE_ZIPPED";
             // Link
         case CC_LINK_TYPESTRING: return "CC_LINK_TYPESTRING";
+        case CC_LINK_TYPE_BLOCKCHAIN: return "CC_LINK_TYPE_BLOCKCHAIN";
         case CC_LINK_TYPE_TXIDOUT: return "CC_LINK_TYPE_TXIDOUT";
-        case CC_LINK_TYPE_TXID: return "CC_LINK_TYPE_TXID";
         case CC_LINK_TYPE_COINTO: return "CC_LINK_TYPE_COINTO";
         case CC_LINK_TYPE_HTTP: return "CC_LINK_TYPE_HTTP";
         case CC_LINK_TYPE_HTTPS: return "CC_LINK_TYPE_HTTPS";
@@ -134,6 +138,8 @@ std::string GetCcName(const cctype cc)
         case CC_LINK_TYPE_CRID: return "CC_LINK_TYPE_CRID";
         case CC_LINK_TYPE_ED2K: return "CC_LINK_TYPE_ED2K";
         case CC_LINK_TYPE_MAGNET: return "CC_LINK_TYPE_MAGNET";
+        case CC_LINK_TYPE_SCRIPTPUBKEY: return "CC_LINK_TYPE_SCRIPTPUBKEY";
+        case CC_LINK_TYPE_DOMAIN: return "CC_LINK_TYPE_DOMAIN";
             // Domain
         case CC_DOMAIN_REG: return "CC_DOMAIN_REG";
         case CC_DOMAIN_REG_P: return "CC_DOMAIN_REG_P";
@@ -141,6 +147,13 @@ std::string GetCcName(const cctype cc)
         case CC_DOMAIN_FORWARD_P: return "CC_DOMAIN_FORWARD_P";
         case CC_DOMAIN_TRANSFER: return "CC_DOMAIN_TRANSFER";
         case CC_DOMAIN_TRANSFER_P: return "CC_DOMAIN_TRANSFER_P";
+
+        case CC_DOMAIN_INFO: return "CC_DOMAIN_INFO";
+        case CC_DOMAIN_INFO_P: return "CC_DOMAIN_INFO_P";
+        case CC_DOMAIN_INFO_ALIAS: return "CC_DOMAIN_INFO_ALIAS";
+        case CC_DOMAIN_INFO_INTRO: return "CC_DOMAIN_INFO_INTRO";
+        case CC_DOMAIN_INFO_ICON: return "CC_DOMAIN_INFO_ICON";
+        case CC_DOMAIN_INFO_ICON_P: return "CC_DOMAIN_INFO_ICON_P";
             // Comment
         case CC_COMMENT_CONTENT: return "CC_COMMENT_CONTENT";
         case CC_COMMENT_CONTENT_P: return "CC_COMMENT_CONTENT_P";
@@ -367,6 +380,7 @@ std::string GetCcName(const cctype cc)
         case CC_LANG_YO: return "CC_LANG_YO";
         case CC_LANG_ZA: return "CC_LANG_ZA";
         case CC_LANG_ZU: return "CC_LANG_ZU";
+
         case CC_ENCRYPT_PARAMS: return "CC_ENCRYPT_PARAMS";
         case CC_ENCRYPT_PARAMS_P: return "CC_ENCRYPT_PARAMS_P";
         case CC_ENCRYPT_PARAMS_IV: return "CC_ENCRYPT_PARAMS_IV";
@@ -381,6 +395,16 @@ std::string GetCcName(const cctype cc)
         case CC_ENCRYPT_PARAMS_ALGORITHM_SCRYPT: return "CC_ENCRYPT_PARAMS_ALGORITHM_SCRYPT";
         case CC_ENCRYPT_PARAMS_ALGORITHM_MHASH: return "CC_ENCRYPT_PARAMS_ALGORITHM_MHASH";
         case CC_ENCRYPT_PARAMS_MHASH_HEIGHT: return "CC_ENCRYPT_PARAMS_MHASH_HEIGHT";
+            //PRODUCT
+        case CC_PRODUCT_PRICE: return "CC_PRODUCT_PRICE";
+        case CC_PRODUCT_NAME: return "CC_PRODUCT_NAME";
+        case CC_PRODUCT_PAYTO: return "CC_PRODUCT_PAYTO";
+        case CC_PRODUCT_INTRO: return "CC_PRODUCT_INTRO";
+        case CC_PRODUCT_ICON: return "CC_PRODUCT_ICON";
+        case CC_PRODUCT_ATTIRBUTES: return "CC_PRODUCT_ATTIRBUTES";
+        case CC_PRODUCT_ATTIRBUTES_P: return "CC_PRODUCT_ATTIRBUTES_P";
+        case CC_PRODUCT_UNITSTRING: return "CC_PRODUCT_UNITSTRING";
+        case CC_PRODUCT_UNIT_PIECE: return "CC_PRODUCT_UNIT_PIECE";
         default:
             return "CC_UNKNOWN";
     }
@@ -390,7 +414,7 @@ cctype GetCcValue(std::string ccName)
 {
     /** Null * */
     if (ccName == "CC_NULL") return CC_NULL;
-
+    else if (ccName == "CC_P") return CC_P;
         /** Tag * */
     else if (ccName == "CC_TAG") return CC_TAG;
     else if (ccName == "CC_TAG_P") return CC_TAG_P;
@@ -414,6 +438,8 @@ cctype GetCcValue(std::string ccName)
     else if (ccName == "CC_LANG_P") return CC_LANG_P;
     else if (ccName == "CC_ENCRYPT") return CC_ENCRYPT;
     else if (ccName == "CC_ENCRYPT_P") return CC_ENCRYPT_P;
+    else if (ccName == "CC_PRODUCT") return CC_PRODUCT;
+    else if (ccName == "CC_PRODUCT_P") return CC_PRODUCT_P;
         /** Second Level Content Code * */
         // Tag
     else if (ccName == "CC_TAG_TEXT") return CC_TAG_TEXT;
@@ -488,10 +514,11 @@ cctype GetCcValue(std::string ccName)
     else if (ccName == "CC_FILE_NAME") return CC_FILE_NAME;
     else if (ccName == "CC_FILE_NAME_P") return CC_FILE_NAME_P;
     else if (ccName == "CC_FILE_TYPESTRING") return CC_FILE_TYPESTRING;
+    else if (ccName == "CC_FILE_ZIPPED") return CC_FILE_ZIPPED;
         // Link
     else if (ccName == "CC_LINK_TYPESTRING") return CC_LINK_TYPESTRING;
+    else if (ccName == "CC_LINK_TYPE_BLOCKCHAIN") return CC_LINK_TYPE_BLOCKCHAIN;
     else if (ccName == "CC_LINK_TYPE_TXIDOUT") return CC_LINK_TYPE_TXIDOUT;
-    else if (ccName == "CC_LINK_TYPE_TXID") return CC_LINK_TYPE_TXID;
     else if (ccName == "CC_LINK_TYPE_COINTO") return CC_LINK_TYPE_COINTO;
     else if (ccName == "CC_LINK_TYPE_HTTP") return CC_LINK_TYPE_HTTP;
     else if (ccName == "CC_LINK_TYPE_HTTPS") return CC_LINK_TYPE_HTTPS;
@@ -501,6 +528,8 @@ cctype GetCcValue(std::string ccName)
     else if (ccName == "CC_LINK_TYPE_CRID") return CC_LINK_TYPE_CRID;
     else if (ccName == "CC_LINK_TYPE_ED2K") return CC_LINK_TYPE_ED2K;
     else if (ccName == "CC_LINK_TYPE_MAGNET") return CC_LINK_TYPE_MAGNET;
+    else if (ccName == "CC_LINK_TYPE_SCRIPTPUBKEY") return CC_LINK_TYPE_SCRIPTPUBKEY;
+    else if (ccName == "CC_LINK_TYPE_DOMAIN") return CC_LINK_TYPE_DOMAIN;
         // Domain
     else if (ccName == "CC_DOMAIN_REG") return CC_DOMAIN_REG;
     else if (ccName == "CC_DOMAIN_REG_P") return CC_DOMAIN_REG_P;
@@ -508,6 +537,13 @@ cctype GetCcValue(std::string ccName)
     else if (ccName == "CC_DOMAIN_FORWARD_P") return CC_DOMAIN_FORWARD_P;
     else if (ccName == "CC_DOMAIN_TRANSFER") return CC_DOMAIN_TRANSFER;
     else if (ccName == "CC_DOMAIN_TRANSFER_P") return CC_DOMAIN_TRANSFER_P;
+
+    else if (ccName == "CC_DOMAIN_INFO") return CC_DOMAIN_INFO;
+    else if (ccName == "CC_DOMAIN_INFO_P") return CC_DOMAIN_INFO_P;
+    else if (ccName == "CC_DOMAIN_INFO_ALIAS") return CC_DOMAIN_INFO_ALIAS;
+    else if (ccName == "CC_DOMAIN_INFO_INTRO") return CC_DOMAIN_INFO_INTRO;
+    else if (ccName == "CC_DOMAIN_INFO_ICON") return CC_DOMAIN_INFO_ICON;
+    else if (ccName == "CC_DOMAIN_INFO_ICON_P") return CC_DOMAIN_INFO_ICON_P;
         // Comment
     else if (ccName == "CC_COMMENT_CONTENT") return CC_COMMENT_CONTENT;
     else if (ccName == "CC_COMMENT_CONTENT_P") return CC_COMMENT_CONTENT_P;
@@ -734,6 +770,7 @@ cctype GetCcValue(std::string ccName)
     else if (ccName == "CC_LANG_YO") return CC_LANG_YO;
     else if (ccName == "CC_LANG_ZA") return CC_LANG_ZA;
     else if (ccName == "CC_LANG_ZU") return CC_LANG_ZU;
+
     else if (ccName == "CC_ENCRYPT_PARAMS") return CC_ENCRYPT_PARAMS;
     else if (ccName == "CC_ENCRYPT_PARAMS_P") return CC_ENCRYPT_PARAMS_P;
     else if (ccName == "CC_ENCRYPT_PARAMS_IV") return CC_ENCRYPT_PARAMS_IV;
@@ -748,6 +785,16 @@ cctype GetCcValue(std::string ccName)
     else if (ccName == "CC_ENCRYPT_PARAMS_ALGORITHM_SCRYPT") return CC_ENCRYPT_PARAMS_ALGORITHM_SCRYPT;
     else if (ccName == "CC_ENCRYPT_PARAMS_ALGORITHM_MHASH") return CC_ENCRYPT_PARAMS_ALGORITHM_MHASH;
     else if (ccName == "CC_ENCRYPT_PARAMS_MHASH_HEIGHT") return CC_ENCRYPT_PARAMS_MHASH_HEIGHT;
+        //PRODUCT
+    else if (ccName == "CC_PRODUCT_PRICE") return CC_PRODUCT_PRICE;
+    else if (ccName == "CC_PRODUCT_NAME") return CC_PRODUCT_NAME;
+    else if (ccName == "CC_PRODUCT_PAYTO") return CC_PRODUCT_PAYTO;
+    else if (ccName == "CC_PRODUCT_INTRO") return CC_PRODUCT_INTRO;
+    else if (ccName == "CC_PRODUCT_ICON") return CC_PRODUCT_ICON;
+    else if (ccName == "CC_PRODUCT_ATTIRBUTES") return CC_PRODUCT_ATTIRBUTES;
+    else if (ccName == "CC_PRODUCT_ATTIRBUTES_P") return CC_PRODUCT_ATTIRBUTES_P;
+    else if (ccName == "CC_PRODUCT_UNITSTRING") return CC_PRODUCT_UNITSTRING;
+    else if (ccName == "CC_PRODUCT_UNIT_PIECE") return CC_PRODUCT_UNIT_PIECE;
     else return CC_NULL;
 }
 
@@ -758,9 +805,9 @@ std::string GetCcHex(const cctype cc)
     return HexStr(stm.str());
 }
 
-bool CContent::IsStandard()
+bool CContent::IsStandard()const
 {
-    iterator pc = begin();
+    const_iterator pc = begin();
     while (pc < end()) {
         cctype cc;
         CContent contentStr;
@@ -770,9 +817,9 @@ bool CContent::IsStandard()
     return (pc > end()) ? false : true;
 }
 
-Array CContent::ToJson(stringformat fFormat, bool fRecursive)
+Array CContent::ToJson(stringformat fFormat, bool fRecursive)const
 {
-    iterator pc = begin();
+    const_iterator pc = begin();
     Array result;
     while (pc < end()) {
         cctype cc;
@@ -829,7 +876,7 @@ Array CContent::ToJson(stringformat fFormat, bool fRecursive)
     return result;
 }
 
-std::string CContent::TrimToHumanString(const std::string& str)
+std::string CContent::TrimToHumanString(const std::string& str)const
 {
     std::string lenStr = " ... (";
     lenStr += strpatch::to_string(str.size());
@@ -847,7 +894,7 @@ std::string CContent::TrimToHumanString(const std::string& str)
 std::string CContent::ToHumanString()
 {
     std::string ccUnit;
-    iterator pc = begin();
+    const_iterator pc = begin();
     while (pc < end()) {
         cctype cc;
         CContent contentStr;
@@ -872,9 +919,9 @@ std::string CContent::ToHumanString()
     return ccUnit;
 }
 
-bool CContent::HasCc(const cctype& ccIn) // Very costly !!! Try to use FirstCc()
+bool CContent::HasCc(const cctype& ccIn) const// Very costly !!! Try to use FirstCc()
 {
-    iterator pc = begin();
+    const_iterator pc = begin();
     bool r = false;
     while (pc < end()) {
         cctype cc;
@@ -892,9 +939,9 @@ bool CContent::HasCc(const cctype& ccIn) // Very costly !!! Try to use FirstCc()
     return r;
 }
 
-bool CContent::FirstCc(const cctype& ccIn)
+bool CContent::FirstCc(const cctype& ccIn)const
 {
-    iterator pc = begin();
+    const_iterator pc = begin();
     cctype cc;
     u_int64_t n;
     if (!ReadVarInt(pc, n))
@@ -1013,7 +1060,7 @@ bool CContent::SetUnit(const std::string& ccname, const std::string& cttStr)
     return SetUnit(cc, cttStr);
 }
 
-bool CContent::GetCcUnit(iterator& pc, cctype& ccRet, std::string& content)
+bool CContent::GetCcUnit(const_iterator& pc, cctype& ccRet, std::string& content)const
 {
     ccRet = CC_NULL;
     if (pc >= end())
@@ -1056,7 +1103,7 @@ bool CContent::WriteVarInt(u_int64_t n)
     return true;
 }
 
-bool CContent::ReadVarInt(iterator& pc, u_int64_t& n)
+bool CContent::ReadVarInt(const_iterator& pc, u_int64_t& n)const
 {
     n = 0;
     unsigned char chData = 0xff;
@@ -1107,7 +1154,7 @@ bool CContent::WriteCompactSize(u_int64_t n)
     return true;
 }
 
-bool CContent::ReadCompactSize(iterator& pc, u_int64_t& nSizeRet)
+bool CContent::ReadCompactSize(const_iterator& pc, u_int64_t& nSizeRet)const
 {
     if (pc == end())
         return false;
@@ -1152,7 +1199,7 @@ bool CContent::WriteData(const std::string str, int len)
     return true;
 }
 
-bool CContent::ReadData(iterator& pc, int len, std::string& result)
+bool CContent::ReadData(const_iterator& pc, int len, std::string& result)const
 {
     int i = 0;
     while (i < len) {
@@ -1164,10 +1211,10 @@ bool CContent::ReadData(iterator& pc, int len, std::string& result)
     return true;
 }
 
-bool CContent::ReadDataReverse(iterator& pc, int len, std::string& result)
+bool CContent::ReadDataReverse(const_iterator& pc, int len, std::string& result)const
 {
     int i = len;
-    iterator pc2 = pc + len;
+    const_iterator pc2 = pc + len;
     if (pc2 > end())
         return false;
     while (i > 0) {
@@ -1178,7 +1225,7 @@ bool CContent::ReadDataReverse(iterator& pc, int len, std::string& result)
     return true;
 }
 
-bool CContent::IsCcParent(const cctype& cc)
+bool IsCcParent(const cctype& cc)
 {
     u_int64_t cc2 = cc;
     return (cc2 % 2 == 1) ? true : false;
@@ -1201,9 +1248,9 @@ bool CContent::EncodeUnit(int cc, const string& content)
     return true;
 }
 
-bool CContent::Decode(std::vector<std::pair<int, string> >& vDecoded)
+bool CContent::Decode(std::vector<std::pair<int, string> >& vDecoded)const
 {
-    iterator pc = begin();
+    const_iterator pc = begin();
     while (pc < end()) {
         cctype cc;
         CContent contentStr;
@@ -1216,7 +1263,64 @@ bool CContent::Decode(std::vector<std::pair<int, string> >& vDecoded)
     return true;
 }
 
-Value CMessage::ToJson(bool fLinkOnly)
+bool CContent::DecodeLink(int& redirectType, string& redirectTo)const
+{
+    LogPrintf("CContent DecodeLink\n");
+    std::vector<std::pair<int, string> > vDecoded;
+    Decode(vDecoded);
+    LogPrintf("CContent DecodeLink1\n");
+    bool fHasLinkType = false;
+    bool fHasLinkContent = false;
+    int cc;
+    int nLinkType = 0;
+    string str;
+    for (unsigned int i = 0; i < vDecoded.size(); i++) {
+        cc = vDecoded[i].first;
+        if (cc >= CC_LINK_TYPESTRING && cc <= CC_LINK_TYPE_DOMAIN) {
+            LogPrintf("CContent DecodeLink2\n");
+            fHasLinkType = true;
+            nLinkType = cc;
+        } else if (cc == CC_LINK) {
+            LogPrintf("CContent DecodeLink3\n");
+            str = vDecoded[i].second;
+            fHasLinkContent = true;
+        }
+
+    }
+    if (fHasLinkType && fHasLinkContent) {
+        LogPrintf("CContent DecodeLink success\n");
+        redirectType = nLinkType;
+        redirectTo = str;
+        return true;
+    }
+    return false;
+}
+
+bool CContent::DecodeDomainInfo(string& strAlias, string& strIntro, CLink& iconLink, std::vector<string>& vTags)const
+{
+    LogPrintf("CContent DecodeDomainInfo\n");
+    std::vector<std::pair<int, string> > vDecoded;
+    Decode(vDecoded);
+    int cc;
+    string str;
+    for (unsigned int i = 0; i < vDecoded.size(); i++) {
+        cc = vDecoded[i].first;
+        str = vDecoded[i].second;
+        if (cc == CC_DOMAIN_INFO_ALIAS)
+            strAlias = str;
+        else if (cc == CC_DOMAIN_INFO_INTRO)
+            strIntro = str;
+        else if (cc == CC_DOMAIN_INFO_ICON && str.size() == 8) {
+            //CDataStream s(str.c_str(),str.c_str()+str.size(),0,0);
+            iconLink.Unserialize(str);
+        } else if (cc == CC_TAG)
+            vTags.push_back(str);
+    }
+    LogPrintf("CContent DecodeDomainInfo done\n");
+    return true;
+}
+
+Value CMessage::ToJson(bool fLinkOnly)const
 { // to test
     json_spirit::Object obj;
     string strID;
@@ -1234,7 +1338,7 @@ Value CMessage::ToJson(bool fLinkOnly)
     return Value(obj);
 }
 
-string CMessage::ToJsonString(bool fLinkOnly)
+string CMessage::ToJsonString(bool fLinkOnly)const
 {
     return write_string(ToJson(fLinkOnly), false);
 

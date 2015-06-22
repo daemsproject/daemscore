@@ -36,6 +36,7 @@ LIBS += \
   -lprotobuf \
   -lpthread \
   -lsecp256k1 \
+  -lsqlite3 \
   -lanl
 
 

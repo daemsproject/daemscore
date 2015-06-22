@@ -812,8 +812,9 @@ bool ReadFileToString(string file_name, string& fileData)
 }
 bool ReadFileToJson(const string file_name, json_spirit::Value& fileData){    
     string strFileContent;
+     //LogPrintf("util.cpp:readfiletojson: filename:%s \n");
     if (!ReadFileToString(file_name, strFileContent)){
-        LogPrintf("util.cpp:readfiletojson: fail \n");
+        LogPrintf("util.cpp:readfiletojson: fail %s\n",file_name);
         return false;
         
     }

@@ -172,6 +172,14 @@ QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
                 return walletModel->EncryptMessages(arrData);
             if (command.toStdString()==string("sendmessage"))
                 return walletModel->SendMessage(arrData);
+            if (command.toStdString()==string("registerdomain"))
+                return walletModel->RegisterDomain(arrData);
+            if (command.toStdString()==string("renewdomain"))
+                return walletModel->RenewDomain(arrData);
+            if (command.toStdString()==string("updatedomain"))
+                return walletModel->UpdateDomain(arrData);
+            if (command.toStdString()==string("transferdomain"))
+                return walletModel->TransferDomain(arrData);
             if (command.toStdString()==string("writefile")||command.toStdString()==string("readfile")
                     ||command.toStdString()==string("getconf")||command.toStdString()==string("setconf"))
             {

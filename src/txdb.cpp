@@ -4,7 +4,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "txdb.h"
-
+#include "rpcserver.h"
 #include "pow.h"
 #include "uint256.h"
 #include <stdint.h>
@@ -255,11 +255,261 @@ bool CTxAddressMapViewDB::BatchWrite(const std::map<CScript, std::vector<CDiskTx
     LogPrint("coindb", "Committing %u changed addresses to tam database...\n", (unsigned int)count);
     return db.WriteBatch(batch);
 }
+
 bool CTxAddressMapViewDB::Write(const CScript &scriptPubKey,const std::vector<CDiskTxPos> &vTxPos) {
      //LogPrintf("CTxAddressMapDB::BatchWrite:script:%s, vtxpos size:%u\n",scriptPubKey.ToString(),vTxPos.size());
     //LogPrintf("tamdb batchwrite \n");
     return db.Write(scriptPubKey,vTxPos);
 }
-//void static BatchWriteTxAddressMap(CLevelDBBatch &batch, const CScript &scriptPubkey, const std::vector<CDiskTxPos> &vTxPos) {   
-//        batch.Write(scriptPubkey, vTxPos);
-//}
+
+CDomainViewDB::CDomainViewDB(bool fWipe) : db(GetDataDir() / "domain", fWipe) {
+}
+bool CDomainViewDB::Update(const CScript ownerIn,const string& strDomainContent,const uint64_t lockedValue,const uint32_t nLockTimeIn,const CLink link)
+{
+    LogPrintf("txdb CDomainViewDB Update %s %s\n", HexStr(strDomainContent.begin(),strDomainContent.end()),link.ToString());
+    CDomain domain;
+    bool fRegister=false;
+    bool fForward=false;
+    bool fHasRecord=false;
+    if(!domain.SetContent(CContent(strDomainContent),ownerIn,fRegister,fForward))
+        return false;
+    LogPrintf("update domain name %s \n", domain.strDomain);    
+    if(domain.strDomain=="")
+            return false;
+    CDomain existingDomain;
+    if(domain.IsLevel2())
+    {
+        LogPrintf("update domain level2 \n");    
+        CDomain level1Domain;               
+        if(!GetDomainByName(GetLevel1Domain(domain.strDomain),level1Domain)||GetLockLasting(level1Domain.nExpireTime)==0)
+            return false;
+        LogPrintf("update domain level2 level1 found\n");    
+        if(ownerIn!=level1Domain.owner)
+            return false;
+        LogPrintf("update domain level2 owner:%S\n",ownerIn.ToString());    
+        //this is extremely important:skip the checking of ownership of level2 domains, so as to save huge work when there's a fallback
+        domain.owner=level1Domain.owner;
+    }    
+    fHasRecord=GetDomainByName(domain.strDomain,existingDomain);
+    if(fHasRecord)
+    LogPrintf("update domain expiretime:%i timeleft:%i \n",existingDomain.nExpireTime,GetLockLasting(existingDomain.nExpireTime));
+    if(fHasRecord&&(GetLockLasting(existingDomain.nExpireTime)>0))
+    {
+        LogPrintf("update domain exists \n");
+        if(existingDomain.owner!=ownerIn&&!domain.IsLevel2())//for level2, don't check owner here,it's already checked above
+            return false;
+        
+        if(fRegister)
+        {
+            if(nLockTimeIn==0||LockTimeToTime(nLockTimeIn)<LockTimeToTime(existingDomain.nExpireTime))//renew time earlier than current time
+                return false;
+            LogPrintf("update domain renew\n");
+            if(lockedValue<(domain.nDomainGroup==DOMAIN_10000?(domain.IsLevel2()?100*COIN:10000*COIN):100*COIN))
+                return false;
+            existingDomain=domain;
+            existingDomain.nExpireTime=nLockTimeIn;
+        }
+        else
+        {
+        
+            existingDomain.SetContent(CContent(strDomainContent),ownerIn,fRegister,fForward);
+            LogPrintf("update domain exists content set \n");
+        }
+            
+    }
+    else if(fRegister)//new registration
+    {        
+        LogPrintf("update domain register value%i,time:%i\n",lockedValue,nLockTimeIn); 
+        if(lockedValue<(domain.nDomainGroup==DOMAIN_10000?(domain.IsLevel2()?100*COIN:10000*COIN):100*COIN))
+            return false;
+        if(GetLockLasting(nLockTimeIn)==0)
+        {
+            LogPrintf("update domain register locktime too short\n"); 
+            return false;
+        }
+        LogPrintf("update domain register value passed\n"); 
+        existingDomain=domain;
+        existingDomain.owner=ownerIn;
+        //if(existingDomain.nExpireTime<nLockTimeIn)//there's possiblilty that renew time is closer to previous lock time
+            existingDomain.nExpireTime=nLockTimeIn;
+        LogPrintf("update domain register done\n"); 
+        //
+        
+    }
+    else
+        return false;
+    if (fForward)
+    {
+        LogPrintf("update domain forward\n"); 
+        existingDomain.vDirectHistory.push_back(link);
+        while(existingDomain.vDirectHistory.size()>8)
+            existingDomain.vDirectHistory.erase(existingDomain.vDirectHistory.begin());
+    }
+    LogPrintf("update domain to write\n"); 
+    if(fHasRecord)
+    {
+       //char* sql=existingDomain.GetUpdateSql();
+       //return db.Write(sql);
+        return db.Update(existingDomain);
+    }
+    return db.Insert(existingDomain);
+    
+}
+//TODO reverse: only reverses REG, transfer and enlong.
+                    //if this action is reg or transfer, reversely find the last reg/tranfer action. if none, this domain is diabled.
+                    //this must be done to avoid fallback attack to get domainnames for free.
+                    //list all txs related to the owner, find txs has this domain,
+bool CDomainViewDB::Reverse(const string& strDomainContent)
+{
+//    LogPrintf("Reverse %s \n", HexStr(strDomainContent));
+//    CDomain domain;
+//    if(!domain.SetContent(CContent(strDomainContent)))
+//        return false;
+//    LogPrintf("Reverse domain name %s \n", domain.strDomain);
+//    if(domain.strDomain=="")
+//            return false;
+//    //NO owner change, no need to reverse
+//    if(domain.owner==CScript())
+//        return true;
+//    std::vector<CDiskTxPos> vTxPos;
+//    pTxAddressMap->GetTxPosList(domain.owner,vTxPos);
+//    CDomain existingDomain;
+//    if(GetDomainByName(domain.nDomainGroup,domain.strDomain,existingDomain))
+//    {
+//        LogPrintf("Reverse domain exists \n");
+//        existingDomain.SetContent(strDomainContent);
+//        LogPrintf("Reverse domain exists content set \n");
+//           return Write(domain);
+//    }
+//    else    
+        return false;
+ 
+}
+bool CDomainViewDB::Write(const CDomain &domain)
+{
+    //char* sql=domain.GetInsertSql();
+    //    return db.Write(sql);
+    return db.Insert(domain);
+}
+bool CDomainViewDB::_GetDomainByForward(const int nExtension,const CScript scriptPubKey,std::vector<CDomain> &vDomain)const 
+{
+    char* searchColumn="redirrectto";
+    const char* searchValue;//NOte: for varchar, need to add'' arround value
+    const char* tableName=(nExtension==DOMAIN_10000?"domainf":"domainfai");
+//    char** result;
+//    int nRow;
+//    int nColumn;
+    //string str;
+    
+    string str2="x'";
+    str2.append(HexStr(scriptPubKey.begin(),scriptPubKey.end())).append("'");
+    searchValue=str2.c_str();
+    
+    
+    
+    return db.GetDomain(tableName,searchColumn, searchValue,vDomain);
+    
+    
+    
+//    if(db.Get(tableName,searchColumn,searchValue,result,nRow,nColumn))
+//    {
+//        for(int i=0;i<nRow;i++)
+//        {
+//            vDomain.push_back(CDomain(result,i*nColumn));
+//        }
+//        sqlite3_free_table(result);
+//        return true;
+//    }
+//    else
+//        return false;
+}
+bool CDomainViewDB::_GetDomainByOwner(const int nExtension,const CScript scriptPubKey,std::vector<CDomain> &vDomain)const 
+{
+    char* searchColumn="owner";
+    const char* searchValue;//NOte: for varchar, need to add'' arround value
+    const char* tableName=(nExtension==DOMAIN_10000?"domainf":"domainfai");
+//    char** result;
+//    int nRow;
+//    int nColumn;
+    //string str;
+    
+    string str2="x'";
+    str2.append(HexStr(scriptPubKey.begin(),scriptPubKey.end())).append("'");
+    searchValue=str2.c_str();
+    
+    
+    return db.GetDomain(tableName,searchColumn, searchValue,vDomain);
+    
+    
+//    
+//    if(db.Get(tableName,searchColumn,searchValue,result,nRow,nColumn))
+//    {
+//        for(int i=0;i<nRow;i++)
+//        {
+//            vDomain.push_back(CDomain(result,i*nColumn));
+//        }
+//        sqlite3_free_table(result);
+//        return true;
+//    }
+//    else
+//        return false;
+}
+bool CDomainViewDB::GetDomainByName(const string strDomainName,CDomain& domain)const 
+{
+    char* searchColumn="domainname";
+    const char* searchValue;//NOte: for varchar, need to add'' arround value
+    
+    const char* tableName=(GetDomainGroup(strDomainName)==DOMAIN_10000?"domainf":"domainfai");
+//    char** result;
+//    int nRow;
+//    int nColumn;    
+    string str2="'";
+    str2.append(strDomainName).append("'");
+    searchValue=str2.c_str();
+    std::vector<CDomain> vDomain;
+    
+    
+    if(db.GetDomain(tableName,searchColumn, searchValue,vDomain)&&vDomain.size()>0)
+    {
+        domain=vDomain[0];
+        return true;
+    }
+    return false;
+    
+//    
+//    
+//    if(db.Get(tableName,searchColumn,searchValue,result,nRow,nColumn))
+//    {
+//        if(nRow==0){
+//            return false;
+//            sqlite3_free_table(result);
+//        }            
+//        domain=CDomain(result,0); 
+//        
+//        return true;
+//    }
+//    else
+//        return false;
+}
+bool CDomainViewDB::GetDomainByForward(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupportFAI)const 
+{
+    int nExtension=DOMAIN_10000;
+    bool ret=_GetDomainByForward(nExtension,scriptPubKey, vDomain);
+    if(FSupportFAI)
+    {
+        nExtension=DOMAIN_100;
+        ret&=_GetDomainByForward(nExtension,scriptPubKey, vDomain);
+    }
+    return ret;
+}
+bool CDomainViewDB::GetDomainByOwner(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupportFAI)const 
+{
+    int nExtension=DOMAIN_10000;
+    bool ret=_GetDomainByOwner(nExtension,scriptPubKey, vDomain);
+    if(FSupportFAI)
+    {
+        nExtension=DOMAIN_100;
+        ret&=_GetDomainByOwner(nExtension,scriptPubKey, vDomain);
+    }
+    return ret;
+}

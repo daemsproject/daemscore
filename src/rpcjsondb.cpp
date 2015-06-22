@@ -103,7 +103,7 @@ Value setconf(const json_spirit::Array& params, bool fHelp) //  To Do
         if(params[i].type()!=str_type)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, expected string");
     std::string value;
-    LogPrintf("params4 type:%i\n",params[4].type());
+    //LogPrintf("params4 type:%i\n",params[4].type());
     if (params[4].type()==null_type)
         value="";
     else if(params[4].type()==str_type)

@@ -44,6 +44,11 @@ var CBrowser = new function () {
         return this.createImgHtml(clink, r);
 
     };
+    this.getB64DataFromLink=function(clink) {
+        var cj = (BrowserAPI.getContentByLink(clink));
+        r = this.getFileContentFrJson(cj);
+        return r;
+    };
     this.createImgSrc = function (type, b64) {
         return   "data:" + type + ";base64," + b64;
     };
@@ -54,6 +59,13 @@ var CBrowser = new function () {
         idiv.find("img").attr("type", type);
         idiv.find("img").attr("src", this.createImgSrc(type, imgB64Data));
         return idiv.html();
+    };
+    this.createIconHtml=function(imgB64Data,clink) {
+        var html='<a ><img';
+        if (clink)
+            html+=' id="' + clink;
+        html+='" src="data:image/jpg;base64,' + imgB64Data + '" type="image/jpeg" class="brimg"/></a>';
+        return html; 
     };
     this.createVideoHtml = function (clink, vdoB64Data, type) {
         type = typeof type !== 'undefined' ? type : "video/mp4";
