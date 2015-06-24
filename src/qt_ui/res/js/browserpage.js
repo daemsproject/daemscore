@@ -23,9 +23,9 @@ $(document).ready(function () {
         var link = $(this).parent().parent().find(".linkspan").attr("clink");
         copyToClipboard(link);
     });
-    $("#fullImage").click(function () {
-        $(this).html("");
-    });
+//    $("#fullImage").click(function () {
+//        $(this).html("");
+//    });
     $(window).scroll(function () {
         if ($(window).scrollTop() + $(window).height() == $(document).height()) {
             CBrowser.bottomAction();
@@ -44,9 +44,10 @@ $(document).ready(function () {
     });
 
 // slider code from http://codepen.io/zuraizm/pen/vGDHl
+    var sliderInterval = 3000;
     var sliderAuto = setInterval(function () {
         moveRight();
-    }, 3000);
+    }, sliderInterval);
 
     var slideCount = $('#slider ul li').length;
     var slideWidth = $('#slider ul li').width();
@@ -60,7 +61,7 @@ $(document).ready(function () {
     }).mouseleave(function () {
         sliderAuto = setInterval(function () {
             moveRight();
-        }, 3000);
+        }, sliderInterval);
     });
     function moveLeft() {
         $('#slider ul').animate({
@@ -85,5 +86,52 @@ $(document).ready(function () {
         moveRight();
     });
 
-
+// copy from publisherpage.js
+    var dropZone = document.getElementById('fileholder');
+    var theTextVal = "Type some here or drag and drop a file / Click or drag the file into the area above";
+//    $('#fileholder').click(function () {
+//        CPublisher.handleFileInput('theFile');
+//    })
+    $('#browsefile').click(function () {
+        CPublisher.handleFileInput('theFile');
+    })
+    $('#theText').val(theTextVal).click(function () {
+//        console.log($(this).val());
+        $(this).removeClass('lttext');
+        if ($(this).val() === theTextVal) {
+            $(this).val("");
+            $('#pubbtnh').show();
+        }
+    }).blur(function () {
+        if ($(this).val() === "") {
+            $(this).addClass('lttext');
+            $(this).val(theTextVal);
+        }
+    });
+    $('#addtag').click(function () {
+//        alert('t');
+        CPublisher.addTagField();
+    });
+    if (window.File && window.FileReader && window.FileList && window.Blob) {
+        dropZone.addEventListener('dragover', CPublisher.handleDragOver, false);
+        dropZone.addEventListener('drop', CPublisher.handleFileSelect, false);
+    } else {
+        alert("error handleDragOver");
+    }
+//    $("#test").click(function () {
+//        var rctt = "test text";
+//        var ctt = BrowserAPI.createContentC(rctt);
+//        console.log(ctt.hex);
+//    });
+    $(".id").find("a.text").click(function () {
+        CBrowser.toggleFullId($(this).parent());
+    });
+    $("#theText").bind('input propertychange', function () {
+        $("#confirmpub").removeAttr('disabled');
+    });
+    $("#confirmpub").click(function () {
+        var text = $("#theText").val();
+        console.log(text);
+        CPublisher.handleText(text);
+    });
 });

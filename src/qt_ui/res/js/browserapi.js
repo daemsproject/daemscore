@@ -221,6 +221,7 @@ var BrowserAPI = new function () {
         addrs = typeof addrs !== 'undefined' ? addrs : [];
         var fcc = ["CC_FILE_P", "CC_TEXT_P", "CC_LINK_P", "CC_LINK"];
         var d = [{"fbh": fbh, "maxc": 20, "maxb": 3000000, "firstcc": fcc, "cformat": 6, "fAsc": fAsc, "mincsize": 3, "blkc": blkc}, addrs];
+//        console.log(JSON.stringify(d));
         return this.icall("getcontents", d);
     };
     this.isContentImage = function (ctt) {
@@ -229,7 +230,7 @@ var BrowserAPI = new function () {
         if (ctt.content[0].cc_name !== "CC_FILE_P")
             return false;
         for (var i = 0, t; t = ctt.content[0].content[i]; i++) {
-            if (t.cc_name === "CC_FILE_TYPESTRING" && jQuery.inArray(atob(t.content), imgMIME) > 0) {
+            if (t.cc_name === "CC_FILE_TYPESTRING" && jQuery.inArray(atob(t.content), imgMIME) >= 0) {
                 return true;
             }
         }
@@ -240,12 +241,12 @@ var BrowserAPI = new function () {
         blkc = typeof blkc !== 'undefined' ? blkc : 10;
         fAsc = typeof fAsc !== 'undefined' ? fAsc : true;
         addrs = typeof addrs !== 'undefined' ? addrs : [];
-        var d = [{"fbh": fbh, "maxc": 4, "maxb": 3000000, "firstcc":["CC_FILE_P"], "cformat": 6, "fAsc": fAsc, "mincsize": 3, "blkc": blkc}, addrs];
+        var d = [{"fbh": fbh, "maxc": 100, "maxb": 3000000, "firstcc":["CC_FILE_P"], "cformat": 6, "fAsc": fAsc, "mincsize": 3, "blkc": blkc}, addrs];
         var r = this.icall("getcontents", d);
         for (var i = 0, t; t = r[i]; i++) {
             if(!this.isContentImage(t))
                 r.splice(i,1);
-        }
+            }
         return r;
     };
 //    this.testGetContents = function (fbh) {

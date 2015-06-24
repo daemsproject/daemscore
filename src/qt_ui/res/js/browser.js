@@ -44,7 +44,7 @@ var CBrowser = new function () {
         return this.createImgHtml(clink, r);
 
     };
-    this.getB64DataFromLink=function(clink) {
+    this.getB64DataFromLink = function (clink) {
         var cj = (BrowserAPI.getContentByLink(clink));
         r = this.getFileContentFrJson(cj);
         return r;
@@ -60,12 +60,12 @@ var CBrowser = new function () {
         idiv.find("img").attr("src", this.createImgSrc(type, imgB64Data));
         return idiv.html();
     };
-    this.createIconHtml=function(imgB64Data,clink) {
-        var html='<a ><img';
+    this.createIconHtml = function (imgB64Data, clink) {
+        var html = '<a ><img';
         if (clink)
-            html+=' id="' + clink+'"';
-        html+=' src="data:image/jpg;base64,' + imgB64Data + '" type="image/jpeg" class="brimg" height="40" width="40"/></a>';
-        return html; 
+            html += ' id="' + clink + '"';
+        html += ' src="data:image/jpg;base64,' + imgB64Data + '" type="image/jpeg" class="brimg" height="40" width="40"/></a>';
+        return html;
     };
     this.createVideoHtml = function (clink, vdoB64Data, type) {
         type = typeof type !== 'undefined' ? type : "video/mp4";
@@ -312,7 +312,7 @@ var CBrowser = new function () {
     };
     this.showNotice = function (n) {
         $("#notices").html(n).show();
-        $("#notices").delay(2000).hide(0);
+        $("#notices").delay(200000).hide(0);
     };
     this.bottomAction = function () {
         var tabid = $(".tabbar").children("li.active").children("a").attr("id");
@@ -338,7 +338,7 @@ var CBrowser = new function () {
         return BrowserAPI.getImages(0, 100000, false);
     };
     this.createSliderImage = function (ctt) {
-       var type = "image/jpeg";
+        var type = "image/jpeg";
         var idiv = $("#s-image-tpl").clone(true, true);
         idiv.find("img").attr("id", CLink.setString(ctt.link).toHtmlId());
         idiv.find("img").attr("type", type);
@@ -346,11 +346,11 @@ var CBrowser = new function () {
         return idiv.html();
     };
     this.addSlideImage = function (imgs) {
-        console.log(imgs);
-        console.log(sld);
+//        console.log(imgs);
+//        console.log(sld);
         for (var i = 0, t; t = imgs[i]; i++) {
             var h = this.createSliderImage(t);
-            console.log(h);
+//            console.log(h);
             $("#slider ul").append(h);
         }
     };
@@ -362,7 +362,7 @@ var CPublisher = new function () {
     this.handleFiles = function (files) {
         for (var i = 0, f; f = files[i]; i++) {
             if (f.size > 1000000) {
-                CBrowser.showNotice("The maximum file size is 10MB");
+                CBrowser.showNotice("The maximum file size is 1MB");
                 return;
             }
             if (f.name) {
@@ -428,5 +428,10 @@ var CPublisher = new function () {
         ctt.poster = [BrowserAPI.getAccountID()];
         ctt.hex = ctthex.hex;
         CPublisher.handleContent(ctt);
+    };
+    this.addTagField = function () {
+        var tagdiv = $("#pubtag-tpl").clone(true, true);
+        tagdiv.removeAttr("id");
+        $(tagdiv).insertBefore($('#pubbtnh'));
     };
 };

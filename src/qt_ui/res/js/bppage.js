@@ -11,9 +11,9 @@ $(document).ready(function () {
     $(".brctt").find("a.shrt").click(function () {
         CBrowser.toggleCmt($(this).parent());
     });
-    $(".ctt").click(function () {
-        CBrowser.showFullImg($(this));
-    });
+//    $(".ctt").click(function () {
+//        CBrowser.showFullImg($(this));
+//    });
     $(".id-follow-btn").click(function () {
         var id = $(this).parent().parent().find(".text").attr("fullid");
         var feedback = BrowserAPI.setFollow(id);

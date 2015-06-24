@@ -33,7 +33,6 @@
             </div>
         </div>
         <div class="container ph"></div>
-        <div id="main-notices-container"><span id="notices"></span></div>
 
         <!--
         <button id="refresh-btn">refresh new</button>
@@ -43,16 +42,29 @@
 
 
         <div class="column column1" id="shdr">
+            <div id="main-notices-container"><span id="notices"></span></div>
             <div class="slideholder">
-
                 <div id="slider">
                     <a href="#" class="control_next">></a>
                     <a href="#" class="control_prev"><</a>
                     <ul></ul>  
                 </div>
             </div>
+            <div class="maininput">
+
+                <input type="file" id="theFile" style="display:none" multiple/>
+                <div id="fileholder" align="center">
+                    <textarea id="theText" class="maintext lttext"></textarea>
+                    <div id="pubbtnh">
+                        <button id="addtag">Add tags</button>
+                        <button id="browsefile">Browse</button>
+                        <button id="confirmpub" disabled>Send</button>
+                    </div>
+                </div>
+
+
+            </div>
         </div>
-        <div class="column vph"></div>
         <div class="column column2">
             <div id="mainframe"></div>
         </div>
@@ -66,6 +78,7 @@
                     <div class="id">
                         <ul>
                             <a class="text" fullid=""></a>
+                            <li><a class="id-homepage-btn idbtn">Visit homepage</a></li>
                             <li><a class="id-copyid-btn idbtn">Copy ID</a></li>
                             <li><a class="id-follow-btn idbtn">Follow</a></li>
                             <li><a class="id-share-btn idbtn">Share</a></li>
@@ -94,6 +107,7 @@
                     <div class="id">
                         <ul>
                             <a class="text" fullid=""></a>
+                            <li><a class="id-homepage-btn idbtn">Visit homepage</a></li>
                             <li><a class="id-copyid-btn idbtn">Copy ID</a></li>
                             <li><a class="id-unfollow-btn idbtn">Unfollow</a></li>
                             <li><a class="id-share-btn idbtn">Share</a></li>
@@ -121,6 +135,7 @@
         <div id="s-image-tpl"><li><a><img id="" src="" type="" class="brimgs"/></a></li></div>
         <div id="fullImage"></div>
         <div id="linka"><a class="link"></a></div>
+        <div id="pubtag-tpl" class="pubtag"><span>Tag</span> <input type="text" name="tag"></div>
     </body>
 
 </html>

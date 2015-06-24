@@ -1,5 +1,5 @@
 html,body{
-    background-color: #eee;
+    background-color: #eee;color:#444;
 }h1{
     font:20px arial,sans-serif;
 }.container{
@@ -13,9 +13,11 @@ html,body{
 }.ctt{
     padding:6px 0;
 }.quickstart{
-    width:100%;position:fixed;background-color:#000;
-}main-notices-container{
-    z-index:1; position:fixed; right:0px; margin:20px; width:auto; min-width:280px; overflow:visible; height:0px;
+    width:100%;position:fixed;background-color:#000;top:0;
+}#main-notices-container{
+    z-index:1;margin:20px; width:auto; min-width:280px; overflow:visible;height:100px;
+}#notices{
+    height:100px;
 }#fullImage{
     position:absolute;top:0;height:90%;bottom:5%;
 }#standard,#followstd{
@@ -63,14 +65,17 @@ html,body{
 }.column1{
     margin-left:5%;position: fixed;
 }.column2{
+}.lttext{
+    color:#aaa;
 }
 
+/* slider */
 #slider {
     position:relative; overflow:hidden; margin:40px auto 0 auto; 
 }#slider ul {
     position:relative; margin:0; padding:0; height:200px; list-style:none;}
 #slider ul li {
-    position:relative; display:block; float:left; margin:0; padding:0; width:480px; height:360px; background:#ccc; text-align:center; line-height:360px;
+    position:relative; display:block; float:left; margin:0; padding:0; width:480px; height:360px; background:#ddd; text-align:center; line-height:360px;
 }a.control_prev, a.control_next {
     position:absolute; top:40%; z-index:999; display:block; padding:4% 3%; width:auto; height:auto; background:#2a2a2a; color:#fff; text-decoration:none; font-weight:600; font-size:18px; opacity:0.6; cursor:pointer;
 }a.control_prev:hover, a.control_next:hover {
@@ -79,4 +84,27 @@ html,body{
     border-radius:0 3px 3px 0;
 }a.control_next {
     right:0; border-radius:3px 0 0 3px;
+}
+
+/* publisher */
+.maintext{
+    width:90%;height:100px;margin: 15px 0;
+}#fileholder {
+    background-attachment: scroll; background-origin: padding-box;border:5px dashed #ccc; display: block; line-height: 20px; margin: 50px auto; width: 470px;min-height: 150px;
+}#fileholder:hover{
+    cursor: pointer;
+}#confirmpub:disabled{
+    color: #bbb;
+}#theText{
+    border: none;resize:vertical;
+}#pubbtnh{
+    display: none;text-align: right;
+}#pubbtnh button{
+    margin:0 20px 10px;
+}.pubtag{
+    text-align: left;
+}.pubtag span{
+    margin: 0 15px;
+}.pubtag input[type="text"]{
+    width:350px;
 }
