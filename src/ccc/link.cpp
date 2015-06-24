@@ -7,8 +7,8 @@
 //#include <stdio.h>
 #include "util.h"
 #include "base58.h"
-
-
+#include <iterator>
+#include <vector>
 
 #include "utilstrencodings.h"
 using namespace boost;
@@ -107,22 +107,80 @@ bool CLink::SetString(const std::string linkStr)
 string CLink::Serialize()const
 {
     string str;
-    str.append((char*) &(nHeight), sizeof (nHeight));
-    str.append((char*) &(nTx), sizeof (nTx));
-    str.append((char*) &(nVout), sizeof (nVout));
+    WriteVarInt(nHeight, str);
+    WriteVarInt(nTx, str);
+    WriteVarInt(nVout, str);
+    // str.append((char*)&(nHeight), sizeof(nHeight));
+    // str.append((char*)&(nTx), sizeof(nTx));
+    // str.append((char*)&(nVout), sizeof(nVout)); 
     LogPrintf("CLink::Serialize() %s", HexStr(str.begin(), str.end()));
     return str;
 }
 
-bool CLink::Unserialize(const string& str)
+bool CLink::Unserialize(string& str)
 {
-    if (str.size() != 8)
+    //    if(str.size()!=8)
+    //        return false;    
+    //     nHeight = str[3]<<24|(unsigned char)str[2]<<16|(unsigned char)str[1]<<8|(unsigned char)str[0];
+    //    nTx = (unsigned char)str[5]<<8|(unsigned char)str[4];
+    //    nVout = (unsigned char)str[7]<<8|(unsigned char)str[6];
+    LogPrintf("CLink::UnSerialize() %s\n", HexStr(str.begin(), str.end()));
+    if (!ReadVarInt(str, nHeight))
         return false;
-    nHeight = str[3] << 24 | (unsigned char) str[2] << 16 | (unsigned char) str[1] << 8 | (unsigned char) str[0];
-    nTx = (unsigned char) str[5] << 8 | (unsigned char) str[4];
-    nVout = (unsigned char) str[7] << 8 | (unsigned char) str[6];
-    LogPrintf("CLink::UnSerialize() %s,%i,%i,%i", HexStr(str.begin(), str.end()), nHeight, nTx, nVout);
+    int n = 0;
+    if (!ReadVarInt(str, n))
+        return false;
+    if (n < 0 || n > 65535)
+        return false;
+    nTx = (unsigned short) n;
+    if (!ReadVarInt(str, n))
+        return false;
+    if (n < 0 || n > 65535)
+        return false;
+    nVout = (unsigned short) n;
+    LogPrintf("CLink::UnSerialize() %i,%i,%i \n", nHeight, nTx, nVout);
     return true;
+}
+
+bool CLink::WriteVarInt(const int nIn, string& str) const
+{
+    int n = nIn;
+    char tmp[8];
+    int len = 0;
+    while (true) {
+        tmp[len] = (n & 0x7F) | (len ? 0x80 : 0x00);
+        if (n <= 0x7F)
+            break;
+        n = (n >> 7) - 1;
+        len++;
+    }
+    do {
+        std::string tstr;
+        tstr += tmp[len];
+        str.append(tstr, 0, 1);
+    } while (len--);
+    return true;
+}
+
+bool CLink::ReadVarInt(string& str, int& n)const
+{
+    string::iterator pc = str.begin();
+    n = 0;
+    unsigned char chData = 0xff;
+    int offset = 0;
+    while (pc < str.end()) {
+        if (offset > 3)
+            return false;
+        chData = *pc++;
+        n = (n << 7) | (chData & 0x7F);
+        offset++;
+        if (chData & 0x80)
+            n++;
+        else
+            break;
+    }
+    str = str.substr(offset);
+    return (chData & 0x80) ? false : true;
 }
 
 bool CLink::SetString(const vector<unsigned char>& linkVch)

@@ -530,6 +530,7 @@ CCoinsViewCache *pcoinsTip = NULL;
 CBlockTreeDB *pblocktree = NULL;
 CTxAddressMap *pTxAddressMap=NULL;
 CDomainViewDB *pDomainDBView = NULL;
+CTagViewDB *pTagDBView = NULL;
 //////////////////////////////////////////////////////////////////////////////
 //
 // mapOrphanTransactions
@@ -736,6 +737,46 @@ bool IsFrozen(const CTransaction &tx, int nBlockHeight, int64_t nBlockTime){
     if ((int64_t)tx.nLockTime < ((int64_t)tx.nLockTime < LOCKTIME_THRESHOLD ? (int64_t)nBlockHeight : nBlockTime))
         return false;
     return true;
+}
+int GetBlocksToMaturity(const unsigned int nLockTime)
+{
+    if (nLockTime!=0){        
+        if ((int64_t)nLockTime < LOCKTIME_THRESHOLD )
+            return max(0, (int)((int)nLockTime+1 - (int)chainActive.Height()));  
+        else{
+            int lockBlocks;
+            lockBlocks=(int)(((int64_t)nLockTime-GetAdjustedTime())/Params().TargetSpacing());
+            return max(0, lockBlocks);
+        }
+    }
+        return 0;
+}
+//this function is relative time to chainactive.tip
+int GetLockLasting(uint32_t nLockTime)
+{
+    int64_t blocks = 0;
+    if (nLockTime != 0) {
+        if (nLockTime < LOCKTIME_THRESHOLD) { 
+            blocks = max(0, (int) ((int) nLockTime + 1 - (int) chainActive.Height()));
+            return blocks * Params().TargetSpacing();
+        } else {
+            return (int) max((int) 0, (int)(nLockTime - chainActive.Tip()->nTime));                
+        }
+    }
+    return 0;
+}
+uint32_t LockTimeToTime(uint32_t nLockTime)
+{
+    int64_t blocks = 0;
+    if (nLockTime != 0) {
+        if (nLockTime < LOCKTIME_THRESHOLD) { 
+            blocks = (int) ((int) nLockTime  - (int) chainActive.Height());
+            return (uint32_t)(blocks * Params().TargetSpacing()+GetAdjustedTime());
+        } else {
+            return (uint32_t) nLockTime;                
+        }
+    }
+    return 0;
 }
 bool IsFrozen(const CCoins &tx){
     AssertLockHeld(cs_main);
@@ -1715,6 +1756,37 @@ void UpdateDomainDB(const CTransaction& tx,const CBlock& block,const int nTx,CVa
                 }                
             }
         }
+    }
+}
+void UpdateTagDB(const CTransaction& tx,const CBlock& block,const int nTx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse)
+{
+    if(tx.IsCoinBase())//coinbase is not allowed to register domain
+        return;
+    uint32_t nExpireTime=LockTimeToTime(tx.nLockTime);
+    if(nExpireTime==0||nExpireTime<GetAdjustedTime())
+        return;
+    int nTags=(int)(tx.GetValueOut()/COIN);    
+    for(unsigned int i=0;i<tx.vout.size();i++) {  
+        if (nTags<=0) 
+            return ;
+        CContent str=tx.vout[i].strContent;
+        if(!str.IsStandard())
+            continue;
+        std::vector<std::pair<int,std::string> >vTagList;
+        CLink link(block.nBlockHeight,nTx,i);
+        if(pTagDBView->HasLink(link))
+            continue;
+        if(str.GetTags(vTagList))
+        {              
+            for(unsigned int j=0;j<vTagList.size();j++)
+            {
+                                         
+                pTagDBView->Insert(vTagList[j].first,vTagList[j].second,link,nExpireTime);
+                nTags--;
+                if (nTags<=0) 
+                    return ;
+            }                
+        }        
     }
 }
 bool CScriptCheck::operator()() {

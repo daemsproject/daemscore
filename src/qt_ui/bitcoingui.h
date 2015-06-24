@@ -101,16 +101,16 @@ private:
     QAction *minerAction;
     QAction *shopAction;
     QAction *domainNameAction;
-    //QAction *overviewAction;
-    //QAction *historyAction;
+    QAction *downloaderAction;
+    QAction *playerAction;
     QAction *quitAction;
-    //QAction *sendCoinsAction;
+    
     //QAction *usedSendingAddressesAction;
     //QAction *usedReceivingAddressesAction;
     //QAction *signMessageAction;
     //QAction *verifyMessageAction;
     QAction *aboutAction;
-    //QAction *receiveCoinsAction;
+    
     //QAction *optionsAction;
     QAction *toggleHideAction;        
     QAction *changePassphraseAction;
@@ -218,6 +218,9 @@ private slots:
    void lockAccountClicked();
    void domainNameClicked();
     void gotoBrowserPage();  
+    void gotoShopPage();
+    void gotoDownloaderPage();
+    void gotTVPage();
     /** Show about dialog */    
     void aboutClicked();
     /** Show help message dialog */

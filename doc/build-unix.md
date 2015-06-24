@@ -33,7 +33,7 @@ These dependencies are required:
  ------------|------------------|----------------------
  libssl      | SSL Support      | Secure communications
  libboost    | Boost            | C++ Library
-
+ sqlite
 Optional dependencies:
 
  Library     | Purpose          | Description

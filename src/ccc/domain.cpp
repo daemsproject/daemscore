@@ -161,9 +161,11 @@ bool CDomain::SetContent(const CContent content,const CScript ownerIn,bool& fReg
                 LogPrintf("SetContent CC_TRANSFER %s\n",HexStr(str));
                 //fTransfer=true;
                 if(IsLevel2())//no transfer for level2
-                    return false;                
+                    break;                
                 //vuc.resize(str.size());
                 //vuc.assign(str.begin(),str.end());
+                if(str.size()>35)
+                    break;
                 owner.resize(str.size());
                 owner.assign(str.begin(),str.end());
                 LogPrintf("SetContent CC_TRANSFER owner %s,%s\n",HexStr(owner.begin(),owner.end()),owner.ToString());

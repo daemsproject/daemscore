@@ -15,6 +15,8 @@
 #include <boost/filesystem/path.hpp>
 #include <sqlite3.h>
 class CDomain;
+class CLink;
+using namespace std;
 class sqlite_error : public std::runtime_error
 {
 public:
@@ -47,6 +49,12 @@ public:
     bool GetDomain(const char* tableName,const char* searchColumn,const char* searchValue,std::vector<CDomain>& vDomain) const;
     bool CreateTables();
     bool _CreateTable(const char* tableName);
+    bool CreateTagIDTable();
+    bool CreateTagTable();
+    bool InsertTag(const int cc,const int tagID,const CLink link,const unsigned int nExpireTime);
+    bool GetLinks(const vector<string> vTag,const int cc,const CLink link,std::vector<CLink>& vLink,const int nMaxItems=1000,const int nOffset=0) const;
+    bool InsertTagID(const string tag,int& tagID);
+    bool GetTagID(const string tag,int& tagID) const;
+    bool ClearExpiredTags(const unsigned int nTime);
 };
-
 #endif // BITCOIN_LEVELDBWRAPPER_H

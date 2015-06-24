@@ -397,6 +397,7 @@ std::string GetCcName(const cctype cc)
         case CC_ENCRYPT_PARAMS_MHASH_HEIGHT: return "CC_ENCRYPT_PARAMS_MHASH_HEIGHT";
             //PRODUCT
         case CC_PRODUCT_PRICE: return "CC_PRODUCT_PRICE";
+        case CC_PRODUCT_ID: return "CC_PRODUCT_ID";
         case CC_PRODUCT_NAME: return "CC_PRODUCT_NAME";
         case CC_PRODUCT_PAYTO: return "CC_PRODUCT_PAYTO";
         case CC_PRODUCT_INTRO: return "CC_PRODUCT_INTRO";
@@ -787,6 +788,7 @@ cctype GetCcValue(std::string ccName)
     else if (ccName == "CC_ENCRYPT_PARAMS_MHASH_HEIGHT") return CC_ENCRYPT_PARAMS_MHASH_HEIGHT;
         //PRODUCT
     else if (ccName == "CC_PRODUCT_PRICE") return CC_PRODUCT_PRICE;
+    else if (ccName == "CC_PRODUCT_ID") return CC_PRODUCT_ID;
     else if (ccName == "CC_PRODUCT_NAME") return CC_PRODUCT_NAME;
     else if (ccName == "CC_PRODUCT_PAYTO") return CC_PRODUCT_PAYTO;
     else if (ccName == "CC_PRODUCT_INTRO") return CC_PRODUCT_INTRO;
@@ -955,10 +957,27 @@ bool CContent::FirstCc(const cctype& ccIn)const
 
 }
 
+int CContent::GetFirstCc()const
+{
+    if (IsEmpty())
+        return 0;
+    const_iterator pc = begin();
+    //cctype cc;
+    u_int64_t n;
+    if (!ReadVarInt(pc, n))
+        return 0;
+    return n;
+}
+
 bool CContent::SetEmpty()
 {
     clear();
     return true;
+}
+
+bool CContent::IsEmpty()const
+{
+    return size() == 0;
 }
 
 bool CContent::SetJson(const Array& cttJson)
@@ -1107,9 +1126,13 @@ bool CContent::ReadVarInt(const_iterator& pc, u_int64_t& n)const
 {
     n = 0;
     unsigned char chData = 0xff;
+    int offset = 0;
     while (pc < end()) {
+        if (offset > 3)
+            return false;
         chData = *pc++;
         n = (n << 7) | (chData & 0x7F);
+        offset++;
         if (chData & 0x80)
             n++;
         else
@@ -1283,6 +1306,8 @@ bool CContent::DecodeLink(int& redirectType, string& redirectTo)const
         } else if (cc == CC_LINK) {
             LogPrintf("CContent DecodeLink3\n");
             str = vDecoded[i].second;
+            if (str.size() > 64)
+                return false;
             fHasLinkContent = true;
         }
 
@@ -1306,18 +1331,75 @@ bool CContent::DecodeDomainInfo(string& strAlias, string& strIntro, CLink& iconL
     for (unsigned int i = 0; i < vDecoded.size(); i++) {
         cc = vDecoded[i].first;
         str = vDecoded[i].second;
-        if (cc == CC_DOMAIN_INFO_ALIAS)
+        if (cc == CC_DOMAIN_INFO_ALIAS) {
+            if (str.size() > 64)
+                str = str.substr(0, 64);
             strAlias = str;
-        else if (cc == CC_DOMAIN_INFO_INTRO)
+        } else if (cc == CC_DOMAIN_INFO_INTRO) {
+            if (str.size() > 128)
+                str = str.substr(0, 128);
             strIntro = str;
-        else if (cc == CC_DOMAIN_INFO_ICON && str.size() == 8) {
+        } else if (cc == CC_DOMAIN_INFO_ICON && str.size() >= 3) {
             //CDataStream s(str.c_str(),str.c_str()+str.size(),0,0);
             iconLink.Unserialize(str);
-        } else if (cc == CC_TAG)
+        } else if (cc == CC_TAG && str.size() <= 32)
             vTags.push_back(str);
     }
     LogPrintf("CContent DecodeDomainInfo done\n");
     return true;
+}
+
+bool CContent::GetTags(std::vector<std::pair<int, std::string> >& vTagList) const
+{
+    if (!IsStandard())
+        return false;
+    std::vector<std::pair<int, string> > vDecoded;
+    Decode(vDecoded);
+    bool fccp = false;
+    int ccp = -1;
+    for (unsigned int i = 0; i < vDecoded.size(); i++) {
+        int cc = vDecoded[i].first;
+        string str = vDecoded[i].second;
+        if (cc == CC_P) {
+            CContent(str).GetTags(vTagList);
+            fccp = true;
+        } else if (cc < 255) {
+            if (cc % 2 == 1 && cc != CC_TAG_P) {
+                CContent(str)._GetTags(vTagList, cc & 0);
+                fccp = true;
+            } else if (cc != CC_TAG)
+                ccp = cc;
+        }
+    }
+    if (!fccp && ccp != -1) {
+        _GetTags(vTagList, ccp);
+    }
+    return vTagList.size() > 0;
+}
+
+bool CContent::_GetTags(std::vector<std::pair<int, std::string> >& vTagList, int ccp) const
+{
+    if (!IsStandard())
+        return false;
+    std::vector<std::pair<int, string> > vDecoded;
+    Decode(vDecoded);
+    for (unsigned int i = 0; i < vDecoded.size(); i++) {
+        int cc = vDecoded[i].first;
+        string str = vDecoded[i].second;
+        std::vector<std::string> vTag;
+        if (cc == CC_TAG && str.size() > 0 && str.size() <= 32)
+            vTagList.push_back(make_pair(ccp, str));
+        if (cc == CC_TAG_P) {
+            std::vector<std::pair<int, string> > vDecoded2;
+            for (unsigned int i = 0; i < vDecoded.size(); i++) {
+                int cc1 = vDecoded[i].first;
+                string str1 = vDecoded[i].second;
+                if (cc1 == CC_TAG && str1.size() > 0 && str1.size() <= 32)
+                    vTagList.push_back(make_pair(ccp, str1));
+            }
+        }
+    }
+    return vTagList.size() > 0;
 }
 
 Value CMessage::ToJson(bool fLinkOnly)const

@@ -7,6 +7,7 @@
 #include "rpcserver.h"
 #include "pow.h"
 #include "uint256.h"
+#include "timedata.h"
 #include <stdint.h>
 
 #include <boost/thread.hpp>
@@ -262,7 +263,7 @@ bool CTxAddressMapViewDB::Write(const CScript &scriptPubKey,const std::vector<CD
     return db.Write(scriptPubKey,vTxPos);
 }
 
-CDomainViewDB::CDomainViewDB(bool fWipe) : db(GetDataDir() / "domain", fWipe) {
+CDomainViewDB::CDomainViewDB(bool fWipe) : db(GetDataDir() / "sqlitedb", fWipe) {
 }
 bool CDomainViewDB::Update(const CScript ownerIn,const string& strDomainContent,const uint64_t lockedValue,const uint32_t nLockTimeIn,const CLink link)
 {
@@ -493,12 +494,18 @@ bool CDomainViewDB::GetDomainByName(const string strDomainName,CDomain& domain)c
 }
 bool CDomainViewDB::GetDomainByForward(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupportFAI)const 
 {
+    std::vector<CDomain> vDomain1;
     int nExtension=DOMAIN_10000;
-    bool ret=_GetDomainByForward(nExtension,scriptPubKey, vDomain);
+    bool ret=_GetDomainByForward(nExtension,scriptPubKey, vDomain1);
     if(FSupportFAI)
     {
         nExtension=DOMAIN_100;
-        ret&=_GetDomainByForward(nExtension,scriptPubKey, vDomain);
+        ret&=_GetDomainByForward(nExtension,scriptPubKey, vDomain1);
+    }
+    for(unsigned int i=0;i<vDomain1.size();i++)
+    {
+        if(LockTimeToTime(vDomain1[i].nExpireTime)>=GetAdjustedTime())
+            vDomain.push_back(vDomain1[i]);
     }
     return ret;
 }
@@ -512,4 +519,27 @@ bool CDomainViewDB::GetDomainByOwner(const CScript scriptPubKey,std::vector<CDom
         ret&=_GetDomainByOwner(nExtension,scriptPubKey, vDomain);
     }
     return ret;
+}
+CTagViewDB::CTagViewDB( bool fWipe): db(GetDataDir() / "sqlitedb", fWipe){}
+bool CTagViewDB::HasLink(const CLink link)const{
+    vector<CLink> vLink;
+    vector<string> vTag;
+    return (db.GetLinks(vTag,0,link,vLink)&&vLink.size()>0);
+}
+bool CTagViewDB::Search(vector<CLink> vLink,const std::vector<string> &vTag,const int cc,const int nMaxItems,const int nOffset)const
+{
+    return db.GetLinks(vTag,cc,CLink(),vLink,nMaxItems, nOffset);
+
+}           
+bool CTagViewDB::Insert(const int cc,const string tag,const CLink link,const int nExpireTime)
+{
+    if(tag.size()>32)
+        return false;
+    int tagID;
+    db.InsertTagID(tag,tagID);
+    return db.InsertTag(cc,tagID,link, nExpireTime);
+}
+bool CTagViewDB::ClearExpired()
+{
+    return db.ClearExpiredTags(GetAdjustedTime());
 }

@@ -410,14 +410,15 @@ enum cctype
     CC_ENCRYPT_PARAMS_MHASH_HEIGHT = 0x14000e,
     //PRODUCT
     CC_PRODUCT_PRICE = 0x1600,
-    CC_PRODUCT_NAME = 0x1602,
-    CC_PRODUCT_PAYTO = 0x1604,
-    CC_PRODUCT_INTRO = 0x1606,
-    CC_PRODUCT_ICON = 0x1608,
-    CC_PRODUCT_ATTIRBUTES = 0x160a,
-    CC_PRODUCT_ATTIRBUTES_P = 0x160b,
-    CC_PRODUCT_UNITSTRING = 0x160c,
-    CC_PRODUCT_UNIT_PIECE = 0x160c02,
+    CC_PRODUCT_ID = 0x1602,
+    CC_PRODUCT_NAME = 0x1604,
+    CC_PRODUCT_PAYTO = 0x1606,
+    CC_PRODUCT_INTRO = 0x1608,
+    CC_PRODUCT_ICON = 0x160a,
+    CC_PRODUCT_ATTIRBUTES = 0x160c,
+    CC_PRODUCT_ATTIRBUTES_P = 0x160d,
+    CC_PRODUCT_UNITSTRING = 0x160e,
+    CC_PRODUCT_UNIT_PIECE = 0x160e02,
 };
 
 std::string GetCcName(const cctype cc);
@@ -451,6 +452,7 @@ public:
     Array ToJson(stringformat fFormat = STR_FORMAT_BIN, bool fRecursive = true)const;
     bool ToJsonString(std::string& entry)const;
     bool SetEmpty();
+    bool IsEmpty()const;
     bool SetString(const std::string& cttStr);
     bool SetString(const vector<unsigned char>& cttVch);
     bool SetJson(const Array& cttJson);
@@ -470,12 +472,15 @@ public:
 
     bool HasCc(const cctype& cc)const;
     bool FirstCc(const cctype& cc)const;
+    int GetFirstCc()const;
     bool IsStandard()const;
     bool EncodeP(const int cc, const std::vector<std::pair<int, string> >& vEncoding);
     bool EncodeUnit(const int cc, const string& content);
     bool Decode(std::vector<std::pair<int, string> >& vDecoded)const;
     bool DecodeDomainInfo(string& strAlias, string& strIntro, CLink& iconLink, std::vector<string>& vTags)const;
     bool DecodeLink(int& redirectType, string& redirectTo)const;
+    bool GetTags(std::vector<std::pair<int, std::string> >& vTagList) const;
+    bool _GetTags(std::vector<std::pair<int, std::string> >& vTagList, int ccp = -1) const;
 };
 
 class CMessage

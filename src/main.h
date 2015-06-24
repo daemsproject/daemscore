@@ -43,6 +43,7 @@
 class CBlockIndex;
 class CBlockTreeDB;
 class CDomainViewDB;
+class CTagViewDB;
 class CBloomFilter;
 class CInv;
 class CScriptCheck;
@@ -284,6 +285,7 @@ void UpdateCoins(const CTransaction& tx, CValidationState &state, CCoinsViewCach
 /** Apply tx changes to txaddressmap db*/
 void UpdateTxAddressMap(const CTransaction& tx,const CDiskTxPos& pos,CValidationState &state,const CCoinsViewCache& inputs,bool fErase=false);
 void UpdateDomainDB(const CTransaction& tx,const CBlock& block,const int nTx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse);
+void UpdateTagDB(const CTransaction& tx,const CBlock& block,const int nTx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse);
 
 /** Context-independent validity checks */
 bool CheckTransaction(const CTransaction& tx, CValidationState& state);
@@ -296,6 +298,9 @@ bool IsStandardTx(const CTransaction& tx, std::string& reason);
 bool IsFinalTx(const CTransaction &tx, int nBlockHeight = 0, int64_t nBlockTime = 0);
 //cccoin: Check if tx is in frozen period
 bool IsFrozen(const CTransaction &tx, int nBlockHeight, int64_t nBlockTime);
+int GetBlocksToMaturity(const unsigned int nLockTime);
+int GetLockLasting(uint32_t nLockTime);
+uint32_t LockTimeToTime(uint32_t nLockTime);
 /** Undo information for a CBlock */
 class CBlockUndo
 {
@@ -525,6 +530,7 @@ extern CCoinsViewCache *pcoinsTip;
 /** Global variable that points to the active TxAddressMapView (protected by cs_main) */
 extern CTxAddressMap *pTxAddressMap;
 extern CDomainViewDB *pDomainDBView;
+extern CTagViewDB *pTagDBView;
 
 /** Global variable that points to the active block tree (protected by cs_main) */
 extern CBlockTreeDB *pblocktree;

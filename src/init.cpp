@@ -190,6 +190,8 @@ void Shutdown()
         pTxAddressMap=NULL;
         delete pDomainDBView;
         pDomainDBView = NULL;        
+        delete pTagDBView;
+        pTagDBView = NULL;   
     }
 #ifdef ENABLE_WALLET
     //if (pwalletMain)
@@ -1031,6 +1033,7 @@ bool AppInit2(boost::thread_group& threadGroup)
                 delete pTxAddressMapDBView;
                 delete pTxAddressMap;
                 delete pDomainDBView;
+                delete pTagDBView;
                 
         
             
@@ -1042,6 +1045,7 @@ bool AppInit2(boost::thread_group& threadGroup)
                 pTxAddressMapDBView = new CTxAddressMapViewDB(nBlockTreeDBCache, false, fReindex);                
                 pTxAddressMap=new CTxAddressMap(pTxAddressMapDBView);
                 pDomainDBView = new CDomainViewDB(fReindex);                
+                pTagDBView = new CTagViewDB(fReindex); 
                 
                 if (fReindex)
                     pblocktree->WriteReindexing(true);

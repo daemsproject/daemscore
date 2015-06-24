@@ -306,9 +306,9 @@ extern CWalletTx CreateRawTransaction(PaymentRequest pr,bool& fRequestPassword,C
 extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, json_spirit::Object& entry);
 extern void GetMessagesFromTx(std::vector<CMessage>& vMessages,const CTransaction& tx,const int nBlockHeight,int nTx,int nTime,const std::vector<CScript>& vIDsLocal,
         const std::vector<CScript>& vIDsForeign,int nDirectionFilter,bool fLinkonly,int nPos,int nOffset,int nCount);
-extern int GetBlocksToMaturity(const unsigned int nLockTime);
-extern int GetLockLasting(uint32_t nLockTime);
-extern uint32_t LockTimeToTime(uint32_t nLockTime);
+//extern int GetBlocksToMaturity(const unsigned int nLockTime);
+//extern int GetLockLasting(uint32_t nLockTime);
+//extern uint32_t LockTimeToTime(uint32_t nLockTime);
 extern void SortMessages(std::vector<CMessage>& vMsg,std::vector<CScript> vIDsLocal);
 extern Value gettxmessages(const json_spirit::Array& params, bool fHelp);
 #endif // BITCOIN_RPCSERVER_H

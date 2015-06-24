@@ -494,7 +494,7 @@ var Messenger = new function() {
             var msg=$("#send-message-box").val();
             if(currentContact&&msg){                
                 BrowserAPI.sendMessage(accountID,currentContact,msg,function(){
-                    i.showMessage(msg,0,"right");
+                    i.showMessage(msg,0,"onchain","right");
                     i.setLastUpdateTime(currentContact);
                     $("#send-message-box").val("");
                     

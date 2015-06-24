@@ -55,7 +55,9 @@ public:
         nVout = (unsigned short) nVoutIn;
     }
     string Serialize()const;
-    bool Unserialize(const std::string& str);
+    bool Unserialize(string& str);
+    bool WriteVarInt(const int nIn, string& str) const;
+    bool ReadVarInt(string& str, int& n)const;
     //    ADD_SERIALIZE_METHODS;    
     //    
     //    template <typename Stream, typename Operation>
