@@ -13,8 +13,10 @@ $(document).ready(function () {
     $("#refreshold-btn").click(function () {
         CBrowser.refreshOld();
     });
-    $(".tabbar").children("li").children("a").click(function () {
+    $(".tabbar").children("li").children("a.ntcbtn").click(function () {
         CBrowser.switchTab($(this).attr("id"));
+    });
+    $("br-lang-btn").click(function () {
     });
     $(".linkspan").click(function () {
         copyToClipboard($(this).find("a").html());
@@ -136,5 +138,12 @@ $(document).ready(function () {
         console.log(ctt);
 
         CPublisher.handleContent(ctt);
+    });
+    doTranslate();
+    $('#langmenu li a').click(function () {
+        langCodeF = $(this).attr("tr");
+        console.log(langCodeF);
+        langCode = langCodeF.substring(0, 2);
+        doTranslate();
     });
 });

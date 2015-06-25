@@ -13,6 +13,7 @@
         <script type="text/javascript" src="../js/browser.js"></script>
         <script type="text/javascript" src="../js/browserpage.js"></script>
         <script type="text/javascript" src="../js/bppage.js"></script>
+        <script type="text/javascript" src="../js/translate.js"></script>
     </head>
 
     <body >
@@ -29,10 +30,18 @@
                             <li><a id="br-setting-btn" style="color:#444">Setting</a></li>                            
                         </ul>
                         <ul class="nav nav-pills pull-left tabbar info">
-                            <li>Current Block: <span id="cblc"></span></li>
+                            <li><div>Current Block: <span id="cblc"></span></div></li>
+                            <li class="dropdown">
+                                <a href="#" class="" data-toggle="dropdown" role="button" aria-expanded="false" tr="lang"></a>
+                                <ul id="langmenu" class="dropdown-menu" role="menu">
+                                    <li role="presentation"><a href="#" class="language en_US" rel="en-US" tr="en_US"></a></li>
+                                    <li role="presentation"><a href="#" class="language zh_CN" rel="zh-CN" tr="zh_CN"></a></li>
+                                </ul>
+                            </li>
                         </ul>
                     </div>
-                </div>
+                </div>  
+
             </div>
         </div>
         <div class="ph"></div>
