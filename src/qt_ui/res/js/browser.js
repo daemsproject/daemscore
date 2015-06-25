@@ -8,7 +8,8 @@ var CBrowser = new function () {
         return fullId.substr(0, 10) + "..." + fullId.substr(fullId.length - 2);
     };
     this.getLongPId = function (fullId) {
-        return fullId.substr(0, 25) + "..." + fullId.substr(fullId.length - 2);
+        return fullId;
+//        return fullId.substr(0, 25) + "..." + fullId.substr(fullId.length - 2);
     };
     this.showFullId = function (div, fullId) {
         div.find("a.text").html(this.getLongPId(fullId));
@@ -24,6 +25,15 @@ var CBrowser = new function () {
             this.hideFullId(div, fullId);
         else
             this.showFullId(div, fullId);
+    };
+    this.toggleIdOpt = function (div) {
+        if (div.hasClass('showbtn')) {
+            div.find("li").find("a").hide();
+            div.removeClass('showbtn');
+        } else {
+            div.find("li").find("a").css('display', 'inline-block');
+            div.addClass('showbtn');
+        }
     };
     this.getFileContentFrJson = function (json) {
         try {
@@ -125,9 +135,16 @@ var CBrowser = new function () {
         }
         sdiv.removeAttr("id");
         sdiv.find(".id").find(".text").attr("fullid", ctt.poster[0]);
-        sdiv.find(".id").find(".text").html(this.getShortPId(ctt.poster[0]));
+        sdiv.find(".id").find(".text").html(this.getLongPId(ctt.poster[0]));
         sdiv.find(".linkspan").attr("clink", ctt.link);
 
+        sdiv = this.fillSdiv(sdiv,ctt);
+        if(sdiv === false)
+            return false;
+        fPos ? $("#mainframe").prepend(sdiv.children()) : $("#mainframe").append(sdiv.children());
+        return true;
+    };
+    this.fillSdiv = function(sdiv,ctt){
         if (this.isContentImage(ctt))
             sdiv.find(".ctt").html(this.createImgHtml(ctt.link, this.getFileContentFrJson(ctt)));
         else if (this.isContentVideo(ctt))
@@ -137,12 +154,11 @@ var CBrowser = new function () {
         else if (this.isContentText(ctt))
             sdiv.find(".ctt").html(base64.decode(ctt.content[0].content[0].content));
         else {
-            console.log("err addcontent");
+            console.log("err addcontent -- fillSdiv");
             return false;
         }
-        fPos ? $("#mainframe").prepend(sdiv.children()) : $("#mainframe").append(sdiv.children());
-        return true;
-    };
+        return sdiv;
+    }
     this.isContentImage = function (ctt) {
         return ctt.content[0].cc_name === "CC_FILE_P" &&
                 ctt.content[0].content[1].cc_name === "CC_FILE_TYPESTRING" &&
@@ -310,9 +326,10 @@ var CBrowser = new function () {
     this.mypageAction = function () {
         this.refreshNewMypage();
     };
-    this.showNotice = function (n) {
+    this.showNotice = function (n, s) {
+        s = typeof s !== 'undefined' ? s : 5;
         $("#notices").html(n).show();
-        $("#notices").delay(200000).hide(0);
+        $("#notices").delay(s * 1000).hide(0);
     };
     this.bottomAction = function () {
         var tabid = $(".tabbar").children("li.active").children("a").attr("id");
@@ -358,7 +375,7 @@ var CBrowser = new function () {
 
 var CPublisher = new function () {
     var CPublisher = this;
-
+    var pendingCtt;
     this.handleFiles = function (files) {
         for (var i = 0, f; f = files[i]; i++) {
             if (f.size > 1000000) {
@@ -385,7 +402,12 @@ var CPublisher = new function () {
                         var ctt = BrowserAPI.getContentByString(ctthex.hex);
                         ctt.poster = [BrowserAPI.getAccountID()];
                         ctt.hex = ctthex.hex;
-                        CPublisher.handleContent(ctt);
+                        pendingCtt = ctt;
+                        CPublisher.showPreview(ctt);
+                        $('#pubbtnh').show();
+                        $("#confirmpub").removeAttr('disabled');
+
+//                        CPublisher.handleContent(ctt);
                     };
                 })(f);
             }
@@ -393,7 +415,7 @@ var CPublisher = new function () {
     };
     this.handleContent = function (ctt) {
         ctt.link = "";
-        console.log(ctt);
+//        console.log(ctt);
         if (!CBrowser.addContent(ctt, CONTENT_TYPE_MINE, false))
             return false;
         $("#confirmpub").removeAttr('disabled');
@@ -422,16 +444,36 @@ var CPublisher = new function () {
         CPublisher.handleFiles(evt.dataTransfer.files);
         return;
     };
-    this.handleText = function (t) {
+    this.createTextContent = function (t) {
         var ctthex = BrowserAPI.createTextContent(t);
         var ctt = BrowserAPI.getContentByString(ctthex.hex);
         ctt.poster = [BrowserAPI.getAccountID()];
         ctt.hex = ctthex.hex;
-        CPublisher.handleContent(ctt);
+//        CPublisher.handleContent(ctt);
+        return ctt;
     };
     this.addTagField = function () {
         var tagdiv = $("#pubtag-tpl").clone(true, true);
-        tagdiv.removeAttr("id");
+        tagdiv.removeAttr("id").removeClass("hide");
         $(tagdiv).insertBefore($('#pubbtnh'));
+    };
+    this.addLinkField = function () {
+        var linkdiv = $("#publink-tpl").clone(true, true);
+        linkdiv.removeAttr("id").removeClass("hide");
+        $(linkdiv).insertAfter($('#theText'));
+    };
+      this.showPreview = function (ctt) {
+        if (ctt.content[0].content === "non-standard")
+            return;
+        var sdiv = $("#standard").clone(true, true);
+        sdiv.removeAttr("id");
+        sdiv.find(".id").find(".text").attr("fullid", ctt.poster[0]);
+        sdiv.find(".id").find(".text").html(CBrowser.getLongPId(ctt.poster[0]));
+        sdiv.find(".linkspan").attr("clink", ctt.link);
+        sdiv = CBrowser.fillSdiv(sdiv, ctt);
+        if(sdiv === false)
+            return false;
+        $("#pubpreview").removeClass("hide").append(sdiv.children());
+        return true;
     };
 };

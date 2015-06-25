@@ -3,7 +3,8 @@ function copyToClipboard(text) {
 }
 $(document).ready(function () {
     $(".id").find("a.text").click(function () {
-        CBrowser.toggleFullId($(this).parent());
+//        CBrowser.toggleFullId($(this).parent());
+        CBrowser.toggleIdOpt($(this).parent());
     });
     $(".id-share-btn").click(function () {
         alert("To Do");

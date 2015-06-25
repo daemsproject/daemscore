@@ -92,6 +92,7 @@ $(document).ready(function () {
 //    $('#fileholder').click(function () {
 //        CPublisher.handleFileInput('theFile');
 //    })
+    $('#cblc').html(BrowserAPI.getBlockCount());
     $('#browsefile').click(function () {
         CPublisher.handleFileInput('theFile');
     })
@@ -99,18 +100,21 @@ $(document).ready(function () {
 //        console.log($(this).val());
         $(this).removeClass('lttext');
         if ($(this).val() === theTextVal) {
-            $(this).val("");
+            $(this).val("").addClass("ltborder").removeClass("noborder");
             $('#pubbtnh').show();
         }
     }).blur(function () {
         if ($(this).val() === "") {
-            $(this).addClass('lttext');
-            $(this).val(theTextVal);
+            $(this).addClass('lttext').val(theTextVal).addClass("noborder").removeClass("ltborder");
         }
     });
     $('#addtag').click(function () {
 //        alert('t');
         CPublisher.addTagField();
+    });
+    $('#addlink').click(function () {
+        CPublisher.addLinkField();
+        $(this).attr('disabled', true);
     });
     if (window.File && window.FileReader && window.FileList && window.Blob) {
         dropZone.addEventListener('dragover', CPublisher.handleDragOver, false);
@@ -118,13 +122,9 @@ $(document).ready(function () {
     } else {
         alert("error handleDragOver");
     }
-//    $("#test").click(function () {
-//        var rctt = "test text";
-//        var ctt = BrowserAPI.createContentC(rctt);
-//        console.log(ctt.hex);
-//    });
-    $(".id").find("a.text").click(function () {
-        CBrowser.toggleFullId($(this).parent());
+    $("#test-btn").click(function () {
+        var t = "test text<br><br><br><br><br><br><br>test";
+        CBrowser.showNotice(t, 100);
     });
     $("#theText").bind('input propertychange', function () {
         $("#confirmpub").removeAttr('disabled');
@@ -132,6 +132,9 @@ $(document).ready(function () {
     $("#confirmpub").click(function () {
         var text = $("#theText").val();
         console.log(text);
-        CPublisher.handleText(text);
+        var ctt = CPublisher.createTextContent(text);
+        console.log(ctt);
+
+        CPublisher.handleContent(ctt);
     });
 });

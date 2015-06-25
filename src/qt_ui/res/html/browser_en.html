@@ -20,29 +20,32 @@
             <div class="container">                
                 <div class="row-fluid" style="margin-top:0px">
                     <div class="span12 no-print">
-                        <ul class="nav nav-pills pull-left tabbar" style="margin-bottom: 3px">
+                        <ul class="nav nav-pills pull-left tabbar" >
                             <li class="active"><a id="br-home-btn">Home</a></li>
                             <li><a id="br-new-btn">New</a></li>
-                            <li><a id="br-followed-btn">Followed</a></li>
-                            <li><a id="br-mypage-btn">My page</a></li>
+                            <li><a id="br-followed-btn" class="ntcbtn">Followed<div class="ntcno1">2</div></a></li>
+                            <li><a id="br-mypage-btn" class="ntcbtn">My page<div class="ntcno2">3</div></a></li>
                             <li><a id="br-hot-btn" style="color:#444">Hot</a></li>
                             <li><a id="br-setting-btn" style="color:#444">Setting</a></li>                            
+                        </ul>
+                        <ul class="nav nav-pills pull-left tabbar info">
+                            <li>Current Block: <span id="cblc"></span></li>
                         </ul>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="container ph"></div>
-
+        <div class="ph"></div>
         <!--
         <button id="refresh-btn">refresh new</button>
-        <button id="refreshold-btn">refresh old</button>
+        <button id="refreshold-btn">refresh old</button>--
+        
         <button id="test-btn">test</button>
         <!--  -->
 
 
         <div class="column column1" id="shdr">
-            <div id="main-notices-container"><span id="notices"></span></div>
+            <div id="main-notices-container"><span id="notices" class="hide"></span></div>
             <div class="slideholder">
                 <div id="slider">
                     <a href="#" class="control_next">></a>
@@ -50,15 +53,20 @@
                     <ul></ul>  
                 </div>
             </div>
+            <!--        </div>
+                    <div class="column">-->
             <div class="maininput">
 
                 <input type="file" id="theFile" style="display:none" multiple/>
                 <div id="fileholder" align="center">
-                    <textarea id="theText" class="maintext lttext"></textarea>
+                    <div id="pubpreview" class="hide"><div class="prevtitle">Preview</div></div>
+                    <textarea id="theText" class="maintext lttext noborder"></textarea>
                     <div id="pubbtnh">
-                        <button id="addtag">Add tag</button>
-                        <button id="browsefile">Browse</button>
-                        <button id="confirmpub" disabled>Send</button>
+                        <button id="addtag" class="idbtn">Add tag</button>
+                        <button id="addlink" class="idbtn">Add link</button>
+                        <button id="validtil" class="idbtn">Valid until</button>
+                        <button id="browsefile" class="idbtn">Browse</button>
+                        <button id="confirmpub" class="idbtn" disabled>Send</button>
                     </div>
                 </div>
 
@@ -66,12 +74,13 @@
             </div>
         </div>
         <div class="column column2">
+            <div class="ph"></div>
             <div id="mainframe"></div>
         </div>
 
 
 
-        <div id="standard">
+        <div id="standard" class="hide">
             <div class="container" >
                 <div class = "post">
                     <div class="domain"><a href=""></a></div>
@@ -93,6 +102,7 @@
                             <li class="linkspan" clink=""></li>
                             <li><a class="ctt-link-btn idbtn">Copy Link</a></li>
                             <li><a class="ctt-share-btn idbtn">Share</a></li>
+                            <li><a class="ctt-cmt-btn idbtn">Comment</a></li>
                             <a class="shrt idbtn short">...</a>
                         </ul>
                     </div>
@@ -100,7 +110,7 @@
             </div>
             <hr>
         </div>
-        <div id="followstd">
+        <div id="followstd" class="hide">
             <div class="container" >
                 <div class = "post">
                     <div class="domain"><a href=""></a></div>
@@ -122,6 +132,7 @@
                             <li class="linkspan" clink=""></li>
                             <li><a class="ctt-link-btn idbtn">Copy Link</a></li>
                             <li><a class="ctt-share-btn idbtn">Share</a></li>
+                            <li><a class="ctt-cmt-btn idbtn">Comment</a></li>
                             <a class="shrt idbtn short">...</a>
                         </ul>
                     </div>
@@ -130,12 +141,13 @@
             <hr>
         </div>
 
-        <div id="video-tpl"><video controls id=""><source type="" src=""></video></div>
-        <div id="image-tpl"><a><img id="" src="" type="" class="brimg"/></a></div>
-        <div id="s-image-tpl"><li><a><img id="" src="" type="" class="brimgs"/></a></li></div>
+        <div id="video-tpl" class="hide"><video controls id=""><source type="" src=""></video></div>
+        <div id="image-tpl" class="hide"><a><img id="" src="" type="" class="brimg"/></a></div>
+        <div id="s-image-tpl" class="hide"><li><a><img id="" src="" type="" class="brimgs"/></a></li></div>
         <div id="fullImage"></div>
-        <div id="linka"><a class="link"></a></div>
-        <div id="pubtag-tpl" class="pubtag"><span>Tag</span> <input type="text" name="tag"></div>
+        <div id="linka"><a class="link hide"></a></div>
+        <div id="pubtag-tpl" class="pubtf hide"><span>Tag</span> <input type="text" name="tag"></div>
+        <div id="publink-tpl" class="pubtf hide"><span>Link</span> <input type="text" name="link"></div>
     </body>
 
 </html>
