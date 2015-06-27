@@ -526,7 +526,7 @@ bool CTagViewDB::HasLink(const CLink link)const{
     vector<string> vTag;
     return (db.GetLinks(vTag,0,link,vLink)&&vLink.size()>0);
 }
-bool CTagViewDB::Search(vector<CLink> vLink,const std::vector<string> &vTag,const int cc,const int nMaxItems,const int nOffset)const
+bool CTagViewDB::Search(vector<CLink>& vLink,const std::vector<string> &vTag,const int cc,const int nMaxItems,const int nOffset)const
 {
     return db.GetLinks(vTag,cc,CLink(),vLink,nMaxItems, nOffset);
 

@@ -115,7 +115,7 @@ public:
     CTagViewDB( bool fWipe = false);
      //bool GetForward(const std::string strDomainName,CContent& forward)const ;   
     bool HasLink(const CLink link)const;
-     bool Search(vector<CLink> vLink,const std::vector<string> &vTag,const int cc=-1,const int nMaxItems=1000,const int nOffset=0)const ;           
+     bool Search(vector<CLink>& vLink,const std::vector<string> &vTag,const int cc=-1,const int nMaxItems=1000,const int nOffset=0)const ;           
      bool Insert(const int cc,const string tag,const CLink link,const int nExpireTime);
      bool ClearExpired();
     

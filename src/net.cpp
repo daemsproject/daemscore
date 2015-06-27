@@ -1222,7 +1222,7 @@ void ThreadOpenConnections()
     }
 
     // Initiate network connections
-    int64_t nStart = GetTime();
+    int64_t nStart = GetTime();    
     while (true)
     {
         ProcessOneShot();
@@ -1266,9 +1266,10 @@ void ThreadOpenConnections()
         int nTries = 0;
         while (true)
         {
+            
             // use an nUnkBias between 10 (no outgoing connections) and 90 (8 outgoing connections)
             CAddress addr = addrman.Select(10 + min(nOutbound,8)*10);
-
+            
             // if we selected an invalid address, restart
             if (!addr.IsValid() || setConnected.count(addr.GetGroup()) || IsLocal(addr))
                 break;
@@ -1373,7 +1374,7 @@ void ThreadOpenAddedConnections()
 }
 
 // if successful, this moves the passed grant to the constructed node
-bool OpenNetworkConnection(const CAddress& addrConnect, CSemaphoreGrant *grantOutbound, const char *pszDest, bool fOneShot)
+bool OpenNetworkConnection(const CAddress& addrConnect, CSemaphoreGrant *grantOutbound, const char *pszDest, bool fOneShot,const CAddress& addrSource)
 {
     //
     // Initiate outbound network connection
@@ -1391,7 +1392,14 @@ bool OpenNetworkConnection(const CAddress& addrConnect, CSemaphoreGrant *grantOu
     boost::this_thread::interruption_point();
 
     if (!pnode)
+    {
+        CNode* pnodeSource=FindNode(addrSource);
+        if(!pnodeSource)        
+            return false;
+        pnodeSource->PushMessage("stun",addrConnect);
+        LogPrintf("OpenNetworkConnection stun , source address:%s,target address:%s \n",pnodeSource->addr.ToString(),addrConnect.ToString());
         return false;
+    }
     if (grantOutbound)
         grantOutbound->MoveTo(pnode->grantOutbound);
     pnode->fNetworkNode = true;
@@ -1942,6 +1950,7 @@ CNode::CNode(SOCKET hSocketIn, CAddress addrIn, std::string addrNameIn, bool fIn
     fOneShot = false;
     fClient = false; // set by version message
     fInbound = fInboundIn;
+    fNAT=false;
     fNetworkNode = false;
     fSuccessfullyConnected = false;
     fDisconnect = false;

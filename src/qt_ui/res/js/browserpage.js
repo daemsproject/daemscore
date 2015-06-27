@@ -140,6 +140,7 @@ $(document).ready(function () {
         CPublisher.handleContent(ctt);
     });
     doTranslate();
+    console.log(TR["hello world"]);
     $('#langmenu li a').click(function () {
         langCodeF = $(this).attr("tr");
         console.log(langCodeF);

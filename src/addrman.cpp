@@ -306,7 +306,7 @@ bool CAddrMan::Add_(const CAddress& addr, const CNetAddr& source, int64_t nTimeP
 {
     if (!addr.IsRoutable())
         return false;
-
+    
     bool fNew = false;
     int nId;
     CAddrInfo* pinfo = Find(addr, &nId);
@@ -342,6 +342,7 @@ bool CAddrMan::Add_(const CAddress& addr, const CNetAddr& source, int64_t nTimeP
     } else {
         pinfo = Create(addr, source, &nId);
         pinfo->nTime = max((int64_t)0, (int64_t)pinfo->nTime - nTimePenalty);
+        pinfo->SetNAT(false);
         nNew++;
         fNew = true;
     }
@@ -356,7 +357,20 @@ bool CAddrMan::Add_(const CAddress& addr, const CNetAddr& source, int64_t nTimeP
     }
     return fNew;
 }
-
+bool CAddrMan::AddActiveNAT(const std::vector<CAddress> &vAddr, const CNetAddr& source, int64_t nTimePenalty)
+{
+    int nId;
+    for (std::vector<CAddress>::const_iterator it = vAddr.begin(); it != vAddr.end(); it++)
+    {
+        CAddrInfo* pinfo = Find(*it, &nId);     
+        if(pinfo&&find(vActiveNAT.begin(),vActiveNAT.end(),nId)==vActiveNAT.end())   
+        {
+            LogPrintf("CAddressman::ActiveNAT inserted:%s \n",pinfo->ToString());
+            vActiveNAT.push_back(nId);        
+        }
+    }
+    return true;
+}
 void CAddrMan::Attempt_(const CService& addr, int64_t nTime)
 {
     CAddrInfo* pinfo = Find(addr);
@@ -376,11 +390,12 @@ void CAddrMan::Attempt_(const CService& addr, int64_t nTime)
     info.nAttempts++;
 }
 
-CAddress CAddrMan::Select_(int nUnkBias)
+CAddrInfo CAddrMan::Select_(int nUnkBias)
 {
     if (size() == 0)
-        return CAddress();
-
+        return CAddrInfo();
+    if(vActiveNAT.size()>0)
+        return mapInfo[vActiveNAT[0]];
     double nCorTried = sqrt(nTried) * (100.0 - nUnkBias);
     double nCorNew = sqrt(nNew) * nUnkBias;
     if ((nCorTried + nCorNew) * GetRandInt(1 << 30) / (1 << 30) < nCorTried) {

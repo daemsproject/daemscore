@@ -77,7 +77,7 @@ public:
     {
         Init();
     }
-
+    
     //! Calculate in which "tried" bucket this entry belongs
     int GetTriedBucket(const std::vector<unsigned char> &nKey) const;
 
@@ -89,7 +89,7 @@ public:
     {
         return GetNewBucket(nKey, source);
     }
-
+    CNetAddr GetSource() const {return source;}
     //! Determine whether the statistics about this entry are bad enough so that it can just be deleted
     bool IsTerrible(int64_t nNow = GetAdjustedTime()) const;
 
@@ -189,7 +189,8 @@ private:
 
     //! randomly-ordered vector of all nIds
     std::vector<int> vRandom;
-
+    
+    
     // number of "tried" entries
     int nTried;
 
@@ -204,8 +205,7 @@ private:
 
 protected:
 
-    //! Find an entry.
-    CAddrInfo* Find(const CNetAddr& addr, int *pnId = NULL);
+    
 
     //! find an entry, creating it if necessary.
     //! nTime and nServices of the found node are updated, if necessary.
@@ -237,7 +237,7 @@ protected:
 
     //! Select an address to connect to.
     //! nUnkBias determines how much to favor new addresses over tried ones (min=0, max=100)
-    CAddress Select_(int nUnkBias);
+    CAddrInfo Select_(int nUnkBias);
 
 #ifdef DEBUG_ADDRMAN
     //! Perform consistency check. Returns an error code or zero.
@@ -251,6 +251,10 @@ protected:
     void Connected_(const CService &addr, int64_t nTime);
 
 public:
+    // browser: list of active NAT addresses not linked
+    std::vector<int> vActiveNAT;
+    //! Find an entry.
+    CAddrInfo* Find(const CNetAddr& addr, int *pnId = NULL);
     /**
      * serialized format:
      * * version byte (currently 0)
@@ -450,6 +454,9 @@ public:
             LogPrint("addrman", "Added %i addresses from %s: %i tried, %i new\n", nAdd, source.ToString(), nTried, nNew);
         return nAdd > 0;
     }
+    //browser: add active NAT addresses to active list, so as to link them first
+    bool AddActiveNAT(const std::vector<CAddress> &vAddr, const CNetAddr& source, int64_t nTimePenalty = 0);
+    
 
     //! Mark an entry as accessible.
     void Good(const CService &addr, int64_t nTime = GetAdjustedTime())
@@ -477,9 +484,9 @@ public:
      * Choose an address to connect to.
      * nUnkBias determines how much "new" entries are favored over "tried" ones (0-100).
      */
-    CAddress Select(int nUnkBias = 50)
+    CAddrInfo Select(int nUnkBias = 50)
     {
-        CAddress addrRet;
+        CAddrInfo addrRet;
         {
             LOCK(cs);
             Check();

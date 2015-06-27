@@ -195,7 +195,7 @@ var CBrowser = new function () {
     this.refreshNewFollowed = function () {
         var flist = BrowserAPI.getFollowed();
         if (flist.length == 0) {
-            this.showNotice("You need to follow someone first");
+            this.showNotice(TR["You need to follow someone first"]);
             return;
         }
         var ctts = this.getNewContents("fll", flist);
@@ -206,7 +206,7 @@ var CBrowser = new function () {
     this.refreshNewMypage = function () {
         var myid = [BrowserAPI.getAccountID()];
         if (myid.length == 0) {
-            this.showNotice("You need to register ID first");
+            this.showNotice(TR["You need to register ID first"]);
             return;
         }
         var ctts = this.getNewContents("myp", myid);

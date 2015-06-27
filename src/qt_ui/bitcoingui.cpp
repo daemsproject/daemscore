@@ -304,7 +304,7 @@ void BitcoinGUI::createActions(const NetworkStyle *networkStyle)
     shopAction->setCheckable(true);
     shopAction->setToolTip(shopAction->statusTip()); 
     tabGroup->addAction(shopAction);
-    playerAction = new QAction(QIcon(":/icons/key"), tr("&TV Radio"), this);
+    playerAction = new QAction(QIcon(":/icons/key"), tr("&Player"), this);
     playerAction->setStatusTip(tr("shop"));
     playerAction->setToolTip(playerAction->statusTip());     
     playerAction->setCheckable(true);

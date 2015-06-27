@@ -189,7 +189,7 @@ void Shutdown()
         delete pTxAddressMap;
         pTxAddressMap=NULL;
         delete pDomainDBView;
-        pDomainDBView = NULL;        
+        pDomainDBView = NULL;    
         delete pTagDBView;
         pTagDBView = NULL;   
     }
@@ -1044,7 +1044,7 @@ bool AppInit2(boost::thread_group& threadGroup)
                 pcoinsTip = new CCoinsViewCache(pcoinscatcher);
                 pTxAddressMapDBView = new CTxAddressMapViewDB(nBlockTreeDBCache, false, fReindex);                
                 pTxAddressMap=new CTxAddressMap(pTxAddressMapDBView);
-                pDomainDBView = new CDomainViewDB(fReindex);                
+                pDomainDBView = new CDomainViewDB(fReindex);   
                 pTagDBView = new CTagViewDB(fReindex); 
                 
                 if (fReindex)
