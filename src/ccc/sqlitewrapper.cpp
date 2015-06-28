@@ -126,9 +126,9 @@ bool CSqliteWrapper::CreateTagIDTable()
     sprintf(sql,createtablestatement,tableName);
     LogPrintf("CSqliteWrapper CreateTagIDTable statement %s \n",sql);
     sqlite3_exec(pdb,sql,0,0,&zErrMsg);
-    LogPrintf("CSqliteWrapper CreateTagIDTable done %s\n",zErrMsg);
+    LogPrintf("CSqliteWrapper CreateTagIDTable done %s \n",zErrMsg);
     const char * createindexstatement="CREATE INDEX IF NOT EXISTS %s %s on %s(%s)";    
-    sprintf(sql,createindexstatement,tableName,"_index_tag",tableName,"tag");  
+    sprintf(sql,createindexstatement,tableName,"_index_tagid_tag",tableName,"tag");  
     LogPrintf("CSqliteWrapper CreateTagIDTable createindexstatement %s \n",sql);
     sqlite3_exec(pdb,sql,0,0,&zErrMsg);
     LogPrintf("CSqliteWrapper CreateTagIDTable createindex done %s\n",zErrMsg);

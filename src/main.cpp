@@ -4027,6 +4027,12 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
                 }
             }
          
+            // Get recent addresses
+            if (pfrom->fOneShot || pfrom->nVersion >= CADDR_TIME_VERSION || addrman.size() < 1000)
+            {
+                pfrom->PushMessage("getaddr");
+                pfrom->fGetAddr = true;
+            }
             addrman.Good(pfrom->addr);
         } else {
             if (((CNetAddr)pfrom->addr) == (CNetAddr)addrFrom)
@@ -4034,20 +4040,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
                 addrman.Add(addrFrom, addrFrom);
                 addrman.Good(addrFrom);
             }
-            else
-            {
-                pfrom->fNAT=true;      
-                pfrom->addr.SetNAT(true);      
             }
-        }
-        //browser:ask for addresses from inbound too.
-            // Get recent addresses
-            if (pfrom->fOneShot || pfrom->nVersion >= CADDR_TIME_VERSION || addrman.size() < 1000)
-            {
-                pfrom->PushMessage("getaddr");
-                pfrom->fGetAddr = true;
-            }
-        
         
         // Relay alerts
         RelayAlerts(pfrom);
@@ -4089,14 +4082,13 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         // Don't want addr from older versions unless seeding
         if (pfrom->nVersion < CADDR_TIME_VERSION && addrman.size() > 1000)
             return true;
-        if (vAddr.size() > 1200)
+        if (vAddr.size() > 1000)
         {
             Misbehaving(pfrom->GetId(), 20);
             return error("message addr size() = %u", vAddr.size());
         }
 
         // Store the new addresses
-        vector<CAddress> vAddrActiveNAT;
         vector<CAddress> vAddrOk;
         int64_t nNow = GetAdjustedTime();
         int64_t nSince = nNow - 10 * 60;
@@ -4139,77 +4131,16 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
             }
             // Do not store addresses outside our network
             if (fReachable)
-            {
                 vAddrOk.push_back(addr);
-                if(addr.IsNAT())
-                    vAddrActiveNAT.push_back(addr);
-                
-                
             }
-        }
         addrman.Add(vAddrOk, pfrom->addr, 2 * 60 * 60);
-        addrman.AddActiveNAT(vAddrActiveNAT,pfrom->addr, 2 * 60 * 60);
         if (vAddr.size() < 1000)
             pfrom->fGetAddr = false;
         if (pfrom->fOneShot)
             pfrom->fDisconnect = true;
     }
-    else if (strCommand == "stun")
-    {
-        CAddress stunAddr;
-        vRecv >> stunAddr;
-        LogPrintf("main:processmessage stun from:%s to:%s \n",pfrom->addr.ToString(),stunAddr.ToString());
-        CNode* pnodeStun=FindNode(stunAddr);
-        if(!pnodeStun)        
-             pfrom->PushMessage("stunresult",stunAddr,false);
-        pnodeStun->PushMessage("linkrequest",pfrom->addr);
         
-    }
-    else if (strCommand == "linkrequest")
-    {
-        CAddress stunAddr;
-        vRecv >> stunAddr;
-        CNode* pnodeStun=ConnectNode(stunAddr);
-        LogPrintf("main:processmessage linkrequest from:%s to:%s result:%i \n",pfrom->addr.ToString(),stunAddr.ToString(),pnodeStun);
-        pfrom->PushMessage("holed",stunAddr);        
-    }
-    else if (strCommand == "holed")
-    {
-        CAddress stunAddr;
-        vRecv >> stunAddr;
-        CNode* pnodeStun=FindNode(stunAddr);
-        if(pnodeStun)                   
-            pnodeStun->PushMessage("stunresult",pfrom->addr,true);
-        LogPrintf("main:processmessage holed requester:%s recipient:%s relayed:%i \n",stunAddr.ToString(),pfrom->addr.ToString(),pnodeStun);
-    }
-    else if (strCommand == "stunresult")
-    {
-        CAddress stunAddr;
-        vRecv >> stunAddr;
-        bool fStunResult;
-        vRecv >> fStunResult;
-        if(fStunResult)
-        {
-            CNode* pnodeStun=ConnectNode(stunAddr);
-            if(pnodeStun)
-            {
-                int nId=0;
-                 CAddrInfo* pinfo = addrman.Find(stunAddr, &nId);     
-                 vector<int>::iterator it=find(addrman.vActiveNAT.begin(),addrman.vActiveNAT.end(),nId);
-                if(pinfo&&it!=addrman.vActiveNAT.end())   
-                {
-                    addrman.vActiveNAT.erase(it);        
             
-                    LogPrintf("CAddressman::ActiveNAT removed:%s \n",pinfo->ToString());
-                
-                }
-            }
-            LogPrintf("main:processmessage stunresult target:%s relayed by:%s result:%i \n",stunAddr.ToString(),pfrom->addr.ToString(),pnodeStun);
-        }
-        else
-            LogPrintf("main:processmessage stunresult target:%s relayed by:%s result:false \n",stunAddr.ToString(),pfrom->addr.ToString());
-            //TODO record stun failure        
-    }
     else if (strCommand == "inv")
     {
         vector<CInv> vInv;
@@ -4560,17 +4491,8 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
     {
         pfrom->vAddrToSend.clear();
         vector<CAddress> vAddr = addrman.GetAddr();
-        BOOST_FOREACH(const CNode* pnode, vNodes)
-        {
-            if(pnode->fNAT)
-            {
-                LogPrintf("push message addr, NAT address:%s",pnode->addr.ToString());
-                vAddr.push_back(pnode->addr);
-            }
-        }
         BOOST_FOREACH(const CAddress &addr, vAddr)
             pfrom->PushAddress(addr);
-        
     }
 
 

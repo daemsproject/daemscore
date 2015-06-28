@@ -31,7 +31,6 @@
 #include <boost/signals2/signal.hpp>
 
 class CAddrMan;
-class CAddrInfo;
 class CBlockIndex;
 class CNode;
 
@@ -68,7 +67,7 @@ CNode* FindNode(const CNetAddr& ip);
 CNode* FindNode(const std::string& addrName);
 CNode* FindNode(const CService& ip);
 CNode* ConnectNode(CAddress addrConnect, const char *pszDest = NULL);
-bool OpenNetworkConnection(const CAddress& addrConnect, CSemaphoreGrant *grantOutbound = NULL, const char *strDest = NULL, bool fOneShot = false,const CAddress& addrSource=CAddress());
+bool OpenNetworkConnection(const CAddress& addrConnect, CSemaphoreGrant *grantOutbound = NULL, const char *strDest = NULL, bool fOneShot = false);
 void MapPort(bool fUseUPnP);
 unsigned short GetListenPort();
 bool BindListenPort(const CService &bindAddr, std::string& strError, bool fWhitelisted = false);
@@ -249,7 +248,6 @@ public:
     bool fOneShot;
     bool fClient;
     bool fInbound;
-    bool fNAT;//peer that is connected by holing, will be sent in active list.
     bool fNetworkNode;
     bool fSuccessfullyConnected;
     bool fDisconnect;

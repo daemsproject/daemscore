@@ -134,7 +134,7 @@ bool CWallet::CreateNew(const SecureString& strKeyData,bool fWriteToDisk){
         crypter.SetKeyFromPassphrase(strKeyData,encParams);
         Encrypt(crypter);        
     }
-    int64_t nStartTime = GetTime();
+    //int64_t nStartTime = GetTime();
     pwalletdb->SetCurrentWallet(id);    
     if(fWriteToDisk)
     {
@@ -157,7 +157,7 @@ bool CWallet::Set(const CKey& baseKeyIn,const CKey& stepKeyIn,const SecureString
         crypter.SetKeyFromPassphrase(strKeyData,encParams);
         Encrypt(crypter);        
     }
-     int64_t nStartTime = GetTime();
+     //int64_t nStartTime = GetTime();
      if(CompareBase32(CBitcoinAddress(id).ToString(),prettyAddress)==0)
          pwalletdb->SetCurrentWallet(prettyAddress);    
      else
@@ -1606,6 +1606,13 @@ bool CWallet::CreateTransactionUnsigned(const PaymentRequest& pr,
                     // Fill a vout to ourself
                     // TODO: pass in scriptChange instead of reservekey so
                     // change transaction isn't always pay-to-bitcoin-address
+                    if((pr.nRequestType==PR_DOMAIN_REGISTER||pr.nRequestType==PR_DOMAIN_RENEW)&&txNew.vout.size()==1)
+                    {
+                        // note: for domain register, the recepiente is ourslefves, so just add change to that out, no need an indepent change out.
+                        txNew.vout[0].nValue+=nChange;
+                    }
+                    else
+                    {
                     CScript scriptChange;
                     
                     // coin control: send change to custom address
@@ -1613,12 +1620,11 @@ bool CWallet::CreateTransactionUnsigned(const PaymentRequest& pr,
                         scriptChange = pr.changeAddress;
                     // no coin control: send change to newly generated address
                     else
-                    {                        
                         scriptChange = pr.vFrom[0];
-                    }
                     CTxOut newTxOut(nChange, scriptChange);
                     if(!newTxOut.IsDust(::minRelayTxFee))
                         txNew.vout.push_back(newTxOut);
+                }                
                 }                
                 // Fill vin
                 BOOST_FOREACH(const PAIRTYPE(const CWalletTx*,unsigned int)& coin, setCoins)

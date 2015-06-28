@@ -1312,7 +1312,8 @@ bool CContent::DecodeLink(int& redirectType, string& redirectTo)const
         }
 
     }
-    if (fHasLinkType && fHasLinkContent) {
+    if (fHasLinkType&&fHasLinkContent)
+    {
         LogPrintf("CContent DecodeLink success\n");
         redirectType = nLinkType;
         redirectTo = str;
@@ -1328,64 +1329,77 @@ bool CContent::DecodeDomainInfo(string& strAlias, string& strIntro, CLink& iconL
     Decode(vDecoded);
     int cc;
     string str;
-    for (unsigned int i = 0; i < vDecoded.size(); i++) {
-        cc = vDecoded[i].first;
-        str = vDecoded[i].second;
-        if (cc == CC_DOMAIN_INFO_ALIAS) {
-            if (str.size() > 64)
-                str = str.substr(0, 64);
-            strAlias = str;
-        } else if (cc == CC_DOMAIN_INFO_INTRO) {
-            if (str.size() > 128)
-                str = str.substr(0, 128);
-            strIntro = str;
-        } else if (cc == CC_DOMAIN_INFO_ICON && str.size() >= 3) {
+    for(unsigned int i=0;i<vDecoded.size();i++)
+    {        
+        cc=vDecoded[i].first;
+        str=vDecoded[i].second;
+        if(cc==CC_DOMAIN_INFO_ALIAS)
+        {
+            if(str.size()>64)            
+                str=str.substr(0,64);
+            strAlias=str;        
+        }
+        else if(cc==CC_DOMAIN_INFO_INTRO)
+        {
+            if(str.size()>128)
+                str=str.substr(0,128);
+            strIntro=str;
+        }
+        else if(cc==CC_DOMAIN_INFO_ICON&&str.size()>=3)
+        {
             //CDataStream s(str.c_str(),str.c_str()+str.size(),0,0);
             iconLink.Unserialize(str);
-        } else if (cc == CC_TAG && str.size() <= 32)
+        }
+        else if(cc==CC_TAG&&str.size()<=32)
             vTags.push_back(str);
     }
     LogPrintf("CContent DecodeDomainInfo done\n");
     return true;
 }
-
-bool CContent::GetTags(std::vector<std::pair<int, std::string> >& vTagList) const
+bool CContent::GetTags(std::vector<std::pair<int,std::string> >& vTagList) const
 {
     if (!IsStandard())
         return false;
     std::vector<std::pair<int, string> > vDecoded;
     Decode(vDecoded);
-    bool fccp = false;
-    int ccp = -1;
-    for (unsigned int i = 0; i < vDecoded.size(); i++) {
-        int cc = vDecoded[i].first;
-        string str = vDecoded[i].second;
-        if (cc == CC_P) {
+    bool fccp=false;
+    int ccp=-1;    
+    for(unsigned int i=0; i<vDecoded.size();i++)
+    {
+         int cc=   vDecoded[i].first;         
+         string str=vDecoded[i].second;
+         if(cc==CC_P)
+        {
             CContent(str).GetTags(vTagList);
-            fccp = true;
-        } else if (cc < 255) {
-            if (cc % 2 == 1 && cc != CC_TAG_P) {
-                CContent(str)._GetTags(vTagList, cc & 0);
-                fccp = true;
-            } else if (cc != CC_TAG)
-                ccp = cc;
+             fccp=true;
         }
+         else if(cc<255)
+         {
+            if(cc%2==1&&cc!=CC_TAG_P)
+            {
+                CContent(str)._GetTags(vTagList,cc&0);
+                fccp=true;
     }
-    if (!fccp && ccp != -1) {
-        _GetTags(vTagList, ccp);
+            else if(cc!=CC_TAG)
+                ccp=cc;
     }
-    return vTagList.size() > 0;
 }
-
-bool CContent::_GetTags(std::vector<std::pair<int, std::string> >& vTagList, int ccp) const
+    if (!fccp&&ccp!=-1)
 {
-    if (!IsStandard())
+        _GetTags(vTagList,ccp);
+     }        
+    return vTagList.size()>0;    
+}
+bool CContent::_GetTags(std::vector<std::pair<int,std::string> >& vTagList,int ccp) const
+{
+    if(!IsStandard())
         return false;
     std::vector<std::pair<int, string> > vDecoded;
     Decode(vDecoded);
-    for (unsigned int i = 0; i < vDecoded.size(); i++) {
-        int cc = vDecoded[i].first;
-        string str = vDecoded[i].second;
+    for(unsigned int i=0; i<vDecoded.size();i++)
+        {
+            int cc=   vDecoded[i].first;         
+            string str=vDecoded[i].second;            
         std::vector<std::string> vTag;
         if (cc == CC_TAG && str.size() > 0 && str.size() <= 32)
             vTagList.push_back(make_pair(ccp, str));

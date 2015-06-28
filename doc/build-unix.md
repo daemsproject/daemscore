@@ -34,12 +34,13 @@ These dependencies are required:
  libssl      | SSL Support      | Secure communications
  libboost    | Boost            | C++ Library
  sqlite
+secp256k1
 Optional dependencies:
 
  Library     | Purpose          | Description
  ------------|------------------|----------------------
  miniupnpc   | UPnP Support     | Firewall-jumping support
- libdb4.8    | Berkeley DB      | Wallet storage (only needed when wallet enabled)
+ //libdb4.8    | //Berkeley DB      | Wallet storage (only needed when wallet enabled)
  qt          | GUI              | GUI toolkit (only needed when GUI enabled)
  protobuf    | Payments in GUI  | Data interchange format used for payment protocol (only needed when GUI enabled)
  libqrencode | QR codes in GUI  | Optional for generating QR codes (only needed when GUI enabled)
@@ -138,7 +139,22 @@ To build:
 	make
 	sudo su
 	make install
+Secp256k1
+----------
+cd src/secp256k1
+./autogen.sh
+./configure
+make
+sudo make install
 
+sqlite3
+-------
+1)wget http://www.sqlite.org/sqlite-3.5.6.tar.gz
+2)tar -xzvf sqlite-3.5.6.tar.gz
+3)cd sqlite-3.5.6
+4)./configure --disable-tcl ##this option to disable TCL,to avoid problem in some os versions
+5)make 
+6)make install
 
 Berkeley DB
 -----------
