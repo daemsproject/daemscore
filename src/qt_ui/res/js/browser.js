@@ -138,13 +138,13 @@ var CBrowser = new function () {
         sdiv.find(".id").find(".text").html(this.getLongPId(ctt.poster[0]));
         sdiv.find(".linkspan").attr("clink", ctt.link);
 
-        sdiv = this.fillSdiv(sdiv,ctt);
-        if(sdiv === false)
+        sdiv = this.fillSdiv(sdiv, ctt);
+        if (sdiv === false)
             return false;
         fPos ? $("#mainframe").prepend(sdiv.children()) : $("#mainframe").append(sdiv.children());
         return true;
     };
-    this.fillSdiv = function(sdiv,ctt){
+    this.fillSdiv = function (sdiv, ctt) {
         if (this.isContentImage(ctt))
             sdiv.find(".ctt").html(this.createImgHtml(ctt.link, this.getFileContentFrJson(ctt)));
         else if (this.isContentVideo(ctt))
@@ -157,6 +157,8 @@ var CBrowser = new function () {
             console.log("err addcontent -- fillSdiv");
             return false;
         }
+        if (this.isContentAttachText(ctt))
+            sdiv.find(".ctt2").html(base64.decode(ctt.content[1].content[0].content));
         return sdiv;
     }
     this.isContentImage = function (ctt) {
@@ -179,6 +181,17 @@ var CBrowser = new function () {
                 ctt.content[0].content[0].cc_name === "CC_TEXT" &&
                 ctt.content[0].content[0].content.length !== 0;
     };
+    this.isContentAttachText = function (ctt) {
+        if (typeof ctt.content === 'undefined')
+            return false;
+        if (ctt.content.length > 1) {
+            return ctt.content[1].cc_name === "CC_TEXT_P" &&
+                    ctt.content[1].content[0].cc_name === "CC_TEXT" &&
+                    ctt.content[1].content[0].content.length !== 0;
+        } else
+            return false;
+
+    }
 
     this.refreshNew = function () {
         var ctts = this.getNewContents("new");
@@ -376,6 +389,18 @@ var CBrowser = new function () {
 var CPublisher = new function () {
     var CPublisher = this;
     var pendingCtt;
+    this.getLink = function () {
+        return $('#input-link').val();
+    };
+    this.getTags = function () {
+        var r = [];
+        $('.input-tag').each(function () {
+            console.log($(this).val());
+            if ($(this).val() !== "")
+                r.push($(this).val());
+        });
+        return r;
+    };
     this.handleFiles = function (files) {
         for (var i = 0, f; f = files[i]; i++) {
             if (f.size > 1000000) {
@@ -389,19 +414,34 @@ var CPublisher = new function () {
                     return function (e) {
                         var raw = e.target.result;
                         var rctt = CUtil.decodeDataUrl(raw);
-                        rctt["filename"] = f.name;
+                        rctt.filename = f.name;
                         console.log("rctt ");
                         console.log(rctt);
+                        var tt = $("#theText").hasClass("noborder") ? undefined : $("#theText").val();
+                        console.log(tt);
+                        var lk = CPublisher.getLink();
+                        console.log(lk);
+                        var tg = CPublisher.getTags();
+                        console.log(tg);
+//                        var ctthex = BrowserAPI.createContentC(rctt.type, rctt);
+                        var ctthex = BrowserAPI.createHexContent(rctt, tt,tg);
 
-                        var ctthex = BrowserAPI.createContentC(rctt.type, rctt);
+
 //                        var start = new Date().getTime();
 //                        console.log(start);
-                        console.log(ctthex.hex.substr(0, 20) + "...(" + ctthex.hex.length / 2 + " bytes)");
+//                        console.log(ctthex);
+//                        console.log(ctthex.substr(0, 20) + "...(" + ctthex.length / 2 + " bytes)");
 //                        var end = new Date().getTime();
 //                        console.log(end);
-                        var ctt = BrowserAPI.getContentByString(ctthex.hex);
+
+
+                        var ctt = BrowserAPI.getContentByString(ctthex);
+//                        var ctt = BrowserAPI.getContentByString(ctthex.hex);
+
+
                         ctt.poster = [BrowserAPI.getAccountID()];
                         ctt.hex = ctthex.hex;
+                        console.log(ctt);
                         pendingCtt = ctt;
                         CPublisher.showPreview(ctt);
                         $('#pubbtnh').show();
@@ -462,7 +502,12 @@ var CPublisher = new function () {
         linkdiv.removeAttr("id").removeClass("hide");
         $(linkdiv).insertAfter($('#theText'));
     };
-      this.showPreview = function (ctt) {
+    this.addValidtilField = function () {
+        var linkdiv = $("#pubvalid-tpl").clone(true, true);
+        linkdiv.removeAttr("id").removeClass("hide");
+        $(linkdiv).insertAfter($('#theText'));
+    };
+    this.showPreview = function (ctt) {
         if (ctt.content[0].content === "non-standard")
             return;
         var sdiv = $("#standard").clone(true, true);
@@ -471,7 +516,7 @@ var CPublisher = new function () {
         sdiv.find(".id").find(".text").html(CBrowser.getLongPId(ctt.poster[0]));
         sdiv.find(".linkspan").attr("clink", ctt.link);
         sdiv = CBrowser.fillSdiv(sdiv, ctt);
-        if(sdiv === false)
+        if (sdiv === false)
             return false;
         $("#pubpreview").removeClass("hide").append(sdiv.children());
         return true;

@@ -404,8 +404,9 @@ var BrowserAPI = new function () {
         var s = u1.hex + u2.hex;
         return this.icall("encodecontentunit", ["CC_TEXT_P", s, 0]);
     }
-    this.createContentC = function (t, c) {
+    this.createContentC = function (t, c) {  // deprecated
         console.log("t " + t);
+        console.log("c " + JSON.stringify(c));
         switch (t)
         {
             case "text/plain":
@@ -427,6 +428,42 @@ var BrowserAPI = new function () {
         console.log(u2);
         console.log(r);
         return r;
+    };
+    this.createHexContent = function (c, tt, tg, lk, vt) { // content, text (attached) , tags, link, valid until
+        if (c.type === "text/plain") {
+            var u = this.icall("encodecontentunit", ["CC_TEXT", c.data, 2]);
+            var s = this.icall("encodecontentunit", ["CC_TEXT_P", u.hex, 0]);
+        } else {
+            var u1 = this.icall("encodecontentunit", ["CC_FILE_NAME", c.filename, 2]);
+            var u2 = this.icall("encodecontentunit", ["CC_FILE_TYPESTRING", c.type, 1]);
+            var u3 = this.icall("encodecontentunit", ["CC_FILE", c.data, 2]);
+            var u = u1.hex + u2.hex + u3.hex;
+            var s = this.icall("encodecontentunit", ["CC_FILE_P", u, 0]);
+        }
+        if (typeof tt !== "undefined") {
+            var t1 = this.icall("encodecontentunit", ["CC_TEXT", tt, 1]);
+            var t2 = this.icall("encodecontentunit", ["CC_TEXT_P", t1.hex, 0]);
+            s.hex += t2.hex;
+        }
+        if (typeof tg !== "undefined") {
+            if (tg.length > 0) {
+                $.each(tg, function (k, v) {
+                    var tgc = BrowserAPI.icall("encodecontentunit", ["CC_TAG", v, 1]);
+                    s.hex += tgc.hex;
+                });
+            }
+        }
+        if (typeof lk !== "undefined") {
+            var l1 = this.icall("encodecontentunit", ["CC_LINK", lk, 1]);
+            var l2 = this.icall("encodecontentunit", ["CC_LINK_P", l1.hex, 0]);
+            s.hex += l2.hex;
+        }
+//        if (typeof vt !== "undefined") {
+//            var l1 = this.icall("encodecontentunit", ["CC_LINK", lk, 1]);
+//            var l2 = this.icall("encodecontentunit", ["CC_LINK_P", l1.hex, 0]);
+//            s.hex += l2.hex;
+//        }
+        return s.hex;
     };
     this.createTextContent = function (t) {
         var u1 = this.icall("encodecontentunit", ["CC_TEXT", t, 1]);

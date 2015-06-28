@@ -140,11 +140,16 @@ $(document).ready(function () {
         CPublisher.handleContent(ctt);
     });
     doTranslate();
-    console.log(TR["hello world"]);
     $('#langmenu li a').click(function () {
         langCodeF = $(this).attr("tr");
         console.log(langCodeF);
         langCode = langCodeF.substring(0, 2);
         doTranslate();
+    });
+    $('#validtil').click(function () {
+        console.log('vt');
+        CPublisher.addValidtilField();
+        $(this).attr('disabled', true);
+        $("#validtil").datepicker();
     });
 });

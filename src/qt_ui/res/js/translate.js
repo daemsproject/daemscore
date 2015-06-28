@@ -12,7 +12,7 @@ var translate = function (jsdata) {
 };
 langCodeF = navigator.language;
 langCode = langCodeF.substr(0, 2);
-console.log(navigator.language);
+//console.log(navigator.language);
 var doTranslate = function () {
     var langFile = ($.inArray(langCode, langs) >= 0) ? '../js/lang/' + langCode + '.json' : '../js/lang/en.json';
     var t;
