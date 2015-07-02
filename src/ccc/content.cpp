@@ -600,6 +600,7 @@ bool CContent::GetTags(std::vector<std::pair<int,std::string> >& vTagList) const
     Decode(vDecoded);
     bool fccp=false;
     int ccp=-1;    
+    //LogPrintf("CContent::GetTags contentunits: %i \n",vDecoded.size());
     for(unsigned int i=0; i<vDecoded.size();i++)
     {
          int cc=   vDecoded[i].first;         
@@ -613,15 +614,16 @@ bool CContent::GetTags(std::vector<std::pair<int,std::string> >& vTagList) const
          {
             if(cc%2==1&&cc!=CC_TAG_P)
             {
-                CContent(str)._GetTags(vTagList,cc&0);
+                //LogPrintf("CContent::GetTags parent unit \n");
+                CContent(str)._GetTags(vTagList,cc-cc%2);
                 fccp=true;
-    }
+            }
             else if(cc!=CC_TAG)
                 ccp=cc;
+        }
     }
-}
     if (!fccp&&ccp!=-1)
-{
+    {
         _GetTags(vTagList,ccp);
      }        
     return vTagList.size()>0;    
@@ -632,10 +634,12 @@ bool CContent::_GetTags(std::vector<std::pair<int,std::string> >& vTagList,int c
         return false;
     std::vector<std::pair<int, string> > vDecoded;
     Decode(vDecoded);
+    //LogPrintf("CContent::_GetTags contentunits: %i \n",vDecoded.size());
     for(unsigned int i=0; i<vDecoded.size();i++)
-        {
-            int cc=   vDecoded[i].first;         
-            string str=vDecoded[i].second;            
+    {
+        int cc=   vDecoded[i].first;      
+        //LogPrintf("CContent::_GetTags cc: %i \n",cc);
+        string str=vDecoded[i].second;            
         std::vector<std::string> vTag;
         if (cc == CC_TAG && str.size() > 0 && str.size() <= 32)
             vTagList.push_back(make_pair(ccp, str));

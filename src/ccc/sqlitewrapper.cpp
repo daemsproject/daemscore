@@ -444,6 +444,7 @@ bool CSqliteWrapper::InsertTag(const int cc,const int tagID,const CLink link,con
    result=sqlite3_bind_int(stat,2, tagID);  
    LogPrintf("GetInsertSql3 %i\n",result);
    string str =link.Serialize();
+   LogPrintf("GetInsertSql link %s\n",HexStr(str.begin(),str.end()));
    result=sqlite3_bind_blob( stat, 3, str.c_str(), str.size(), NULL ); 
    LogPrintf("GetInsertSql4 %i\n",result);
    result=sqlite3_bind_int(stat,4, nExpireTime);  
@@ -457,7 +458,7 @@ bool CSqliteWrapper::GetLinks(const vector<string> vTag,const int cc,const CLink
 {
     LogPrintf("CSqliteWrapper GetLinks \n");
     //char* zErrMsg=0;
-    const char* selectstatement="SELECT * FROM tag WHERE %s = %s;";    
+    const char* selectstatement="SELECT link FROM tag WHERE %s = %s;";    
     char sql[2000];    
     if(!link.IsEmpty())
     {
@@ -527,6 +528,7 @@ bool CSqliteWrapper::GetLinks(const vector<string> vTag,const int cc,const CLink
             if(sqlite3_column_bytes(stmt,0)>0)
             {                
                 string str((char*)sqlite3_column_blob(stmt,0),(char*)sqlite3_column_blob(stmt,0)+sqlite3_column_bytes(stmt,0));
+                LogPrintf("db.getlink link length %i, hex %s \n",sqlite3_column_bytes(stmt,0),HexStr(str.begin(),str.end())); 
                 link1.Unserialize(str);        
             }
             LogPrintf("Link %s \n",link1.ToString());             

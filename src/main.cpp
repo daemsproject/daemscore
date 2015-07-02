@@ -1763,13 +1763,16 @@ void UpdateTagDB(const CTransaction& tx,const CBlock& block,const int nTx,CValid
     if(tx.IsCoinBase())//coinbase is not allowed to register domain
         return;
     uint32_t nExpireTime=LockTimeToTime(tx.nLockTime);
+    //LogPrintf("main:updatetagdb expiretime %i,now %i \n",nExpireTime,GetAdjustedTime());
     if(nExpireTime==0||nExpireTime<GetAdjustedTime())
         return;
     int nTags=(int)(tx.GetValueOut()/COIN);    
+    //LogPrintf("main:updatetagdb ntags %i \n",nTags);
     for(unsigned int i=0;i<tx.vout.size();i++) {  
         if (nTags<=0) 
             return ;
         CContent str=tx.vout[i].strContent;
+        //LogPrintf("main:updatetagdb str isstandard: %b \n",str.IsStandard());
         if(!str.IsStandard())
             continue;
         std::vector<std::pair<int,std::string> >vTagList;
@@ -1778,6 +1781,7 @@ void UpdateTagDB(const CTransaction& tx,const CBlock& block,const int nTx,CValid
             continue;
         if(str.GetTags(vTagList))
         {              
+            //LogPrintf("main:updatetagdb tags: %i \n",vTagList.size());
             for(unsigned int j=0;j<vTagList.size();j++)
             {
                                          
@@ -2157,6 +2161,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
         {
             UpdateTxAddressMap(tx,pos,state,view,false);
             UpdateDomainDB(tx,block,i,state,view,false);
+            UpdateTagDB(tx,block,i,state,view,false);
         }
         UpdateCoins(tx, state, view, i == 0 ? undoDummy : blockundo.vtxundo.back(), pindex->nHeight);        
         //LogPrintf("%s : 22", __func__);

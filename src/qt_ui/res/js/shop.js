@@ -146,7 +146,9 @@ var Shop = new function () {
             var intro = $("#add-new").find("textarea[name='intro']").val();            
             if(intro)
                 d.intro=intro;
-            var tags = $("#add-new").find("textarea[name='tags']").val();            
+            var tags = $("#add-new").find("textarea[name='tags']").val();   
+            console.log(tags);
+            console.log(tags.split(","));
             if(tags)
                 d.tags=tags.split(",");
             BrowserAPI.publishProduct(accountID, d,expiretime, function (data) {
