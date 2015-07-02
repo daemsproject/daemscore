@@ -361,6 +361,15 @@ var BrowserAPI = new function () {
                 error(e);
         });
     }
+    this.publishProduct=function(id,product,locktime,success,error){
+        this.call("publishproduct", [id,[product],locktime], function (a) {
+            if (success)
+                success(a);
+        }, function (e) {
+            if (error)
+                error(e);
+        });
+    }
     this.getUnspent=function(id){
         if (Object.prototype.toString.call(id) != '[object Array]')            
             id=[id];   

@@ -111,6 +111,7 @@ public:
     QString UpdateDomain(json_spirit::Array arrData);
     QString RenewDomain(json_spirit::Array arrData);
     QString TransferDomain(json_spirit::Array arrData);
+    QString PublishProduct(json_spirit::Array arrData);
     QString getSMSAlertMessage(const PaymentRequest& pr);
     // RAI object for unlocking wallet, returned by requestUnlock()
     class UnlockContext

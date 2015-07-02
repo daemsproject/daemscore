@@ -180,6 +180,8 @@ QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
                 return walletModel->UpdateDomain(arrData);
             if (command.toStdString()==string("transferdomain"))
                 return walletModel->TransferDomain(arrData);
+            if (command.toStdString()==string("publishproduct"))
+                return walletModel->PublishProduct(arrData);
             if (command.toStdString()==string("writefile")||command.toStdString()==string("readfile")
                     ||command.toStdString()==string("getconf")||command.toStdString()==string("setconf"))
             {

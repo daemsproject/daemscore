@@ -537,6 +537,7 @@ bool CTagViewDB::Insert(const int cc,const string tag,const CLink link,const int
         return false;
     int tagID;
     db.InsertTagID(tag,tagID);
+        LogPrintf("txdb insert tag %s \n", tag);
     return db.InsertTag(cc,tagID,link, nExpireTime);
 }
 bool CTagViewDB::ClearExpired()

@@ -4,13 +4,11 @@
  * and open the template in the editor.
  */
 var MyWallet = new function() {
-    var MyWallet = this;
+    var i = this;
 
     this.skip_init = false; //Set on sign up page
     var cVisible; //currently visible view
-    var password; //Password
-    var dpassword; //double encryption Password
-    var dpasswordhash; //double encryption Password
+
     var accountID;
     var balance ={balance_available:0,balance_uncofirmed:0,balance_locked:0,balance_total:0}; //Final Satoshi wallet balance
     var total_sent = 0; //Total Satoshi sent

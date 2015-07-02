@@ -1014,3 +1014,9 @@ QString WalletModel::TransferDomain(json_spirit::Array arrData)
     }
     return DoPayment(pr);     
 }
+QString WalletModel::PublishProduct(json_spirit::Array arrData)
+{     
+    
+    PaymentRequest pr = GetPublishProductPaymentRequest(arrData); 
+    return DoPayment(pr); 
+}

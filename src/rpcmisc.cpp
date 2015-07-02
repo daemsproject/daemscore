@@ -626,6 +626,178 @@ PaymentRequest GetRegisterDomainPaymentRequest(const string id, const std::strin
     pr.fIsValid = true;
     return pr;
 }
+PaymentRequest GetPublishProductPaymentRequest(const Array arr)
+{
+    PaymentRequest pr;
+    pr.fIsValid = false;
+    std::string strError; 
+    if ( arr.size() <2)
+    {
+        strError="parameters count is not 2";
+        throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+    }
+    if(arr[0].type()!=str_type)
+    {
+        strError="parameter 0 is not string type";
+        throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+    }  
+    
+    CScript scriptPubKey;        
+    if(!StringToScriptPubKey(arr[0].get_str(),scriptPubKey)){
+                strError="id is not valid format";
+                throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+    }
+    
+    LogPrintf("rpcmisc GetPublishProductPaymentRequest from ID %s\n", scriptPubKey.ToString());
+    pr.vFrom.push_back(scriptPubKey);    
+    if(arr.size()>2&&arr[2].type()==int_type)
+    {
+        pr.nLockTime=arr[2].get_int64();
+        if(pr.nLockTime!=0&&GetBlocksToMaturity(pr.nLockTime)<480)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "invalid LockTime");
+        LogPrintf("rpcmisc GetPublishProductPaymentRequest locktime %i\n", pr.nLockTime);
+    }
+    if(arr[1].type()!=array_type)
+    {
+        strError="product data is not array type";
+        throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+    }
+    Array arrProducts=arr[1].get_array();
+    if(arrProducts.size()==0)
+    {
+        strError="product data is empty";
+        throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+    }
+    int nTags=0;
+    for(unsigned int i=0;i<arrProducts.size();i++)
+    {
+        Object obj=arrProducts[i].get_obj();
+        std::vector<std::pair<int,string> > vcc;
+        Value tmp = find_value(obj, "productid");
+        if (tmp.type() != str_type)
+        {            
+            strError="invalid product id";
+                throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+        }     
+        LogPrintf("rpcmisc GetPublishProductPaymentRequest product id %s\n", tmp.get_str());
+        vcc.push_back(make_pair(CC_PRODUCT_ID,tmp.get_str()));
+        
+        tmp = find_value(obj, "productname");
+        if (tmp.type() != str_type)
+        {            
+            strError="invalid product name";
+                throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+        }     
+        vcc.push_back(make_pair(CC_PRODUCT_NAME,tmp.get_str()));
+        LogPrintf("rpcmisc GetPublishProductPaymentRequest product name %s\n", tmp.get_str());
+        tmp = find_value(obj, "price");
+        CAmount price;
+        try{
+            price=AmountFromValue(tmp);
+        }
+        catch (Object& objError)
+        {
+            strError="price is not valid fromat";        
+            throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+        }
+        CContent cPrice;
+        cPrice.WriteVarInt(price);
+        vcc.push_back(make_pair(CC_PRODUCT_PRICE,cPrice));
+        LogPrintf("rpcmisc GetPublishProductPaymentRequest product price %i\n",price);
+        tmp = find_value(obj, "shipmentfee");
+        if (tmp.type() != null_type)
+        {            
+           CAmount shipmentfee;
+            try{
+                shipmentfee=AmountFromValue(tmp);
+            }
+            catch (Object& objError)
+            {
+                strError="shipment fee is not valid fromat";        
+                throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+            }
+            CContent cshipmentfee;
+            cshipmentfee.WriteVarInt(shipmentfee);
+            vcc.push_back(make_pair(CC_PRODUCT_SHIPMENTFEE,cshipmentfee));
+            LogPrintf("rpcmisc GetPublishProductPaymentRequest product shipment fee %i\n",shipmentfee);
+        }            
+        tmp = find_value(obj, "recipient");
+        if (tmp.type() != null_type)
+        {  
+            if(tmp.type()!=str_type)
+            {
+                strError="recipient is not string type";
+                throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+            }
+            CScript recipient;        
+            if(!StringToScriptPubKey(tmp.get_str(),recipient)){
+                strError="scriptPubKey is not valid format";
+                throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+            }
+            vcc.push_back(make_pair(CC_PRODUCT_PAYTO,string(recipient.begin(),recipient.end())));
+            LogPrintf("rpcmisc GetPublishProductPaymentRequest recipient %s\n", recipient.ToString());
+        } 
+        tmp = find_value(obj, "icon");
+        if (tmp.type() != null_type)
+        {                        
+            CLink link;
+            if(tmp.type() != str_type||!link.SetString(tmp.get_str()))
+            {
+                strError="invalid product icon";
+                throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+            }
+            vcc.push_back(make_pair(CC_PRODUCT_ICON,link.Serialize()));     
+            LogPrintf("rpcmisc GetPublishProductPaymentRequest product icon %s\n", tmp.get_str());
+        }     
+        tmp = find_value(obj, "intro");
+        if (tmp.type() != null_type)
+        {            
+            if(tmp.type() != str_type)
+            {
+                strError="intro is not str type";
+                throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+            }
+            vcc.push_back(make_pair(CC_PRODUCT_INTRO,tmp.get_str()));
+            LogPrintf("rpcmisc GetPublishProductPaymentRequest product intro %s\n", tmp.get_str());
+        }     
+        tmp = find_value(obj, "tags");
+        if (tmp.type() != null_type)
+        {            
+            if(tmp.type() != array_type)
+            {
+                strError="tags is not array type";
+                throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+            }
+            Array arrTags=tmp.get_array();
+            for(unsigned int j=0;j<arrTags.size();j++)
+            {
+                if(arrTags[j].type()!=str_type)
+                {
+                    strError="tag is not str type";
+                    throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+                }
+                if(arrTags[j].get_str()!="")
+                {
+                    vcc.push_back(make_pair(CC_TAG,arrTags[j].get_str()));
+                    nTags++;
+                    LogPrintf("rpcmisc GetPublishProductPaymentRequest product tag %s\n", arrTags[j].get_str());
+                }
+            }
+        }
+        CContent ctt;
+        ctt.EncodeP(CC_PRODUCT_P,vcc);    
+        pr.vout.push_back(CTxOut(0, CScript(), ctt));
+    }
+    pr.nRequestType=PR_PUBLISH;
+    if(pr.nLockTime>0&&nTags>0)
+    {
+        pr.vout.push_back(CTxOut(nTags*COIN, scriptPubKey, ""));
+        LogPrintf("rpcmisc GetPublishProductPaymentRequest product lock coins %i\n", nTags);
+    }
+    //pr.info["domain"]=arr[1].get_str();
+    pr.fIsValid = true;
+    return pr;
+}
 PaymentRequest GetUpdateDomainPaymentRequest(const Array arr)
 {
     PaymentRequest pr;
