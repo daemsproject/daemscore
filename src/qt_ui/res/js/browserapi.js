@@ -375,6 +375,10 @@ var BrowserAPI = new function () {
         console.log([tags,number,offset]);
         return this.icall("searchproducts",[tags,number,offset]);
     }
+    this.buyProducts=function(id,products){
+        if (Object.prototype.toString.call(products) != '[object Array]') products=[products];
+        return this.icall("buyproducts",[id,products]);
+    }
     this.getUnspent=function(id){
         if (Object.prototype.toString.call(id) != '[object Array]')            
             id=[id];   

@@ -17,7 +17,7 @@ var Shop = new function () {
     var page=0;
     var products=[];
     var currentProduct;
-    var cart=[];
+    var cart={};
     function bindInitial() {
 
         $('.modal').on('show', function () {
@@ -166,13 +166,11 @@ var Shop = new function () {
         }
            
     }
-    this.refreshCart=function(){
-        if(cart.length==0){            
-            $('#cart-list').html("<tr><td>no products in cart.</td></tr>");
-            return;
-        }
+    this.refreshCart=function(){        
+        var hasContent=false;
         var html="<tr><th>Icon</th><th>Product Name</th><th>Seller</th><th>Price</th><th>Quantity</th><th>SubTotal</th><th></th></tr>";
-        for(var j in cart){            
+        for(var j in cart){     
+            hasContent=true;
             var p=cart[j];
             html+='<tr id="tr-'+p.link+'" title="'+p.link+'"><td>';
             if (p.icon){
@@ -195,6 +193,8 @@ var Shop = new function () {
             html+='<td><button class="btn btn-secondary" title="'+p.link+'">x</button>';
             html+='</td></tr>';
         }
+        if(!hasContent)
+            html="<tr><td>no products in cart.</td></tr>";
         console.log(html);
         $('#cart-list').html(html);
     }
@@ -281,7 +281,7 @@ var Shop = new function () {
             cart[currentProduct.link]=currentProduct;            
             console.log(cart);
         });
-        $("#cart-list").find("input").change(function(){
+        $("#cart-list tr").find("input[name='quantity']").unbind().bind("keyup change blur", function(){
             console.log("input value changed");
             if(isNaN($(this).val())||$(this).val()<0)
                 $(this).val(1);                        
@@ -290,17 +290,21 @@ var Shop = new function () {
         });
         $("#btn-cart-buy").unbind().click(function () {             
             var l=[];
-            $("#cart-list").each(function(){
-                console.log($(this).attr("title"));
+            $("#cart-list tr").each(function(){
+                //console.log($(this));
+                //console.log($(this).attr("title"));                
                 var q={};
                 var p=cart[$(this).attr("title")];
-                q.id=p.id;
-                q.link=p.link;
-                q.recipient=p.recipient;
-                q.price=p.price;
-                q.shipmengfee=p.shipmentfee;
-                q.quantity=$(this).find("input").val();      
-                l.push(q);
+                if(p){
+                    q.id=p.id;
+                    q.link=p.link;
+                    q.recipient=p.recipient;
+                    q.price=p.price;
+                    q.shipmengfee=p.shipmentfee;
+                    q.quantity=parseInt($(this).find("input").val());   
+                    console.log(q);
+                    l.push(q);
+                }
             });
             BrowserAPI.buyProducts(accountID,l);    
         });
