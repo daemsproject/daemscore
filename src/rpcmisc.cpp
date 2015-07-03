@@ -673,7 +673,7 @@ PaymentRequest GetPublishProductPaymentRequest(const Array arr)
     {
         Object obj=arrProducts[i].get_obj();
         std::vector<std::pair<int,string> > vcc;
-        Value tmp = find_value(obj, "productid");
+        Value tmp = find_value(obj, "id");
         if (tmp.type() != str_type)
         {            
             strError="invalid product id";
@@ -682,7 +682,7 @@ PaymentRequest GetPublishProductPaymentRequest(const Array arr)
         LogPrintf("rpcmisc GetPublishProductPaymentRequest product id %s\n", tmp.get_str());
         vcc.push_back(make_pair(CC_PRODUCT_ID,tmp.get_str()));
         
-        tmp = find_value(obj, "productname");
+        tmp = find_value(obj, "name");
         if (tmp.type() != str_type)
         {            
             strError="invalid product name";

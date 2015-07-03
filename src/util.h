@@ -17,7 +17,7 @@
 #include "compat.h"
 #include "tinyformat.h"
 #include "utiltime.h"
-
+#include "amount.h"
 #include <exception>
 #include <map>
 #include <stdint.h>
@@ -28,7 +28,8 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/thread/exceptions.hpp>
 #include "json/json_spirit.h"
-
+using namespace std;
+using namespace json_spirit;
 extern std::map<std::string, std::string> mapArgs;
 extern std::map<std::string, std::vector<std::string> > mapMultiArgs;
 extern bool fDebug;
@@ -191,6 +192,8 @@ std::string IntToHexString(const int i);
 std::string num2str(const double i);
 
 int HexStringToInt(const std::string& s);
+CAmount _AmountFromValue(const Value& value);
+Value _ValueFromAmount(const CAmount& amount);
 /**
  * Standard wrapper for do-something-forever thread functions.
  * "Forever" really means until the thread is interrupted.

@@ -370,6 +370,11 @@ var BrowserAPI = new function () {
                 error(e);
         });
     }
+    this.searchProducts=function(tags,number,offset){
+        if (Object.prototype.toString.call(tags) != '[object Array]') tags=[tags];   
+        console.log([tags,number,offset]);
+        return this.icall("searchproducts",[tags,number,offset]);
+    }
     this.getUnspent=function(id){
         if (Object.prototype.toString.call(id) != '[object Array]')            
             id=[id];   

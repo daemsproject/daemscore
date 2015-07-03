@@ -13,6 +13,7 @@
 #include "uint256.h"
 #include "script/script.h"
 #include "ccc/link.h"
+#include "amount.h"
 using namespace json_spirit;
 using namespace std;
 using std::string;
@@ -954,6 +955,7 @@ public:
     bool DecodeLink(int& redirectType, string& redirectTo)const;
     bool GetTags(std::vector<std::pair<int, std::string> >& vTagList) const;
     bool _GetTags(std::vector<std::pair<int, std::string> >& vTagList, int ccp = -1) const;
+    //bool DecodeTagP(std::vector<std::string> vTag)const;
 };
 
 class CMessage
@@ -983,5 +985,53 @@ public:
     Value ToJson(bool fLinkOnly = false)const;
     string ToJsonString(bool fLinkOnly = false)const;
     bool SetJson(const Object& json);
+};
+
+struct CPricing
+{
+    CAmount price;
+    string strUnit;
+    string strCurrency;
+    string strRegion;
+    string strPaymentType;//e.g. full prepay, face2face, divided, credit card, cash, etc
+    std::pair<int,int> volumeRange;
+};
+
+class CProduct
+{
+private:
+    //bool fValid;
+public:
+    CLink link;
+    std::string id;
+    std::string name;
+    CLink icon;
+    std::string intro;
+    CLink introLink;
+    std::map<string,string> mapAttribute;
+    std::vector<std::string> vTag;
+    uint32_t nExpireTime;
+    CAmount price;
+    std::vector<CPricing>vPrice;
+    CAmount shipmentFee;
+    std::vector<CPricing>vShipmentFee;
+    CScript seller;
+    std::vector<std::string> vSellerDomain;
+    CScript recipient;
+    CProduct()
+    {
+        price=0;
+        shipmentFee=-1;
+        //fValid=false;
+        id="";
+        name="";
+        nExpireTime=0;
+    }
+    bool IsValid(){return id!=""&&name!="";}
+    Value ToJson(bool fLinkOnly = false)const;
+    string ToJsonString(bool fLinkOnly = false)const;
+    bool SetJson(const Object& obj,string& strError);
+    bool SetContent(const CContent content);
+    CContent ToContent()const;
 };
 #endif

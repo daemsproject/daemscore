@@ -18,7 +18,9 @@
         <script type="text/javascript" src="../js/shop.js"></script>
         <script type="text/javascript" src="../js/shared.min.js"></script>
         <script type="text/javascript" src="../js/browserapi.js"></script>
+        <script type="text/javascript" src="../js/browser.js"></script>
         <script type="text/javascript" src="../js/base64.js"></script>
+        
 
         <style type="text/css"> .adv{display: none;} .basic{display: inherit;} </style>
 
@@ -31,13 +33,51 @@
         </div>
         <div style="width:100%; float:left; clear:both"></div>
         <ul class="nav nav-tabs">
-            <li ><a href="#buy" data-toggle="tab">Buy</a></li>
-            <li class="active"><a href="#sell" data-toggle="tab">Sell</a></li>
+            <li  class="active"><a href="#buy" data-toggle="tab">Buy</a></li>
+            <li><a href="#sell" data-toggle="tab">Sell</a></li>
 
         </ul>
         <div class="container tab-content" style="margin-top:10px" >
-            <div id="buy" class="tab-pane" >buy</div>
-            <div id="sell" class="active tab-pane" style="">
+            <div id="buy" class="active tab-pane" >
+                <div class="span12 no-print">
+                    <ul class="nav nav-pills pull-left" style="margin-bottom: 3px">                        
+                        <li class="active" ><a href="#view-products" data-toggle="tab">View Products</a></li>
+                        <li><a href="#shopping-cart" data-toggle="tab" onclick="Shop.refreshCart()">Shopping Cart</a></li>
+                        <li><a href="#my-orders" data-toggle="tab">My Orders</a></li>                            
+                    </ul>                                       
+                </div>
+                <div class="span12 tab-content" style="margin-top:10px">
+                    <div id="view-products" class="active tab-pane well">
+                        <div class="row-fluid">
+                            <div>
+                                <input name="search" placeholder="input tags to serach" type="text" />
+                                <button class="btn btn-primary pop" id="btn-product-search" title="search" >Search</button>
+                                <button class="btn btn-primary pop" id="btn-product-refresh" title="search" >Refresh</button>
+                            </div>
+                            <div class="span12" >
+                                <table class="well table table-striped" id="buy-product-list">
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="shopping-cart" class="tab-pane well">                        
+                        <div>
+                                <table class="well table table-striped" id="cart-list">
+                                </table>
+                        </div>
+                        <div>
+                            <div style="inline">Total</div>
+                            <div id="cart-total"></div>
+                        </div>
+                        <div>
+                            <button class="update btn btn-primary pop" id="btn-cart-buy" title="buy" >Buy</button>
+                        </div>
+                    </div>
+                    <div id="my-orders" class="tab-pane well">my-orders</div>
+
+                </div>
+            </div>
+            <div id="sell" class="tab-pane" style="">
                 <div class="row-fluid">
                     <div class="span2">
                         <ul class="nav nav-list" id="sell-nav">
@@ -48,7 +88,7 @@
                         </ul>                        
                     </div>                        
 
-                    <div class="span10 tab-content">
+                    <div class="span7 tab-content">
                         <div id="shop-overview" class="active tab-pane well" >shop overview</div>
                         <div class="tab-pane well" id="add-new"  >
                             <table class="table table-striped" >
@@ -71,68 +111,20 @@
                 </div>
             </div>
         </div>
-    </div>
-    <div id="reg-domain" class="modal hide">
+    
+    <div id="modal-product-details" class="modal hide">
         <div class="modal-header">
-            <h3>Register new domain</h3>
+            <h3>Product Details</h3>
         </div>
-        <div class="modal-body">
-            <div>
-                <p>Please input the domain name you want to register below:</p>
-                <input placeholder="domain name" name="domain-name" type="text" style="width:300px;"/>
-                <button class="btn" id="btn-check-domain">Check</button>
-                <div id="check-result"></div>
-            </div>
-            <div>Lock time:<input placeholder="lock-time" name="lock-time" type="text" style="width:300px;"/>days</div>
-            <div>Lock Value needed:<div id="value-needed"></div></div>
-            <div>Value to be locked:<div id="value-to-lock"></div></div>                
-            <div>To lock less,<button class="btn" id="btn-prepare-cheque">Prepare Cheque</button></div>
+        <div class="modal-body">            
+                                       
         </div>
         <div class="modal-footer">
             <div class="btn-group pull-right">
-                <button autocomplete="off" class="btn btn-secondary">Cancel</button>
-                <button autocomplete="off" class="btn btn-primary">Register</button>
+                <button autocomplete="off" class="btn btn-secondary">Close</button>
+                <button autocomplete="off" class="btn btn-primary">Add To Cart</button>
             </div>
         </div>
     </div>
-    <div id="renew-domain" class="modal hide">
-        <div class="modal-header">
-            <h3>Renew Domain</h3>
-        </div>
-        <div class="modal-body">
-            <div>
-                <p>Domain to renew:</p>
-                <div id="domain-to-renew" style="color:blue"></div>                    
-            </div>
-            <div>Lock time:<input placeholder="lock-time" name="lock-time" type="text" style="width:300px;"/>days</div>
-            <div>Lock Value needed:<div id="value-needed-renew"></div></div>
-            <div>Value to be locked:<div id="value-to-lock-renew"></div></div>                
-            <div>To lock less,<button class="btn" id="btn-prepare-cheque">Prepare Cheque</button></div>
-        </div>
-        <div class="modal-footer">
-            <div class="btn-group pull-right">
-                <button autocomplete="off" class="btn btn-secondary">Cancel</button>
-                <button autocomplete="off" class="btn btn-primary">Renew</button>
-            </div>
-        </div>
-    </div>
-    <div id="transfer-domain" class="modal hide">
-        <div class="modal-header">
-            <h3>Transfer Domain</h3>
-        </div>
-        <div class="modal-body">
-            <div>
-                <p>Domain to transfer</p>
-                <div id="domain-to-transfer" style="color:blue"></div>                    
-            </div>
-            <p>Please input the target ID to transfer to :</p>
-            <input placeholder="transfer id" name="transfer-id" type="text" style="width:300px;"/>
-        </div>
-        <div class="modal-footer">
-            <div class="btn-group pull-right">
-                <button autocomplete="off" class="btn btn-secondary">Cancel</button>
-                <button autocomplete="off" class="btn btn-primary">Transfer</button>
-            </div>
-        </div>
-    </div>
+    
 </body></html>

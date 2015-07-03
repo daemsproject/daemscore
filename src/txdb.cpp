@@ -394,6 +394,8 @@ bool CDomainViewDB::Write(const CDomain &domain)
 }
 bool CDomainViewDB::_GetDomainByForward(const int nExtension,const CScript scriptPubKey,std::vector<CDomain> &vDomain)const 
 {
+    if(scriptPubKey.size()==0)
+        return false;
     char* searchColumn="redirrectto";
     const char* searchValue;//NOte: for varchar, need to add'' arround value
     const char* tableName=(nExtension==DOMAIN_10000?"domainf":"domainfai");
@@ -426,6 +428,8 @@ bool CDomainViewDB::_GetDomainByForward(const int nExtension,const CScript scrip
 }
 bool CDomainViewDB::_GetDomainByOwner(const int nExtension,const CScript scriptPubKey,std::vector<CDomain> &vDomain)const 
 {
+    if(scriptPubKey.size()==0)
+        return false;
     char* searchColumn="owner";
     const char* searchValue;//NOte: for varchar, need to add'' arround value
     const char* tableName=(nExtension==DOMAIN_10000?"domainf":"domainfai");

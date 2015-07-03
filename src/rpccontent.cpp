@@ -411,6 +411,20 @@ Value getcontentbylink(const Array& params, bool fHelp)
     Object r = _output_content(content, cformat, cflag, clink, posters, tx.vout[clink.nVout].nValue, tx.vout[clink.nVout].scriptPubKey);
     return r;
 }
+CContent _getcontentbylink(const CLink clink)
+{
+    CBlockIndex* pblockindex;
+    CBlock block;
+    if (!_getBlockByHeight(clink.nHeight, block, pblockindex))
+        return CContent();
+    CTransaction tx;
+    if (!_getTxFrBlock(block, clink.nTx, tx))
+        return CContent();
+    CContent content;
+    if (!_getContentFrTx(tx, clink.nVout, content))
+        return CContent();
+    return content;
+}
 
 Value getcontentbystring(const Array& params, bool fHelp)
 {
@@ -1153,4 +1167,91 @@ json_spirit::Value getdomainsbyforward(const json_spirit::Array& params, bool fH
    }
     LogPrintf("getdomainsbyoForward toJson%i \n", arrDomains.size());
     return Value(arrDomains);
+}
+json_spirit::Value searchproducts(const json_spirit::Array& params, bool fHelp){
+    if (fHelp || params.size() < 1)
+        throw runtime_error("Wrong number of parameters");
+    if (params[0].type() != array_type)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter tags, expected array");
+    Array arrTag = params[0].get_array();    
+    std::vector<string> vTag;
+    for(unsigned int i=0;i<arrTag.size();i++)
+    {
+        if(arrTag[i].type()==str_type)
+        {
+            string tag=arrTag[i].get_str();
+            if(tag!=""&&tag.size()<=32)
+                vTag.push_back(tag);
+        }
+    }
+    int nMaxItems=100;
+    if(params.size()>1&&params[1].type()==int_type)
+        nMaxItems=params[1].get_int();
+    int nOffset=0;    
+    if(params.size()>2&&params[2].type()==int_type)
+        nOffset=params[2].get_int();
+    vector<CLink> vLink;
+    pTagDBView->Search(vLink,vTag,CC_PRODUCT,nMaxItems,nOffset);
+    LogPrintf("search tag result %i \n", vLink.size());
+    Array arrProducts;
+    vector<CProduct> vProduct;
+    for (unsigned int i = 0; i < vLink.size(); i++) 
+   {
+       CBlockIndex* pblockindex;
+        CBlock block;
+        if (!_getBlockByHeight(vLink[i].nHeight, block, pblockindex))
+            continue;
+        CTransaction tx;
+        if (!_getTxFrBlock(block, vLink[i].nTx, tx))
+            continue;
+        CContent content;
+        if (!_getContentFrTx(tx, vLink[i].nVout, content))
+            continue;    
+       CProduct product;
+       
+       if(product.SetContent(content))
+       {           
+           LogPrintf("searchproducts secontent done \n");
+           product.link=vLink[i];
+           product.seller=GetTxInScriptPubKey(tx.vin[0]);   
+           LogPrintf("searchproducts seller %s \n", product.seller.ToString());
+           bool fFound=false;
+           for(unsigned int j=0;j<vProduct.size();j++)
+           {
+               if(vProduct[j].link==product.link)
+               {
+                   fFound=true;
+                   break;
+               }
+               if(vProduct[j].seller==product.seller&&vProduct[j].id==product.id){
+                   if(vProduct[j].link<product.link)
+                       vProduct[j]=product;
+                   fFound=true;
+                   break;
+               }
+           }
+           if (fFound)
+               continue;           
+           if(product.seller.size()>0)
+           {
+               vector<CDomain> vDomain;
+                pDomainDBView->GetDomainByForward(product.seller,vDomain,true);
+                 for (unsigned int j = 0; j < vDomain.size(); j++) 
+                 {
+                     if(vDomain[j].strAlias.size()>0)
+                         product.vSellerDomain.push_back(vDomain[j].strAlias);
+                     else
+                     product.vSellerDomain.push_back(vDomain[j].strDomain);
+                 }
+                if(product.recipient.size()==0)
+                    product.recipient=product.seller;
+           }
+           vProduct.push_back(product);           
+       }
+           
+   }
+    for (unsigned int i = 0; i < vProduct.size(); i++) 
+        arrProducts.push_back(vProduct[i].ToJson());   
+    LogPrintf("searchproducts toJson%i \n", arrProducts.size());
+    return Value(arrProducts);
 }

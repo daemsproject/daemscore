@@ -75,5 +75,17 @@ public:
     bool SetString(const std::string linkStr);
     bool SetString(const vector<unsigned char>& linkVch);
     bool SetJson(const Array& linkJson);
+    friend bool operator==(const CLink& a, const CLink& b)
+    {
+        return (a.nHeight == b.nHeight && a.nTx == b.nTx && a.nVout == b.nVout);
+    }
+    friend bool operator!=(const CLink& a, const CLink& b)
+    {
+        return !(a == b);
+    }
+    friend bool operator<(const CLink& a, const CLink& b)
+    {
+        return (a.nHeight < b.nHeight || (a.nHeight == b.nHeight && a.nTx < b.nTx)|| (a.nHeight == b.nHeight && a.nTx == b.nTx && a.nVout < b.nVout));
+    }
 };
 #endif // CCC_LINK_H

@@ -70,11 +70,15 @@ var CBrowser = new function () {
         idiv.find("img").attr("src", this.createImgSrc(type, imgB64Data));
         return idiv.html();
     };
-    this.createIconHtml = function (imgB64Data, clink) {
+    this.createIconHtml = function (imgB64Data, clink,h,w) {
+        if(!w)
+            w=40;
+        if(!h)
+            h=40;
         var html = '<a ><img';
         if (clink)
             html += ' id="' + clink + '"';
-        html += ' src="data:image/jpg;base64,' + imgB64Data + '" type="image/jpeg" class="brimg" height="40" width="40"/></a>';
+        html += ' src="data:image/jpg;base64,' + imgB64Data + '" type="image/jpeg" class="brimg" height="'+h+'" width="'+w+'"/></a>';
         return html;
     };
     this.createVideoHtml = function (clink, vdoB64Data, type) {

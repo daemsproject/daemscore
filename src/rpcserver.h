@@ -254,6 +254,8 @@ extern json_spirit::Value getdomaininfo(const json_spirit::Array& params, bool f
 extern json_spirit::Value getdomainsbyowner(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getdomainsbyforward(const json_spirit::Array& params, bool fHelp);
 
+extern json_spirit::Value searchproducts(const json_spirit::Array& params, bool fHelp);
+
 extern json_spirit::Value setconf(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getconf(const json_spirit::Array& params, bool fHelp); 
 extern json_spirit::Value readfile(const json_spirit::Array& params, bool fHelp);
@@ -313,4 +315,5 @@ extern void GetMessagesFromTx(std::vector<CMessage>& vMessages,const CTransactio
 //extern uint32_t LockTimeToTime(uint32_t nLockTime);
 extern void SortMessages(std::vector<CMessage>& vMsg,std::vector<CScript> vIDsLocal);
 extern Value gettxmessages(const json_spirit::Array& params, bool fHelp);
+extern CContent _getcontentbylink(const CLink clink);
 #endif // BITCOIN_RPCSERVER_H

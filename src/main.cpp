@@ -791,7 +791,16 @@ bool IsFrozen(const CCoins &tx){
         return false;
     return true;
 }
-
+CScript GetTxInScriptPubKey(const CTxIn& txin)
+{
+    CTransaction prevTx;
+    uint256 tmphash;
+    if (!GetTransaction(txin.prevout.hash, prevTx, tmphash, true)) {
+        LogPrintf("GetTxInScriptPubKey: null vin prevout\n");
+        return CScript();
+    }    
+    return  prevTx.vout[txin.prevout.n].scriptPubKey;    
+}
 /**
  * Check transaction inputs to mitigate two
  * potential denial-of-service attacks:

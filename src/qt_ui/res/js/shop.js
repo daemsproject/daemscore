@@ -13,7 +13,11 @@ var Shop = new function () {
     var isInitialized = false;
     var language = 'en'; //Current language    
     var haveBoundReady = false;
-    var cheques=[];
+    var pagelen=100;
+    var page=0;
+    var products=[];
+    var currentProduct;
+    var cart=[];
     function bindInitial() {
 
         $('.modal').on('show', function () {
@@ -96,23 +100,132 @@ var Shop = new function () {
         //console.log("add new clicked");
          $("#add-new").find('input[name="product-id"]').val(parseInt(Math.random()*256*256*256*256));
     }
+    this.showViewProduct=function(tags){
+        products=BrowserAPI.searchProducts(tags,pagelen,page*pagelen);        
+        console.log(products);
+        if(!products||products.error||products.length==0){            
+            $('#buy-product-list').html("<tr><td>no products found, please change search tags and retry</td></tr>");
+            return;
+        }
+        var html="<tr><th>Icon</th><th>Product Name</th><th>Price</th><th>Seller</th><th>Action</th></tr>";
+        for(var j in products){
+            html+="<tr><td>";
+            var p=products[j];
+            if (p.icon){
+                html+=CBrowser.createIconHtml(CBrowser.getB64DataFromLink(p.icon));
+            }
+            html+='</td><td>';            
+            html+=p.name.substr(0,32);
+            html+='</td><td>';
+            html+=(p.price+"CCC");
+            html+='</td><td>';
+            if(p.seller){
+                if (p.seller.domain)
+                    html+=p.seller.domain[0];
+                else if (p.seller.id)
+                html+=showID(p.seller.id);
+            }
+            html+='</td><td>';
+            html+='<button class="btn btn-secondary pop" id="btn-'+p.id+' title="detail" onclick="{Shop.showDetails(\''+p.id+'\')}">Details</button>';
+            html+='</td></tr>';
+        }
+        //console.log(html);
+        $('#buy-product-list').html(html);
+    }
+    this.showDetails=function(id){
+        console.log(id);            
+        $("#modal-product-details").modal({backdrop: "static", show: true});           
+        $("#modal-product-details").center();
+        var p;
+        for(var j in products)
+            if(products[j].id==id){
+                p=products[j];
+                currentProduct=p;
+            }
+        
+        if(p){
+            var html="";
+            html+="<div>Product ID:"+p.id+"</div>";            
+            if (p.icon){
+                html+='<div>'+CBrowser.createIconHtml(CBrowser.getB64DataFromLink(p.icon),p.icon,200,200)+'</div>';
+            }            
+            html+='<div>Product Name:'+p.name+'</div>';
+            html+='<div>Price:'+(p.price+"CCC")+'</div>';
+            if(p.shipmentfee)
+                html+='<div>Shipment fee:'+(p.shipmentfee+"CCC")+'</div>';
+            if(p.seller){
+                if (p.seller.domain)
+                    html+='<div>Shop:'+p.seller.domain[0]+'</div>';
+                else if (p.seller.id)
+                html+='<div>Shop:'+showID(p.seller.id)+'</div>';
+            }
+            if(p.intro)
+                html+='<div><span>Introductions:</span>'+p.intro+'</div>';
+            console.log(html);
+            $("#modal-product-details").find(".modal-body").html(html);
+        }
+           
+    }
+    this.refreshCart=function(){
+        if(cart.length==0){            
+            $('#cart-list').html("<tr><td>no products in cart.</td></tr>");
+            return;
+        }
+        var html="<tr><th>Icon</th><th>Product Name</th><th>Seller</th><th>Price</th><th>Quantity</th><th>SubTotal</th><th></th></tr>";
+        for(var j in cart){            
+            var p=cart[j];
+            html+='<tr id="tr-'+p.link+'" title="'+p.link+'"><td>';
+            if (p.icon){
+                html+=CBrowser.createIconHtml(CBrowser.getB64DataFromLink(p.icon));
+            }
+            html+='</td><td>';            
+            html+=p.name.substr(0,32);
+            html+='</td><td>';            
+            if(p.seller){
+                if (p.seller.domain)
+                    html+=p.seller.domain[0];
+                else if (p.seller.id)
+                html+=showID(p.seller.id);
+            }
+            html+='</td><td>';
+            html+=(p.price+"CCC");
+            html+='</td><td>';
+            html+='<input name="quantity" type="text" style="width:40px" title="'+p.link+'" value="1" onkeyup="this.value=this.value.replace(/\D/g,\'\')" onafterpaste="this.value=this.value.replace(/\D/g,\'\')"/></td>';
+            html+='<td><div class="subtotal" style="display:inline">'+p.price+'</div>&nbspCCC</td>';
+            html+='<td><button class="btn btn-secondary" title="'+p.link+'">x</button>';
+            html+='</td></tr>';
+        }
+        console.log(html);
+        $('#cart-list').html(html);
+    }
+    this.calCartTotal=function(){
+        var total=0;
+        $("#cart-list").each(function(){                
+                var p=cart[$(this).attr("title")];
+                var q=$(this).find("input").val();
+                var subtotal=p.price*q;
+                total+=subtotal;
+                console.log(subtotal);
+            });
+        $("#cart-total").html(total);    
+    };
     function bindReady() {
         if (haveBoundReady) {
             return;
         }
         haveBoundReady = true;
          //console.log("bindready");       
-        
+       
         $("#btn-add-new").unbind().click(function () {            
             var d = {};
             //d.domain = currentDomain;
-            d.productid=$("#add-new").find("input[name='product-id']").val();
+            d.id=$("#add-new").find("input[name='product-id']").val().toString();
             var productname = $("#add-new").find("input[name='product-name']").val();            
             if(!productname){
                     i.makeNotice('error', 'publish-product-error', "Empty product name");
                     return 
             }
-            d.productname=productname;
+            d.name=productname;
             var price= $("#add-new").find("input[name='price']").val();            
             if(isNaN(price)){
                 i.makeNotice('error', 'publish-product-error', "invalid price");
@@ -158,6 +271,40 @@ var Shop = new function () {
                     i.makeNotice('error', 'publish-product-error', e);
                 });            
         });
+        $("#modal-product-details").find(".btn-secondary").unbind().click(function(){$("#modal-product-details").modal("hide");});
+        $("#modal-product-details").find(".btn-primary").unbind().click(function(){
+            $("#modal-product-details").modal("hide");
+            for (var j in cart){
+                if (j==currentProduct.link)
+                    return;
+            }
+            cart[currentProduct.link]=currentProduct;            
+            console.log(cart);
+        });
+        $("#cart-list").find("input").change(function(){
+            console.log("input value changed");
+            if(isNaN($(this).val())||$(this).val()<0)
+                $(this).val(1);                        
+            $(this).next().html($(this).val()*cart[$(this).attr("title")].price);
+            i.calCartTotal();
+        });
+        $("#btn-cart-buy").unbind().click(function () {             
+            var l=[];
+            $("#cart-list").each(function(){
+                console.log($(this).attr("title"));
+                var q={};
+                var p=cart[$(this).attr("title")];
+                q.id=p.id;
+                q.link=p.link;
+                q.recipient=p.recipient;
+                q.price=p.price;
+                q.shipmengfee=p.shipmentfee;
+                q.quantity=$(this).find("input").val();      
+                l.push(q);
+            });
+            BrowserAPI.buyProducts(accountID,l);    
+        });
+        i.showViewProduct();
     }
 
     function initAccount() {

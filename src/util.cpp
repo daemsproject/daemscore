@@ -94,6 +94,7 @@ namespace boost {
 } // namespace boost
 
 using namespace std;
+using namespace json_spirit;
 
 map<string, string> mapArgs;
 map<string, vector<string> > mapMultiArgs;
@@ -901,4 +902,35 @@ std::string num2str(const double i)
     std::stringstream ss;
     ss << i;
     return ss.str();
+}
+static inline int64_t roundint64(double d)
+{
+    return (int64_t)(d > 0 ? d + 0.5 : d - 0.5);
+}
+CAmount _AmountFromValue(const Value& value)
+{
+    double dAmount=0;
+    switch (value.type()){
+        case str_type:
+        {
+            dAmount=atof(value.get_str().c_str());
+            break;
+        }
+        case real_type:
+        {
+            dAmount= value.get_real();
+            break;
+        }
+        default:
+        {
+           
+        }
+    }
+    CAmount nAmount = roundint64(dAmount * COIN);    
+    return nAmount;
+}
+
+Value _ValueFromAmount(const CAmount& amount)
+{
+    return (double)amount / (double)COIN;
 }

@@ -301,6 +301,7 @@ static const CRPCCommand vRPCCommands[] =
     { "blockchain",         "getdomaininfo",          &getdomaininfo,          true,      false,      false },
     { "blockchain",         "getdomainsbyowner",      &getdomainsbyowner,      true,      false,      false },
     { "blockchain",         "getdomainsbyforward",    &getdomainsbyforward,    true,      false,      false },
+    { "blockchain",         "searchproducts",         &searchproducts,         true,      false,      false },
     
     { "conf",               "getbrowserconf",         &getbrowserconf,         true,      true,       false },
     { "conf",               "getfollowed",            &getfollowed,            true,      true,       false },

@@ -502,7 +502,7 @@ bool CSqliteWrapper::GetLinks(const vector<string> vTag,const int cc,const CLink
             sprintf(sql,selectstatement,vTagID[i],sql);
             
         }
-        selectstatement="%s limit %i,%i;"; 
+        selectstatement="%s limit %i offset %i;"; 
         sprintf(sql,selectstatement,sql,nMaxItems,nOffset);
     }    
     

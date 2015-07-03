@@ -301,6 +301,8 @@ bool IsFrozen(const CTransaction &tx, int nBlockHeight, int64_t nBlockTime);
 int GetBlocksToMaturity(const unsigned int nLockTime);
 int GetLockLasting(uint32_t nLockTime);
 uint32_t LockTimeToTime(uint32_t nLockTime);
+CScript GetTxInScriptPubKey(const CTxIn& txin);
+
 /** Undo information for a CBlock */
 class CBlockUndo
 {
