@@ -305,6 +305,7 @@ extern PaymentRequest GetUpdateDomainPaymentRequest(const Array arr);
 extern PaymentRequest GetRenewPaymentRequest(const Array arr);
 extern PaymentRequest GetTransferPaymentRequest(const Array arr);
 extern PaymentRequest GetPublishProductPaymentRequest(const Array arr);
+extern PaymentRequest GetBuyProductPaymentRequest(const Array arr);
 
 extern CWalletTx CreateRawTransaction(PaymentRequest pr,bool& fRequestPassword,CWallet*& pwallet);
 extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, json_spirit::Object& entry);

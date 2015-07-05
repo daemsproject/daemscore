@@ -6,7 +6,7 @@
 #include "ccc/domain.h"
 #include "ccc/link.h"
 #include "util.h"
-
+#include "timedata.h"
 #include <boost/filesystem.hpp>
 #include <stdio.h>
 using namespace std;
@@ -42,6 +42,7 @@ CSqliteWrapper::CSqliteWrapper(const boost::filesystem::path& path, bool fWipe)
     HandleError(status);
        
     CreateTables();    
+    ClearExpiredTags(GetAdjustedTime());
     LogPrintf("Opened sqliteDB successfully\n"); 
 }
 
@@ -603,11 +604,11 @@ bool CSqliteWrapper::GetTagID(const string tag,int& tagID) const
 bool CSqliteWrapper::ClearExpiredTags(const unsigned int nTime)
 {
     LogPrintf("GetdeleteSql\n");    
-    char deletetatement[2000];    
-    sprintf(deletetatement,"DELETE FROM tag WHERE expiretime< %i;",nTime);
+    char deletestatement[2000];    
+    sprintf(deletestatement,"DELETE FROM tag WHERE expiretime< %i;",nTime);
     char* zErrMsg=0;
      LogPrintf("CSqliteWrapper Delete \n");
-     sqlite3_exec(pdb,deletetatement,0,0,&zErrMsg);
+     sqlite3_exec(pdb,deletestatement,0,0,&zErrMsg);
      LogPrintf("CSqliteWrapper Delete done\n");     
      if(zErrMsg)
      {

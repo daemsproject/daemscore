@@ -1034,4 +1034,42 @@ public:
     bool SetContent(const CContent content);
     CContent ToContent()const;
 };
+class CPaymentItem
+{
+    cctype ccPaymentType;
+    CLink linkPayTo;
+    std::string productID; //or hash
+    CAmount price;
+    int nQuantity;
+    string strMemo;
+    CPaymentItem()
+    {
+        price=0;
+        nQuantity=0;
+        ccPaymentType=CC_PAYMENT_TYPE_PRODUCT;
+    }
+};
+
+class CPayment
+{
+private:
+    //bool fValid;
+public:
+    cctype ccPaymentType;
+    CScript recipient;
+    vector<CPaymentItem> vItems;
+    uint256 hash;//contract hash
+    string strMemo;
+    CPayment()
+    { 
+        hash=uint256(0); 
+        ccPaymentType=CC_PAYMENT_TYPE_SHOPPING;
+    }
+    bool IsValid();
+    Value ToJson(bool fLinkOnly = false)const;
+    string ToJsonString(bool fLinkOnly = false)const;
+    bool SetJson(const Object& obj,string& strError);
+    bool SetContent(const CContent content);
+    CContent ToContent()const;
+};
 #endif

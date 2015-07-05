@@ -182,6 +182,8 @@ QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
                 return walletModel->TransferDomain(arrData);
             if (command.toStdString()==string("publishproduct"))
                 return walletModel->PublishProduct(arrData);
+            if (command.toStdString()==string("buyproduct"))
+                return walletModel->BuyProduct(arrData);
             if (command.toStdString()==string("writefile")||command.toStdString()==string("readfile")
                     ||command.toStdString()==string("getconf")||command.toStdString()==string("setconf"))
             {
