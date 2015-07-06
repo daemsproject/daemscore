@@ -1020,3 +1020,9 @@ QString WalletModel::PublishProduct(json_spirit::Array arrData)
     CPaymentOrder pr = GetPublishProductPaymentRequest(arrData); 
     return DoPayment(pr); 
 }
+QString WalletModel::BuyProduct(json_spirit::Array arrData)
+{     
+    
+    CPaymentOrder po = GetPublishProductPaymentRequest(arrData); 
+    return DoPayment(po); 
+}
