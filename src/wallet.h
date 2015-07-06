@@ -726,25 +726,25 @@ public:
         if (filter & ISMINE_SPENDABLE)
         {
             // GetBalance can assume transactions in mapWallet won't change
-            if (fCreditCached)
-                credit += nCreditCached;
-            else
-            {
+            //if (fCreditCached)
+            //    credit += nCreditCached;
+            //else
+            //{
                 nCreditCached = pwallet->GetCredit(*this, ISMINE_SPENDABLE);
                 fCreditCached = true;
                 credit += nCreditCached;
-            }
+            //}
         }
         if (filter & ISMINE_WATCH_ONLY)
         {
-            if (fWatchCreditCached)
-                credit += nWatchCreditCached;
-            else
-            {
+            //if (fWatchCreditCached)
+            //    credit += nWatchCreditCached;
+           // else
+           // {
                 nWatchCreditCached = pwallet->GetCredit(*this, ISMINE_WATCH_ONLY);
                 fWatchCreditCached = true;
                 credit += nWatchCreditCached;
-            }
+           // }
         }
         return credit;
     }
@@ -763,8 +763,8 @@ public:
 //        return 0;
         if (pwallet == 0)
             return 0;
-        if (fUseCache && fImmatureCreditCached)
-            return nImmatureCreditCached;
+       // if (fUseCache && fImmatureCreditCached)
+       //     return nImmatureCreditCached;
 
         CAmount nCredit = 0;
         uint256 hashTx = GetHash();
@@ -803,8 +803,8 @@ public:
         //return 0;
         if (pwallet == 0)
             return 0;
-        if (fUseCache && fImmatureWatchCreditCached)
-            return nImmatureWatchCreditCached;
+        //if (fUseCache && fImmatureWatchCreditCached)
+        //    return nImmatureWatchCreditCached;
 
         CAmount nCredit = 0;
         uint256 hashTx = GetHash();
@@ -832,8 +832,8 @@ public:
 
 
 
-        if (fUseCache && fAvailableWatchCreditCached)
-            return nAvailableWatchCreditCached;
+        //if (fUseCache && fAvailableWatchCreditCached)
+        //    return nAvailableWatchCreditCached;
 
         CAmount nCredit = 0;
         for (unsigned int i = 0; i < vout.size(); i++)
