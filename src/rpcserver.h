@@ -294,20 +294,20 @@ extern bool HTTPReq_REST(AcceptedConnection *conn,
                   std::string& strURI,
                   std::map<std::string, std::string>& mapHeaders,
                   bool fRun);
-class PaymentRequest;
+class CPaymentOrder;
 class CWalletTx;
 class CWallet;
-extern PaymentRequest ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJson,int nType=0);
-extern PaymentRequest MessageRequestToPaymentRequest(const std::string idLocal,const  std::string idForeign,const CContent msg);
-extern PaymentRequest GetPublisherPaymentRequest(const std::string idLocal,const  std::string idForeign,const CContent& ctt);
-extern PaymentRequest GetRegisterDomainPaymentRequest(const std::string id, const std::string domain, const uint32_t nLockTime);
-extern PaymentRequest GetUpdateDomainPaymentRequest(const Array arr);
-extern PaymentRequest GetRenewPaymentRequest(const Array arr);
-extern PaymentRequest GetTransferPaymentRequest(const Array arr);
-extern PaymentRequest GetPublishProductPaymentRequest(const Array arr);
-extern PaymentRequest GetBuyProductPaymentRequest(const Array arr);
+extern CPaymentOrder ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJson,int nType=0);
+extern CPaymentOrder MessageRequestToPaymentRequest(const std::string idLocal,const  std::string idForeign,const CContent msg);
+extern CPaymentOrder GetPublisherPaymentRequest(const std::string idLocal,const  std::string idForeign,const CContent& ctt);
+extern CPaymentOrder GetRegisterDomainPaymentRequest(const std::string id, const std::string domain, const uint32_t nLockTime);
+extern CPaymentOrder GetUpdateDomainPaymentRequest(const Array arr);
+extern CPaymentOrder GetRenewPaymentRequest(const Array arr);
+extern CPaymentOrder GetTransferPaymentRequest(const Array arr);
+extern CPaymentOrder GetPublishProductPaymentRequest(const Array arr);
+extern CPaymentOrder GetBuyProductPaymentRequest(const Array arr);
 
-extern CWalletTx CreateRawTransaction(PaymentRequest pr,bool& fRequestPassword,CWallet*& pwallet);
+extern CWalletTx CreateRawTransaction(CPaymentOrder pr,bool& fRequestPassword,CWallet*& pwallet);
 extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, json_spirit::Object& entry);
 extern void GetMessagesFromTx(std::vector<CMessage>& vMessages,const CTransaction& tx,const int nBlockHeight,int nTx,int nTime,const std::vector<CScript>& vIDsLocal,
         const std::vector<CScript>& vIDsForeign,int nDirectionFilter,bool fLinkonly,int nPos,int nOffset,int nCount);

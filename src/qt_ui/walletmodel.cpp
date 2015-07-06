@@ -375,10 +375,10 @@ void WalletModel::notifyAccountSwitched(const std::string id)
 
 QString WalletModel::HandlePaymentRequest(const Array arrData)
 {
-    PaymentRequest pr=ParseJsonPaymentRequest(arrData[0],0);
+    CPaymentOrder pr=ParseJsonPaymentRequest(arrData[0],0);
     return DoPayment(pr); 
 }
-QString WalletModel::DoPayment(const PaymentRequest& pr)
+QString WalletModel::DoPayment(const CPaymentOrder& pr)
 {
     CWalletTx tx;
     string strError;    
@@ -451,7 +451,7 @@ QString WalletModel::HandlePaymentRequest2(const Array arrData)
 {
     std::vector<unsigned char> raw = ParseHexV(arrData[2], "parameter 3");
     CContent ctt(raw);
-    PaymentRequest pr = GetPublisherPaymentRequest(arrData[0].get_str(), arrData[1].get_str(), ctt);
+    CPaymentOrder pr = GetPublisherPaymentRequest(arrData[0].get_str(), arrData[1].get_str(), ctt);
     return DoPayment(pr);    
 }
 
@@ -535,7 +535,7 @@ QString WalletModel::getEncryptMessegeAlert(const std::vector<string>& vstrIDsFo
     
     return questionString;
 }
-QString WalletModel::getDomainUpdateAlertMessage(const CWalletTx& tx,const PaymentRequest& pr)
+QString WalletModel::getDomainUpdateAlertMessage(const CWalletTx& tx,const CPaymentOrder& pr)
 {
     QStringList formatted;
     //string str1="domain";
@@ -564,7 +564,7 @@ QString WalletModel::getDomainUpdateAlertMessage(const CWalletTx& tx,const Payme
     
     return questionString;
 }
-QString WalletModel::getDomainTransferAlertMessage(const CWalletTx& tx,const PaymentRequest& pr)
+QString WalletModel::getDomainTransferAlertMessage(const CWalletTx& tx,const CPaymentOrder& pr)
 {
     //string str1="domain";
     std::map<string,string> p=pr.info;
@@ -596,7 +596,7 @@ QString WalletModel::getDomainTransferAlertMessage(const CWalletTx& tx,const Pay
     
     return questionString;
 }
-QString WalletModel::getDomainRegisterAlertMessage(const CWalletTx& tx,const PaymentRequest& pr)
+QString WalletModel::getDomainRegisterAlertMessage(const CWalletTx& tx,const CPaymentOrder& pr)
 {
     //string str1="domain";
     std::map<string,string> p=pr.info;
@@ -612,7 +612,7 @@ QString WalletModel::getDomainRegisterAlertMessage(const CWalletTx& tx,const Pay
     QString amount = "<span style='font-family: monospace;color:#aa0000;'>" +tr("Locked value:") +"<b>" + BitcoinUnits::formatHtmlWithUnit(0, tx.GetValueOut());
     amount.append("</b></span>");
     formatted.append(amount);
-    QString timelasting = "<span style='font-family: monospace;color:#aa0000;'>" +tr("Lock for:") +QString().fromStdString(num2str((GetLockLasting(tx.nLockTime)/3600/24))) +tr("days");
+    QString timelasting = "<span style='font-family: monospace;color:#aa0000;'>" +tr("Lock for:") +QString().fromStdString(num2str((GetLockLasting(tx.vout[0].nLockTime)/3600/24))) +tr("days");
     timelasting.append("</b></span>");
     formatted.append(timelasting);
     QString questionString = tr("Please check domain registration details:");    
@@ -751,7 +751,7 @@ QString WalletModel::SendMessage(Array arrData)
     string idLocal=arrData[0].get_str();
     string idForeign=arrData[1].get_str();
     CContent msg=_create_text_content(arrData[2].get_str());    
-    PaymentRequest pr=MessageRequestToPaymentRequest(idLocal,idForeign,msg);
+    CPaymentOrder pr=MessageRequestToPaymentRequest(idLocal,idForeign,msg);
     CWalletTx tx;
     string strError;    
     CPubKey pub;
@@ -855,7 +855,7 @@ QString WalletModel::SendMessage(Array arrData)
     return QString("{\"success\":\"tx sent\"}");
             
 }
-QString WalletModel::getSMSAlertMessage(const PaymentRequest& pr)
+QString WalletModel::getSMSAlertMessage(const CPaymentOrder& pr)
 {    
     // Format confirmation message
     QStringList formatted;
@@ -894,7 +894,7 @@ QString WalletModel::RegisterDomain(json_spirit::Array arrData)
     StringToScriptPubKey(arrData[0].get_str(),scriptPubKey);
     string strDomain=arrData[1].get_str();
     uint32_t nLockTime=(uint32_t)arrData[2].get_int();    
-    PaymentRequest pr = GetRegisterDomainPaymentRequest(arrData[0].get_str(), strDomain, nLockTime);   
+    CPaymentOrder pr = GetRegisterDomainPaymentRequest(arrData[0].get_str(), strDomain, nLockTime);   
     
     CDomain cdomain;
     if(pDomainDBView->GetDomainByName(strDomain,cdomain)&&(GetLockLasting(cdomain.nExpireTime)>0))
@@ -924,7 +924,7 @@ QString WalletModel::UpdateDomain(json_spirit::Array arrData)
     LogPrintf("walletmodel:UpdateDomain scriptPubkey:s% \n",scriptPubKey.ToString());
     string strDomain=arrData[1].get_str();
     Object objInfo=arrData[2].get_obj();    
-    PaymentRequest pr = GetUpdateDomainPaymentRequest(arrData);       
+    CPaymentOrder pr = GetUpdateDomainPaymentRequest(arrData);       
     CDomain cdomain;
     if(!pDomainDBView->GetDomainByName(strDomain,cdomain)||(GetLockLasting(cdomain.nExpireTime)==0))
         return QString().fromStdString("{\"error:domain not registered\"}");  
@@ -955,7 +955,7 @@ QString WalletModel::RenewDomain(json_spirit::Array arrData)
     LogPrintf("walletmodel:RenewDomain scriptPubkey:s% \n",scriptPubKey.ToString());
     string strDomain=arrData[1].get_str();    
     uint32_t nLockTime=arrData[2].get_int64();
-    PaymentRequest pr = GetRegisterDomainPaymentRequest(arrData[0].get_str(), strDomain, nLockTime); 
+    CPaymentOrder pr = GetRegisterDomainPaymentRequest(arrData[0].get_str(), strDomain, nLockTime); 
     
     CDomain cdomain;
     if(IsLevel2Domain(strDomain))
@@ -993,7 +993,7 @@ QString WalletModel::TransferDomain(json_spirit::Array arrData)
     objInfo.push_back(Pair("transfer",idTo));
     Array arr=arrData;
     arr[2]=Value(objInfo);
-    PaymentRequest pr = GetUpdateDomainPaymentRequest(arr); 
+    CPaymentOrder pr = GetUpdateDomainPaymentRequest(arr); 
     pr.nRequestType=PR_DOMAIN_TRANSFER;
     pr.info["transfer"]=arrData[2].get_str();
     CDomain cdomain;
@@ -1017,6 +1017,6 @@ QString WalletModel::TransferDomain(json_spirit::Array arrData)
 QString WalletModel::PublishProduct(json_spirit::Array arrData)
 {     
     
-    PaymentRequest pr = GetPublishProductPaymentRequest(arrData); 
+    CPaymentOrder pr = GetPublishProductPaymentRequest(arrData); 
     return DoPayment(pr); 
 }

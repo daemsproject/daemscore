@@ -175,7 +175,9 @@ static void MutateTxLocktime(CMutableTransaction& tx, const string& cmdVal)
     if (newLocktime < 0LL || newLocktime > 0xffffffffLL)
         throw runtime_error("Invalid TX locktime requested");
 
-    tx.nLockTime = (unsigned int) newLocktime;
+    //tx.nLockTime = (unsigned int) newLocktime;
+    for(unsigned int i=0;i<tx.vout.size();i++)
+        tx.vout[i].nLockTime=(unsigned int) newLocktime;
 }
 
 static void MutateTxAddInput(CMutableTransaction& tx, const string& strInput)

@@ -297,7 +297,8 @@ bool IsStandardTx(const CTransaction& tx, std::string& reason);
 
 bool IsFinalTx(const CTransaction &tx, int nBlockHeight = 0, int64_t nBlockTime = 0);
 //cccoin: Check if tx is in frozen period
-bool IsFrozen(const CTransaction &tx, int nBlockHeight, int64_t nBlockTime);
+bool IsFrozen(const CTransaction &tx, const unsigned int nPos, int nBlockHeight=0, int64_t nBlockTime=0);
+bool IsFrozen(const CCoins &tx,const unsigned int nPos, int nBlockHeight=0, int64_t nBlockTime=0);
 int GetBlocksToMaturity(const unsigned int nLockTime);
 int GetLockLasting(uint32_t nLockTime);
 uint32_t LockTimeToTime(uint32_t nLockTime);

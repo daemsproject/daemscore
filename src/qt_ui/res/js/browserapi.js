@@ -361,8 +361,9 @@ var BrowserAPI = new function () {
                 error(e);
         });
     }
-    this.publishProduct=function(id,product,locktime,success,error){
-        this.call("publishproduct", [id,[product],locktime], function (a) {
+    this.publishProduct=function(id,product,success,error){
+        if (Object.prototype.toString.call(product) != '[object Array]') product=[product];   
+        this.call("publishproduct", [id,product], function (a) {
             if (success)
                 success(a);
         }, function (e) {

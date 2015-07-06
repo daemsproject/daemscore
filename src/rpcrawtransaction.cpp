@@ -76,7 +76,7 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
     //LogPrintf("TxToJSON3\n");
     entry.push_back(Pair("version", tx.nVersion));
     
-    entry.push_back(Pair("locktime", (int64_t)tx.nLockTime));
+    //entry.push_back(Pair("locktime", (int64_t)tx.nLockTime));
     if (hashBlock!=0)
         entry.push_back(Pair("ntx", GetNTx(tx.GetHash())));    
     //LogPrintf("TxToJSON4\n");
@@ -129,6 +129,7 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
         out.push_back(Pair("n", (int64_t)i));
         out.push_back(Pair("content", HexStr(txout.strContent.begin(), txout.strContent.end())));
         out.push_back(Pair("contentText", GetBinaryContent(txout.strContent)));
+        out.push_back(Pair("locktime", (int64_t)txout.nLockTime));
         Object o;
         ScriptPubKeyToJSON(txout.scriptPubKey, o, true);
         out.push_back(Pair("scriptPubKey", o));
@@ -834,7 +835,7 @@ Value sendrawtransaction(const Array& params, bool fHelp)
 
     return hashTx.GetHex();
 }
-CWalletTx CreateRawTransaction(PaymentRequest pr,bool& fRequestPassword,CWallet*& pwallet){
+CWalletTx CreateRawTransaction(CPaymentOrder pr,bool& fRequestPassword,CWallet*& pwallet){
     //LogPrintf("rpcrawtransaction %s:%s\n",__func__,pr.vFrom[0].ToString());
     CPubKey id;
     CTxDestination address;

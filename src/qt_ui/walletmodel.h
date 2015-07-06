@@ -30,7 +30,7 @@ class CWallet;
 class uint256;
 class BitcoinGUI;
 class CWalletTx;
-class PaymentRequest;
+class CPaymentOrder;
 QT_BEGIN_NAMESPACE
 class QTimer;
 QT_END_NAMESPACE
@@ -97,22 +97,22 @@ public:
     bool switchToAccount(QString ID);
     QString HandlePaymentRequest(const json_spirit::Array arrData);    
     QString HandlePaymentRequest2(const json_spirit::Array arrData);  
-    QString DoPayment(const PaymentRequest& pr);
+    QString DoPayment(const CPaymentOrder& pr);
     QString EncryptMessages(json_spirit::Array params);
     //bool handlePaymentRequest(CWalletTx tx,int nOP,string strError,SecureString& ssInput);  
     QString getPaymentAlertMessage(const CWalletTx& tx);
     QString getEncryptMessegeAlert(const std::vector<std::string>& vstrIDsForeign,const bool fEncrypt);
-    QString getDomainRegisterAlertMessage(const CWalletTx& tx,const PaymentRequest& pr);
-    QString getDomainUpdateAlertMessage(const CWalletTx& tx,const PaymentRequest& pr);
-    QString getDomainTransferAlertMessage(const CWalletTx& tx,const PaymentRequest& pr);
-    QString getDomainRenewAlertMessage(const CWalletTx& tx,const PaymentRequest& pr);
+    QString getDomainRegisterAlertMessage(const CWalletTx& tx,const CPaymentOrder& pr);
+    QString getDomainUpdateAlertMessage(const CWalletTx& tx,const CPaymentOrder& pr);
+    QString getDomainTransferAlertMessage(const CWalletTx& tx,const CPaymentOrder& pr);
+    QString getDomainRenewAlertMessage(const CWalletTx& tx,const CPaymentOrder& pr);
     QString SendMessage(json_spirit::Array arrData);
     QString RegisterDomain(json_spirit::Array arrData);
     QString UpdateDomain(json_spirit::Array arrData);
     QString RenewDomain(json_spirit::Array arrData);
     QString TransferDomain(json_spirit::Array arrData);
     QString PublishProduct(json_spirit::Array arrData);
-    QString getSMSAlertMessage(const PaymentRequest& pr);
+    QString getSMSAlertMessage(const CPaymentOrder& pr);
     // RAI object for unlocking wallet, returned by requestUnlock()
     class UnlockContext
     {

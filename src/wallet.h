@@ -277,7 +277,7 @@ public:
     //CAmount GetWatchOnlyBalance() const;
     //CAmount GetUnconfirmedWatchOnlyBalance() const;
     //CAmount GetImmatureWatchOnlyBalance() const;   
-    bool CreateTransactionUnsigned(const PaymentRequest& pr,
+    bool CreateTransactionUnsigned(const CPaymentOrder& pr,
                                 CWalletTx& wtxNew,std::string& strFailReason);
     bool SignTransaction(const CWalletTx& wtxIn,CWalletTx& wtxSigned,const int nSigType=129);
     bool CreateTransaction(const std::vector<std::pair<CScript, CAmount> >& vecSend,
@@ -466,6 +466,7 @@ struct COutputEntry
     CTxDestination destination;
     CAmount amount;
     int vout;
+    bool IsFrozen;
 };
 
 /** A transaction with a merkle branch linking it to the block chain. */
@@ -526,7 +527,7 @@ public:
     int GetDepthInMainChain(const CBlockIndex* &pindexRet) const;
     int GetDepthInMainChain() const { const CBlockIndex *pindexRet; return GetDepthInMainChain(pindexRet); }
     bool IsInMainChain() const { const CBlockIndex *pindexRet; return GetDepthInMainChainINTERNAL(pindexRet) > 0; }
-    int GetBlocksToMaturity() const;
+    int GetBlocksToMaturity(int nPos=-1) const;
     bool AcceptToMemoryPool(bool fLimitFree=true, bool fRejectInsaneFee=true);
 };
 
@@ -750,33 +751,78 @@ public:
 
     CAmount GetImmatureCredit(bool fUseCache=true) const
     {
-            if (GetBlocksToMaturity() > 0 && IsInMainChain())
-        {
-            if (fUseCache && fImmatureCreditCached)
-                return nImmatureCreditCached;
-            nImmatureCreditCached = pwallet->GetCredit(*this, ISMINE_SPENDABLE);
-            fImmatureCreditCached = true;
+    //        if (GetBlocksToMaturity() > 0 && IsInMainChain())
+     //   {
+     //       if (fUseCache && fImmatureCreditCached)
+    //            return nImmatureCreditCached;
+    //        nImmatureCreditCached = pwallet->GetCredit(*this, ISMINE_SPENDABLE);
+    //        fImmatureCreditCached = true;
+    //        return nImmatureCreditCached;
+    //    }
+//
+//        return 0;
+        if (pwallet == 0)
+            return 0;
+        if (fUseCache && fImmatureCreditCached)
             return nImmatureCreditCached;
+
+        CAmount nCredit = 0;
+        uint256 hashTx = GetHash();
+        for (unsigned int i = 0; i < vout.size(); i++)
+        {
+            if (GetBlocksToMaturity(i) == 0)
+            continue;
+            if (!pwallet->IsSpent(hashTx, i,vout[i].nValue))
+            {
+                const CTxOut &txout = vout[i];
+                nCredit += pwallet->GetCredit(txout, ISMINE_SPENDABLE);
+                if (!MoneyRange(nCredit))
+                    throw std::runtime_error("CWalletTx::GetAvailableCredit() : value out of range");
+    }
         }
 
-        return 0;
+ nImmatureCreditCached = nCredit;
+        fImmatureCreditCached = true;
+        return nCredit;
     }
-
+    
     CAmount GetAvailableCredit(bool fUseCache=true) const;
     
 
     CAmount GetImmatureWatchOnlyCredit(const bool& fUseCache=true) const
     {
-        if (GetBlocksToMaturity() > 0 && IsInMainChain())
-        {
-            if (fUseCache && fImmatureWatchCreditCached)
-                return nImmatureWatchCreditCached;
-            nImmatureWatchCreditCached = pwallet->GetCredit(*this, ISMINE_WATCH_ONLY);
-            fImmatureWatchCreditCached = true;
-            return nImmatureWatchCreditCached;
-        }
+       // if (GetBlocksToMaturity() > 0 && IsInMainChain())
+        //{
+        //    if (fUseCache && fImmatureWatchCreditCached)
+       //         return nImmatureWatchCreditCached;
+      //      nImmatureWatchCreditCached = pwallet->GetCredit(*this, ISMINE_WATCH_ONLY);
+       //     fImmatureWatchCreditCached = true;
+       //     return nImmatureWatchCreditCached;
+        //}
 
-        return 0;
+        //return 0;
+        if (pwallet == 0)
+            return 0;
+        if (fUseCache && fImmatureWatchCreditCached)
+            return nImmatureWatchCreditCached;
+
+        CAmount nCredit = 0;
+        uint256 hashTx = GetHash();
+        for (unsigned int i = 0; i < vout.size(); i++)
+        {
+            if (GetBlocksToMaturity(i) == 0)
+            continue;
+            if (!pwallet->IsSpent(hashTx, i,vout[i].nValue))
+            {
+                const CTxOut &txout = vout[i];
+                nCredit += pwallet->GetCredit(txout, ISMINE_WATCH_ONLY);
+                if (!MoneyRange(nCredit))
+                    throw std::runtime_error("CWalletTx::GetAvailableCredit() : value out of range");
+    }
+        }
+        nImmatureWatchCreditCached = nCredit;
+        fImmatureWatchCreditCached = true;
+        return nCredit;
     }
 
     CAmount GetAvailableWatchOnlyCredit(const bool& fUseCache=true) const
@@ -784,9 +830,7 @@ public:
         if (pwallet == 0)
             return 0;
 
-        // Must wait until coinbase is safely deep enough in the chain before valuing it
-        if (GetBlocksToMaturity() > 0)
-            return 0;
+
 
         if (fUseCache && fAvailableWatchCreditCached)
             return nAvailableWatchCreditCached;
@@ -794,6 +838,9 @@ public:
         CAmount nCredit = 0;
         for (unsigned int i = 0; i < vout.size(); i++)
         {
+            // Must wait until coinbase is safely deep enough in the chain before valuing it
+            if (GetBlocksToMaturity(i) > 0)
+                continue;
             if (!pwallet->IsSpent(GetHash(), i,vout[i].nValue))
             {
                 const CTxOut &txout = vout[i];

@@ -64,7 +64,6 @@ void WalletTxToJSON(const CWalletTx& wtx, Object& entry)
     entry.push_back(Pair("walletconflicts", conflicts));
     entry.push_back(Pair("time", wtx.GetTxTime()));
     entry.push_back(Pair("timereceived", (int64_t)wtx.nTimeReceived));
-     entry.push_back(Pair("locktime", (uint64_t)wtx.nLockTime));
     BOOST_FOREACH(const PAIRTYPE(string,string)& item, wtx.mapValue)
         entry.push_back(Pair(item.first, item.second));
 }
@@ -708,7 +707,7 @@ Value getbalance(const Array& params, bool fHelp)
         for (map<uint256, CWalletTx>::iterator it = pwalletMain->mapWallet.begin(); it != pwalletMain->mapWallet.end(); ++it)
         {
             const CWalletTx& wtx = (*it).second;
-            if (!wtx.IsTrusted() || wtx.GetBlocksToMaturity() > 0)
+            if (!wtx.IsTrusted() )
                 continue;
 
             CAmount allFee;
@@ -719,6 +718,7 @@ Value getbalance(const Array& params, bool fHelp)
             if (wtx.GetDepthInMainChain() >= nMinDepth)
             {
                 BOOST_FOREACH(const COutputEntry& r, listReceived)
+                if(!r.IsFrozen)
                     nBalance += r.amount;
             }
             BOOST_FOREACH(const COutputEntry& s, listSent)
@@ -1255,13 +1255,16 @@ void ListTransactions(const CWalletTx& wtx, const string& strAccount, int nMinDe
                 {
                     if (wtx.GetDepthInMainChain() < 1)
                         entry.push_back(Pair("category", "orphan"));
-                    else if (wtx.GetBlocksToMaturity() > 0)
-                        entry.push_back(Pair("category", "immature"));
+                    else if (r.IsFrozen)
+                        entry.push_back(Pair("category", "generate immature"));
                     else
                         entry.push_back(Pair("category", "generate"));
                 }
                 else
                 {
+                    if (r.IsFrozen)
+                        entry.push_back(Pair("category", "receive locked"));
+                    else
                     entry.push_back(Pair("category", "receive"));
                 }
                 entry.push_back(Pair("amount", ValueFromAmount(r.amount)));
@@ -1489,7 +1492,7 @@ Value listaccounts(const Array& params, bool fHelp)
         list<COutputEntry> listReceived;
         list<COutputEntry> listSent;
         int nDepth = wtx.GetDepthInMainChain();
-        if (wtx.GetBlocksToMaturity() > 0 || nDepth < 0)
+        if (nDepth < 0)
             continue;
         wtx.GetAmounts(listReceived, listSent, nFee, strSentAccount, includeWatchonly);
         mapAccountBalances[strSentAccount] -= nFee;
@@ -1498,11 +1501,15 @@ Value listaccounts(const Array& params, bool fHelp)
         if (nDepth >= nMinDepth)
         {
             BOOST_FOREACH(const COutputEntry& r, listReceived)
+            {
+                if(r.IsFrozen)
+                    continue;
                 if (pwalletMain->mapAddressBook.count(r.destination))
                     mapAccountBalances[pwalletMain->mapAddressBook[r.destination].name] += r.amount;
                 else
                     mapAccountBalances[""] += r.amount;
         }
+    }
     }
 
     list<CAccountingEntry> acentries;

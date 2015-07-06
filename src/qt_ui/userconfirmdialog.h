@@ -16,7 +16,7 @@ class ClientModel;
 //class SendCoinsEntry;
 //class SendCoinsRecipient;
 
-//class PaymentRequest;
+//class CPaymentOrder;
 //class CWalletTx;
 namespace Ui {
     class UserConfirmDialog;
@@ -37,7 +37,7 @@ public:
     Ui::UserConfirmDialog *ui;
     //QWidget *setupTabChain(QWidget *prev);
 
-    //bool HandlePaymentRequest(std::string strToken,PaymentRequest pr, CWalletTx tx,bool fRequestPassword);
+    //bool HandlePaymentRequest(std::string strToken,CPaymentOrder pr, CWalletTx tx,bool fRequestPassword);
     //QString getPaymentAlertMessage(CWalletTx tx);
 public slots:
     //void clear();

@@ -113,7 +113,8 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
     txNew.vin[0].scriptSig=CScript()<<0;
     txNew.vout.resize(1);
     txNew.vout[0].scriptPubKey = scriptPubKeyIn;
-    txNew.nLockTime=nHeight +COINBASE_MATURITY;
+    //txNew.nLockTime=nHeight +COINBASE_MATURITY;
+    txNew.vout[0].nLockTime=nHeight +COINBASE_MATURITY;
 
     // Add dummy coinbase tx as first transaction
     pblock->vtx.push_back(CTransaction());

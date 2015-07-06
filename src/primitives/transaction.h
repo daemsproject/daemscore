@@ -111,12 +111,13 @@ public:
     CAmount nValue;
     CScript scriptPubKey;
     string strContent;
+    uint32_t nLockTime;
     CTxOut()
     {
         SetNull();
     }
 
-    CTxOut(const CAmount& nValueIn, CScript scriptPubKeyIn,string strContentIn="");
+    CTxOut(const CAmount& nValueIn, CScript scriptPubKeyIn,string strContentIn="",uint32_t nLockTime=0);
 
     ADD_SERIALIZE_METHODS;
 
@@ -125,6 +126,7 @@ public:
         READWRITE(VARINT(nValue));
         READWRITE(scriptPubKey);
         READWRITE(LIMITED_STRING(strContent,1050000));
+        READWRITE(VARINT(nLockTime));
     }
 
     void SetNull()
@@ -132,6 +134,7 @@ public:
         nValue = -1;
         scriptPubKey.clear();
         strContent="";
+        nLockTime=0;
     }
 
     bool IsNull() const
@@ -156,6 +159,7 @@ public:
         return (a.nValue       == b.nValue &&
                 a.scriptPubKey == b.scriptPubKey
                 && a.strContent == b.strContent
+                && a.nLockTime == b.nLockTime
                 );
     }
 
@@ -190,7 +194,7 @@ public:
     const int32_t nVersion;
     const std::vector<CTxIn> vin;
     const std::vector<CTxOut> vout;
-    const uint32_t nLockTime;
+    //const uint32_t nLockTime;
 
     /** Construct a CTransaction that qualifies as IsNull() */
     CTransaction();
@@ -208,7 +212,7 @@ public:
         nVersion = this->nVersion;
         READWRITE(*const_cast<std::vector<CTxIn>*>(&vin));
         READWRITE(*const_cast<std::vector<CTxOut>*>(&vout));
-        READWRITE(VARINT(nLockTime));
+        //READWRITE(VARINT(nLockTime));
         if (ser_action.ForRead())
             UpdateHash();
     }
@@ -257,7 +261,7 @@ struct CMutableTransaction
     int32_t nVersion;
     std::vector<CTxIn> vin;
     std::vector<CTxOut> vout;
-    uint32_t nLockTime;
+    //uint32_t nLockTime;
 
     CMutableTransaction();
     CMutableTransaction(const CTransaction& tx);
@@ -270,7 +274,7 @@ struct CMutableTransaction
         nVersion = this->nVersion;
         READWRITE(vin);
         READWRITE(vout);
-        READWRITE(VARINT(nLockTime));
+        //READWRITE(VARINT(nLockTime));
     }
 
     /** Compute the hash of this CMutableTransaction. This is computed on the
@@ -279,7 +283,7 @@ struct CMutableTransaction
     uint256 GetHash() const;
 };
 //the standard paymentrequest format for creating and overriding transactions
-enum PaymentRequestType
+enum CPaymentOrderType
 {
     PR_NORMAL=0,
     PR_PUBLISH,
@@ -291,10 +295,10 @@ enum PaymentRequestType
     PR_COMMENT,
     PR_SHOP_BUY
 };
-class PaymentRequest :public CMutableTransaction
+class CPaymentOrder :public CMutableTransaction
 {
     public:
-    PaymentRequest(){
+    CPaymentOrder(){
         nSigType=129;//anyonecanpay
         dFeeRate=1000;    
         fIsValid=false;    

@@ -434,3 +434,30 @@ Value getnetworkinfo(const Array& params, bool fHelp)
     obj.push_back(Pair("localaddresses", localAddresses));
     return obj;
 }
+Value broadcastmessage(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() < 2)
+        throw runtime_error(            "broadcastmessage\n"       );
+    string strCommand = params[0].get_str();
+    std::vector<unsigned char> data = ParseHexV(params[1], "parameter 1");
+    CDataStream s(data,SER_NETWORK, PROTOCOL_VERSION);
+    BOOST_FOREACH(CNode* pnode, vNodes)
+    {
+        pnode->PushMessage(strCommand.c_str(), data);
+    }
+    return Value("sent");
+}
+Value broadcastblock(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() < 1)
+        throw runtime_error(            "broadcastblock\n"       );    
+    std::vector<unsigned char> data = ParseHexV(params[0], "parameter 1");    
+    CDataStream s(data,SER_NETWORK, PROTOCOL_VERSION);
+    CBlock block;
+    s>>block;
+    BOOST_FOREACH(CNode* pnode, vNodes)
+    {
+       // pnode->PushMessage(strCommand.c_str(), data);
+    }
+    return Value("sent");
+}

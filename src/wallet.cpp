@@ -1081,6 +1081,8 @@ void CWalletTx::GetAccountAmounts(const string& strAccount, CAmount& nReceived,
         LOCK(pwallet->cs_wallet);
         BOOST_FOREACH(const COutputEntry& r, listReceived)
         {
+            if(r.IsFrozen)
+                continue;
             if (pwallet->mapAddressBook.count(r.destination))
             {
                 map<CTxDestination, CAddressBookData>::const_iterator mi = pwallet->mapAddressBook.find(r.destination);
@@ -1358,16 +1360,14 @@ void CWallet::AvailableCoins(vector<COutput>& vCoins, bool fOnlyConfirmed, const
 
             if (fOnlyConfirmed && !pcoin->IsTrusted())
                 continue;
-
-            if (pcoin->GetBlocksToMaturity() > 0)
-                continue;
-
             int nDepth = pcoin->GetDepthInMainChain();
             
             if (nDepth <= 0)
                 continue;
 
             for (unsigned int i = 0; i < pcoin->vout.size(); i++) {
+                if (pcoin->GetBlocksToMaturity(i) > 0)
+                    continue;
                 isminetype mine = IsMine(pcoin->vout[i]);
                 if (!(IsSpent(wtxid, i,pcoin->vout[i].nValue)) && mine != ISMINE_NO &&
                     !IsLockedCoin((*it).first, i,pcoin->vout[i].nValue) && pcoin->vout[i].nValue > 0 &&
@@ -1544,7 +1544,7 @@ bool CWallet::SelectCoins(const CAmount& nTargetValue, set<pair<const CWalletTx*
             SelectCoinsMinConf(nTargetValue, 1, 1, vCoins, setCoinsRet, nValueRet));
             //(bSpendZeroConfChange && SelectCoinsMinConf(nTargetValue, 0, 1, vCoins, setCoinsRet, nValueRet)));
 }
-bool CWallet::CreateTransactionUnsigned(const PaymentRequest& pr,
+bool CWallet::CreateTransactionUnsigned(const CPaymentOrder& pr,
                                 CWalletTx& wtxNew,std::string& strFailReason)
 {
     CAmount nValue = 0;
@@ -1566,7 +1566,7 @@ bool CWallet::CreateTransactionUnsigned(const PaymentRequest& pr,
     wtxNew.fTimeReceivedIsTxTime = true;
     wtxNew.BindWallet(this);
     CMutableTransaction txNew;    
-    txNew.nLockTime=pr.nLockTime;
+    //txNew.nLockTime=pr.nLockTime;
     CAmount nFeeRet;
     {
         LOCK2(cs_main, cs_wallet);
@@ -2052,16 +2052,14 @@ std::map<CTxDestination, CAmount> CWallet::GetAddressBalances()
 
             if (!IsFinalTx(*pcoin) || !pcoin->IsTrusted())
                 continue;
-
-            if (pcoin->GetBlocksToMaturity() > 0)
-                continue;
-
             int nDepth = pcoin->GetDepthInMainChain();
             if (nDepth < (pcoin->IsFromMe(ISMINE_ALL) ? 0 : 1))
                 continue;
 
             for (unsigned int i = 0; i < pcoin->vout.size(); i++)
             {
+                if (pcoin->GetBlocksToMaturity(i) > 0)
+                    continue;
                 CTxDestination addr;
                 if (!IsMine(pcoin->vout[i]))
                     continue;
@@ -2312,8 +2310,8 @@ CAmount CWalletTx::GetAvailableCredit(bool fUseCache) const
             return 0;
         
         // Must wait until coinbase is safely deep enough in the chain before valuing it
-        if (GetBlocksToMaturity() > 0)
-            return 0;
+        //if (GetBlocksToMaturity() > 0)
+        //    return 0;
         
         //if (fUseCache && fAvailableCreditCached)
        //     return nAvailableCreditCached;
@@ -2330,7 +2328,7 @@ CAmount CWalletTx::GetAvailableCredit(bool fUseCache) const
                 //LogPrintf("wallet.cpp vout%u value:%u \n",i,vout[i].nValue);
                 //LogPrintf("wallet.cpp coinavailable:%b \n",coins->IsAvailable(i));
                 //LogPrintf("wallet.cpp in mempool:%b \n",mempool.mapNextTx.count(COutPoint(hashTx,i,vout[i].nValue)));
-            if (coins->IsAvailable(i)&&!mempool.mapNextTx.count(COutPoint(hashTx,i,vout[i].nValue)))
+            if (coins->IsAvailable(i)&&!mempool.mapNextTx.count(COutPoint(hashTx,i,vout[i].nValue))&&GetBlocksToMaturity(i) == 0)
             {
                 //LogPrintf("wallet.h GetAvailableCredit:5 \n");
                 const CTxOut &txout = vout[i];
@@ -2438,14 +2436,24 @@ int CMerkleTx::GetDepthInMainChain(const CBlockIndex* &pindexRet) const
     return nResult;
 }
 
-int CMerkleTx::GetBlocksToMaturity() const
+int CMerkleTx::GetBlocksToMaturity(int nPos) const
 {
-    if (nLockTime!=0){        
-        if ((int64_t)nLockTime < LOCKTIME_THRESHOLD )
-            return max(0, (int)((int)nLockTime+1 - (int)chainActive.Height()));  
+    
+    if(nPos>=vout.size())
+        nPos=-1;
+    if(nPos==-1)
+    {
+        int maxBlocks=0;
+        for(unsigned int i=0;i<vout.size();i++)
+            maxBlocks=max(maxBlocks,GetBlocksToMaturity(i));
+        return maxBlocks;
+    }
+    if (vout[nPos].nLockTime!=0){        
+        if ((int64_t)vout[nPos].nLockTime < LOCKTIME_THRESHOLD )
+            return max(0, (int)((int)vout[nPos].nLockTime+1 - (int)chainActive.Height()));  
         else{
             int lockBlocks;
-            lockBlocks=(int)(((int64_t)nLockTime-GetAdjustedTime())/Params().TargetSpacing());
+            lockBlocks=(int)(((int64_t)vout[nPos].nLockTime-GetAdjustedTime())/Params().TargetSpacing());
             return max(0, lockBlocks);
         }
     }

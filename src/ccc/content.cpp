@@ -995,15 +995,12 @@ Value CPayment::ToJson(bool fLinkOnly)const
 {
     json_spirit::Object obj;
     obj.push_back(Pair("type",Value(GetCcName(ccPaymentType))));
-    if(ccPyamentType==CC_PAYMENT_TYPE_PRODUCT)
-    {
-        obj.push_back(Pair("productid",Value(productID)));
-        if(!linkPayTo.IsEmpty())
-            obj.push_back(Pair("productlink",Value(linkPayTo.ToString())));
-    }
-    obj.push_back(Pair("price",_ValueFromAmount(price)));
-    if(shipmentFee!=-1)
-        obj.push_back(Pair("shipmentfee",_ValueFromAmount(shipmentFee)));    
+    //if(ccPaymentType==CC_PAYMENT_TYPE_SHOP)
+    //{
+    Array arr;
+    for(unsigned int i=0;i<vItems.size();i++)        
+        arr.push_back(vItems[i].ToJson(fLinkOnly));
+    obj.push_back(Pair("paymentitems",Value(arr)));
     if(recipient.size()>0)
     {
         string strID;
@@ -1027,59 +1024,25 @@ bool CPayment::SetJson(const Object& obj,string& strError)
         return false;
     }     
     ccPaymentType=GetCcValue(tmp.get_str());
-    switch (ccPaymentType)
-    {
-        case  CC_PAYMENT_TYPE_PRODUCT:
-        {
-             tmp = find_value(obj, "productid");
-            if (tmp.type() != str_type)
-            {            
-                strError="invalid product id";
-                return false;
-            }     
-            productID=tmp.get_str();
-            LogPrintf("CProduct::SetJson product id %s\n",productID);
-            tmp = find_value(obj, "productlink");
-            if (tmp.type() == str_type)
-            {     
-                linkPayTo=tmp.get_str();
-                LogPrintf("CProduct::SetJson productlink %s\n",linkPayTo);
-            }
-            break;
-        }
-        default://TODO other payment types
-            break;
-    }
-    
-    tmp = find_value(obj, "price");    
-    try{
-        price=_AmountFromValue(tmp);
-    }
-    catch (Object& objError)
-    {
-        strError="price is not valid format";        
-        return false;
-    }
-    if(price<0)
-    {
-        strError="negative price";        
-        price=0;
+    tmp = find_value(obj, "paymentitems");
+    if (tmp.type() != array_type)
+    {            
+        strError="invalid pyament items type";
         return false;
     }    
-    LogPrintf("CProduct::SetJson product price %i\n",price);
-    tmp = find_value(obj, "shipmentfee");
-    if (tmp.type() != null_type)
-    { 
-        try{
-            shipmentFee=_AmountFromValue(tmp);
-        }
-        catch (Object& objError)
-        {
-            strError="shipment fee is not valid fromat";        
+    Array arr=tmp.get_array();
+    for (unsigned int i=0;i<arr.size();i++)
+    {
+        CPaymentItem item;
+        if(arr[i].type()!=obj_type)
+            {            
+            strError="invalid pyament item type";
             return false;
-        }        
-        LogPrintf("CProduct::SetJson product shipment fee %i\n",shipmentFee);
-    }            
+        }
+        if(!item.SetJson(arr[i].get_obj(),strError))
+            return false;
+        vItems.push_back(item);
+    }   
     tmp = find_value(obj, "recipient");
     if (tmp.type() != null_type||tmp.type()!=str_type)
     {
@@ -1111,12 +1074,97 @@ bool CPayment::SetContent(const CContent content)
     std::vector<std::pair<int, string> > vDecoded;
     CContent(vDecoded0[0].second).Decode(vDecoded);   
     int cc;
-    string str;    
+    string str;  
+    //find payment type first
+    bool fFound=false;
+    for(unsigned int i=0;i<vDecoded.size();i++)
+    {
+        if(cc>=CC_PAYMENT_TYPE_SHOPPING&&cc<=CC_PAYMENT_TYPE_P2AGREEMENT)
+        {
+            fFound=true;
+            ccPaymentType=(cctype)cc;
+            break;
+        }
+    }
+    if (!fFound)
+    {
+        LogPrintf("CPayment::SetContent ccPaymentType not found \n");
+        return false;
+    }
+    //temporarily only support shopping
+    if(ccPaymentType!=CC_PAYMENT_TYPE_SHOPPING)
+    {
+        LogPrintf("CPayment::SetContent ccPaymentType is not shopping (%s) \n",GetCcName((cctype)cc));
+        return false;
+    }
     for(unsigned int i=0;i<vDecoded.size();i++)
     {   
         cc=vDecoded[i].first;
         str=vDecoded[i].second;
         //LogPrintf("CProduct::SetContent cc:%i,str:%s \n",cc,str);
+        if (cc==CC_PAYMENT_ITEM_P)
+        {
+            CPaymentItem item;
+            if(!item.SetContent(str))
+                return false;
+            vItems.push_back(item);
+        }
+        
+         else if(cc==CC_PAYMENT_RECIPIENT)
+         {
+             recipient=CScript((unsigned char*)str.c_str(),(unsigned char*)(str.c_str()+str.size()));             
+             LogPrintf("CProduct::SetContent recipient str %s script %s \n",HexStr(str.begin(),str.end()),recipient.ToString());            
+                 
+         } 
+        else if (cc==CC_PAYMENT_MEMO)
+         {
+             strMemo=str;
+         }
+         
+    }
+    LogPrintf("CProduct::SetContent done\n");
+    return IsValid();
+}
+CContent CPayment::ToContent()const
+{
+    std::vector<std::pair<int,string> > vcc;
+    vcc.push_back(make_pair(ccPaymentType,""));
+    for(unsigned int j=0;j<vItems.size();j++)    
+        vcc.push_back(make_pair(CC_PAYMENT_ITEM_P,vItems[j].ToContent()));  
+    if(strMemo.size()>0)
+        vcc.push_back(make_pair(CC_PAYMENT_MEMO,strMemo));
+    //Recipient is not serialized to content, it will be put into vout address
+    CContent ctt;
+    ctt.EncodeP(CC_PAYMENT_P,vcc); 
+    return ctt;
+}
+bool CPaymentItem::SetContent(const CContent content)
+{
+    std::vector<std::pair<int, string> > vDecoded;
+    content.Decode(vDecoded);   
+    int cc;
+    string str; 
+    //find payment type first
+    bool fFound=false;
+    for(unsigned int i=0;i<vDecoded.size();i++)
+    {
+         cc=vDecoded[i].first;
+        str=vDecoded[i].second;
+    
+        if(cc>=CC_PAYMENT_TYPE_SHOPPING&&cc<=CC_PAYMENT_TYPE_P2AGREEMENT)
+        {
+            fFound=true;
+            ccPaymentType=(cctype)cc;
+            break;
+        }
+    }
+    if (!fFound)
+        return false;
+    for(unsigned int i=0;i<vDecoded.size();i++)
+    {
+         cc=vDecoded[i].first;
+        str=vDecoded[i].second;
+    
         if(cc==CC_PRODUCT_ID)
         {
             productID=str; 
@@ -1133,25 +1181,7 @@ bool CPayment::SetContent(const CContent content)
                 return false;            
             }
             price=CAmount(u);
-        }
-        else if(cc==CC_PRODUCT_SHIPMENTFEE)
-        {
-             CContent cp(str);
-            string::const_iterator pc = cp.begin();
-            uint64_t u;
-            if(!cp.ReadVarInt(pc,u))
-            {
-                LogPrintf("CProduct::SetContent wrong shipmentfee format\n");            
-                return false;            
-            }
-            shipmentFee=CAmount(u);
-        }
-         else if(cc==CC_PRODUCT_PAYTO)
-         {
-             recipient=CScript((unsigned char*)str.c_str(),(unsigned char*)(str.c_str()+str.size()));             
-             LogPrintf("CProduct::SetContent recipient str %s script %s \n",HexStr(str.begin(),str.end()),recipient.ToString());            
-                 
-         } 
+        }        
          else if (cc==CC_QUANTITY)
          {
              CContent cp(str);
@@ -1164,43 +1194,115 @@ bool CPayment::SetContent(const CContent content)
             }
             nQuantity=CAmount(u);
          }
-        else if (cc==CC_QUANTITY)
+        else if (cc==CC_PAYMENT_LINK)
          {
-            
-        }
+             linkPayTo.Unserialize(str);
+         }
+        else if (cc==CC_PAYMENT_MEMO)
+         {
+             strMemo=str;
+         }
     }
-    LogPrintf("CProduct::SetContent done\n");
-    return IsValid();
+    return true;
 }
-CContent CPayment::ToContent()const
+Value CPaymentItem::ToJson(bool fLinkOnly)const
+{
+    json_spirit::Object obj;
+    obj.push_back(Pair("type",Value(GetCcName(ccPaymentType))));
+    if(ccPaymentType==CC_PAYMENT_TYPE_PRODUCT)
+    {
+        if(productID.size()>0)
+            obj.push_back(Pair("productID",Value(productID)));
+        if(!linkPayTo.IsEmpty())
+            obj.push_back(Pair("paytolink",Value(linkPayTo.ToString())));
+        obj.push_back(Pair("price",_ValueFromAmount(price)));
+        obj.push_back(Pair("quantity",Value(nQuantity)));
+    }   
+    if(strMemo.size()>0)
+        obj.push_back(Pair("memo",Value(strMemo)));    
+    return Value(obj);
+}
+bool CPaymentItem::SetJson(const Object& obj,string& strError)
+{
+    Value tmp = find_value(obj, "type");
+    if (tmp.type() != str_type)
+    {            
+        strError="invalid pyament type";
+        return false;
+    }     
+    ccPaymentType=GetCcValue(tmp.get_str());
+    tmp = find_value(obj, "productid");
+            if (tmp.type() == str_type)
+            {
+                productID=tmp.get_str();
+                LogPrintf("CPaymentItem::SetJson product id %s\n",productID);
+            }
+    tmp = find_value(obj, "paytolink");
+            if (tmp.type() == str_type)
+            {     
+                string str=tmp.get_str();
+                linkPayTo.Unserialize(str);
+                LogPrintf("CPaymentItem::SetJson productlink %s\n",linkPayTo.ToString());
+            }
+           
+    
+    tmp = find_value(obj, "price");    
+    try{
+        price=_AmountFromValue(tmp);
+    }
+    catch (Object& objError)
+    {
+        strError="price is not valid format";        
+        return false;
+    }
+    if(price<0)
+    {
+        strError="negative price";        
+        price=0;
+        return false;
+    }    
+    LogPrintf("CPaymentItem::SetJson product price %i\n",price);
+    tmp = find_value(obj, "quantity");
+    if (tmp.type() != null_type)
+    { 
+        try{
+            nQuantity=_AmountFromValue(tmp)/COIN;
+        }
+        catch (Object& objError)
+        {
+            strError="nQuantity is not valid fromat";        
+            return false;
+        }        
+        LogPrintf("CPaymentItem::SetJson product nQuantity %i\n",nQuantity);
+    }            
+           
+    tmp = find_value(obj, "memo");
+    if (tmp.type() == str_type)
+    {     
+        strMemo=tmp.get_str();
+        LogPrintf("CPaymentItem::SetJson memo %s\n",strMemo);
+    }
+   
+     
+    return true;
+}
+CContent CPaymentItem::ToContent()const
 {
     std::vector<std::pair<int,string> > vcc;
-    vcc.push_back(make_pair(CC_PRODUCT_ID,id));
-    vcc.push_back(make_pair(CC_PRODUCT_NAME,name));
+    vcc.push_back(make_pair(ccPaymentType,""));
+    if(productID.size()>0)
+        vcc.push_back(make_pair(CC_PRODUCT_ID,productID));
+    if(!linkPayTo.IsEmpty())
+        vcc.push_back(make_pair(CC_PRODUCT_ID,linkPayTo.Serialize()));
     CContent cPrice;
     cPrice.WriteVarInt(price);
     vcc.push_back(make_pair(CC_PRODUCT_PRICE,cPrice));
-    if(shipmentFee!=-1)
-    {
-        CContent cshipmentfee;
-        cshipmentfee.WriteVarInt(shipmentFee);
-        vcc.push_back(make_pair(CC_PRODUCT_SHIPMENTFEE,cshipmentfee));
-    }
-    if(recipient.size()>0)
-        vcc.push_back(make_pair(CC_PRODUCT_PAYTO,string(recipient.begin(),recipient.end())));
-    if(!icon.IsEmpty())
-        vcc.push_back(make_pair(CC_PRODUCT_ICON,icon.Serialize())); 
-    if(intro.size()>0)
-        vcc.push_back(make_pair(CC_PRODUCT_INTRO,intro));
-    if(nExpireTime>0)
-    {
-        CContent cexpiretime;
-        cexpiretime.WriteVarInt(nExpireTime);
-        vcc.push_back(make_pair(CC_PRODUCT_EXPIRETIME,cexpiretime));
-    }
-    for(unsigned int j=0;j<vTag.size();j++)    
-        vcc.push_back(make_pair(CC_TAG,vTag[j]));    
+     CContent cQuantity;
+    cQuantity.WriteVarInt(nQuantity);
+    vcc.push_back(make_pair(CC_QUANTITY,cQuantity));
+    if(strMemo.size()>0)
+        vcc.push_back(make_pair(CC_PAYMENT_MEMO,strMemo));
     CContent ctt;
-    ctt.EncodeP(CC_PRODUCT_P,vcc); 
+    ctt.EncodeP(CC_PAYMENT_ITEM_P,vcc); 
     return ctt;
 }

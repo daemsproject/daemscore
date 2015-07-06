@@ -1007,7 +1007,7 @@ public:
         for (unsigned int nOutput = 0; nOutput < nOutputs; nOutput++)
              SerializeOutput(s, nOutput, nType, nVersion);
         // Serialize nLockTime
-        ::Serialize(s, txTo.nLockTime, nType, nVersion);
+        //::Serialize(s, txTo.nLockTime, nType, nVersion);
     }
 };
 

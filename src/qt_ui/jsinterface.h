@@ -11,7 +11,7 @@
 #include "json/json_spirit_writer_template.h"
 
 class BitcoinGUI;
-class PaymentRequest;
+class CPaymentOrder;
 class CWalletTx;
 class WalletModel;
 class JsInterface: public QObject
@@ -33,7 +33,7 @@ public slots:
 signals:
     //Q_SIGNAL
     void feedback(QString str,QString func);
-    //void requestPayment(std::string strToken,PaymentRequest pr, CWalletTx tx,bool fRequestPassword);
+    //void requestPayment(std::string strToken,CPaymentOrder pr, CWalletTx tx,bool fRequestPassword);
     void notify(QString result);
 private slots:
     void notifyBlockHeight(const uint256 blockHash);

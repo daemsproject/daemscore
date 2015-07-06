@@ -533,7 +533,7 @@ void CTxMemPool::removeCoinbaseSpends(const CCoinsViewCache *pcoins, unsigned in
                 continue;
             const CCoins *coins = pcoins->AccessCoins(txin.prevout.hash);
             if (fSanityCheck) assert(coins);
-            if (!coins || (coins->IsCoinBase() && nMemPoolHeight  < coins->nLockTime)) {
+            if (!coins || (coins->IsCoinBase() && nMemPoolHeight  < coins->vout[txin.prevout.n].nLockTime)) {
                 transactionsToRemove.push_back(tx);
                 break;
             }
@@ -774,18 +774,29 @@ bool CTxMemPool::CheckTxOverride(const CTransaction &tx,CTxMemPoolEntry &entryOv
     //do override check.
     //check if all vins of the Overrided tx exists in the new tx
     bool found=false;
-    BOOST_FOREACH(const CTxIn &txin, entryOverrided.GetTx().vin) {
-        found=false;    
-        BOOST_FOREACH(const CTxIn &txin2, tx.vin){
-            if(txin.prevout==txin2.prevout){
-                found=true;
-                break;
-            }
+    //BOOST_FOREACH(const CTxIn &txin, entryOverrided.GetTx().vin) {
+    //    found=false;    
+    //    BOOST_FOREACH(const CTxIn &txin2, tx.vin){
+    //        if(txin.prevout==txin2.prevout){
+    //            found=true;
+    //            break;
+     //       }
+    //    }
+    //    if (!found){
+     //      LogPrintf("tx override:original vin not found:%s\n",txin.prevout.ToString());
+    //       return false;
+    //   }
+    //}
+     //new change:to ensure content publisher don't change during tx override, all overrided vinds should be in exactly the same sequence
+    if(entryOverrided.GetTx().vin.size()>=tx.vin.size())
+        return false;
+    for(unsigned int i=0;i<entryOverrided.GetTx().vin.size();i++)
+    {
+        if(tx.vin[i]!=entryOverrided.GetTx().vin[i])
+        {
+            LogPrintf("tx override:origin vin %i does not equal to new vin\n",i);
+            return false;
         }
-        if (!found){
-           LogPrintf("tx override:original vin not found:%s\n",txin.prevout.ToString());
-           return false;
-       }
     }
      //make tx4checkvins
     CMutableTransaction tx0 = CMutableTransaction();

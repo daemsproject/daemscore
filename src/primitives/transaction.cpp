@@ -40,11 +40,12 @@ std::string CTxIn::ToString() const
     return str;
 }
 
-CTxOut::CTxOut(const CAmount& nValueIn, CScript scriptPubKeyIn,string strContentIn)
+CTxOut::CTxOut(const CAmount& nValueIn, CScript scriptPubKeyIn,string strContentIn,uint32_t nLockTimeIn)
 {
     nValue = nValueIn;
     scriptPubKey = scriptPubKeyIn;
     strContent=strContentIn;
+    nLockTime=nLockTimeIn;
 }
 
 uint256 CTxOut::GetHash() const
@@ -54,11 +55,11 @@ uint256 CTxOut::GetHash() const
 
 std::string CTxOut::ToString() const
 {
-    return strprintf("CTxOut(nValue=%d.%06d, scriptPubKey=%s,strContent=%s)", nValue / COIN, nValue % COIN, scriptPubKey.ToString().substr(0,30),HexStr(strContent.length()>100? strContent.substr(0,100):strContent));
+    return strprintf("CTxOut(nValue=%d.%06d, scriptPubKey=%s,strContent=%s, nLockTime=%u)", nValue / COIN, nValue % COIN, scriptPubKey.ToString().substr(0,30),HexStr(strContent.length()>100? strContent.substr(0,100):strContent),nLockTime);
 }
 
-CMutableTransaction::CMutableTransaction() : nVersion(CTransaction::CURRENT_VERSION), nLockTime(0) {}
-CMutableTransaction::CMutableTransaction(const CTransaction& tx) : nVersion(tx.nVersion), vin(tx.vin), vout(tx.vout), nLockTime(tx.nLockTime) {}
+CMutableTransaction::CMutableTransaction() : nVersion(CTransaction::CURRENT_VERSION) {}
+CMutableTransaction::CMutableTransaction(const CTransaction& tx) : nVersion(tx.nVersion), vin(tx.vin), vout(tx.vout) {}
 
 uint256 CMutableTransaction::GetHash() const
 {
@@ -70,9 +71,9 @@ void CTransaction::UpdateHash() const
     *const_cast<uint256*>(&hash) = SerializeHash(*this);
 }
 
-CTransaction::CTransaction() : hash(0), nVersion(CTransaction::CURRENT_VERSION), vin(), vout(), nLockTime(0) { }
+CTransaction::CTransaction() : hash(0), nVersion(CTransaction::CURRENT_VERSION), vin(), vout(){ }
 
-CTransaction::CTransaction(const CMutableTransaction &tx) : nVersion(tx.nVersion), vin(tx.vin), vout(tx.vout), nLockTime(tx.nLockTime) {
+CTransaction::CTransaction(const CMutableTransaction &tx) : nVersion(tx.nVersion), vin(tx.vin), vout(tx.vout) {
     UpdateHash();
 }
 
@@ -80,7 +81,7 @@ CTransaction& CTransaction::operator=(const CTransaction &tx) {
     *const_cast<int*>(&nVersion) = tx.nVersion;
     *const_cast<std::vector<CTxIn>*>(&vin) = tx.vin;
     *const_cast<std::vector<CTxOut>*>(&vout) = tx.vout;
-    *const_cast<unsigned int*>(&nLockTime) = tx.nLockTime;
+    //*const_cast<unsigned int*>(&nLockTime) = tx.nLockTime;
     *const_cast<uint256*>(&hash) = tx.hash;
     return *this;
 }
@@ -115,12 +116,11 @@ CAmount CTransaction::GetFee() const
 std::string CTransaction::ToString() const
 {
     std::string str;
-    str += strprintf("CTransaction(hash=%s, ver=%d, vin.size=%u, vout.size=%u, nLockTime=%u)\n",
+    str += strprintf("CTransaction(hash=%s, ver=%d, vin.size=%u, vout.size=%u)\n",
         GetHash().ToString().substr(0,10),
         nVersion,
         vin.size(),
-        vout.size(),
-        nLockTime);
+        vout.size());
     for (unsigned int i = 0; i < vin.size(); i++)
         str += "    " + vin[i].ToString() + "\n";
     for (unsigned int i = 0; i < vout.size(); i++)

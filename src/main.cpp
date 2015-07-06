@@ -725,19 +725,23 @@ bool IsFinalTx(const CTransaction &tx, int nBlockHeight, int64_t nBlockTime)
 //            return false;
     return true;
 }
-bool IsFrozen(const CTransaction &tx, int nBlockHeight, int64_t nBlockTime){
+bool IsFrozen(const CTransaction &tx,const unsigned int nPos, int nBlockHeight, int64_t nBlockTime)
+{
     AssertLockHeld(cs_main);
       //Time based nLockTime implemented in 0.1.6
-    if (tx.nLockTime == 0)
+    if(nPos>=tx.vout.size())
+        return false;
+    if (tx.vout[nPos].nLockTime == 0)
         return false;
     if (nBlockHeight == 0)
         nBlockHeight = chainActive.Height();
     if (nBlockTime == 0)
         nBlockTime = chainActive.Tip()->nTime;
-    if ((int64_t)tx.nLockTime < ((int64_t)tx.nLockTime < LOCKTIME_THRESHOLD ? (int64_t)nBlockHeight : nBlockTime))
+    if ((int64_t)tx.vout[nPos].nLockTime < ((int64_t)tx.vout[nPos].nLockTime < LOCKTIME_THRESHOLD ? (int64_t)nBlockHeight : nBlockTime))
         return false;
     return true;
 }
+
 int GetBlocksToMaturity(const unsigned int nLockTime)
 {
     if (nLockTime!=0){        
@@ -778,16 +782,23 @@ uint32_t LockTimeToTime(uint32_t nLockTime)
     }
     return 0;
 }
-bool IsFrozen(const CCoins &tx){
+
+bool IsFrozen(const CCoins &tx,const unsigned int nPos, int nBlockHeight, int64_t nBlockTime)
+{
     AssertLockHeld(cs_main);
+    if(nPos>=tx.vout.size())
+        return false;
       //Time based nLockTime implemented in 0.1.6
-    if (tx.nLockTime == 0)
+    if (tx.vout[nPos].nLockTime == 0)
             return false;
+    if (nBlockHeight == 0)
+        nBlockHeight = chainActive.Height();
+    if (nBlockTime == 0)
+        nBlockTime = chainActive.Tip()->nTime;
+        //int nBlockHeight = chainActive.Height();
     
-        int nBlockHeight = chainActive.Height();
-    
-        int64_t nBlockTime = chainActive.Tip()->nTime;
-    if ((int64_t)tx.nLockTime < ((int64_t)tx.nLockTime < LOCKTIME_THRESHOLD ? (int64_t)nBlockHeight : nBlockTime))
+        //int64_t nBlockTime = chainActive.Tip()->nTime;
+    if ((int64_t)tx.vout[nPos].nLockTime < ((int64_t)tx.vout[nPos].nLockTime < LOCKTIME_THRESHOLD ? (int64_t)nBlockHeight : nBlockTime))
         return false;
     return true;
 }
@@ -1761,7 +1772,7 @@ void UpdateDomainDB(const CTransaction& tx,const CBlock& block,const int nTx,CVa
                 else
                 {
                     CLink link(block.nBlockHeight,nTx,i);
-                    pDomainDBView->Update(coins->vout[prevout.n].scriptPubKey,vContent[0].second,(uint64_t)tx.vout[i].nValue,IsFrozen(tx,block.nBlockHeight,block.nTime)?tx.nLockTime:0,link);
+                    pDomainDBView->Update(coins->vout[prevout.n].scriptPubKey,vContent[0].second,(uint64_t)tx.vout[i].nValue,IsFrozen(tx,i,block.nBlockHeight,block.nTime)?tx.vout[i].nLockTime:0,link);
                 }                
             }
         }
@@ -1771,15 +1782,16 @@ void UpdateTagDB(const CTransaction& tx,const CBlock& block,const int nTx,CValid
 {
     if(tx.IsCoinBase())//coinbase is not allowed to register domain
         return;
-    uint32_t nExpireTime=LockTimeToTime(tx.nLockTime);
-    //LogPrintf("main:updatetagdb expiretime %i,now %i \n",nExpireTime,GetAdjustedTime());
-    if(nExpireTime==0||nExpireTime<GetAdjustedTime())
-        return;
+   
     int nTags=(int)(tx.GetValueOut()/COIN);    
     //LogPrintf("main:updatetagdb ntags %i \n",nTags);
     for(unsigned int i=0;i<tx.vout.size();i++) {  
         if (nTags<=0) 
             return ;
+         uint32_t nExpireTime=LockTimeToTime(tx.vout[i].nLockTime);
+    //LogPrintf("main:updatetagdb expiretime %i,now %i \n",nExpireTime,GetAdjustedTime());
+        if(nExpireTime==0||nExpireTime<GetAdjustedTime())
+            continue;
         CContent str=tx.vout[i].strContent;
         //LogPrintf("main:updatetagdb str isstandard: %b \n",str.IsStandard());
         if(!str.IsStandard())
@@ -1846,7 +1858,7 @@ bool CheckInputs(const CTransaction& tx,const CTransaction& tx4CheckVins,CValida
             }
             // check that it's matured
             //if (coins->IsCoinBase()) {
-            if (IsFrozen(*coins)){
+            if (IsFrozen(*coins,prevout.n)){
                 //if (nSpendHeight - coins->nHeight < COINBASE_MATURITY)
                     return state.Invalid(
                         error("CheckInputs() : tried to spend frozen coins at depth %d", nSpendHeight - coins->nHeight),
@@ -1988,7 +2000,7 @@ bool DisconnectBlock(CBlock& block, CValidationState& state, CBlockIndex* pindex
                     coins->fCoinBase = undo.fCoinBase;
                     coins->nHeight = undo.nHeight;
                     coins->nVersion = undo.nVersion;
-                    coins->nLockTime = undo.nLockTime;
+                    //coins->nLockTime = undo.nLockTime;
                 } else {
                     if (coins->IsPruned())
                         fClean = fClean && error("DisconnectBlock() : undo data adding output to missing transaction");
@@ -2929,7 +2941,9 @@ bool CheckBlock(const CBlock& block, CValidationState& state, bool fCheckPOW, bo
 
     // Check transactions
     // Coinbase locktime only allow blockheight, lock by time is not allowed
-    if ((block.vtx[0].nLockTime<block.nBlockHeight+COINBASE_MATURITY)||(block.vtx[0].nLockTime>LOCKTIME_THRESHOLD)){
+    BOOST_FOREACH(const CTxOut& txout, block.vtx[0].vout)
+        if ((txout.nLockTime<block.nBlockHeight+COINBASE_MATURITY)||(txout.nLockTime>LOCKTIME_THRESHOLD))
+        {
             return state.DoS(100, error("CheckBlock()  : coinbase locktime, expected blockheight to spend: %i", block.nBlockHeight+COINBASE_MATURITY),
                              REJECT_INVALID, "bad-coinbase-locktime");
         }

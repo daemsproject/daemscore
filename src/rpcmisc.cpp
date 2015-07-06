@@ -360,8 +360,8 @@ Value setmocktime(const Array& params, bool fHelp)
     return Value::null;
 }
 
-PaymentRequest ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJson,const int nType){    
-    PaymentRequest pr;
+CPaymentOrder ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJson,const int nType){    
+    CPaymentOrder pr;
     pr.fIsValid=false;    
     std::string strError;
     if(paymentRequestJson.type()!=obj_type){        
@@ -475,27 +475,22 @@ PaymentRequest ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJs
             std::string str = valtmp.get_str();
             ctt = _create_text_content(str);
         }
-        
-        pr.vout.push_back(CTxOut(amount,scriptPubKey,ctt));
+        valtmp=find_value(objvout, "locktime");
+        uint32_t nLockTime=0;
+        switch (valtmp.type()){
+            case int_type:
+                nLockTime=(unsigned int)valtmp.get_uint64();
+                break;
+            case null_type:
+                break;
+            default:
+                strError="lock time is not int type or null";
+                throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+        }  
+        pr.vout.push_back(CTxOut(amount,scriptPubKey,ctt,nLockTime));
     }
     //nSigType=129;
-    valtmp=find_value(obj, "locktime");
-    switch (valtmp.type()){
-        case int_type:
-        {
-             pr.nLockTime=(unsigned int)valtmp.get_uint64();
-            break;
-        }
-        case null_type:
-        {
-            break;
-        }
-        default:
-        {
-            strError="lock time is not int type or null";
-            throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
-        }
-    }    
+      
     valtmp=find_value(obj, "feerate");
     switch (valtmp.type()){
         case real_type:
@@ -528,9 +523,9 @@ PaymentRequest ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJs
     return pr;
     //valtmp=find_value(obj, "vins");
 }
-PaymentRequest MessageRequestToPaymentRequest(const std::string idLocal,const std::string idForeign,const CContent msg)
+CPaymentOrder MessageRequestToPaymentRequest(const std::string idLocal,const std::string idForeign,const CContent msg)
 {
-    PaymentRequest pr;
+    CPaymentOrder pr;
     pr.fIsValid=false;    
     std::string strError;
     CScript scriptPubKey;        
@@ -552,9 +547,9 @@ PaymentRequest MessageRequestToPaymentRequest(const std::string idLocal,const st
     //valtmp=find_value(obj, "vins");
 }
 
-PaymentRequest GetPublisherPaymentRequest(const std::string idLocal, const std::string idTarget, const CContent& ctt)
+CPaymentOrder GetPublisherPaymentRequest(const std::string idLocal, const std::string idTarget, const CContent& ctt)
 {
-    PaymentRequest pr;
+    CPaymentOrder pr;
     pr.fIsValid = false;
     std::string strError;
     CScript scriptPubKey;
@@ -592,13 +587,13 @@ PaymentRequest GetPublisherPaymentRequest(const std::string idLocal, const std::
 //    std::string toIds = params[1].get_str();
 //    std::vector<unsigned char> raw  = ParseHexV(params[2], "parameter 3");
 //    CContent ctt(raw);
-//    PaymentRequest pr = GetPublisherPaymentRequest(frIds, toIds, ctt);
+//    CPaymentOrder pr = GetPublisherPaymentRequest(frIds, toIds, ctt);
 //    r.push_back(Pair("paymentRequest", EncodeHexTx(pr)));
 //    return r;
 //}
-PaymentRequest GetRegisterDomainPaymentRequest(const string id, const std::string domain, const uint32_t nLockTime)
+CPaymentOrder GetRegisterDomainPaymentRequest(const string id, const std::string domain, const uint32_t nLockTime)
 {
-    PaymentRequest pr;
+    CPaymentOrder pr;
     pr.fIsValid = false;
     std::string strError;   
      CScript scriptPubKey;        
@@ -617,18 +612,17 @@ PaymentRequest GetRegisterDomainPaymentRequest(const string id, const std::strin
     CAmount amount = GetDomainGroup(domain)*COIN;
     if(amount==0)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "invalid domain name");
-    pr.vout.push_back(CTxOut(amount, scriptPubKey, ctt));
+    pr.vout.push_back(CTxOut(amount, scriptPubKey, ctt,nLockTime));
     if(GetBlocksToMaturity(nLockTime)<480)
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "invalid nLocktime");
-    pr.nLockTime=nLockTime;
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "invalid nLocktime");    
     pr.nRequestType=PR_DOMAIN_REGISTER;
     pr.info["domain"]=domain;
     pr.fIsValid = true;
     return pr;
 }
-PaymentRequest GetPublishProductPaymentRequest(const Array arr)
+CPaymentOrder GetPublishProductPaymentRequest(const Array arr)
 {
-    PaymentRequest pr;
+    CPaymentOrder pr;
     pr.fIsValid = false;
     std::string strError; 
     if ( arr.size() <2)
@@ -650,13 +644,7 @@ PaymentRequest GetPublishProductPaymentRequest(const Array arr)
     
     LogPrintf("rpcmisc GetPublishProductPaymentRequest from ID %s\n", scriptPubKey.ToString());
     pr.vFrom.push_back(scriptPubKey);    
-    if(arr.size()>2&&arr[2].type()==int_type)
-    {
-        pr.nLockTime=arr[2].get_int64();
-        if(pr.nLockTime!=0&&GetBlocksToMaturity(pr.nLockTime)<480)
-            throw JSONRPCError(RPC_INVALID_PARAMETER, "invalid LockTime");
-        LogPrintf("rpcmisc GetPublishProductPaymentRequest locktime %i\n", pr.nLockTime);
-    }
+    
     if(arr[1].type()!=array_type)
     {
         strError="product data is not array type";
@@ -668,7 +656,7 @@ PaymentRequest GetPublishProductPaymentRequest(const Array arr)
         strError="product data is empty";
         throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
     }
-    int nTags=0;
+    
     for(unsigned int i=0;i<arrProducts.size();i++)
     {
         Object obj=arrProducts[i].get_obj();
@@ -760,7 +748,22 @@ PaymentRequest GetPublishProductPaymentRequest(const Array arr)
             vcc.push_back(make_pair(CC_PRODUCT_INTRO,tmp.get_str()));
             LogPrintf("rpcmisc GetPublishProductPaymentRequest product intro %s\n", tmp.get_str());
         }     
-        tmp = find_value(obj, "tags");
+        tmp = find_value(obj, "expiretime");
+        uint32_t nLockTime=0;
+        if (tmp.type() != null_type)
+        {            
+            if(tmp.type() != int_type)
+            {
+                strError="expiretime is not int type";
+                throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+            }
+            nLockTime=tmp.get_int64();
+            if(nLockTime!=0&&GetBlocksToMaturity(nLockTime)<480)
+                throw JSONRPCError(RPC_INVALID_PARAMETER, "invalid expiretime");
+            LogPrintf("rpcmisc GetPublishProductPaymentRequest locktime %i\n", nLockTime);
+        }
+        tmp = find_value(obj, "tags");        
+        int nTags=0;
         if (tmp.type() != null_type)
         {            
             if(tmp.type() != array_type)
@@ -779,28 +782,25 @@ PaymentRequest GetPublishProductPaymentRequest(const Array arr)
                 if(arrTags[j].get_str()!="")
                 {
                     vcc.push_back(make_pair(CC_TAG,arrTags[j].get_str()));
-                    nTags++;
+                    if(nLockTime>0)
+                        nTags++;
                     LogPrintf("rpcmisc GetPublishProductPaymentRequest product tag %s\n", arrTags[j].get_str());
                 }
             }
         }
+        
         CContent ctt;
         ctt.EncodeP(CC_PRODUCT_P,vcc);    
-        pr.vout.push_back(CTxOut(0, CScript(), ctt));
+        pr.vout.push_back(CTxOut(nTags*COIN, nTags>0?CScript():scriptPubKey, ctt,nLockTime));
     }
-    pr.nRequestType=PR_PUBLISH;
-    if(pr.nLockTime>0&&nTags>0)
-    {
-        pr.vout.push_back(CTxOut(nTags*COIN, scriptPubKey, ""));
-        LogPrintf("rpcmisc GetPublishProductPaymentRequest product lock coins %i\n", nTags);
-    }
+    pr.nRequestType=PR_PUBLISH;    
     //pr.info["domain"]=arr[1].get_str();
     pr.fIsValid = true;
     return pr;
 }
-PaymentRequest GetUpdateDomainPaymentRequest(const Array arr)
+CPaymentOrder GetUpdateDomainPaymentRequest(const Array arr)
 {
-    PaymentRequest pr;
+    CPaymentOrder pr;
     pr.fIsValid = false;
     std::string strError;   
      CScript scriptPubKey;        
@@ -890,14 +890,14 @@ PaymentRequest GetUpdateDomainPaymentRequest(const Array arr)
     pr.fIsValid = true;
     return pr;
 }
-//extern PaymentRequest GetRenewPaymentRequest(const Array arr)
+//extern CPaymentOrder GetRenewPaymentRequest(const Array arr)
 //{
-//    PaymentRequest pr;
+//    CPaymentOrder pr;
 //    return pr;
 //}
-//extern PaymentRequest GetTransferPaymentRequest(const Array arr)
+//extern CPaymentOrder GetTransferPaymentRequest(const Array arr)
 //{
-//    PaymentRequest pr;
+//    CPaymentOrder pr;
 //    return pr;
 //}
 //int GetBlocksToMaturity(const unsigned int nLockTime)

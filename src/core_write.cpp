@@ -90,7 +90,7 @@ void TxToUniv(const CTransaction& tx, const uint256& hashBlock, UniValue& entry)
 {
     entry.pushKV("txid", tx.GetHash().GetHex());
     entry.pushKV("version", tx.nVersion);
-    entry.pushKV("locktime", (int64_t)tx.nLockTime);
+    //entry.pushKV("locktime", (int64_t)tx.nLockTime);
 
     UniValue vin(UniValue::VARR);
     BOOST_FOREACH(const CTxIn& txin, tx.vin) {
@@ -129,6 +129,7 @@ void TxToUniv(const CTransaction& tx, const uint256& hashBlock, UniValue& entry)
         ScriptPubKeyToUniv(txout.scriptPubKey, o, true);
         out.pushKV("scriptPubKey", o);
         out.pushKV("content", HexStr(txout.strContent.begin(), txout.strContent.end()));
+        out.pushKV("locktime", (int64_t)txout.nLockTime);
         vout.push_back(out);
     }
     entry.pushKV("vout", vout);

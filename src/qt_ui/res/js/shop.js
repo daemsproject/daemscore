@@ -264,7 +264,7 @@ var Shop = new function () {
             console.log(tags.split(","));
             if(tags)
                 d.tags=tags.split(",");
-            BrowserAPI.publishProduct(accountID, d,expiretime, function (data) {
+            BrowserAPI.publishProduct(accountID, d, function (data) {
                     console.log(data);                    
                      i.makeNotice('success', 'publish-product-success', 'Product published!');
                 }, function (e) {

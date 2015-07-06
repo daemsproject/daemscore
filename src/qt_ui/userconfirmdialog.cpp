@@ -142,7 +142,7 @@ UserConfirmDialog::~UserConfirmDialog()
 //
 //
 //
-//bool UserConfirmDialog::HandlePaymentRequest(std::string strToken,PaymentRequest pr, CWalletTx tx,bool fRequestPassword)
+//bool UserConfirmDialog::HandlePaymentRequest(std::string strToken,CPaymentOrder pr, CWalletTx tx,bool fRequestPassword)
 //{
 //    QString alert=getPaymentAlertMessage(tx);    
 //    ui->windowTitle->setText(tr("Confirm Payment"));

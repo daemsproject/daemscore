@@ -146,7 +146,8 @@ public:
         txNew.vout[0].nValue = 0;
         txNew.vout[0].scriptPubKey = CScript() << ParseHex("03968502fe538a31c883493c47ed169bc74a68b7051c85afeeb05783163b6c173e") << OP_CHECKSIG;
         txNew.vout[0].strContent=pszTimestamp;
-        txNew.nLockTime=40;
+        //txNew.nLockTime=40;
+        txNew.vout[0].nLockTime=40;
         genesis.vtx.push_back(txNew);
         genesis.hashPrevBlock = 0;
         genesis.hashMerkleRoot = genesis.BuildMerkleTree();
