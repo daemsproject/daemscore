@@ -209,8 +209,9 @@ Value setgenerate(const Array& params, bool fHelp)
                 LogPrintf("setgenerate address setstring:%s\n",add.ToString());
                 CPubKey miningID;
                 if(!add.GetKey(miningID))
-                    throw JSONRPCError(RPC_INTERNAL_ERROR, "ID format error2");            
-                pwalletMining=new CWallet(miningID);
+                    throw JSONRPCError(RPC_INTERNAL_ERROR, "ID format error2");    
+                if (miningID!=pwalletMining->GetID())
+                    pwalletMining=new CWallet(miningID);
             }
         }
         bool fExtendID=false;

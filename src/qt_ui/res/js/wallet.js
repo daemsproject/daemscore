@@ -289,7 +289,7 @@ var MyWallet = new function() {
             buildSendForm(self, reset);
             self.find('.send').unbind().click(function() {
                 $('.send').prop('disabled', true);
-                BrowserAPI.requestPayment(IDs,self.find('input[name="send-to-address"]').val(),self.find('input[name="send-value"]').val(),self.find('textarea[name="send-message"]').val(),function(){
+                BrowserAPI.requestPayment(accountID,self.find('input[name="send-to-address"]').val(),self.find('input[name="send-value"]').val(),self.find('textarea[name="send-message"]').val(),function(){
                     $('.send').prop('disabled', false);
                     self.find('input[name="send-to-address"]').val("");
                     self.find('input[name="send-value"]').val("");

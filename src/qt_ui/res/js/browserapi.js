@@ -306,7 +306,7 @@ var BrowserAPI = new function () {
     }
     this.getMiningInfo = function () {return this.icall("getmininginfo", [])}
     this.setGenerate = function (generate, id, kernels,success,error) {
-        this.call("setgenerate", [generate,Number(kernels),id,false], function (a) {
+        this.call("setgenerate", [generate,Number(kernels),id,true], function (a) {
             if (success)
                 success(a);
         }, function (e) {

@@ -455,7 +455,7 @@ bool CWalletDB::ReadKeyStore(CCryptoKeyStore* keyStore){
             CPubKey decompressedStepPub=keyStore->stepKey.pubKey;
             decompressedStepPub.Decompress();
             for (uint64_t i=1;i<=keyStore->nMaxSteps;i++){            
-                extPub.AddSteps(keyStore->stepKey.pubKey,i);
+                extPub.AddSteps(keyStore->stepKey.pubKey,1);
                 CPubKey compressedPub=extPub;
                 compressedPub.Compress();
                 keyStore->mapKeys[compressedPub]=i;
