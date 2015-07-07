@@ -184,7 +184,7 @@ bool CWallet::SwitchToAccount(CPubKey idIn,bool fSetDefault){
             ClearPassword();
             ClearSharedKey();
             bool fFirstRunRet;
-            if (LoadWallet(fFirstRunRet,false)==DB_LOAD_OK)
+            if (LoadWallet(fFirstRunRet,true)==DB_LOAD_OK)
             {
         //        LogPrintf("wallet.cpp:SwitchToAccount 4 \n"); 
                 if(fSetDefault)

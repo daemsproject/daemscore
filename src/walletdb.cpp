@@ -364,6 +364,7 @@ bool CWalletDB::ReadKeyStore(CCryptoKeyStore* keyStore){
     CBitcoinAddress add(strCurrentWallet);
     CPubKey id;
     add.GetKey(id);
+    keyStore->mapKeys.clear();
     keyStore->mapKeys[id]=0;
      //LogPrintf("walletdb.cpp:readkeystore strCurrentWallet:%s \n",strCurrentWallet);
     if (GetIdObj(strCurrentWallet,objId)){        

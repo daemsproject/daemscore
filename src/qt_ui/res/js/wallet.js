@@ -374,9 +374,9 @@ var MyWallet = new function () {
             MyWallet.notifiedTx(a);
         };
         var ac = function (a) {
-            txs = [];
-            initAccount();
-            //window.location.href=window.location.href;
+            //MyWallet.txs = [];
+            //MyWallet.initAccount();
+            window.location.href=window.location.href;
         };
         var ad = function (a) {
             MyWallet.notifiedID(a);
@@ -669,9 +669,10 @@ var MyWallet = new function () {
         else if ("my-transactions" == id)
             buildTransactionsView(reset)
     }
-    function initAccount() {
+    this.initAccount=function() {        
         accountID = BrowserAPI.getAccountID();
         $("#account-id").html(accountID);
+        console.log(accountID);
         IDs = BrowserAPI.getIDs(accountID);
         //BrowserAPI.getNewID(accountID);
         registerNotifications();
@@ -704,7 +705,7 @@ var MyWallet = new function () {
 
         cVisible = $("#home-intro");
         bindInitial();
-        initAccount();
+        i.initAccount();
         bindReady();
         //Frame break
         if (top.location != self.location) {
