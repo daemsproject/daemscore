@@ -1368,7 +1368,7 @@ Value listtransactions(const Array& params, bool fHelp)
             "\nAs a json rpc call\n"
             + HelpExampleRpc("listtransactions", "\"QN5BF73O35EMQ2G5NZAQ554YHLERLDVMAAPIQBI6 \", 20, 100")
         );
-    LogPrintf("rpcwallet listtxs 1\n");
+    //LogPrintf("rpcwallet listtxs 1\n");
     CWallet* pwallet;
      
     string strAccount="*";
@@ -1394,7 +1394,7 @@ Value listtransactions(const Array& params, bool fHelp)
         pwallet=pwalletMain;
             //pwallet->LoadTxs();
     }
-    LogPrintf("rpcwallet listtxs 2\n");
+    //LogPrintf("rpcwallet listtxs 2\n");
     int nCount = 100;
     if (params.size() > 1)
         nCount = params[1].get_int();

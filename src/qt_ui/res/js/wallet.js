@@ -341,7 +341,7 @@ var MyWallet = new function () {
         }, tx_page * MyWallet.getNTransactionsPerPage(), MyWallet.getNTransactionsPerPage());
     };
     function setLatestBlock(block) {
-
+        console.log(block);
         if (block != null) {
             latest_block = block;
 
@@ -390,10 +390,13 @@ var MyWallet = new function () {
     }
     this.notifiedTx = function (a) {
         console.log(a);
-        for(var j in txs)
-            if(txs[j].txid==a.tx.txid)
-                return;
         var tx=parseTx(a.tx,IDs);
+        for(var j in txs)
+            if(txs[j].txid==tx.txid){
+                txs[j]=tx;
+                buildVisibleView();
+                return;
+            }
         txs.unshift(tx);
         buildVisibleView();
         // this.get_history();
