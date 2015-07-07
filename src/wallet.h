@@ -167,7 +167,7 @@ public:
     bool LoadAddressBook(){return true;};
     bool LoadTxs();
     bool LoadScripts(){return true;};
-    std::map<uint256, CWalletTx> GetWalletTxs(std::vector<CPubKey> vIds)const;
+    std::map<uint256, CWalletTx> GetWalletTxs(std::vector<CPubKey> vIds)const ;
     //create a new wallet ,optional  writing to disk
     bool CreateNew(const SecureString& strKeyData="",bool fWriteToDisk=true);
     bool Set(const CKey& baseKeyIn,const CKey& stepKeyIn,const SecureString& strKeyData="",std::string prettyAddress="",bool fWriteToDisk=true);
@@ -402,7 +402,10 @@ public:
             &address, const std::string &label, bool isMine,
             const std::string &purpose,
             ChangeType status)> NotifyAddressBookChanged;
+    //account switch
     boost::signals2::signal<void (const std::string)>NotifyAccountSwitched;
+    //new extent key created
+    boost::signals2::signal<void (const std::string)>NotifyNewExtendedKey;
     /** 
      * Wallet transaction added, removed or updated.
      * @note called with lock cs_wallet held.

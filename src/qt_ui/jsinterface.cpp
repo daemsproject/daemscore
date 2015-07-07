@@ -66,12 +66,19 @@ static void NotifyTransactionChanged(JsInterface* jsInterface,const uint256 txid
                               Q_ARG(uint256, txid),Q_ARG(uint256, hashBlock));
     
 }
+static void NotifyNewExtendedKey(JsInterface* jsInterface,std::string id)
+{
+    QMetaObject::invokeMethod(jsInterface, "notifyNewExtendedKey", Qt::QueuedConnection,                              
+                              Q_ARG(std::string,id));
+}
 void JsInterface::subscribeToCoreSignals()
 {
     // Connect signals to client
     qRegisterMetaType<uint256>("uint256");
+    qRegisterMetaType<std::string>("std::string");
     uiInterface.NotifyBlockTip.connect(boost::bind(NotifyBlockHeight,this,_1));
     pwalletMain->NotifyTransactionChanged.connect(boost::bind(NotifyTransactionChanged,this,_1,_2));
+    pwalletMain->NotifyNewExtendedKey.connect(boost::bind(NotifyNewExtendedKey,this,_1));
     //uiInterface.NotifyNumConnectionsChanged.connect(boost::bind(NotifyNumConnectionsChanged, this, _1));
     //uiInterface.NotifyAlertChanged.connect(boost::bind(NotifyAlertChanged, this, _1, _2));
 }
@@ -136,6 +143,13 @@ void JsInterface::notifyTransactionChanged(const uint256 txid,const uint256 hash
 void JsInterface::notifyAccountSwitched(std::string id){
     Object notifyObj;
     notifyObj.push_back(Pair("type",Value("accountSwitch")));
+    notifyObj.push_back(Pair("id",Value(id)));
+    emit notify(QString().fromStdString(write_string(Value(notifyObj),false)));
+}
+void JsInterface::notifyNewExtendedKey(std::string id)
+{
+    Object notifyObj;
+    notifyObj.push_back(Pair("type",Value("newID")));
     notifyObj.push_back(Pair("id",Value(id)));
     emit notify(QString().fromStdString(write_string(Value(notifyObj),false)));
 }

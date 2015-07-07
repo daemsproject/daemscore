@@ -9,6 +9,7 @@ var BrowserAPI = new function () {
     var notifytx = {func: "", ids: []};
     var notifypeerfunc;
     var notifyaccountfunc;
+    var notifyidfunc;
     var callIDs = [];
     this.connectSlots = function ()
     {
@@ -56,7 +57,7 @@ var BrowserAPI = new function () {
                     return;
                 var found = false;
                 for (var i in notifytx.ids) {
-                    console.log("notifytx id:" + notifytx.ids[i]);
+                    //console.log("notifytx id:" + notifytx.ids[i]);
                     for (var j in data.tx.ids) {
                         if (data.tx.ids[j] == notifytx.ids[i]) {
                             console.log("notifytx found:" + data.tx.ids[j]);
@@ -71,6 +72,11 @@ var BrowserAPI = new function () {
                 break;
             case "accountSwitch":
                 cmd = 'var a=' + notifyaccountfunc + ';a(data);';
+                break;
+            case "newID":
+                cmd = 'var a=' + notifyidfunc + ';a(data);';
+                break;
+            
         }
         console.log(cmd);
         eval(cmd);
@@ -203,10 +209,11 @@ var BrowserAPI = new function () {
 
     };
 
-    this.regNotifyBlocks = function (blocksfunc) { this.connectSlots(); notifyblockfunc = blocksfunc; };
-    this.regNotifyTxs = function (txfunc, ids) {this.connectSlots();notifytx.func = txfunc;notifytx.ids = ids;};
-    this.regNotifyPeers = function (peerfunc) {}
-    this.regNotifyAccount = function (accountfunc) { this.connectSlots(); notifyaccountfunc=accountfunc; }
+    this.regNotifyBlocks = function (func) { this.connectSlots(); notifyblockfunc = func; };
+    this.regNotifyTxs = function (func, ids) {this.connectSlots();notifytx.func = func;notifytx.ids = ids;};
+    this.regNotifyPeers = function (func) {}
+    this.regNotifyAccount = function (func) { this.connectSlots(); notifyaccountfunc=func; }
+    this.regNotifyID = function (func) { this.connectSlots(); notifyidfunc=func; }
     this.getInfo = function () {return this.icall("getinfo", "")};
     this.getBlockCount = function () {return JSON.stringify(this.icall("getblockcount", []));};
     this.getContentByLink = function (c) { return this.icall("getcontentbylink", [c, 6]); };
@@ -305,8 +312,8 @@ var BrowserAPI = new function () {
         this.call("sendmessage", [idLocal,idForeign,msg],success,error);
     }
     this.getMiningInfo = function () {return this.icall("getmininginfo", [])}
-    this.setGenerate = function (generate, id, kernels,success,error) {
-        this.call("setgenerate", [generate,Number(kernels),id,true], function (a) {
+    this.setGenerate = function (generate, id, kernels,fnewkey,success,error) {
+        this.call("setgenerate", [generate,Number(kernels),id,fnewkey], function (a) {
             if (success)
                 success(a);
         }, function (e) {

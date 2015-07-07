@@ -211,7 +211,8 @@ CPubKey CWallet::GenerateNewKey()
     extPub.AddSteps(stepKey.pubKey,nMaxSteps);
     //CPubKey extID=extPub.GetID();
     mapKeys[extPub]=nMaxSteps;
-    pwalletdb->WriteKeyStore(this); 
+    pwalletdb->WriteKeyStore(this);     
+    NotifyNewExtendedKey(CBitcoinAddress(extPub).ToString());
     return extPub;
 }
 bool CWallet::AddContacts(const std::map<string,json_spirit::Object>mapContact)
@@ -721,7 +722,7 @@ bool CWallet::AddToWallet(const CWalletTx& wtxIn, bool fFromLoadWallet)
         if (fInsertedNew)
         {
             wtx.nTimeReceived = GetAdjustedTime();
-            //wtx.nOrderPos = IncOrderPosNext();
+            wtx.nOrderPos = nOrderPosNext++; 
             //LogPrintf("wallet:AddToWallet5\n");   
             wtx.nTimeSmart = wtx.nTimeReceived;
             if (wtxIn.hashBlock != 0)
@@ -879,6 +880,7 @@ void CWallet::SyncTransaction(const CTransaction& tx, const CBlock* pblock)
         if (mapWallet.count(txin.prevout.hash))
             mapWallet[txin.prevout.hash].MarkDirty();
     }
+    LogPrintf("CWallet::SyncTransaction new wallet tx recieved\n");
     //if(fReindex)
        // NotifyTransactionChanged(tx.GetHash(),blockHash);
 }
@@ -1245,6 +1247,7 @@ bool CWallet::LoadTxs(){
         for (KeyMap::iterator it = mapKeys.begin(); it != mapKeys.end(); ++it)
             vIds.push_back(it->first);    
     mapWallet=GetWalletTxs(vIds);
+    nOrderPosNext=mapWallet.size();
     return true;
 }
 std::map<uint256, CWalletTx> CWallet::GetWalletTxs(std::vector<CPubKey> vIds)const {
@@ -1261,15 +1264,15 @@ std::map<uint256, CWalletTx> CWallet::GetWalletTxs(std::vector<CPubKey> vIds)con
     std::map<uint256, CWalletTx> mapWalletTx;
     LogPrintf("wallet.cpp getwallettxs txs:%u \n",vTxs.size());
     int64_t nOrderPos=0;
-    for (std::vector<std::pair<CTransaction, uint256> >::iterator it = vTxs.begin(); it != vTxs.end(); ++it){                
+    for (std::vector<std::pair<CTransaction, uint256> >::reverse_iterator it = vTxs.rbegin(); it != vTxs.rend(); ++it){                
         CWalletTx wtx(this,it->first);
         wtx.nOrderPos=nOrderPos;
         nOrderPos++;
         wtx.hashBlock=it->second;
         wtx.SetMerkleBranch();
-        mapWalletTx.insert(make_pair(it->first.GetHash(),wtx));
-        
+        mapWalletTx.insert(make_pair(it->first.GetHash(),wtx));        
     }
+    
     LogPrintf("wallet.cpp mapwallettxs:%u \n",mapWalletTx.size());
     return mapWalletTx;
 }
@@ -2439,7 +2442,7 @@ int CMerkleTx::GetDepthInMainChain(const CBlockIndex* &pindexRet) const
 int CMerkleTx::GetBlocksToMaturity(int nPos) const
 {
     
-    if(nPos>=vout.size())
+    if(nPos>=(int)vout.size())
         nPos=-1;
     if(nPos==-1)
     {

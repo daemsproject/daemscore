@@ -16,7 +16,7 @@
 using namespace json_spirit;
 using namespace std;
 
-extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry);
+extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry,const int nContentLenLimit);
 void ScriptPubKeyToJSON(const CScript& scriptPubKey, Object& out, bool fIncludeHex);
 
 double GetDifficulty(const CBlockIndex* blockindex)

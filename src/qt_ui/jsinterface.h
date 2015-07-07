@@ -38,6 +38,7 @@ signals:
 private slots:
     void notifyBlockHeight(const uint256 blockHash);
     void notifyTransactionChanged(const uint256 txid,const uint256 hashBlock);
+    void notifyNewExtendedKey(std::string id);
 
 
     

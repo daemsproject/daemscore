@@ -16,7 +16,7 @@ var Miner = new function () {
     var hashrate = 0;
     var kernelrevenue = 0;
     var kernelinterval = 1000 * 24 * 3600;
-    var transactions = []; //List of all transactions (initially populated from /multiaddr updated through websockets)
+    var txs = []; //List of all transactions (initially populated from /multiaddr updated through websockets)
     var intervalID;
     var tx_page = 0; //Multi-address page
     var tx_filter = 0; //Transaction filter (e.g. Sent Received etc)
@@ -108,26 +108,27 @@ var Miner = new function () {
             }, timeout ? timeout : 5000);
         })();
     }
+    
     function showRevenues() {
 
         var htmlcontent = '<table class="well table table-striped">';
         htmlcontent += '<thead><tr><th colspan=2>Recent Revenues</th><th></th></tr></thead><tbody> ';
         var count = 0;
-        for (i = 0; i < transactions.length; i++) {
-            var tx = transactions[i];
+        for (i = 0; i < txs.length; i++) {
+            var tx = txs[i];
 //            if(!tx.amount)
 //                continue;
             var c = new Date(tx.blocktime * 1000);
             if (!tx.blocktime)
                 c = new Date();
-            if (tx.generated) {
+            if (tx.category=="minted") {
                 htmlcontent += ('<tr OnClick="Miner.showTx(\'' + tx.txid + '\')"><td>');
                 htmlcontent += '<img src="../icons/tx_mined.png">';
                 htmlcontent += ('</td><td>');
                 htmlcontent += '<div><div style="float:left">' + dateToString(c) + '</div><div style="text-align:right">';
                 htmlcontent += (tx.amount + "CCC");
                 htmlcontent += '</div></div>';
-                htmlcontent += ('<div>' + tx.address + '</div></td></tr>');
+                htmlcontent += '<div>' + showID(tx.address) + '</div></td></tr>';
                 count++;
                 if (count >= 5)
                     break;
@@ -145,7 +146,7 @@ var Miner = new function () {
         if (info.kernelblockinterval)
             kernelinterval = info.kernelblockinterval;
         if (info.kernels && info.kernels > 0) {
-            $("#account-id").html(accountID);
+            $("#account-id").html(showID(accountID));
             $('select[name="kernels"]').html('');
             for (var i = 1; i <= info.kernels; i++)
                 $('select[name="kernels"]').prepend('<option value="' + i + '" >' + i + '</option>');
@@ -216,9 +217,11 @@ var Miner = new function () {
                 return;
             }
             console.log(data);
-            transactions = data.txs;
+            txs = data.txs;
+            for (var j in txs)
+                txs[j] = parseTx(txs[j],IDs);
             balance = data.balance;
-            if (transactions.length == 0 && tx_page > 0) {
+            if (txs.length == 0 && tx_page > 0) {
                 //We have set a higher page number than transactions we actually have to display
                 //So rewind the page number to 0
                 Miner.setPage(0);
@@ -246,14 +249,23 @@ var Miner = new function () {
         var ab = function (a) {
             Miner.notifiedTx(a);
         };
+        var ad=function(a){
+            Miner.notifiedID(a);
+        };
         //BrowserAPI.regNotifyBlocks(aa);        
-        BrowserAPI.regNotifyTxs(ab, [accountID]);
+        BrowserAPI.regNotifyTxs(ab, IDs);
+        BrowserAPI.regNotifyID(ad);
 //        BrowserAPI.regNotifyAccount(this.notifiedAccount);
 //        BrowserAPI.regNotifyPeers(this.notifiedPeers);
     }
     this.notifiedTx = function (a) {
         console.log("notified tx");
-        this.get_history();
+        for(var j in txs)
+            if(txs[j].txid==a.tx.txid)
+                return;
+        var tx=parseTx(a.tx,IDs);
+        txs.unshift(tx);
+        //this.get_history();
         showRevenues();
     };
 
@@ -263,7 +275,14 @@ var Miner = new function () {
     this.notifiedPeers = function (data) {
 
     }
-
+    this.notifiedID=function(a){
+        console.log(a);
+        for(var j in IDs)
+            if(IDs[j]==a.id)
+                return;
+        IDs.push(a.id);
+        registerNotifications();       
+    };
     //Reset is true when called manually with changeview
     function buildVisibleViewPre() {
         //Hide any popovers as they can get stuck whent the element is re-drawn
@@ -313,7 +332,7 @@ var Miner = new function () {
 
         $('.btn-primary').unbind().click(function () {
             if ($(this).html() == "Start Mining") {
-                BrowserAPI.setGenerate(true, accountID, $('select[name="kernels"]').val(), function () {
+                BrowserAPI.setGenerate(true, accountID, $('select[name="kernels"]').val(),true ,function () {
                     startMining();
                     Miner.makeNotice('success', 'start-success', 'Mining started');
                 }, function (e) {
@@ -323,7 +342,7 @@ var Miner = new function () {
                 });
             }
             else
-                BrowserAPI.setGenerate(false, accountID, $('select[name="kernels"]').val(), function () {
+                BrowserAPI.setGenerate(false, accountID, $('select[name="kernels"]').val(),true, function () {
                     stopMining();
                 });
 
@@ -338,7 +357,7 @@ var Miner = new function () {
     function initAccount() {
         accountID = BrowserAPI.getAccountID();
         $("#account-id").html(accountID);
-        //IDs=BrowserAPI.getIDs(accountID);  
+        IDs=BrowserAPI.getIDs(accountID);  
         //BrowserAPI.getNewID(accountID);
         registerNotifications();
         Miner.get_history();

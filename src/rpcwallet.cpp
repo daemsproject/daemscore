@@ -104,10 +104,16 @@ Value getnewid(const Array& params, bool fHelp)//original getnewaddress
     CPubKey keyID; 
     if (params.size()==1){
         CPubKey id = AccountFromValue(params[0]);
-        CWallet* pwallet=new CWallet(id);
+        CWallet* pwallet;
+        if(id==pwalletMain->GetID())
+            pwallet=pwalletMain;
+        else
+            pwallet= new CWallet(id);
         if (!pwallet->CanExtendKeys())
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY,"id file is not enough for extend keys");
         keyID=pwallet->GenerateNewKey();
+        if(pwallet!=pwalletMain)
+            delete pwallet;
     }else{
     // Generate a new key that is added to wallet
         if (!pwalletMain->CanExtendKeys())
@@ -306,7 +312,13 @@ Value getidlist(const Array& params, bool fHelp)
     if (params.size()==1){
         CPubKey id = AccountFromValue(params[0]);        
         LogPrintf("getidlist:mainid:%s\n",params[0].get_str());
-        CWallet* pwallet=new CWallet(id);
+        CWallet* pwallet;
+        if(id==pwalletMain->GetID())
+            pwallet=pwalletMain;
+        else
+        {
+        pwallet= new CWallet(id);
+        }
         //if (!pwallet->pwalletdb->IsWalletExists(id))
         //    throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY,"id does not exist");
         //pwallet->SwitchToAccount(id);
@@ -317,6 +329,8 @@ Value getidlist(const Array& params, bool fHelp)
             address.Set(item.first);
             ids.push_back(address.ToString());
         }   
+        if(pwallet!=pwalletMain)
+            delete pwallet;
     }
     
     // Find all addresses that have the given account
@@ -333,6 +347,7 @@ Value getidlist(const Array& params, bool fHelp)
     }
     Object ret;
     ret.push_back(Pair("ids",ids));
+    
     return ret;
 
 }
@@ -1353,13 +1368,15 @@ Value listtransactions(const Array& params, bool fHelp)
             "\nAs a json rpc call\n"
             + HelpExampleRpc("listtransactions", "\"QN5BF73O35EMQ2G5NZAQ554YHLERLDVMAAPIQBI6 \", 20, 100")
         );
+    LogPrintf("rpcwallet listtxs 1\n");
     CWallet* pwallet;
+     
     string strAccount="*";
     if (params.size() > 0){        
          strAccount= params[0].get_str();
         if (strAccount==""){
             pwallet=pwalletMain;
-            pwalletMain->LoadTxs();
+            //pwalletMain->LoadTxs();
         }
         else{
             CPubKey id;
@@ -1375,8 +1392,9 @@ Value listtransactions(const Array& params, bool fHelp)
             
     }else{
         pwallet=pwalletMain;
-            pwallet->LoadTxs();
+            //pwallet->LoadTxs();
     }
+    LogPrintf("rpcwallet listtxs 2\n");
     int nCount = 100;
     if (params.size() > 1)
         nCount = params[1].get_int();
@@ -1398,32 +1416,42 @@ Value listtransactions(const Array& params, bool fHelp)
 
     CWallet::TxItems txOrdered = pwallet->OrderedTxItems(fIncludeExtendedKeys);
 
-    // iterate backwards until we have nCount items to return:
-    for (CWallet::TxItems::iterator it = txOrdered.begin(); it != txOrdered.end(); it++)
+    
+    if (nFrom > (int)txOrdered.size())
+        nFrom = txOrdered.size();
+    if ((nFrom + nCount) > (int)txOrdered.size())
+        nCount = txOrdered.size() - nFrom;
+    // iterate backwards until we have nCount items to return:    
+    int n=0;
+    for (CWallet::TxItems::reverse_iterator it = txOrdered.rbegin(); it != txOrdered.rend(); it++)
     {
+        n++;
+        if(n<nFrom)
+            continue;
+        if(n>nFrom+nCount)
+            break;
         CWalletTx *const pwtx = (*it).second.first;
-        //LogPrintf("rpcwallet listtxs pwtx :%i\n",pwtx);
-        if (pwtx != 0)
-            ListTransactions(*pwtx, strAccount, 0, true, ret, filter);
-        CAccountingEntry *const pacentry = (*it).second.second;
-        if (pacentry != 0)
-            AcentryToJSON(*pacentry, strAccount, ret);
+        //LogPrintf("rpcwallet listtxs pos :%i \n",it->first);
+//        if (pwtx != 0)
+//            ListTransactions(*pwtx, strAccount, 0, true, ret, filter);
+//        CAccountingEntry *const pacentry = (*it).second.second;
+//        if (pacentry != 0)
+//            AcentryToJSON(*pacentry, strAccount, ret);
         //LogPrintf("rpcwallet listtxs ntx :%u\n",ret.size());
-        if ((int)ret.size() >= (nCount+nFrom)) break;
+        Object objTx;
+        TxToJSON(*pwtx,pwtx->hashBlock,objTx);
+        ret.push_back(objTx);
+        //if ((int)ret.size() >= (nCount+nFrom)) break;
     }
     // ret is newest to oldest
 
-    if (nFrom > (int)ret.size())
-        nFrom = ret.size();
-    if ((nFrom + nCount) > (int)ret.size())
-        nCount = ret.size() - nFrom;
-    Array::iterator first = ret.begin();
-    std::advance(first, nFrom);
-    Array::iterator last = ret.begin();
-    std::advance(last, nFrom+nCount);
+//    Array::iterator first = ret.begin();
+//    std::advance(first, nFrom);
+//    Array::iterator last = ret.begin();
+//    std::advance(last, nFrom+nCount);
 
-    if (last != ret.end()) ret.erase(last, ret.end());
-    if (first != ret.begin()) ret.erase(ret.begin(), first);
+    //if (last != ret.end()) ret.erase(last, ret.end());
+    //if (first != ret.begin()) ret.erase(ret.begin(), first);
 
     //std::reverse(ret.begin(), ret.end()); // Return oldest to newest
     Object balance;

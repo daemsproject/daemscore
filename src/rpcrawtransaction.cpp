@@ -68,7 +68,7 @@ std::string GetBinaryContent(const std::string& content)
     return IsStringPrint(content)? std::string(content.begin(), content.end()): "";
 }
 
-void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
+void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry,const int nContentLenLimit)
 {
     //LogPrintf("TxToJSON1\n");    
     //LogPrintf("TxToJSON2\n");
@@ -127,8 +127,13 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
         out.push_back(Pair("value", ValueFromAmount(txout.nValue)));
         out.push_back(Pair("satoshi", txout.nValue));
         out.push_back(Pair("n", (int64_t)i));
-        out.push_back(Pair("content", HexStr(txout.strContent.begin(), txout.strContent.end())));
-        out.push_back(Pair("contentText", GetBinaryContent(txout.strContent)));
+        if((int)txout.strContent.size()>nContentLenLimit)
+            out.push_back(Pair("contentlen", txout.strContent.size()));
+        else
+        {
+            out.push_back(Pair("content", HexStr(txout.strContent.begin(), txout.strContent.end())));
+            out.push_back(Pair("contentText", GetBinaryContent(txout.strContent)));
+        }
         out.push_back(Pair("locktime", (int64_t)txout.nLockTime));
         Object o;
         ScriptPubKeyToJSON(txout.scriptPubKey, o, true);
