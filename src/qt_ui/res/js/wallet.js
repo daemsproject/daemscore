@@ -390,6 +390,10 @@ var MyWallet = new function () {
     }
     this.notifiedTx = function (a) {
         console.log(a);
+         var b=BrowserAPI.getBalance(accountID);
+        console.log(b);
+        balance = b.balance;
+        latest_block.blockHeight = b.currentblockheight;
         var tx=parseTx(a.tx,IDs);
         for(var j in txs)
             if(txs[j].txid==tx.txid){
@@ -398,6 +402,7 @@ var MyWallet = new function () {
                 return;
             }
         txs.unshift(tx);
+       
         buildVisibleView();
         // this.get_history();
         //buildHomeIntroView();
@@ -441,6 +446,8 @@ var MyWallet = new function () {
         var lockBlocks=0;
         var blocksLeft=0;
         var locktime=0;
+        if(!tx.confirmations)
+            return  'transaction0';
         for(var j in tx.vout)
             if(tx.vout[j].locktime>locktime)
                 locktime=tx.vout[j].locktime;        

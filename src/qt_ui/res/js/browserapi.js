@@ -208,7 +208,7 @@ var BrowserAPI = new function () {
         });
 
     };
-
+    this.getBalance = function (id) {return this.icall("getbalance", [[id]])}        
     this.regNotifyBlocks = function (func) { this.connectSlots(); notifyblockfunc = func; };
     this.regNotifyTxs = function (func, ids) {this.connectSlots();notifytx.func = func;notifytx.ids = ids;};
     this.regNotifyPeers = function (func) {}

@@ -676,9 +676,9 @@ CAmount GetAccountBalance(const CPubKey& id, int nMinDepth, const isminefilter& 
 
 Value getbalance(const Array& params, bool fHelp)
 {
-    if (fHelp || params.size() > 3)
+    if (fHelp || params.size() > 1)
         throw runtime_error(
-            "getbalance ( \"account\" minconf includeWatchonly )\n"
+            "getbalance ( \"account\" )\n"
             "\nIf account is not specified, returns the server's total available balance.\n"
             "If account is specified, returns the balance in the account.\n"
             "Note that the account \"\" is not the same as leaving the parameter out.\n"
@@ -702,52 +702,95 @@ Value getbalance(const Array& params, bool fHelp)
             + HelpExampleRpc("getbalance", "\"tabby\", 6")
         );
 
-    if (params.size() == 0)
-        return  ValueFromAmount(pwalletMain->GetBalance());
+//    if (params.size() == 0)
+//        return  ValueFromAmount(pwalletMain->GetBalance());
+//
+//    int nMinDepth = 1;
+//    if (params.size() > 1)
+//        nMinDepth = params[1].get_int();
+//    isminefilter filter = ISMINE_SPENDABLE;
+//    if(params.size() > 2)
+//        if(params[2].get_bool())
+//            filter = filter | ISMINE_WATCH_ONLY;
+    
 
-    int nMinDepth = 1;
-    if (params.size() > 1)
-        nMinDepth = params[1].get_int();
-    isminefilter filter = ISMINE_SPENDABLE;
-    if(params.size() > 2)
-        if(params[2].get_bool())
-            filter = filter | ISMINE_WATCH_ONLY;
-
-    if (params[0].get_str() == "*") {
-        // Calculate total balance a different way from GetBalance()
-        // (GetBalance() sums up all unspent TxOuts)
-        // getbalance and getbalance '*' 0 should return the same number
-        pwalletMain->LoadTxs();
-        CAmount nBalance = 0;
-        for (map<uint256, CWalletTx>::iterator it = pwalletMain->mapWallet.begin(); it != pwalletMain->mapWallet.end(); ++it)
-        {
-            const CWalletTx& wtx = (*it).second;
-            if (!wtx.IsTrusted() )
-                continue;
-
-            CAmount allFee;
-            string strSentAccount;
-            list<COutputEntry> listReceived;
-            list<COutputEntry> listSent;
-            wtx.GetAmounts(listReceived, listSent, allFee, strSentAccount, filter);
-            if (wtx.GetDepthInMainChain() >= nMinDepth)
-            {
-                BOOST_FOREACH(const COutputEntry& r, listReceived)
-                if(!r.IsFrozen)
-                    nBalance += r.amount;
-            }
-            BOOST_FOREACH(const COutputEntry& s, listSent)
-                nBalance -= s.amount;
-            nBalance -= allFee;
+//    if (params[0].get_str() == "*") {
+//        // Calculate total balance a different way from GetBalance()
+//        // (GetBalance() sums up all unspent TxOuts)
+//        // getbalance and getbalance '*' 0 should return the same number
+//        pwalletMain->LoadTxs();
+//        CAmount nBalance = 0;
+//        for (map<uint256, CWalletTx>::iterator it = pwalletMain->mapWallet.begin(); it != pwalletMain->mapWallet.end(); ++it)
+//        {
+//            const CWalletTx& wtx = (*it).second;
+//            if (!wtx.IsTrusted() )
+//                continue;
+//
+//            CAmount allFee;
+//            string strSentAccount;
+//            list<COutputEntry> listReceived;
+//            list<COutputEntry> listSent;
+//            wtx.GetAmounts(listReceived, listSent, allFee, strSentAccount, filter);
+//            if (wtx.GetDepthInMainChain() >= nMinDepth)
+//            {
+//                BOOST_FOREACH(const COutputEntry& r, listReceived)
+//                if(!r.IsFrozen)
+//                    nBalance += r.amount;
+//            }
+//            BOOST_FOREACH(const COutputEntry& s, listSent)
+//                nBalance -= s.amount;
+//            nBalance -= allFee;
+//        }
+//        return  ValueFromAmount(nBalance);
+//    }
+//
+//    CPubKey id = AccountFromValue(params[0]);
+//
+//    CAmount nBalance = GetAccountBalance(id, nMinDepth, filter);
+//
+//    return ValueFromAmount(nBalance);
+     CWallet* pwallet;
+     
+    string strAccount="*";
+    if (params.size() > 0){    
+        Array arrIDs=params[0].get_array();   
+        //TODO getbalances for multiple addresses
+         strAccount= arrIDs[0].get_str();
+        if (strAccount==""){
+            pwallet=pwalletMain;
+            //pwalletMain->LoadTxs();
         }
-        return  ValueFromAmount(nBalance);
+        else{
+            CPubKey id;
+            id=AccountFromValue(arrIDs[0]);
+            if(id==pwalletMain->GetID())
+                pwallet=pwalletMain;
+            else
+            {
+                LogPrintf("rpcwallet gebalance new pwallet id:%s \n",HexStr(id.begin(),id.end()));
+                pwallet=new CWallet(id);
+            }
+        }
+            
     }
-
-    CPubKey id = AccountFromValue(params[0]);
-
-    CAmount nBalance = GetAccountBalance(id, nMinDepth, filter);
-
-    return ValueFromAmount(nBalance);
+    else
+        pwallet=pwalletMain;
+      
+    Object balance;
+    CAmount balance_available=pwallet->GetBalance(false);
+    CAmount balance_unconfirmed=pwallet->GetUnconfirmedBalance(false);
+    CAmount balance_locked=pwallet->GetImmatureBalance(false);
+    CAmount balance_total=balance_available+balance_unconfirmed+balance_locked;
+    balance.push_back(Pair("balance_available",ValueFromAmount(balance_available)));
+    balance.push_back(Pair("balance_unconfirmed",ValueFromAmount(balance_unconfirmed)));
+    balance.push_back(Pair("balance_locked",ValueFromAmount(balance_locked)));
+    balance.push_back(Pair("balance_total",ValueFromAmount(balance_total)));
+    Object result;    
+    result.push_back(Pair("balance",balance));
+    result.push_back(Pair("currentblockheight",chainActive.Height()));
+     if (pwallet!=pwalletMain)
+        delete pwallet;
+    return result;
 }
 
 Value getunconfirmedbalance(const Array &params, bool fHelp)
