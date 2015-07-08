@@ -791,7 +791,10 @@ CPaymentOrder GetPublishProductPaymentRequest(const Array arr)
         
         CContent ctt;
         ctt.EncodeP(CC_PRODUCT_P,vcc);    
-        pr.vout.push_back(CTxOut(nTags*COIN, nTags>0?CScript():scriptPubKey, ctt,nLockTime));
+        if(nLockTime>0)
+            pr.vout.push_back(CTxOut(nTags*COIN, nTags==0?CScript():scriptPubKey, ctt,nLockTime));
+        else
+            pr.vout.push_back(CTxOut(0, CScript(), ctt,0));
     }
     pr.nRequestType=PR_PUBLISH;    
     //pr.info["domain"]=arr[1].get_str();

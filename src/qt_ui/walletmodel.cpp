@@ -609,7 +609,7 @@ QString WalletModel::getDomainRegisterAlertMessage(const CWalletTx& tx,const CPa
     QString address = "<span style='font-family: monospace;'>" +tr("Register by:") +QString().fromStdString(add);
     address.append("</span>");
     formatted.append(address);  
-    QString amount = "<span style='font-family: monospace;color:#aa0000;'>" +tr("Locked value:") +"<b>" + BitcoinUnits::formatHtmlWithUnit(0, tx.GetValueOut());
+    QString amount = "<span style='font-family: monospace;color:#aa0000;'>" +tr("Locked value:") +"<b>" + BitcoinUnits::formatHtmlWithUnit(0, tx.vout[0].nValue);
     amount.append("</b></span>");
     formatted.append(amount);
     QString timelasting = "<span style='font-family: monospace;color:#aa0000;'>" +tr("Lock for:") +QString().fromStdString(num2str((GetLockLasting(tx.vout[0].nLockTime)/3600/24))) +tr("days");
