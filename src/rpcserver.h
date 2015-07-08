@@ -211,6 +211,7 @@ extern json_spirit::Value setmocktime(const json_spirit::Array& params, bool fHe
 extern json_spirit::Value getmaturetime(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getcontacts(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value addcontacts(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getsimplesig(const json_spirit::Array& params, bool fHelp);
 
 extern json_spirit::Value getrawtransaction(const json_spirit::Array& params, bool fHelp); // in rcprawtransaction.cpp
 extern json_spirit::Value listunspent(const json_spirit::Array& params, bool fHelp);
@@ -308,7 +309,7 @@ extern CPaymentOrder GetRenewPaymentRequest(const Array arr);
 extern CPaymentOrder GetTransferPaymentRequest(const Array arr);
 extern CPaymentOrder GetPublishProductPaymentRequest(const Array arr);
 extern CPaymentOrder GetBuyProductPaymentRequest(const Array arr);
-
+extern CPaymentOrder GetBuyProductPaymentRequest(const Array arr);
 extern CWalletTx CreateRawTransaction(CPaymentOrder pr,bool& fRequestPassword,CWallet*& pwallet);
 extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, json_spirit::Object& entry,const int nContentLenLimit=1024);
 extern void GetMessagesFromTx(std::vector<CMessage>& vMessages,const CTransaction& tx,const int nBlockHeight,int nTx,int nTime,const std::vector<CScript>& vIDsLocal,

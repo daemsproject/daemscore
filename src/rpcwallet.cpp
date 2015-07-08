@@ -2244,3 +2244,36 @@ Value addcontacts(const json_spirit::Array& params, bool fHelp){
     delete pwallet;
     return Value(result);
 }
+Value getsimplesig(const json_spirit::Array& params, bool fHelp)
+{
+    if (fHelp || params.size() !=3)
+        throw runtime_error("Wrong number of parameters");
+    if (params[0].type() != str_type)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter1, expected string");
+    CPubKey IDLocal=AccountFromValue(params[0].get_str());
+    if (params[1].type() != str_type)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter2, expected string");
+    CPubKey IDForeign=AccountFromValue(params[1].get_str());
+    if (params[2].type() != str_type)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter3, expected string");
+    std::vector<unsigned char> msg=ParseHexV(params[2], "message for sig");    
+    CWallet* pwallet;    
+    if(IDLocal==pwalletMain->GetID())
+        pwallet=pwalletMain;
+    else
+    {
+        LogPrintf("rpcwallet getsimplesig new pwallet id:%s \n",HexStr(IDLocal.begin(),IDLocal.end()));
+        pwallet=new CWallet(IDLocal,false);
+    }
+    CKey sharedKey;
+    if(!pwallet->GetSharedKey(IDLocal,IDForeign,sharedKey)&&!pwallet->MakeSharedKey(IDLocal,IDForeign,sharedKey,true))
+    {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "ID is not available for making simple sig");
+    }
+    uint256 hash;    
+    if(sharedKey.MakeSimpleSig(msg,hash))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, " making simple sig failed");
+    if(pwallet!=pwalletMain)
+        delete pwallet;
+    return Value(hash.GetHex());
+}

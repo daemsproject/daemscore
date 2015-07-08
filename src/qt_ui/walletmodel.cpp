@@ -1023,6 +1023,6 @@ QString WalletModel::PublishProduct(json_spirit::Array arrData)
 QString WalletModel::BuyProduct(json_spirit::Array arrData)
 {     
     
-    CPaymentOrder po = GetPublishProductPaymentRequest(arrData); 
+    CPaymentOrder po = GetBuyProductPaymentRequest(arrData); 
     return DoPayment(po); 
 }

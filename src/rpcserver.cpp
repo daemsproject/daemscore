@@ -272,8 +272,8 @@ static const CRPCCommand vRPCCommands[] =
     { "network",            "getnettotals",           &getnettotals,           true,      true,       false },
     { "network",            "getpeerinfo",            &getpeerinfo,            true,      false,      false },
     { "network",            "ping",                   &ping,                   true,      false,      false },
-    { "network",            "broadcastmessage",                   &broadcastmessage,                   true,      false,      false },
-    { "network",            "broadcastblock",                   &broadcastblock,                   true,      false,      false },
+    { "network",            "broadcastmessage",       &broadcastmessage,       true,      false,      false },
+    { "network",            "broadcastblock",         &broadcastblock,         true,      false,      false },
 
 
     /* Block chain and UTXO */
@@ -400,8 +400,9 @@ static const CRPCCommand vRPCCommands[] =
     { "wallet",             "walletlock",             &walletlock,             true,      false,      true },
     { "wallet",             "walletpassphrasechange", &walletpassphrasechange, true,      false,      true },
     { "wallet",             "walletpassphrase",       &walletpassphrase,       true,      false,      true },
-    { "wallet",             "getcontacts",            &getcontacts,           false,     false,      true },
-    { "wallet",             "addcontacts",            &addcontacts,           false,     false,      true }
+    { "wallet",             "getcontacts",            &getcontacts,            false,     false,      true },
+    { "wallet",             "addcontacts",            &addcontacts,            false,     false,      true },
+    { "wallet",             "getsimplesig",           &getsimplesig,           false,     false,      true }
 #endif // ENABLE_WALLET
 };
 

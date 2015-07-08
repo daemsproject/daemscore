@@ -492,7 +492,7 @@ var MyWallet = new function () {
         
         //console.log(blocksLeft);
         var clock = "clock" + Math.ceil(((lockBlocks - blocksLeft) * 5 + 1) / lockBlocks);
-        console.log(clock);
+        //console.log(clock);
         return clock;
     }    
     function getTxHTML(tx) {

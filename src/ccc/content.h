@@ -1098,6 +1098,7 @@ public:
     bool SetJson(const Object& obj,string& strError);
     bool SetContent(const CContent content);
     CContent ToContent()const;
+    CAmount GetTotalValue() const;
 };
 class CPaymentRequest
 {

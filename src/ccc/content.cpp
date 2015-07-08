@@ -1138,6 +1138,22 @@ CContent CPayment::ToContent()const
     ctt.EncodeP(CC_PAYMENT_P,vcc); 
     return ctt;
 }
+CAmount CPayment::GetTotalValue() const
+{
+    CAmount nTotal=0;
+    for(unsigned int j=0;j<vItems.size();j++)
+        nTotal+=vItems[j].nQuantity*vItems[j].price;
+    return nTotal;
+}
+bool CPayment::IsValid(){
+    for(unsigned int j=0;j<vItems.size();j++)
+        if(!vItems[j].IsValid())
+            return false;
+    return (vItems.size()>0&&recipient.size()>0&&ccPaymentType>0);
+}
+bool CPaymentItem::IsValid(){
+    return (productID.size()>0&&nQuantity!=0&&ccPaymentType>0);
+}
 bool CPaymentItem::SetContent(const CContent content)
 {
     std::vector<std::pair<int, string> > vDecoded;

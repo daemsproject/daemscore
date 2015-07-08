@@ -893,6 +893,68 @@ CPaymentOrder GetUpdateDomainPaymentRequest(const Array arr)
     pr.fIsValid = true;
     return pr;
 }
+CPaymentOrder GetBuyProductPaymentRequest(const Array arr)
+{
+    CPaymentOrder pr;
+    pr.fIsValid = false;
+    std::string strError; 
+    if ( arr.size() <2)
+    {
+        strError="parameters count is not 2";
+        throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+    }
+    if(arr[0].type()!=str_type)
+    {
+        strError="parameter 0 is not string type";
+        throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+    }  
+    
+    CScript scriptPubKey;        
+    if(!StringToScriptPubKey(arr[0].get_str(),scriptPubKey)){
+                strError="id is not valid format";
+                throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+    }
+    
+    LogPrintf("rpcmisc GetPublishProductPaymentRequest from ID %s\n", scriptPubKey.ToString());
+    pr.vFrom.push_back(scriptPubKey);    
+    
+    if(arr[1].type()!=array_type)
+    {
+        strError="product data is not array type";
+        throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+    }
+    Array arrProducts=arr[1].get_array();
+    if(arrProducts.size()==0)
+    {
+        strError="product data is empty";
+        throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+    }
+    CAmount nTotal;
+    //std::vector<std::pair<int,string> > vcc;
+    for(unsigned int i=0;i<arrProducts.size();i++)
+    {
+        CPayment payment;
+        if(!payment.SetJson(arrProducts[i].get_obj(),strError))
+            throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+        if(!payment.IsValid())
+        {
+            strError="product wrong json format";
+            throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+        }
+        //CContent content=payment.ToContent();
+        pr.vout.push_back(CTxOut(payment.GetTotalValue(), payment.recipient, payment.ToContent(),0));
+        //vcc.push_back(make_pair(CC_PAYMENT_ITEM_P,content));
+    }   
+        //CContent ctt;
+        //ctt.EncodeP(CC_PAYMENT_P,vcc);    
+        
+       // pr.vout.push_back(CTxOut(0, CScript(), ctt,0));
+    
+    pr.nRequestType=PR_SHOP_BUY;    
+    //pr.info["domain"]=arr[1].get_str();
+    pr.fIsValid = true;
+    return pr;
+}
 //extern CPaymentOrder GetRenewPaymentRequest(const Array arr)
 //{
 //    CPaymentOrder pr;
