@@ -1257,12 +1257,12 @@ std::map<uint256, CWalletTx> CWallet::GetWalletTxs(std::vector<CPubKey> vIds)con
         CBitcoinAddress address;
         address.Set(*it);
         vScriptPubkeys.push_back(GetScriptForDestination(address.Get()));
-        LogPrintf("wallet.cpp getwallettxs script:%s \n",GetScriptForDestination(address.Get()).ToString());
+        //LogPrintf("wallet.cpp getwallettxs script:%s \n",GetScriptForDestination(address.Get()).ToString());
     }
     std::vector<std::pair<CTransaction, uint256> > vTxs;
     GetTransactions(vScriptPubkeys,vTxs);
     std::map<uint256, CWalletTx> mapWalletTx;
-    LogPrintf("wallet.cpp getwallettxs txs:%u \n",vTxs.size());
+    //LogPrintf("wallet.cpp getwallettxs txs:%u \n",vTxs.size());
     int64_t nOrderPos=0;
     for (std::vector<std::pair<CTransaction, uint256> >::reverse_iterator it = vTxs.rbegin(); it != vTxs.rend(); ++it){                
         CWalletTx wtx(this,it->first);
@@ -1273,7 +1273,7 @@ std::map<uint256, CWalletTx> CWallet::GetWalletTxs(std::vector<CPubKey> vIds)con
         mapWalletTx.insert(make_pair(it->first.GetHash(),wtx));        
     }
     
-    LogPrintf("wallet.cpp mapwallettxs:%u \n",mapWalletTx.size());
+    LogPrintf("wallet.cpp getwallettxs:%u \n",mapWalletTx.size());
     return mapWalletTx;
 }
 CAmount CWallet::GetBalance(std::vector<CPubKey> vIds) const

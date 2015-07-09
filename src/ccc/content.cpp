@@ -1024,10 +1024,11 @@ bool CPayment::SetJson(const Object& obj,string& strError)
         return false;
     }     
     ccPaymentType=GetCcValue(tmp.get_str());
+    LogPrintf("CProduct::SetJson ccPaymentType %i\n", ccPaymentType);
     tmp = find_value(obj, "paymentitems");
     if (tmp.type() != array_type)
     {            
-        strError="invalid pyament items type";
+        strError="invalid payment items type";
         return false;
     }    
     Array arr=tmp.get_array();
@@ -1044,7 +1045,7 @@ bool CPayment::SetJson(const Object& obj,string& strError)
         vItems.push_back(item);
     }   
     tmp = find_value(obj, "recipient");
-    if (tmp.type() != null_type||tmp.type()!=str_type)
+    if (tmp.type()!=str_type)
     {
             strError="recipient type error";
             return false;
@@ -1052,14 +1053,15 @@ bool CPayment::SetJson(const Object& obj,string& strError)
     if(!StringToScriptPubKey(tmp.get_str(),recipient)){
         strError="scriptPubKey is not valid format";
         return false;
-    }        
+    }     
+    LogPrintf("CProduct::SetJson recipient %s\n", recipient.ToString());
     tmp = find_value(obj, "memo");
     if (tmp.type() == str_type)
     {     
         strMemo=tmp.get_str();
         LogPrintf("CProduct::SetJson memo %s\n",strMemo);
     }
-    LogPrintf("CProduct::SetJson recipient %s\n", recipient.ToString());
+    
      
     return true;
 }
@@ -1079,6 +1081,7 @@ bool CPayment::SetContent(const CContent content)
     bool fFound=false;
     for(unsigned int i=0;i<vDecoded.size();i++)
     {
+        cc=vDecoded[i].first;
         if(cc>=CC_PAYMENT_TYPE_SHOPPING&&cc<=CC_PAYMENT_TYPE_P2AGREEMENT)
         {
             fFound=true;
@@ -1129,8 +1132,15 @@ CContent CPayment::ToContent()const
 {
     std::vector<std::pair<int,string> > vcc;
     vcc.push_back(make_pair(ccPaymentType,""));
-    for(unsigned int j=0;j<vItems.size();j++)    
-        vcc.push_back(make_pair(CC_PAYMENT_ITEM_P,vItems[j].ToContent()));  
+    for(unsigned int j=0;j<vItems.size();j++)  
+    {
+       CContent item= vItems[j].ToContent();
+        string::const_iterator pc = item.begin();
+        cctype cc;
+        CContent contentStr;
+        item.GetCcUnit(pc, cc, contentStr);
+        vcc.push_back(make_pair(CC_PAYMENT_ITEM_P,contentStr));  
+    }
     if(strMemo.size()>0)
         vcc.push_back(make_pair(CC_PAYMENT_MEMO,strMemo));
     //Recipient is not serialized to content, it will be put into vout address
@@ -1148,11 +1158,19 @@ CAmount CPayment::GetTotalValue() const
 bool CPayment::IsValid(){
     for(unsigned int j=0;j<vItems.size();j++)
         if(!vItems[j].IsValid())
-            return false;
+            return false;    
     return (vItems.size()>0&&recipient.size()>0&&ccPaymentType>0);
 }
 bool CPaymentItem::IsValid(){
-    return (productID.size()>0&&nQuantity!=0&&ccPaymentType>0);
+    switch (ccPaymentType)
+    {
+        case CC_PAYMENT_TYPE_SHIPMENTFEE:
+            return true;            
+        case CC_PAYMENT_TYPE_PRODUCT:
+            return (productID.size()>0&&nQuantity!=0);
+        default:
+            return false;
+    }    
 }
 bool CPaymentItem::SetContent(const CContent content)
 {
@@ -1243,23 +1261,24 @@ bool CPaymentItem::SetJson(const Object& obj,string& strError)
     Value tmp = find_value(obj, "type");
     if (tmp.type() != str_type)
     {            
-        strError="invalid pyament type";
+        strError="invalid payment type";
         return false;
     }     
     ccPaymentType=GetCcValue(tmp.get_str());
+    LogPrintf("CPaymentItem::SetJson ccPaymentType %s,%i\n",tmp.get_str(),ccPaymentType);
     tmp = find_value(obj, "productid");
-            if (tmp.type() == str_type)
-            {
-                productID=tmp.get_str();
-                LogPrintf("CPaymentItem::SetJson product id %s\n",productID);
-            }
+    if (tmp.type() == str_type)
+    {
+        productID=tmp.get_str();
+        LogPrintf("CPaymentItem::SetJson product id %s\n",productID);
+    }
     tmp = find_value(obj, "paytolink");
-            if (tmp.type() == str_type)
-            {     
-                string str=tmp.get_str();
-                linkPayTo.Unserialize(str);
-                LogPrintf("CPaymentItem::SetJson productlink %s\n",linkPayTo.ToString());
-            }
+    if (tmp.type() == str_type)
+    {     
+        string str=tmp.get_str();
+        linkPayTo.SetString(str);
+        LogPrintf("CPaymentItem::SetJson productlink %s\n",linkPayTo.ToString());
+    }
            
     
     tmp = find_value(obj, "price");    

@@ -921,6 +921,10 @@ CAmount _AmountFromValue(const Value& value)
             dAmount= value.get_real();
             break;
         }
+        case int_type:
+        {
+            dAmount= (double)value.get_int64();
+        }
         default:
         {
            
