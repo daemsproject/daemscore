@@ -4335,8 +4335,12 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         vector<uint256> vWorkQueue;
         vector<uint256> vEraseQueue;
         CTransaction tx;
+        CDataStream vrecvcopy=vRecv;
         vRecv >> tx;
-
+        CDataStream vrecvretrieve;
+        vrecvretrieve<<tx;
+        
+            
         CInv inv(MSG_TX, tx.GetHash());
         pfrom->AddInventoryKnown(inv);
 
@@ -4344,7 +4348,11 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
 
         bool fMissingInputs = false;
         CValidationState state;
-
+        if(vrecvcopy!=vrecvretrieve)
+        {
+            state.DoS(10, error("CheckTransaction() : unserialize mismatch"),
+                         REJECT_INVALID, "bad-tx-unserialize");
+        }
         mapAlreadyAskedFor.erase(inv);
 
         if (AcceptToMemoryPool(mempool, state, tx, true, &fMissingInputs))

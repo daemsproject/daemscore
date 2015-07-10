@@ -91,6 +91,16 @@ public:
         return *this;
     }
 
+    friend bool operator==(const CDataStream& a, const CDataStream& b)
+    {
+        return a.vch == b.vch;
+    }
+
+    friend bool operator!=(const CDataStream& a, const CDataStream& b)
+    {
+        return !(a == b);
+    }
+
     friend CDataStream operator+(const CDataStream& a, const CDataStream& b)
     {
         CDataStream ret = a;
