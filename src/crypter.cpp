@@ -8,6 +8,7 @@
 #include "script/standard.h"
 #include "util.h"
 #include "random.h"
+#include "hash.h"
 #include "crypto/scrypt.h"
 #include <string>
 #include <vector>
@@ -346,7 +347,8 @@ bool CCryptoKeyStore::GetDecryptedKey(const CPubKey &address, CKey &keyOut) cons
             key1.GetPubKey(pub1);
     if (pub1 != stepKey.pubKey)
         return false; 
-    key.AddSteps(key1,nSteps,keyOut);                
+    //key.AddSteps(key1,nSteps,keyOut);                ;
+            key.AddSteps(key1,Hash(&nSteps,&nSteps+8),keyOut);                
         return true; 
 }
 //bool CCryptoKeyStore::GetPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const

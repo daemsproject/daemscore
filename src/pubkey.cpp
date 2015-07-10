@@ -111,36 +111,27 @@ bool CPubKey::Compress() {
     return true;
 }
 bool CPubKey::AddSteps(const CPubKey& stepPubKey,const long& nStep){
-    //note :maybe have to change secp256k1 library to fulfill the function .The original derive function is much slower because it includes
-    //a ecc multiple procedure.
+    
     //the hashing is a good secure procedure, but compromise is a much slower speed
     if (nStep==0)
         return true;    
     uint256 tweak=uint256((uint64_t)nStep);
    return secp256k1_ec_pubkey_tweak_addsteps((unsigned char*)begin(), size(),(unsigned char*)stepPubKey.begin(), stepPubKey.size(),(unsigned char*)&tweak);
 
-//    secp256k1_ge_t point0;
-//    secp256k1_ge_t point1;
-//    secp256k1_eckey_pubkey_parse( *point0, (unsigned char*)begin(), &size());
-//    secp256k1_eckey_pubkey_parse( *point1, (unsigned char*)stepPubKey.begin(), &stepPubKey.size());
-//    
-//    if (nStep!=1){
-//        secp256k1_scalar_t sstStep;
-//        if (nStep<0){
-//            nStep=-nStep;
-//            uint256 b32Step=uint256(nStep);
-//            secp256k1_scalar_set_b32(&sstStep, *b32Step, NULL); 
-//            secp256k1_scalar_negate(&sstStep, &sstStep);
-//        }else{
-//            uint256 b32Step=uint256(nStep);
-//            secp256k1_scalar_set_b32(&sstStep, *b32Step, NULL);        
-//        }
-//        secp256k1_eckey_pubkey_tweak_mul(*point1, *sstStep);
-//    }
-//    secp256k1_gej_add_ge_var(*point0,*point0,*point1);
-//    secp256k1_eckey_pubkey_serialize(*point1, unsigned char *begin(), &size(), false) ;
+}
+bool CPubKey::AddSteps(const CPubKey& stepPubKey,const uint256& nStep,CPubKey& keyOut){
     
-   // return true;
+    //the hashing is a good secure procedure, but compromise is a much slower speed
+    keyOut=*this;
+    if (nStep==0)
+    {
+    
+        return true;    
+    }
+    uint256 tweak=nStep;
+    
+   return secp256k1_ec_pubkey_tweak_addsteps((unsigned char*)keyOut.begin(), keyOut.size(),(unsigned char*)stepPubKey.begin(), stepPubKey.size(),(unsigned char*)&tweak);
+
 }
 
 bool CPubKey::Derive(CPubKey& pubkeyChild, unsigned char ccChild[32], unsigned int nChild, const unsigned char cc[32]) const {

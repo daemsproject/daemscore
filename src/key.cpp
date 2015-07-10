@@ -183,6 +183,17 @@ bool CKey::AddSteps(const CKey& stepKey,const uint64_t& steps,CKey& resultKey)co
     resultKey.GetPubKey(resultKey.pubKey);
     return ret;
 }
+bool CKey::AddSteps(const CKey& stepKey,const uint256& steps,CKey& resultKey)const {
+    if(fEncrypted)
+        return false;
+    CKey temp=stepKey;
+    resultKey=*this;
+    uint256 tweak(steps);
+    bool ret=secp256k1_ec_privkey_tweak_mul((unsigned char*)temp.begin(),(unsigned char*)&tweak);
+    ret = secp256k1_ec_privkey_tweak_add((unsigned char*)resultKey.begin(), (unsigned char*)temp.begin());
+    resultKey.GetPubKey(resultKey.pubKey);
+    return ret;
+}
  bool CKey::GetMultipliedTo(const uint64_t& steps,CKey& keyOut)
 {
     if(fEncrypted)

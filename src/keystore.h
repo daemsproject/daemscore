@@ -9,6 +9,7 @@
 #include "key.h"
 #include "pubkey.h"
 #include "sync.h"
+#include "hash.h"
 #include <boost/signals2/signal.hpp>
 #include <boost/variant.hpp>
 
@@ -120,7 +121,8 @@ public:
                     keyOut=baseKey;
                     return true;
                 }                    
-                baseKey.AddSteps(stepKey,mi->second,keyOut);                
+                //baseKey.AddSteps(stepKey,mi->second,keyOut);                
+                baseKey.AddSteps(stepKey,Hash(&(mi->second),&(mi->second)+8),keyOut);                
                 return true;
             }
         }

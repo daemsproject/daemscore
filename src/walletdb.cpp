@@ -14,6 +14,7 @@
 #include "utilstrencodings.h"
 #include "crypter.h"
 #include "keystore.h"
+#include "hash.h"
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 #include <boost/scoped_ptr.hpp>
@@ -456,8 +457,10 @@ bool CWalletDB::ReadKeyStore(CCryptoKeyStore* keyStore){
             CPubKey decompressedStepPub=keyStore->stepKey.pubKey;
             decompressedStepPub.Decompress();
             for (uint64_t i=1;i<=keyStore->nMaxSteps;i++){            
-                extPub.AddSteps(keyStore->stepKey.pubKey,1);
-                CPubKey compressedPub=extPub;
+                //extPub.AddSteps(keyStore->stepKey.pubKey,1);
+                //CPubKey compressedPub=extPub;
+                CPubKey compressedPub;
+                extPub.AddSteps(keyStore->stepKey.pubKey,Hash(&i,&i+8),compressedPub);    
                 compressedPub.Compress();
                 keyStore->mapKeys[compressedPub]=i;
             }
