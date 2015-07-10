@@ -109,26 +109,8 @@ public:
             }
         }
     }
-    bool GetKey(const CPubKey &address, CKey& keyOut) const
-    {
-        //LogPrintf("CBasicKeyStore::GetKey \n");
-       {
-            LOCK(cs_KeyStore);
-            KeyMap::const_iterator mi = mapKeys.find(address);
-            if (mi != mapKeys.end())
-            {
-                if(mi->second==0){
-                    keyOut=baseKey;
-                    return true;
-                }                    
-                //baseKey.AddSteps(stepKey,mi->second,keyOut);                
-                baseKey.AddSteps(stepKey,Hash(&(mi->second),&(mi->second)+8),keyOut);                
-                return true;
-            }
-        }
-         //LogPrintf("CBasicKeyStore::GetKey key not found\n");
-        return false;
-    }   
+    bool GetKey(const CPubKey &address, CKey& keyOut) const;
+    
     virtual bool AddCScript(const CScript& redeemScript);
     virtual bool HaveCScript(const CScriptID &hash) const;
     virtual bool GetCScript(const CScriptID &hash, CScript& redeemScriptOut) const;

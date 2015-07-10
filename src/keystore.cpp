@@ -89,3 +89,23 @@ void CBasicKeyStore::StoreSharedKey(const CPubKey IDLocal,const CPubKey IDForeig
          mapSharedKeys[IDLocal]=mapkey;
     }
 }
+bool CBasicKeyStore::GetKey(const CPubKey &address, CKey& keyOut) const
+{
+    //LogPrintf("CBasicKeyStore::GetKey \n");
+   {
+        LOCK(cs_KeyStore);
+        KeyMap::const_iterator mi = mapKeys.find(address);
+        if (mi != mapKeys.end())
+        {
+            if(mi->second==0){
+                keyOut=baseKey;
+                return true;
+            }                    
+            //baseKey.AddSteps(stepKey,mi->second,keyOut);                
+            baseKey.AddSteps(stepKey,Hash((char*)&(mi->second),(char*)&(mi->second)+sizeof(mi->second)),keyOut);                
+            return true;
+        }
+    }
+     //LogPrintf("CBasicKeyStore::GetKey key not found\n");
+    return false;
+}  
