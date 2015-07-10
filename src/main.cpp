@@ -4337,7 +4337,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         CTransaction tx;
         CDataStream vrecvcopy=vRecv;
         vRecv >> tx;
-        CDataStream vrecvretrieve;
+        CDataStream vrecvretrieve=vRecv;
         vrecvretrieve<<tx;
         
             
@@ -4501,7 +4501,11 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
     else if (strCommand == "block" && !fImporting && !fReindex) // Ignore blocks received while importing
     {
         CBlock block;
+          CDataStream vrecvcopy=vRecv;
         vRecv >> block;
+        CDataStream vrecvretrieve=vRecv;
+        vrecvretrieve<<block;
+
 
         CInv inv(MSG_BLOCK, block.GetHash());
         LogPrint("net", "received block %s peer=%d\n", inv.hash.ToString(), pfrom->id);
@@ -4509,6 +4513,12 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         pfrom->AddInventoryKnown(inv);
 
         CValidationState state;
+        if(vrecvcopy!=vrecvretrieve)
+        {
+            state.DoS(100, error("Checkblock() : unserialize mismatch"),
+                         REJECT_INVALID, "bad-block-unserialize");
+        }
+        else
         ProcessNewBlock(state, pfrom, &block);
         int nDoS;
         if (state.IsInvalid(nDoS)) {

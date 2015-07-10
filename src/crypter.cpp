@@ -348,7 +348,7 @@ bool CCryptoKeyStore::GetDecryptedKey(const CPubKey &address, CKey &keyOut) cons
     if (pub1 != stepKey.pubKey)
         return false; 
     //key.AddSteps(key1,nSteps,keyOut);                ;
-            key.AddSteps(key1,Hash((char*)&nSteps,(char*)(&nSteps+sizeof(nSteps))),keyOut);                
+            key.AddSteps(key1,Hash((char*)&nSteps,(char*)&nSteps+sizeof(nSteps)),keyOut);                
         return true; 
 }
 //bool CCryptoKeyStore::GetPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const

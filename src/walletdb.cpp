@@ -460,9 +460,9 @@ bool CWalletDB::ReadKeyStore(CCryptoKeyStore* keyStore){
                 //extPub.AddSteps(keyStore->stepKey.pubKey,1);
                 //CPubKey compressedPub=extPub;
                 CPubKey compressedPub;
-                extPub.AddSteps(keyStore->stepKey.pubKey,Hash((char*)&i,(char*)(&i+sizeof(i))),compressedPub);   
-                LogPrintf("walletdb.cpp:readkeystore size of i:%u \n",sizeof(i));
+                extPub.AddSteps(keyStore->stepKey.pubKey,Hash(&i,&i+1),compressedPub);                   
                 compressedPub.Compress();
+                //LogPrintf("walletdb.cpp:readkeystore pubkey %i:%s \n",i,));
                 keyStore->mapKeys[compressedPub]=i;
             }
         }

@@ -328,6 +328,7 @@ Value getidlist(const Array& params, bool fHelp)
             CBitcoinAddress address;
             address.Set(item.first);
             ids.push_back(address.ToString());
+            LogPrintf("getidlist:id%i :%s\n",item.second,address.ToString());
         }   
         if(pwallet!=pwalletMain)
             delete pwallet;

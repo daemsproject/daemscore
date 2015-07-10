@@ -100,7 +100,13 @@ bool DecodeHexTx(CTransaction& tx, const std::string& strHexTx)
     vector<unsigned char> txData(ParseHex(strHexTx));
     CDataStream ssData(txData, SER_NETWORK, PROTOCOL_VERSION);
     try {
+        CDataStream vrecvcopy=ssData;
         ssData >> tx;
+        CDataStream vrecvretrieve=ssData;
+        vrecvretrieve<<tx;
+        if(vrecvcopy!=vrecvretrieve)
+            return false;
+
     }
     catch (const std::exception &) {
         return false;

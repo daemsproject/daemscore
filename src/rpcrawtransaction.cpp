@@ -625,7 +625,13 @@ Value signrawtransaction(const Array& params, bool fHelp)
     while (!ssData.empty()) {
         try {
             CMutableTransaction tx;
+
+            CDataStream vrecvcopy = ssData;
             ssData >> tx;
+            CDataStream vrecvretrieve = ssData;
+            vrecvretrieve << tx;
+            if (vrecvcopy != vrecvretrieve)
+                throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "TX decode failed");
             txVariants.push_back(tx);
         }
         catch (const std::exception &) {

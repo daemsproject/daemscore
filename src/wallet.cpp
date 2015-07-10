@@ -207,8 +207,10 @@ CPubKey CWallet::GenerateNewKey()
     AssertLockHeld(cs_wallet); // mapKeyMetadata
     bool fCompressed = CanSupportFeature(FEATURE_COMPRPUBKEY); // default to compressed public keys if we want 0.6.0 wallets
     nMaxSteps++;
-    CPubKey extPub=baseKey.pubKey;
-    extPub.AddSteps(stepKey.pubKey,nMaxSteps);
+    //CPubKey extPub=baseKey.pubKey;
+    //extPub.AddSteps(stepKey.pubKey,nMaxSteps);
+    CPubKey extPub;
+    baseKey.pubKey.AddSteps(stepKey.pubKey,Hash(&nMaxSteps,&nMaxSteps+1),extPub);
     //CPubKey extID=extPub.GetID();
     mapKeys[extPub]=nMaxSteps;
     pwalletdb->WriteKeyStore(this);     
