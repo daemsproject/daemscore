@@ -252,9 +252,13 @@ var Miner = new function () {
         var ad=function(a){
             Miner.notifiedID(a);
         };
+        var af = function (a) {
+            MyWallet.notifiedFallback(a);
+        };
         //BrowserAPI.regNotifyBlocks(aa);        
         BrowserAPI.regNotifyTxs(ab, IDs);
         BrowserAPI.regNotifyID(ad);
+        BrowserAPI.regNotifyFallback(af);
 //        BrowserAPI.regNotifyAccount(this.notifiedAccount);
 //        BrowserAPI.regNotifyPeers(this.notifiedPeers);
     }
@@ -268,7 +272,10 @@ var Miner = new function () {
         //this.get_history();
         showRevenues();
     };
-
+    this.notifiedFallback = function (obj) {
+        console.log("notified fallback");
+        i.get_history();
+    }
     this.notifiedAccount = function (data) {
 
     }

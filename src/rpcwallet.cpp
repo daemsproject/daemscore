@@ -328,7 +328,7 @@ Value getidlist(const Array& params, bool fHelp)
             CBitcoinAddress address;
             address.Set(item.first);
             ids.push_back(address.ToString());
-            LogPrintf("getidlist:id%i :%s\n",item.second,address.ToString());
+            //LogPrintf("getidlist:id%i :%s\n",item.second,address.ToString());
         }   
         if(pwallet!=pwalletMain)
             delete pwallet;
@@ -1484,9 +1484,11 @@ Value listtransactions(const Array& params, bool fHelp)
         //LogPrintf("rpcwallet listtxs ntx :%u\n",ret.size());
         Object objTx;
         TxToJSON(*pwtx,pwtx->hashBlock,objTx);
+        //LogPrintf("rpcwallet listtxs txtojson done %i\n",it->first);
         ret.push_back(objTx);
         //if ((int)ret.size() >= (nCount+nFrom)) break;
     }
+    //LogPrintf("rpcwallet listtx  tx tojson done\n");
     // ret is newest to oldest
 
 //    Array::iterator first = ret.begin();

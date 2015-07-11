@@ -898,7 +898,11 @@ void CWallet::EraseFromWallet(const uint256 &hash)
     return;
 }
 
-
+void CWallet::BlockChainFallback(CBlockIndex* pindexFork)
+{
+    LoadTxs();
+    NotifyBlockChainFallback(pindexFork->nBlockHeight,pindexFork->GetBlockHash());
+}
 isminetype CWallet::IsMine(const CTxIn &txin) const
 {
     {
@@ -1162,12 +1166,16 @@ void CWallet::ReacceptWalletTransactions()
         assert(wtx.GetHash() == wtxid);
 
         int nDepth = wtx.GetDepthInMainChain();
-
-        if (!wtx.IsCoinBase() && nDepth < 0)
+        if(nDepth < 0)
         {
+            if (!wtx.IsCoinBase())
+            {
             // Try to add to memory pool
-            LOCK(mempool.cs);
-            wtx.AcceptToMemoryPool(false);
+                LOCK(mempool.cs);
+                wtx.AcceptToMemoryPool(false);
+            }
+            else
+                mapWallet.erase(wtxid);
         }
     }
 }
@@ -1272,7 +1280,11 @@ std::map<uint256, CWalletTx> CWallet::GetWalletTxs(std::vector<CPubKey> vIds)con
         nOrderPos++;
         wtx.hashBlock=it->second;
         wtx.SetMerkleBranch();
-        mapWalletTx.insert(make_pair(it->first.GetHash(),wtx));        
+        if(wtx.GetDepthInMainChain()>=0)
+        {
+                    
+            mapWalletTx.insert(make_pair(it->first.GetHash(),wtx));        
+        }
     }
     
     LogPrintf("wallet.cpp getwallettxs:%u \n",mapWalletTx.size());
@@ -2435,8 +2447,8 @@ int CMerkleTx::GetDepthInMainChain(const CBlockIndex* &pindexRet) const
 {
     AssertLockHeld(cs_main);
     int nResult = GetDepthInMainChainINTERNAL(pindexRet);
-    //if (nResult == 0 && !mempool.exists(GetHash()))
-    //    return -1; // Not in chain, not in mempool
+    if (nResult == 0 && !mempool.exists(GetHash()))
+        return -1; // Not in chain, not in mempool
 
     return nResult;
 }

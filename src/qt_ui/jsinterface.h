@@ -24,7 +24,7 @@ public:
     void subscribeToCoreSignals();
     void setWalletModel(WalletModel *walletModelIn);
 public slots:    
-    void notifyAccountSwitched(std::string id);
+    void notifyAccountSwitched(const std::string id);
     Q_INVOKABLE    
     QString jscall(QString command,QString dataJson,int nPageID=0);
     QString jscallasync(QString command,QString dataJson,QString successfunc,QString errorfunc,int nPageID=0);
@@ -38,8 +38,8 @@ signals:
 private slots:
     void notifyBlockHeight(const uint256 blockHash);
     void notifyTransactionChanged(const uint256 txid,const uint256 hashBlock);
-    void notifyNewExtendedKey(std::string id);
-
+    void notifyNewExtendedKey(const std::string id);
+    void notifyBlockChainFallback(const int nBlockHeight,const uint256 hashBlock);
 
     
 

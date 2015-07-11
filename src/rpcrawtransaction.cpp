@@ -70,16 +70,18 @@ std::string GetBinaryContent(const std::string& content)
 
 void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry,const int nContentLenLimit)
 {
-    //LogPrintf("TxToJSON1\n");    
+   // LogPrintf("TxToJSON1\n");    
     //LogPrintf("TxToJSON2\n");
-    entry.push_back(Pair("txid", tx.GetHash().GetHex()));
+    uint256 txid=tx.GetHash();
+    entry.push_back(Pair("txid", txid.GetHex()));
     //LogPrintf("TxToJSON3\n");
     entry.push_back(Pair("version", tx.nVersion));
     
-    //entry.push_back(Pair("locktime", (int64_t)tx.nLockTime));
     if (hashBlock!=0)
-        entry.push_back(Pair("ntx", GetNTx(tx.GetHash())));    
-    //LogPrintf("TxToJSON4\n");
+    { 
+        entry.push_back(Pair("ntx", GetNTx(txid)));    
+    }
+    LogPrintf("TxToJSON4\n");
     Array vin;
     Array arrAddresses;
     BOOST_FOREACH(const CTxIn& txin, tx.vin) {
@@ -116,7 +118,7 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry,con
             in.push_back(Pair("scriptSig", o));
             //LogPrintf("TxToJSON6\n");
         }
-        //in.push_back(Pair("sequence", (int64_t)txin.nSequence));
+        
         vin.push_back(in);
     }
     entry.push_back(Pair("vin", vin));
@@ -145,6 +147,7 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry,con
             arrAddresses.push_back(add);
         }
         vout.push_back(out);
+        //LogPrintf("TxToJSON7\n");
     }
     entry.push_back(Pair("vout", vout));
     entry.push_back(Pair("ids",arrAddresses));
@@ -163,7 +166,7 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry,con
                 entry.push_back(Pair("confirmations", 0));
         }
     }
-    
+    //LogPrintf("TxToJSON8\n");
 }
 
 Value getrawtransaction(const Array& params, bool fHelp)

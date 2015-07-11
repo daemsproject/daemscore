@@ -66,6 +66,11 @@ static void NotifyTransactionChanged(JsInterface* jsInterface,const uint256 txid
                               Q_ARG(uint256, txid),Q_ARG(uint256, hashBlock));
     
 }
+static void NotifyBlockChainFallback(JsInterface* jsInterface,const int nBlockHeight,const uint256 hashBlock){
+    QMetaObject::invokeMethod(jsInterface, "notifyBlockChainFallback", Qt::QueuedConnection,                              
+                              Q_ARG(int, nBlockHeight),Q_ARG(uint256, hashBlock));
+    
+}
 static void NotifyNewExtendedKey(JsInterface* jsInterface,std::string id)
 {
     QMetaObject::invokeMethod(jsInterface, "notifyNewExtendedKey", Qt::QueuedConnection,                              
@@ -78,6 +83,7 @@ void JsInterface::subscribeToCoreSignals()
     qRegisterMetaType<std::string>("std::string");
     uiInterface.NotifyBlockTip.connect(boost::bind(NotifyBlockHeight,this,_1));
     pwalletMain->NotifyTransactionChanged.connect(boost::bind(NotifyTransactionChanged,this,_1,_2));
+    pwalletMain->NotifyBlockChainFallback.connect(boost::bind(NotifyBlockChainFallback,this,_1,_2));
     pwalletMain->NotifyNewExtendedKey.connect(boost::bind(NotifyNewExtendedKey,this,_1));
     //uiInterface.NotifyNumConnectionsChanged.connect(boost::bind(NotifyNumConnectionsChanged, this, _1));
     //uiInterface.NotifyAlertChanged.connect(boost::bind(NotifyAlertChanged, this, _1, _2));
@@ -96,7 +102,15 @@ void JsInterface::notifyBlockHeight(const uint256 blockHash)
     //QMetaObject::invokeMethod(JsInterface, "notifyBlockHeight", Qt::QueuedConnection,                              
     //                          Q_ARG(uint256, blockHash));
 }
-
+ void JsInterface::notifyBlockChainFallback(const int nBlockHeight,const uint256 hashBlock)
+ {
+     Object obj;
+    obj.push_back(Pair("type","fallback"));
+    obj.push_back(Pair("blockHash",hashBlock.GetHex()));        
+    obj.push_back(Pair("blockHeight",Value(nBlockHeight)));        
+    
+    emit notify(QString().fromStdString(write_string(Value(obj),false)));
+ }
 
 void JsInterface::notifyTransactionChanged(const uint256 txid,const uint256 hashBlock)
 {
@@ -140,13 +154,13 @@ void JsInterface::notifyTransactionChanged(const uint256 txid,const uint256 hash
     emit notify(QString().fromStdString(write_string(Value(notifyObj),false)));
     //LogPrintf("jsinterface:notifytx7\n");
 }
-void JsInterface::notifyAccountSwitched(std::string id){
+void JsInterface::notifyAccountSwitched(const std::string id){
     Object notifyObj;
     notifyObj.push_back(Pair("type",Value("accountSwitch")));
     notifyObj.push_back(Pair("id",Value(id)));
     emit notify(QString().fromStdString(write_string(Value(notifyObj),false)));
 }
-void JsInterface::notifyNewExtendedKey(std::string id)
+void JsInterface::notifyNewExtendedKey(const std::string id)
 {
     Object notifyObj;
     notifyObj.push_back(Pair("type",Value("newID")));

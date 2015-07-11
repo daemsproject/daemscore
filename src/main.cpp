@@ -165,6 +165,8 @@ struct CMainSignals {
     boost::signals2::signal<void (const uint256 &)> UpdatedTransaction;
     /** Notifies listeners of a new active block chain. */
     boost::signals2::signal<void (const CBlockLocator &)> SetBestChain;
+    /** Notifies listeners of blockchain fallback to which block. */
+    boost::signals2::signal<void (const CBlockIndex*)> BlockChainFallback;
     /** Notifies listeners about an inventory item being seen on the network. */
     boost::signals2::signal<void (const uint256 &)> Inventory;
     /** Tells listeners to broadcast their data. */
@@ -183,6 +185,7 @@ void RegisterValidationInterface(CValidationInterface* pwalletIn) {
     g_signals.Inventory.connect(boost::bind(&CValidationInterface::Inventory, pwalletIn, _1));
     g_signals.Broadcast.connect(boost::bind(&CValidationInterface::ResendWalletTransactions, pwalletIn));
     g_signals.BlockChecked.connect(boost::bind(&CValidationInterface::BlockChecked, pwalletIn, _1, _2));
+    g_signals.BlockChainFallback.connect(boost::bind(&CValidationInterface::BlockChainFallback, pwalletIn, _1));
 }
 
 void UnregisterValidationInterface(CValidationInterface* pwalletIn) {
@@ -193,6 +196,7 @@ void UnregisterValidationInterface(CValidationInterface* pwalletIn) {
     g_signals.UpdatedTransaction.disconnect(boost::bind(&CValidationInterface::UpdatedTransaction, pwalletIn, _1));
     g_signals.EraseTransaction.disconnect(boost::bind(&CValidationInterface::EraseFromWallet, pwalletIn, _1));
     g_signals.SyncTransaction.disconnect(boost::bind(&CValidationInterface::SyncTransaction, pwalletIn, _1, _2));
+    g_signals.BlockChainFallback.disconnect(boost::bind(&CValidationInterface::BlockChainFallback, pwalletIn, _1));
 }
 
 void UnregisterAllValidationInterfaces() {
@@ -203,6 +207,7 @@ void UnregisterAllValidationInterfaces() {
     g_signals.UpdatedTransaction.disconnect_all_slots();
     g_signals.EraseTransaction.disconnect_all_slots();
     g_signals.SyncTransaction.disconnect_all_slots();
+    g_signals.BlockChainFallback.disconnect_all_slots();
 }
 
 void SyncWithWallets(const CTransaction &tx, const CBlock *pblock) {
@@ -1430,16 +1435,22 @@ bool GetDiskTxPoses (const std::vector<CScript>& vIds,std::vector<CDiskTxPos>& v
     return true;
 }
     
-int GetNTx(const uint256 &hashTx) //To Do
+int GetNTx(const uint256 &hashTx) 
 {
     CTransaction tx;
     uint256 hashBlock = 0;
     if (!GetTransaction(hashTx, tx, hashBlock, true))
-        return error("No information available about transaction");
+    {
+        error("No information available about transaction");
+        return -1;
+    }
     CBlock block;
     CBlockIndex* pblockindex = mapBlockIndex[hashBlock];
-    if (!ReadBlockFromDisk(block, pblockindex))
-        return error("Can't read block from disk");
+    if (pblockindex==NULL||!ReadBlockFromDisk(block, pblockindex))
+    {
+        error("Can't read block from disk");
+        return -1;
+    }
     return GetNTx(tx, block);
 }
 
@@ -2545,9 +2556,10 @@ static bool ActivateBestChainStep(CValidationState &state, CBlockIndex *pindexMo
     bool fInvalidFound = false;
     const CBlockIndex *pindexOldTip = chainActive.Tip();
     const CBlockIndex *pindexFork = chainActive.FindFork(pindexMostWork);
-
+    bool fFallBack=false;
     // Disconnect active blocks which are no longer in the best chain.
     while (chainActive.Tip() && chainActive.Tip() != pindexFork) {
+        fFallBack=true;
         if (!DisconnectTip(state))
             return false;
     }
@@ -2600,7 +2612,8 @@ static bool ActivateBestChainStep(CValidationState &state, CBlockIndex *pindexMo
         CheckForkWarningConditionsOnNewFork(vpindexToConnect.back());
     else
         CheckForkWarningConditions();
-
+    if(fFallBack)
+        g_signals.BlockChainFallback(pindexFork);
     return true;
 }
 

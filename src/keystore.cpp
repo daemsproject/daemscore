@@ -102,7 +102,7 @@ bool CBasicKeyStore::GetKey(const CPubKey &address, CKey& keyOut) const
                 return true;
             }                    
             //baseKey.AddSteps(stepKey,mi->second,keyOut);                
-            baseKey.AddSteps(stepKey,Hash((char*)&(mi->second),(char*)&(mi->second)+sizeof(mi->second)),keyOut);                
+            baseKey.AddSteps(stepKey,Hash(&(mi->second),&(mi->second)+1),keyOut);                
             return true;
         }
     }

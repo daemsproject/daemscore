@@ -381,10 +381,14 @@ var MyWallet = new function () {
         var ad = function (a) {
             MyWallet.notifiedID(a);
         };
+        var af = function (a) {
+            MyWallet.notifiedFallback(a);
+        };
         BrowserAPI.regNotifyBlocks(aa);
         BrowserAPI.regNotifyTxs(ab, IDs);
         BrowserAPI.regNotifyAccount(ac);
         BrowserAPI.regNotifyID(ad);
+        BrowserAPI.regNotifyFallback(af);
 //        BrowserAPI.regNotifyAccount(this.notifiedAccount);
 //        BrowserAPI.regNotifyPeers(this.notifiedPeers);
     }
@@ -409,16 +413,7 @@ var MyWallet = new function () {
         // buildTransactionsView();
     };
     this.notifiedBlock = function (obj) {
-//         for (var i = 0; i < obj.x.txIndexes.length; ++i) {
-//                        for (var ii = 0; ii < txs.length; ++ii) {
-//                            if (txs[ii].txIndex == obj.x.txIndexes[i]) {
-//                                if (txs[ii].blockHeight == null || txs[ii].blockHeight == 0) {
-//                                    txs[ii].blockHeight = obj.x.height;
-//                                    break;
-//                                }
-//                            }
-//                        }
-//                    }
+
         console.log("notified block");
         setLatestBlock(obj);
 
@@ -426,6 +421,10 @@ var MyWallet = new function () {
 
         //Need to update latest block
         buildTransactionsView();
+    }
+    this.notifiedFallback = function (obj) {
+        console.log("notified fallback");
+        i.get_history();
     }
     this.notifiedID = function (a) {
         console.log(a);

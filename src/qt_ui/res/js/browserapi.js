@@ -10,6 +10,7 @@ var BrowserAPI = new function () {
     var notifypeerfunc;
     var notifyaccountfunc;
     var notifyidfunc;
+    var notifyfallbackfunc;
     var callIDs = [];
     this.connectSlots = function ()
     {
@@ -76,9 +77,12 @@ var BrowserAPI = new function () {
             case "newID":
                 cmd = 'var a=' + notifyidfunc + ';a(data);';
                 break;
+            case "fallback":
+                cmd = 'var a=' + notifyfallbackfunc + ';a(data);';
+                break;
             
         }
-        console.log(cmd);
+        //console.log(cmd);
         eval(cmd);
     }
     this.call = function (cmd, datajson, successfunc, errorfunc, async) {
@@ -213,6 +217,7 @@ var BrowserAPI = new function () {
     this.regNotifyTxs = function (func, ids) {this.connectSlots();notifytx.func = func;notifytx.ids = ids;};
     this.regNotifyPeers = function (func) {}
     this.regNotifyAccount = function (func) { this.connectSlots(); notifyaccountfunc=func; }
+    this.regNotifyFallback = function (func) { this.connectSlots(); notifyfallbackfunc=func; }
     this.regNotifyID = function (func) { this.connectSlots(); notifyidfunc=func; }
     this.getInfo = function () {return this.icall("getinfo", "")};
     this.getBlockCount = function () {return JSON.stringify(this.icall("getblockcount", []));};

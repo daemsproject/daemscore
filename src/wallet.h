@@ -285,7 +285,7 @@ public:
     bool CreateTransaction(CScript scriptPubKey, const CAmount& nValue,
                            CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRet, std::string& strFailReason, const CCoinControl *coinControl = NULL);
     bool CommitTransaction(CWalletTx& wtxNew, CReserveKey& reservekey);
-
+    void BlockChainFallback(CBlockIndex* pindexFork);
     static CFeeRate minTxFee;
     static CAmount GetMinimumFee(unsigned int nTxBytes, unsigned int nConfirmTarget, const CTxMemPool& pool);
     
@@ -406,11 +406,13 @@ public:
     boost::signals2::signal<void (const std::string)>NotifyAccountSwitched;
     //new extent key created
     boost::signals2::signal<void (const std::string)>NotifyNewExtendedKey;
+    // blockchain fallback
+    boost::signals2::signal<void (const int nBlockHeight,const uint256 hashBlock)>NotifyBlockChainFallback;
     /** 
      * Wallet transaction added, removed or updated.
      * @note called with lock cs_wallet held.
      */
-    boost::signals2::signal<void (const uint256 txid,const uint256 hashBLock)> NotifyTransactionChanged;
+    boost::signals2::signal<void (const uint256 txid,const uint256 hashBlock)> NotifyTransactionChanged;
 
     /** Show progress e.g. for rescan */
     boost::signals2::signal<void (const std::string &title, int nProgress)> ShowProgress;

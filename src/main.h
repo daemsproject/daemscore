@@ -559,6 +559,7 @@ protected:
     virtual void Inventory(const uint256 &hash) {};
     virtual void ResendWalletTransactions() {};
     virtual void BlockChecked(const CBlock&, const CValidationState&) {};
+    virtual void BlockChainFallback(const CBlockIndex*){};
     friend void ::RegisterValidationInterface(CValidationInterface*);
     friend void ::UnregisterValidationInterface(CValidationInterface*);
     friend void ::UnregisterAllValidationInterfaces();
