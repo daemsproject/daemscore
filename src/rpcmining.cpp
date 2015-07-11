@@ -669,7 +669,46 @@ protected:
         state = stateIn;
     };
 };
+Value poolmine(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() < 2 || params.size() > 5)
+        throw runtime_error(
+            "poolmine \"hexdata\" ( \"jsonparametersobject\" )\n"
+            "\nAttempts to submit new block to network.\n"
+            "The 'jsonparametersobject' parameter is currently ignored.\n"
+            "See https://en.bitcoin.it/wiki/BIP_0022 for full specification.\n"
 
+            "\nArguments\n"
+            "1. \"hexdata\"    (string, required) the hex-encoded block data to submit\n"
+            "2. \"jsonparametersobject\"     (string, optional) object of optional parameters\n"
+            "    {\n"
+            "      \"workid\" : \"id\"    (string, optional) if the server provided a workid, it MUST be included with submissions\n"
+            "    }\n"
+            "\nResult:\n"
+            "\nExamples:\n"
+            + HelpExampleCli("poolmine", "\"mydata\"")
+            + HelpExampleRpc("poolmine", "\"mydata\"")
+        );
+    bool fGenerate = params[0].get_bool();
+    CBlockHeader block;
+    if (!DecodeHexBlockHeader(block, params[1].get_str()))
+        throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Blockheader decode failed");
+    int nThreads=0;
+    if (params.size() > 2)   
+        nThreads = params[2].get_int();
+    if(nThreads<0||nThreads>24)
+        nThreads=0;
+    int nNonceBegin = 0;
+    if (params.size() > 3)
+        nNonceBegin = (uint32_t)params[3].get_int();
+    int nNonceEnd = 0;
+    if (params.size() > 4)
+        nNonceEnd = (uint32_t)params[4].get_int();
+    if(nNonceEnd<=nNonceBegin)
+        return Value(0);
+    return Value((int64_t)PoolMiner(fGenerate,block,nNonceBegin,nNonceEnd,nThreads));
+    
+}
 Value submitblock(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() < 1 || params.size() > 2)

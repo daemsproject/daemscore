@@ -28,7 +28,7 @@ void IncrementExtraNonce(CBlock* pblock, CBlockIndex* pindexPrev, unsigned int& 
 /** Check mined block */
 bool CheckWork(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey);
 void UpdateTime(CBlockHeader* block, const CBlockIndex* pindexPrev);
-
+uint32_t PoolMiner(bool fGenerate,CBlockHeader block,uint32_t nNonceBegin,uint32_t nNonceEnd,int nThreads);
 extern double dHashesPerSec;
 extern int64_t nHPSTimerStart;
 

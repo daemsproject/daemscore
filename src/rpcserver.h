@@ -168,6 +168,7 @@ extern json_spirit::Value getblocktemplate(const json_spirit::Array& params, boo
 extern json_spirit::Value submitblock(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value estimatefee(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value estimatepriority(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value poolmine(const Array& params, bool fHelp);
 
 extern json_spirit::Value getnewid(const json_spirit::Array& params, bool fHelp); // in rpcwallet.cpp
 extern json_spirit::Value getmainid(const json_spirit::Array& params, bool fHelp);

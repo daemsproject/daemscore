@@ -327,7 +327,7 @@ void IncrementExtraNonce(CBlock* pblock, CBlockIndex* pindexPrev, unsigned int& 
     pblock->vtx[0] = txCoinbase;
     pblock->hashMerkleRoot = pblock->BuildMerkleTree();
 }
-
+static boost::thread_group* minerThreads = NULL;
 #ifdef ENABLE_WALLET
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -526,7 +526,7 @@ void BitcoinMiner(CWallet *pwallet,bool fExtendID)
 
 void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads,bool fExtendID)
 {
-    static boost::thread_group* minerThreads = NULL;
+    
 
     if (nThreads < 0) {
         // In regtest threads defaults to 1
@@ -552,3 +552,153 @@ void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads,bool fExten
 }
 
 #endif // ENABLE_WALLET
+static uint32_t nPoolMiningResult=0;
+static bool fPoolMiningFinished=false;
+
+void PoolMiningThread(CBlockHeader& block,uint32_t nNonceBegin,uint32_t nNonceEnd)
+{
+    LogPrintf("CccoinpoolMiner started\n");
+    SetThreadPriority(THREAD_PRIORITY_LOWEST);
+    RenameThread("cccoin-poolminer");
+    block.nNonce=nNonceBegin;
+    
+
+    try {
+        
+            
+
+           
+            unsigned int rounds=(unsigned int)int(16*sqrt((double)block.nBlockHeight));
+            LogPrintf("Running CccoinMiner with %u rounds mhash\n", rounds);            
+            
+            //
+            // Search
+            //
+            int64_t nStart = GetTime();
+            int64_t nTimePrev = nStart;
+            uint256 hashTarget = uint256().SetCompact(block.nBits);
+            uint256 thash;
+            while (true) {
+                unsigned int nHashesDone = 0;
+                block.nNonce += 1;
+                while(true)
+                {
+                    thash=block.GetHash();
+                    mixHash(&thash,(unsigned int)block.nBlockHeight);
+                    if (thash <= hashTarget)
+                    {
+                        // Found a solution
+                        SetThreadPriority(THREAD_PRIORITY_NORMAL);
+                        LogPrintf("CccoinpoolMiner:\n");
+                        LogPrintf("proof-of-work found  \n  powhash: %s  \ntarget: %s\n", thash.GetHex(), hashTarget.GetHex());
+                        //TODO feedback 
+                        SetThreadPriority(THREAD_PRIORITY_LOWEST);
+                        nPoolMiningResult=block.nNonce ;
+                        
+                            throw boost::thread_interrupted();
+
+                       
+                    }
+                    block.nNonce += 1;
+                    nHashesDone += 1;
+                    if ((block.nNonce & 0xFF) == 0)
+                        break;
+                }
+
+                // Meter hashes/sec
+                static int64_t nHashCounter;
+                if (nHPSTimerStart == 0)
+                {
+                    nHPSTimerStart = GetTimeMillis();
+                    nHashCounter = 0;
+                }
+                else
+                    nHashCounter += nHashesDone;
+                if (GetTimeMillis() - nHPSTimerStart > 4000)
+                {
+                    static CCriticalSection cs;
+                    {
+                        LOCK(cs);
+                        if (GetTimeMillis() - nHPSTimerStart > 4000)
+                        {
+                            dHashesPerSec = 1000.0 * nHashCounter / (GetTimeMillis() - nHPSTimerStart);
+                            nHPSTimerStart = GetTimeMillis();
+                            nHashCounter = 0;
+                            static int64_t nLogTime;
+                            if (GetTime() - nLogTime > 30 * 60)
+                            {
+                                nLogTime = GetTime();
+                                LogPrintf("hashmeter %6.3f khash/s\n", dHashesPerSec/1000.0);
+                            }
+                        }
+                    }
+                }
+                if(GetTime()-nTimePrev>1)
+                {
+                    block.nTime++;
+                    nTimePrev=GetTime();
+                }
+                // Check for stop or if block needs to be rebuilt
+                boost::this_thread::interruption_point();
+                
+                if (block.nNonce < nNonceEnd||(GetTime()-nStart)>60)
+                {
+                 fPoolMiningFinished=true;
+                 throw boost::thread_interrupted();
+                }
+                
+            }
+        
+    }
+    catch (boost::thread_interrupted)
+    {
+        LogPrintf("CccoinMiner terminated\n");
+       // if(pwallet!=pwalletMain&&pwallet!=NULL)
+         //   delete pwallet;
+        throw;
+    }
+}
+uint32_t PoolMiner(bool fGenerate,CBlockHeader block,uint32_t nNonceBegin,uint32_t nNonceEnd,int nThreads)
+{
+    if (nThreads < 0) {
+        // In regtest threads defaults to 1
+        if (Params().DefaultMinerThreads())
+            nThreads = Params().DefaultMinerThreads();
+        else
+            nThreads = boost::thread::hardware_concurrency();
+    }
+
+    if (minerThreads != NULL)
+    {
+        minerThreads->interrupt_all();
+        delete minerThreads;
+        minerThreads = NULL;
+    }
+
+    if (nThreads == 0 || !fGenerate)
+        return 0;
+
+    minerThreads = new boost::thread_group();
+    uint32_t step=(uint32_t)((nNonceEnd-nNonceBegin)/nThreads);
+    for (int i = 0; i < nThreads; i++)
+        minerThreads->create_thread(boost::bind(&PoolMiningThread, block,nNonceBegin+step*i,step));
+    while(true)
+    {
+        sleep(10);
+        if(nPoolMiningResult>0)
+        {
+            minerThreads->interrupt_all();
+            delete minerThreads;
+            minerThreads = NULL;
+            return nPoolMiningResult;
+        }
+        if(fPoolMiningFinished)
+        {
+            minerThreads->interrupt_all();
+            delete minerThreads;
+            minerThreads = NULL;
+            return 0;
+        }
+    }  
+    
+}

@@ -22,7 +22,7 @@ var Miner = new function () {
     var tx_filter = 0; //Transaction filter (e.g. Sent Received etc)
     var maxAddr = 1000; //Maximum number of addresses
     var IDs = []; //{addr : address, priv : private key, tag : tag (mark as archived), label : label, balance : balance}
-
+    var info={};
     var archTimer; //Delayed Backup wallet timer
 
     var event_listeners = []; //Emits Did decrypt wallet event (used on claim page)
@@ -138,7 +138,7 @@ var Miner = new function () {
         $("#latest-tx").html(htmlcontent);
     }
     this.getMiningInfo = function () {
-        var info = BrowserAPI.getMiningInfo();
+        info = BrowserAPI.getMiningInfo();
         if (info.kernelrate)
             hashrate = info.kernelrate;
         if (info.kernelrevenueperday)
@@ -253,13 +253,16 @@ var Miner = new function () {
             Miner.notifiedID(a);
         };
         var af = function (a) {
-            MyWallet.notifiedFallback(a);
+            Miner.notifiedFallback(a);
+        };
+        var an = function (a) {
+            Miner.notifiedAccount(a);
         };
         //BrowserAPI.regNotifyBlocks(aa);        
         BrowserAPI.regNotifyTxs(ab, IDs);
         BrowserAPI.regNotifyID(ad);
         BrowserAPI.regNotifyFallback(af);
-//        BrowserAPI.regNotifyAccount(this.notifiedAccount);
+        BrowserAPI.regNotifyAccount(an);
 //        BrowserAPI.regNotifyPeers(this.notifiedPeers);
     }
     this.notifiedTx = function (a) {
@@ -277,7 +280,15 @@ var Miner = new function () {
         i.get_history();
     }
     this.notifiedAccount = function (data) {
-
+        console.log("account changed");
+        accountID = BrowserAPI.getAccountID();
+        $("#account-id").html(accountID);
+        IDs=BrowserAPI.getIDs(accountID);  
+        //BrowserAPI.getNewID(accountID);
+        registerNotifications();
+        Miner.get_history();
+        if(info.generate)
+            BrowserAPI.setGenerate(true, accountID, $('select[name="kernels"]').val(),true);    
     }
     this.notifiedPeers = function (data) {
 

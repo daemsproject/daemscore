@@ -81,7 +81,7 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry,con
     { 
         entry.push_back(Pair("ntx", GetNTx(txid)));    
     }
-    LogPrintf("TxToJSON4\n");
+    //LogPrintf("TxToJSON4\n");
     Array vin;
     Array arrAddresses;
     BOOST_FOREACH(const CTxIn& txin, tx.vin) {
