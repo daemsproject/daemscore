@@ -91,15 +91,22 @@ void UpdateTime(CBlockHeader* pblock, const CBlockIndex* pindexPrev)
         pblock->nBits = GetNextWorkRequired(pindexPrev, pblock);
 }
 
-CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
+CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn,const int nHeightIn)
 {
     // Create new block
     auto_ptr<CBlockTemplate> pblocktemplate(new CBlockTemplate());
     if(!pblocktemplate.get())
         return NULL;
     CBlock *pblock = &pblocktemplate->block; // pointer for convenience
-    CBlockIndex* pindexPrev = chainActive.Tip();
-    const int nHeight = pindexPrev->nHeight + 1;
+    CBlockIndex* pindexPrev;
+    if(nHeightIn<=0)
+    {
+        pindexPrev = chainActive.Tip();
+        
+    }
+    else
+        pindexPrev = chainActive[nHeightIn-1];
+    int nHeight = pindexPrev->nHeight + 1;
     // -regtest only: allow overriding block.nVersion with
     // -blockversion=N to test forking scenarios
     if (Params().MineBlocksOnDemand())
@@ -113,7 +120,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
     txNew.vin[0].scriptSig=CScript()<<0;
     txNew.vout.resize(1);
     txNew.vout[0].scriptPubKey = scriptPubKeyIn;
-    //txNew.nLockTime=nHeight +COINBASE_MATURITY;
+    
     txNew.vout[0].nLockTime=nHeight +COINBASE_MATURITY;
 
     // Add dummy coinbase tx as first transaction
@@ -139,7 +146,10 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
     unsigned int nMinTxSize=200;
     // Collect memory pool transactions into the block
     CAmount nFees = 0;
-
+    uint64_t nBlockSize = 1000;
+        uint64_t nBlockTx = 0;
+        int nBlockSigOps = 100;
+    if(nHeightIn<=0)
     {
         LOCK2(cs_main, mempool.cs);
         
@@ -150,9 +160,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
         list<COrphan> vOrphan; // list memory doesn't move
         map<uint256, vector<COrphan*> > mapDependers;
         // Collect transactions into block
-        uint64_t nBlockSize = 1000;
-        uint64_t nBlockTx = 0;
-        int nBlockSigOps = 100;
+        
 
         for (int i=0;i<(int)mempool.queue.size();i++)
         {
@@ -269,41 +277,42 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
             nFees += nTxFees;
             if (nBlockSize+nMinTxSize>nBlockMaxSize) 
                 break;
-            }
-        CBlock prevBlock;
-        ReadBlockFromDisk(prevBlock, pindexPrev);
-        CAmount prevCoinbaseFee=prevBlock.vtx[0].GetFee();
-        nLastBlockTx = nBlockTx;
-        nLastBlockSize = nBlockSize;
-//        LogPrintf("CreateNewBlock(): total size %u\n", nBlockSize);
-
-        // Compute final coinbase transaction.
-        CAmount coinbaseInput=GetBlockValue(nHeight, nFees)+prevCoinbaseFee;        
-        txNew.vin[0].prevout.nValue = coinbaseInput;        
-        txNew.vout[0].nValue = 0;
-        CAmount coinbaseFee=CFeeRate(DEFAULT_TRANSACTION_FEE).GetFee(txNew.GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION)+10);
-        CAmount coinbaseOutput=coinbaseInput-coinbaseFee;
-        //LogPrintf("CreateNewBlock(): value %u\n", coinbaseOutput);
-        if (coinbaseOutput>0)                
-            txNew.vout[0].nValue =coinbaseOutput;
-        pblock->vtx[0] = txNew;
-        pblocktemplate->vTxFees[0] = -nFees;
-
-        // Fill in header
-        pblock->hashPrevBlock  = pindexPrev->GetBlockHash();
-        UpdateTime(pblock, pindexPrev);
-        pblock->nBits          = GetNextWorkRequired(pindexPrev, pblock);
-        pblock->nNonce         = 0;
-        pblocktemplate->vTxSigOps[0] = GetLegacySigOpCount(pblock->vtx[0]);
-
-        CValidationState state;
-        if (!TestBlockValidity(state, *pblock, pindexPrev, false, false)){
-            LogPrintf("CreateNewBlock() : TestBlockValidity failed \n" );
-            return NULL;
-          //  throw std::runtime_error("CreateNewBlock() : TestBlockValidity failed");
         }
     }
+    CBlock prevBlock;
+    ReadBlockFromDisk(prevBlock, pindexPrev);
+    CAmount prevCoinbaseFee=prevBlock.vtx[0].GetFee();
+    nLastBlockTx = nBlockTx;
+    nLastBlockSize = nBlockSize;
+//        LogPrintf("CreateNewBlock(): total size %u\n", nBlockSize);
 
+    // Compute final coinbase transaction.
+    CAmount coinbaseInput=GetBlockValue(nHeight, nFees)+prevCoinbaseFee;        
+    txNew.vin[0].prevout.nValue = coinbaseInput;        
+    txNew.vout[0].nValue = 0;
+    CAmount coinbaseFee=CFeeRate(DEFAULT_TRANSACTION_FEE).GetFee(txNew.GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION)+10);
+    CAmount coinbaseOutput=coinbaseInput-coinbaseFee;
+    //LogPrintf("CreateNewBlock(): value %u\n", coinbaseOutput);
+    if (coinbaseOutput>0)                
+        txNew.vout[0].nValue =coinbaseOutput;
+    pblock->vtx[0] = txNew;
+    pblocktemplate->vTxFees[0] = -nFees;
+
+    // Fill in header
+    pblock->hashPrevBlock  = pindexPrev->GetBlockHash();
+    UpdateTime(pblock, pindexPrev);
+    pblock->nBits          = GetNextWorkRequired(pindexPrev, pblock);
+    pblock->nNonce         = 0;
+    pblocktemplate->vTxSigOps[0] = GetLegacySigOpCount(pblock->vtx[0]);
+
+    CValidationState state;
+    if (nHeightIn<=0&&!TestBlockValidity(state, *pblock, pindexPrev, false, false))
+    {
+        LogPrintf("CreateNewBlock() : TestBlockValidity failed \n" );
+        return NULL;
+      //  throw std::runtime_error("CreateNewBlock() : TestBlockValidity failed");
+    }
+    
     return pblocktemplate.release();
 }
 
@@ -395,7 +404,7 @@ void BitcoinMiner(CWallet *pwallet,bool fExtendID)
         miningID=pwallet->GenerateNewKey();
     else
         miningID=pwallet->GetID();
-    unsigned int nExtraNonce = 0;
+    //unsigned int nExtraNonce = 0;
 
     try {
         while (true) {
@@ -424,7 +433,8 @@ void BitcoinMiner(CWallet *pwallet,bool fExtendID)
                 return;
             }
             CBlock *pblock = &pblocktemplate->block;
-            IncrementExtraNonce(pblock, pindexPrev, nExtraNonce);
+            //IncrementExtraNonce(pblock, pindexPrev, nExtraNonce);
+            pblock->hashMerkleRoot = pblock->BuildMerkleTree();
             pblock->nBlockHeight=pindexPrev->nHeight+1;
             unsigned int rounds=(unsigned int)int(16*sqrt((double)pblock->nBlockHeight));
             LogPrintf("Running CccoinMiner with %u transactions in block (%u bytes),%u rounds mhash\n", pblock->vtx.size(),
@@ -498,7 +508,7 @@ void BitcoinMiner(CWallet *pwallet,bool fExtendID)
                 // Regtest mode doesn't require peers
                 if (vNodes.empty() && Params().MiningRequiresPeers())
                     break;
-                if (pblock->nNonce >= 0xffff0000)
+                if (pblock->nNonce >= 0xffff000000000000)
                     break;
                 if (mempool.GetTransactionsUpdated() != nTransactionsUpdatedLast && GetTime() - nStart > 60)
                     break;
@@ -518,8 +528,6 @@ void BitcoinMiner(CWallet *pwallet,bool fExtendID)
     catch (boost::thread_interrupted)
     {
         LogPrintf("CccoinMiner terminated\n");
-       // if(pwallet!=pwalletMain&&pwallet!=NULL)
-         //   delete pwallet;
         throw;
     }
 }
@@ -555,7 +563,7 @@ void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads,bool fExten
 static uint32_t nPoolMiningResult=0;
 static bool fPoolMiningFinished=false;
 
-void PoolMiningThread(CBlockHeader& block,uint32_t nNonceBegin,uint32_t nNonceEnd)
+void PoolMiningThread(CBlockHeader& block,uint64_t nNonceBegin,uint64_t nNonceEnd)
 {
     LogPrintf("CccoinpoolMiner started\n");
     SetThreadPriority(THREAD_PRIORITY_LOWEST);
@@ -658,7 +666,7 @@ void PoolMiningThread(CBlockHeader& block,uint32_t nNonceBegin,uint32_t nNonceEn
         throw;
     }
 }
-uint32_t PoolMiner(bool fGenerate,CBlockHeader block,uint32_t nNonceBegin,uint32_t nNonceEnd,int nThreads)
+uint64_t PoolMiner(bool fGenerate,CBlockHeader block,uint64_t nNonceBegin,uint64_t nNonceEnd,int nThreads)
 {
     if (nThreads < 0) {
         // In regtest threads defaults to 1
@@ -679,7 +687,7 @@ uint32_t PoolMiner(bool fGenerate,CBlockHeader block,uint32_t nNonceBegin,uint32
         return 0;
 
     minerThreads = new boost::thread_group();
-    uint32_t step=(uint32_t)((nNonceEnd-nNonceBegin)/nThreads);
+    uint64_t step=(uint64_t)((nNonceEnd-nNonceBegin)/nThreads);
     for (int i = 0; i < nThreads; i++)
         minerThreads->create_thread(boost::bind(&PoolMiningThread, block,nNonceBegin+step*i,step));
     while(true)

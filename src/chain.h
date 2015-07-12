@@ -162,7 +162,7 @@ public:
     unsigned int nBlockHeight;
     unsigned int nTime;
     unsigned int nBits;
-    unsigned int nNonce;
+    uint64_t nNonce;
 
     //! (memory only) Sequential id assigned to distinguish order in which blocks are received.
     uint32_t nSequenceId;

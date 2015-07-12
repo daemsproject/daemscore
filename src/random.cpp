@@ -109,17 +109,6 @@ int GetRandInt(int nMax)
 {
     return GetRand(nMax);
 }
-//int GetQuickRandInt(int nMax){
-//    unsigned int t=(unsigned int)(clock());
-//    //LogPrintf("t:%i\n",t);
-//    unsigned int shift = t&0x1f;
-//    unsigned int lchunk = t>>shift;
-//    unsigned int r1 = t << (unsigned int) (32 - shift);
-//    r1 |= lchunk;
-//    t += r1;
-//    //LogPrintf("t after mix:%i,nmax:%i,result:%i\n",t,nMax,t%nMax);
-//    return t%nMax;
-//}
 
 uint256 GetRandHash()
 {

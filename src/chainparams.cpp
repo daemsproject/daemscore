@@ -53,7 +53,7 @@ static void convertSeed6(std::vector<CAddress> &vSeedsOut, const SeedSpec6 *data
  */
 static Checkpoints::MapCheckpoints mapCheckpoints =
         boost::assign::map_list_of
-        (  0, uint256("0x0348a2106ddbe1f7e78f1ca9f4751c349b61d59e4ddc311acfa7513c80505cd0"))
+        (  0, uint256("0x8a266cc9a6f878e8ffa22877904742b43094b93c23cef524bda7df9d88cd21a3"))
 //        (  1500, uint256("0x841a2965955dd288cfa707a755d05a54e45f8bd476835ec9af4402a2b59a2967"))
 //        (  4032, uint256("0x9ce90e427198fc0ef05e5905ce3503725b80e26afd35a987965fd7e3d9cf0846"))
 //        (  8064, uint256("0xeb984353fc5190f210651f150c40b8a4bab9eeeff0b729fcb3987da694430d70"))
@@ -73,10 +73,10 @@ static Checkpoints::MapCheckpoints mapCheckpoints =
         ;
 static const Checkpoints::CCheckpointData data = {
         &mapCheckpoints,
-        1422681363, // * UNIX timestamp of last checkpoint block
-        5502192,   // * total number of transactions between genesis and last checkpoint
+        1427227400,//1422681363, // * UNIX timestamp of last checkpoint block
+        0,//5502192,   // * total number of transactions between genesis and last checkpoint
                     //   (the tx=... number in the SetBestChain debug.log lines)
-        5500.0     // * estimated number of transactions per day after checkpoint
+        0//5500.0     // * estimated number of transactions per day after checkpoint
     };
 
 static Checkpoints::MapCheckpoints mapCheckpointsTestnet =
@@ -124,7 +124,7 @@ public:
         nToCheckBlockUpgradeMajority = 1000;
         nMinerThreads = 0;
         nTargetTimespan = 12 * 60 * 60; // 12 hr
-        nTargetSpacing = 3 * 60; // 3 minutes
+        nTargetSpacing = 30; // 3 minutes // Todo change back to 3 *60
 
         /**
          * Build the genesis block. Note that the output of the genesis coinbase cannot
@@ -155,10 +155,10 @@ public:
         genesis.nBlockHeight = 0;
         genesis.nTime    = 1427227400;
         genesis.nBits    = 0x1e0fffff;
-        genesis.nNonce   = 1662053;
+        genesis.nNonce   = 1734663;
 //        std::cout << "tx size: " << txNew.GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION) << "\n";        
-        uint256 powHash;
-        powHash = genesis.GetPoWHash();
+//        uint256 powHash;
+//        powHash = genesis.GetPoWHash();
 //        while (powHash > ~uint256(0) >> 20){
 //            if (++genesis.nNonce==0) break;
 //            powHash = genesis.GetPoWHash();
@@ -176,7 +176,7 @@ public:
 //        std::cout << "g powh: \n" << genesis.GetPoWHash().ToString() << "\n";
 //        std::cout << "g mroot: \n" << genesis.hashMerkleRoot.ToString() << "\n";
         
-        assert(hashGenesisBlock == uint256("e016384eceafef48acc19c10ee78a1d176cd8a15dec416f174e0c2a423798f3b"));
+        assert(hashGenesisBlock == uint256("8a266cc9a6f878e8ffa22877904742b43094b93c23cef524bda7df9d88cd21a3"));
         assert(genesis.hashMerkleRoot == uint256("def96a419fb4ff050a5bc1b26e1f8bc18168481479865baa8bcdcc7aa847c285"));
         
         vSeeds.push_back(CDNSSeedData("cccointools.com", "dnsseed.cccointools.com"));
@@ -198,8 +198,8 @@ public:
 
         fRequireRPCPassword = true;
         fMiningRequiresPeers = true;
-        fDefaultCheckMemPool = false;
         fAllowMinDifficultyBlocks = false;
+        fDefaultConsistencyChecks = false;
         fRequireStandard = true;
         fMineBlocksOnDemand = false;
         fSkipProofOfWorkCheck = false;
@@ -242,7 +242,7 @@ public:
         genesis.nNonce = 607439;
         hashGenesisBlock = genesis.GetHash();
 //        std::cout << "t g hash: \n" << hashGenesisBlock.ToString() << "\n";
-        assert(hashGenesisBlock == uint256("30d5eb8b2d755fba4efc77b951d56c00e30a5000be04c121c4c5c5b873c4d301"));
+        assert(hashGenesisBlock == uint256("ba48f214501a82e2bce5ad3a0fb0b83ac5f22f3088a1ee40cf965c42c72ad15c"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
@@ -263,8 +263,8 @@ public:
 
         fRequireRPCPassword = true;
         fMiningRequiresPeers = true;
-        fDefaultCheckMemPool = false;
         fAllowMinDifficultyBlocks = true;
+        fDefaultConsistencyChecks = false;
         fRequireStandard = false;
         fMineBlocksOnDemand = false;
         fTestnetToBeDeprecatedFieldRPC = true;
@@ -305,15 +305,15 @@ public:
         hashGenesisBlock = genesis.GetHash();
         nDefaultPort = 19444;
 //        std::cout << "rt g hash: \n" << hashGenesisBlock.ToString() << "\n";
-        assert(hashGenesisBlock == uint256("0xc3436edf9195531d1dbe2ee3fbda408ce6cbce924a6b0aac3f43439cd264bb80"));
+        assert(hashGenesisBlock == uint256("ded7f6ad70ecdb454e591492d773c9d5a99753a2cfc2905bf5412de38c91ade6"));
 
         vFixedSeeds.clear(); //! Regtest mode doesn't have any fixed seeds.
         vSeeds.clear();  //! Regtest mode doesn't have any DNS seeds.
 
         fRequireRPCPassword = false;
         fMiningRequiresPeers = false;
-        fDefaultCheckMemPool = true;
         fAllowMinDifficultyBlocks = true;
+        fDefaultConsistencyChecks = true;
         fRequireStandard = false;
         fMineBlocksOnDemand = true;
         fTestnetToBeDeprecatedFieldRPC = false;
@@ -342,7 +342,7 @@ public:
 
         fRequireRPCPassword = false;
         fMiningRequiresPeers = false;
-        fDefaultCheckMemPool = true;
+        fDefaultConsistencyChecks = true;
         fAllowMinDifficultyBlocks = false;
         fMineBlocksOnDemand = true;
 
@@ -361,7 +361,7 @@ public:
     virtual void setEnforceBlockUpgradeMajority(int anEnforceBlockUpgradeMajority)  { nEnforceBlockUpgradeMajority=anEnforceBlockUpgradeMajority; }
     virtual void setRejectBlockOutdatedMajority(int anRejectBlockOutdatedMajority)  { nRejectBlockOutdatedMajority=anRejectBlockOutdatedMajority; }
     virtual void setToCheckBlockUpgradeMajority(int anToCheckBlockUpgradeMajority)  { nToCheckBlockUpgradeMajority=anToCheckBlockUpgradeMajority; }
-    virtual void setDefaultCheckMemPool(bool afDefaultCheckMemPool)  { fDefaultCheckMemPool=afDefaultCheckMemPool; }
+    virtual void setDefaultConsistencyChecks(bool afDefaultConsistencyChecks)  { fDefaultConsistencyChecks=afDefaultConsistencyChecks; }
     virtual void setAllowMinDifficultyBlocks(bool afAllowMinDifficultyBlocks) {  fAllowMinDifficultyBlocks=afAllowMinDifficultyBlocks; }
     virtual void setSkipProofOfWorkCheck(bool afSkipProofOfWorkCheck) { fSkipProofOfWorkCheck = afSkipProofOfWorkCheck; }
 };

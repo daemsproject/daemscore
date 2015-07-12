@@ -287,7 +287,6 @@ Value createmultisig(const Array& params, bool fHelp)
     return result;
 }
 
-
 Value verifymessage(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 3)

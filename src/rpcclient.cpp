@@ -98,6 +98,10 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "encodecontentunit", 2 },
     { "setfollow", 0 },
     { "setunfollow", 0 },
+    { "poolmine", 0 },
+    { "poolmine", 2 },
+    { "poolmine", 3 },
+    { "poolmine", 4 },
 };
 
 class CRPCConvertTable

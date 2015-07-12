@@ -3,7 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "coins.h"
-#include "util.h"
+
 #include "random.h"
 
 #include <assert.h>
@@ -32,8 +32,6 @@ void CCoins::CalcMaskSize(unsigned int &nBytes, unsigned int &nNonzeroBytes) con
 }
 
 bool CCoins::Spend(const COutPoint &out, CTxInUndo &undo) {
-    //if(out.hash.GetHex()=="16960fe4236820485cc8033853c0b798f799e70c306f514922a6ceb64eea3bb8")
-//        LogPrintf("coins.cpp:spend 16960fe4236820485cc8033853c0b798f799e70c306f514922a6ceb64eea3bb8:%u \n",out.n);
     if (out.n >= vout.size())
         return false;
     if (vout[out.n].IsNull())
@@ -59,9 +57,7 @@ bool CCoins::Spend(int nPos) {
 
 bool CCoinsView::GetCoins(const uint256 &txid, CCoins &coins) const { return false; }
 bool CCoinsView::HaveCoins(const uint256 &txid) const { return false; }
-uint256 CCoinsView::GetBestBlock() const {
-    //LogPrintf("coin.cpp CCoinsView,getBestBlock :%s\n",uint256(0).GetHex());
-    return uint256(0); }
+uint256 CCoinsView::GetBestBlock() const { return uint256(0); }
 bool CCoinsView::BatchWrite(CCoinsMap &mapCoins, const uint256 &hashBlock) { return false; }
 bool CCoinsView::GetStats(CCoinsStats &stats) const { return false; }
 
@@ -69,9 +65,7 @@ bool CCoinsView::GetStats(CCoinsStats &stats) const { return false; }
 CCoinsViewBacked::CCoinsViewBacked(CCoinsView *viewIn) : base(viewIn) { }
 bool CCoinsViewBacked::GetCoins(const uint256 &txid, CCoins &coins) const { return base->GetCoins(txid, coins); }
 bool CCoinsViewBacked::HaveCoins(const uint256 &txid) const { return base->HaveCoins(txid); }
-uint256 CCoinsViewBacked::GetBestBlock() const {
-    //LogPrintf("coin.cpp CCoinsViewBacked,getBestBlock hashblock:%s\n",base->GetBestBlock().GetHex());
-    return base->GetBestBlock(); }
+uint256 CCoinsViewBacked::GetBestBlock() const { return base->GetBestBlock(); }
 void CCoinsViewBacked::SetBackend(CCoinsView &viewIn) { base = &viewIn; }
 bool CCoinsViewBacked::BatchWrite(CCoinsMap &mapCoins, const uint256 &hashBlock) { return base->BatchWrite(mapCoins, hashBlock); }
 bool CCoinsViewBacked::GetStats(CCoinsStats &stats) const { return base->GetStats(stats); }
@@ -148,18 +142,12 @@ bool CCoinsViewCache::HaveCoins(const uint256 &txid) const {
 }
 
 uint256 CCoinsViewCache::GetBestBlock() const {
-    //LogPrintf("coin.cpp,CCoinsViewCache getBestBlock hashblock:%s\n",hashBlock.GetHex());
-    if (hashBlock == uint256(0)){
+    if (hashBlock == uint256(0))
         hashBlock = base->GetBestBlock();
-        //LogPrintf("coin.cpp,CCoinsViewCache getBestBlock hashblock from base:%s\n",hashBlock.GetHex());
-    }
-        
-    
     return hashBlock;
 }
 
 void CCoinsViewCache::SetBestBlock(const uint256 &hashBlockIn) {
-    //LogPrintf("coin.cpp,CCoinsViewCache setBestBlock called:%s\n",hashBlockIn.GetHex());
     hashBlock = hashBlockIn;
 }
 
@@ -195,7 +183,6 @@ bool CCoinsViewCache::BatchWrite(CCoinsMap &mapCoins, const uint256 &hashBlockIn
         CCoinsMap::iterator itOld = it++;
         mapCoins.erase(itOld);
     }
-    //LogPrintf("coin.cpp,batchwrite called:%s\n",hashBlockIn.GetHex());
     hashBlock = hashBlockIn;
     return true;
 }

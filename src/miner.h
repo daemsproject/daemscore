@@ -21,14 +21,14 @@ struct CBlockTemplate;
 /** Run the miner threads */
 void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads,bool fExtendID=false);
 /** Generate a new block, without valid proof-of-work */
-CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn);
+CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn,const int nHeightIn=0);
 CBlockTemplate* CreateNewBlockWithKey(CPubKey& miningID);
 /** Modify the extranonce in a block */
 void IncrementExtraNonce(CBlock* pblock, CBlockIndex* pindexPrev, unsigned int& nExtraNonce);
 /** Check mined block */
 bool CheckWork(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey);
 void UpdateTime(CBlockHeader* block, const CBlockIndex* pindexPrev);
-uint32_t PoolMiner(bool fGenerate,CBlockHeader block,uint32_t nNonceBegin,uint32_t nNonceEnd,int nThreads);
+uint64_t PoolMiner(bool fGenerate,CBlockHeader block,uint64_t nNonceBegin,uint64_t nNonceEnd,int nThreads);
 extern double dHashesPerSec;
 extern int64_t nHPSTimerStart;
 

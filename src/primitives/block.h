@@ -31,7 +31,7 @@ public:
     uint32_t nBlockHeight;
     uint32_t nTime;
     uint32_t nBits;
-    uint32_t nNonce;
+    uint64_t nNonce;
 
     CBlockHeader()
     {

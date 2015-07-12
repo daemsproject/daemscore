@@ -91,7 +91,6 @@ Value getnetworkhashps(const Array& params, bool fHelp)
 }
 
 #ifdef ENABLE_WALLET
-
 Value getgenerate(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 0)
@@ -439,6 +438,8 @@ Value getblocktemplate(const Array& params, bool fHelp)
 
     std::string strMode = "template";
     Value lpval = Value::null;
+    CScript scriptPubKey = CScript() << OP_TRUE;
+    int nHeight=0;
     if (params.size() > 0)
     {
         const Object& oparam = params[0].get_obj();
@@ -452,7 +453,13 @@ Value getblocktemplate(const Array& params, bool fHelp)
         else
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid mode");
         lpval = find_value(oparam, "longpollid");
-
+        Value tmp= find_value(oparam, "scriptpubkey");
+        if(tmp.type()==str_type)        
+            StringToScriptPubKey(tmp.get_str(),scriptPubKey);
+        tmp= find_value(oparam, "height");
+        if(tmp.type()==int_type)        
+            nHeight=tmp.get_int();    
+       
         if (strMode == "proposal")
         {
             const Value& dataval = find_value(oparam, "data");
@@ -483,7 +490,7 @@ Value getblocktemplate(const Array& params, bool fHelp)
             return BIP22ValidationResult(state);
         }
     }
-
+    
     if (strMode != "template")
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid mode");
 
@@ -553,15 +560,19 @@ Value getblocktemplate(const Array& params, bool fHelp)
     static CBlockIndex* pindexPrev;
     static int64_t nStart;
     static CBlockTemplate* pblocktemplate;
-    if (pindexPrev != chainActive.Tip() ||
-        (mempool.GetTransactionsUpdated() != nTransactionsUpdatedLast && GetTime() - nStart > 5))
+    
+    if (pindexPrev != chainActive.Tip() ||(mempool.GetTransactionsUpdated() != nTransactionsUpdatedLast && GetTime() - nStart > 5))
     {
         // Clear pindexPrev so future calls make a new block, despite any failures from here on
         pindexPrev = NULL;
 
         // Store the pindexBest used before CreateNewBlock, to avoid races
         nTransactionsUpdatedLast = mempool.GetTransactionsUpdated();
+        
         CBlockIndex* pindexPrevNew = chainActive.Tip();
+        if(nHeight>0)
+               pindexPrevNew = chainActive[nHeight-1];
+
         nStart = GetTime();
 
         // Create new block
@@ -570,8 +581,8 @@ Value getblocktemplate(const Array& params, bool fHelp)
             delete pblocktemplate;
             pblocktemplate = NULL;
         }
-        CScript scriptDummy = CScript() << OP_TRUE;
-        pblocktemplate = CreateNewBlock(scriptDummy);
+        
+        pblocktemplate = CreateNewBlock(scriptPubKey,nHeight);
         if (!pblocktemplate)
             throw JSONRPCError(RPC_OUT_OF_MEMORY, "Out of memory");
 
@@ -579,7 +590,7 @@ Value getblocktemplate(const Array& params, bool fHelp)
         pindexPrev = pindexPrevNew;
     }
     CBlock* pblock = &pblocktemplate->block; // pointer for convenience
-
+    pblock->hashMerkleRoot = pblock->BuildMerkleTree();
     // Update nTime
     UpdateTime(pblock, pindexPrev);
     pblock->nNonce = 0;
@@ -637,17 +648,18 @@ Value getblocktemplate(const Array& params, bool fHelp)
     result.push_back(Pair("previousblockhash", pblock->hashPrevBlock.GetHex()));
     result.push_back(Pair("transactions", transactions));
     result.push_back(Pair("coinbaseaux", aux));
-    result.push_back(Pair("coinbasevalue", (int64_t)pblock->vtx[0].vout[0].nValue));
+    result.push_back(Pair("coinbasevalue", (int64_t)pblock->vtx[0].vin[0].prevout.nValue));
     result.push_back(Pair("longpollid", chainActive.Tip()->GetBlockHash().GetHex() + i64tostr(nTransactionsUpdatedLast)));
     result.push_back(Pair("target", hashTarget.GetHex()));
     result.push_back(Pair("mintime", (int64_t)pindexPrev->GetMedianTimePast()+1));
     result.push_back(Pair("mutable", aMutable));
-    result.push_back(Pair("noncerange", "00000000ffffffff"));
+    //result.push_back(Pair("noncerange", "00000000ffffffff"));
     result.push_back(Pair("sigoplimit", (int64_t)MAX_BLOCK_SIGOPS));
     result.push_back(Pair("sizelimit", (int64_t)MAX_BLOCK_SIZE));
     result.push_back(Pair("curtime", pblock->GetBlockTime()));
     result.push_back(Pair("bits", strprintf("%08x", pblock->nBits)));
     result.push_back(Pair("height", (int64_t)(pindexPrev->nHeight+1)));
+    result.push_back(Pair("merkleroot", pblock->hashMerkleRoot.GetHex()));
 
     return result;
 }
@@ -698,12 +710,12 @@ Value poolmine(const Array& params, bool fHelp)
         nThreads = params[2].get_int();
     if(nThreads<0||nThreads>24)
         nThreads=0;
-    int nNonceBegin = 0;
+    uint64_t nNonceBegin = 0;
     if (params.size() > 3)
-        nNonceBegin = (uint32_t)params[3].get_int();
-    int nNonceEnd = 0;
+        nNonceBegin = (uint64_t)params[3].get_int64();
+    uint64_t nNonceEnd = 0;
     if (params.size() > 4)
-        nNonceEnd = (uint32_t)params[4].get_int();
+        nNonceEnd = (uint64_t)params[4].get_int64();
     if(nNonceEnd<=nNonceBegin)
         return Value(0);
     return Value((int64_t)PoolMiner(fGenerate,block,nNonceBegin,nNonceEnd,nThreads));
