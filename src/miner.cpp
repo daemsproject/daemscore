@@ -41,6 +41,9 @@ using namespace std;
 // The COrphan class keeps track of these 'temporary orphans' while
 // CreateBlock is figuring out which transactions to include.
 //
+
+static uint64_t nPoolMiningResult=0;
+static bool fPoolMiningFinished=false;
 class COrphan
 {
 public:
@@ -548,6 +551,7 @@ void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads,bool fExten
     if (minerThreads != NULL)
     {
         minerThreads->interrupt_all();
+        fPoolMiningFinished=true;
         delete minerThreads;
         minerThreads = NULL;
     }
@@ -561,8 +565,7 @@ void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads,bool fExten
 }
 
 #endif // ENABLE_WALLET
-static uint64_t nPoolMiningResult=0;
-static bool fPoolMiningFinished=false;
+
 
 void PoolMiningThread(CBlockHeader& block,uint64_t nNonceBegin,uint64_t nNonceEnd,uint32_t nbit)
 {
