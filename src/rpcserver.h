@@ -169,6 +169,7 @@ extern json_spirit::Value submitblock(const json_spirit::Array& params, bool fHe
 extern json_spirit::Value estimatefee(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value estimatepriority(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value poolmine(const Array& params, bool fHelp);
+extern json_spirit::Value mhash(const Array& params, bool fHelp);
 
 extern json_spirit::Value getnewid(const json_spirit::Array& params, bool fHelp); // in rpcwallet.cpp
 extern json_spirit::Value getmainid(const json_spirit::Array& params, bool fHelp);
@@ -313,6 +314,7 @@ extern CPaymentOrder GetBuyProductPaymentRequest(const Array arr);
 extern CPaymentOrder GetBuyProductPaymentRequest(const Array arr);
 extern CWalletTx CreateRawTransaction(CPaymentOrder pr,bool& fRequestPassword,CWallet*& pwallet);
 extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, json_spirit::Object& entry,const int nContentLenLimit=1024);
+extern Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDetails = false);
 extern void GetMessagesFromTx(std::vector<CMessage>& vMessages,const CTransaction& tx,const int nBlockHeight,int nTx,int nTime,const std::vector<CScript>& vIDsLocal,
         const std::vector<CScript>& vIDsForeign,int nDirectionFilter,bool fLinkonly,int nPos,int nOffset,int nCount);
 //extern int GetBlocksToMaturity(const unsigned int nLockTime);

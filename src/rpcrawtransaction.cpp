@@ -384,11 +384,12 @@ Value createrawtransaction(const Array& params, bool fHelp)
             "       }\n"
             "       ,...\n"
             "     ]\n"
-            "2. \"addresses\"           (string, required) a json object with addresses as keys and amounts as values\n"
+            "2. \"addresses\"           (string, required) a json object with addresses as keys and amounts as satoshis\n"
             "    [{\n"
             "      \"address\": \"address\" (string, required) The address to recieve coin\n"
-            "         \"satoshi\":n        (integer, required) The output value in satoshi\n"
+            "      \"satoshi\":n        (integer, required) The output value in satoshi\n"
             "      \"content\": \"content\" (string, optional) content in hex format\n"
+            "      \"locktime\": \"locktime\" (integer, optional) locktime\n"
             "      ,...\n"
             "    }\n"
             "       ,...\n"
@@ -448,15 +449,27 @@ Value createrawtransaction(const Array& params, bool fHelp)
         const Value& value_v = find_value(o, "satoshi");
         CAmount nAmount = value_v.get_int64();
         const Value& content_v = find_value(o, "content");
-        string strContent="";
-        if (!content_v.is_null()){
-            vector<unsigned char> vContent=ParseHexV(content_v,"content");
-            for(vector<unsigned char>::iterator iter = vContent.begin(); iter != vContent.end(); ++iter)
-            {
+        string strContent = "";
+        if (!content_v.is_null()) {
+            vector<unsigned char> vContent;
+            if (content_v.get_str().size() > 0)
+                vContent = ParseHexV(content_v, "content");
+            for (vector<unsigned char>::iterator iter = vContent.begin(); iter != vContent.end(); ++iter) {
                 strContent += *iter;
             }
         }            
-        CTxOut out(nAmount, scriptPubKey, strContent);
+        const Value& locktime_v = find_value(o, "locktime");
+//        string strContent = "";
+        uint32_t nLocktime = 0;
+        if (!locktime_v.is_null()) {
+            int64_t tmpLocktime =  locktime_v.get_int64();
+            
+            if (tmpLocktime >= 0 && tmpLocktime <= 0xffffffff) 
+                nLocktime = (uint32_t) tmpLocktime;
+            else
+                throw JSONRPCError(RPC_MISC_ERROR, string("Invalid locktime: "));
+        }
+        CTxOut out(nAmount, scriptPubKey, strContent,nLocktime);
         rawTx.vout.push_back(out);
     }
 

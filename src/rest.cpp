@@ -41,8 +41,8 @@ public:
     string message;
 };
 
-extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry,const int nContentLenLimit);
-extern Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDetails = false);
+//extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry,const int nContentLenLimit);
+//extern Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDetails = false);
 
 static RestErr RESTERR(enum HTTPStatusCode status, string message)
 {

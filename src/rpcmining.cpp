@@ -396,6 +396,7 @@ Value getblocktemplate(const Array& params, bool fHelp)
 
             "\nResult:\n"
             "{\n"
+                "  \"rawblock\" : n,                    (hexstr) The whole raw block,you can use 8~91 bytes as blockheader for mining pow hash target\n"
             "  \"version\" : n,                    (numeric) The block version\n"
             "  \"previousblockhash\" : \"xxxx\",    (string) The hash of current highest block\n"
             "  \"transactions\" : [                (array) contents of non-coinbase transactions that should be included in the next block\n"
@@ -435,7 +436,7 @@ Value getblocktemplate(const Array& params, bool fHelp)
             + HelpExampleCli("getblocktemplate", "")
             + HelpExampleRpc("getblocktemplate", "")
          );
-
+    //LogPrintf("rpcmining1 \n");
     std::string strMode = "template";
     Value lpval = Value::null;
     CScript scriptPubKey = CScript() << OP_TRUE;
@@ -490,11 +491,11 @@ Value getblocktemplate(const Array& params, bool fHelp)
             return BIP22ValidationResult(state);
         }
     }
-    
+    //LogPrintf("rpcmining2 \n");
     if (strMode != "template")
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid mode");
 
-    if (vNodes.empty())
+    if (nHeight<=0&&vNodes.empty())
         throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "Cccoin is not connected!");
 
     if (IsInitialBlockDownload())
@@ -555,7 +556,7 @@ Value getblocktemplate(const Array& params, bool fHelp)
             throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "Shutting down");
         // TODO: Maybe recheck connections/IBD and (if something wrong) send an expires-immediately template to stop miners?
     }
-
+//LogPrintf("rpcmining3 \n");
     // Update block
     static CBlockIndex* pindexPrev;
     static int64_t nStart;
@@ -568,7 +569,7 @@ Value getblocktemplate(const Array& params, bool fHelp)
 
         // Store the pindexBest used before CreateNewBlock, to avoid races
         nTransactionsUpdatedLast = mempool.GetTransactionsUpdated();
-        
+       // LogPrintf("rpcmining4 \n");
         CBlockIndex* pindexPrevNew = chainActive.Tip();
         if(nHeight>0)
                pindexPrevNew = chainActive[nHeight-1];
@@ -588,9 +589,12 @@ Value getblocktemplate(const Array& params, bool fHelp)
 
         // Need to update only after we know CreateNewBlock succeeded
         pindexPrev = pindexPrevNew;
+        LogPrintf("rpcmining nheight %i \n",nHeight);
     }
+    //LogPrintf("rpcmining6 \n");
     CBlock* pblock = &pblocktemplate->block; // pointer for convenience
     pblock->hashMerkleRoot = pblock->BuildMerkleTree();
+    pblock->nBlockHeight=pindexPrev->nHeight+1;
     // Update nTime
     UpdateTime(pblock, pindexPrev);
     pblock->nNonce = 0;
@@ -641,8 +645,16 @@ Value getblocktemplate(const Array& params, bool fHelp)
         aMutable.push_back("transactions");
         aMutable.push_back("prevblock");
     }
-
+    //LogPrintf("rpcmining7 \n");
+    //CBlockIndex bi(*pblock);
+    //bi.pprev=pindexPrev;
+    //Object objBlock=blockToJSON(*pblock,&bi,true);
+    CDataStream ssBlk(SER_NETWORK, PROTOCOL_VERSION);
+    ssBlk << *pblock;
+    string rawBlock= HexStr(ssBlk.begin(), ssBlk.end());
+    //LogPrintf("rpcmining8 \n");
     Object result;
+    result.push_back(Pair("rawblock", rawBlock));
     result.push_back(Pair("capabilities", aCaps));
     result.push_back(Pair("version", pblock->nVersion));
     result.push_back(Pair("previousblockhash", pblock->hashPrevBlock.GetHex()));
@@ -653,14 +665,14 @@ Value getblocktemplate(const Array& params, bool fHelp)
     result.push_back(Pair("target", hashTarget.GetHex()));
     result.push_back(Pair("mintime", (int64_t)pindexPrev->GetMedianTimePast()+1));
     result.push_back(Pair("mutable", aMutable));
-    //result.push_back(Pair("noncerange", "00000000ffffffff"));
+    result.push_back(Pair("noncerange", "ffffffffffffffff"));
     result.push_back(Pair("sigoplimit", (int64_t)MAX_BLOCK_SIGOPS));
     result.push_back(Pair("sizelimit", (int64_t)MAX_BLOCK_SIZE));
     result.push_back(Pair("curtime", pblock->GetBlockTime()));
     result.push_back(Pair("bits", strprintf("%08x", pblock->nBits)));
     result.push_back(Pair("height", (int64_t)(pindexPrev->nHeight+1)));
     result.push_back(Pair("merkleroot", pblock->hashMerkleRoot.GetHex()));
-
+//LogPrintf("rpcmining9 \n");
     return result;
 }
 
@@ -683,10 +695,10 @@ protected:
 };
 Value poolmine(const Array& params, bool fHelp)
 {
-    if (fHelp || params.size() < 2 || params.size() > 5)
+    if (fHelp || params.size() < 2 || params.size() > 6)
         throw runtime_error(
             "poolmine \"hexdata\" ( \"jsonparametersobject\" )\n"
-            "\nAttempts to submit new block to network.\n"
+            "\nAttempts to pool mine new block to network.\n"
             "The 'jsonparametersobject' parameter is currently ignored.\n"
             "See https://en.bitcoin.it/wiki/BIP_0022 for full specification.\n"
 
@@ -702,23 +714,32 @@ Value poolmine(const Array& params, bool fHelp)
             + HelpExampleRpc("poolmine", "\"mydata\"")
         );
     bool fGenerate = params[0].get_bool();
+    //LogPrintf("poolmine  fGenerate %b\n",fGenerate);
     CBlockHeader block;
     if (!DecodeHexBlockHeader(block, params[1].get_str()))
         throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Blockheader decode failed");
-    int nThreads=0;
+      //LogPrintf("poolmine started header:nbit%i time%i, height%i\n",block.nBits,block.nTime,block.nBlockHeight);
+    int nThreads=-1;
     if (params.size() > 2)   
         nThreads = params[2].get_int();
-    if(nThreads<0||nThreads>24)
-        nThreads=0;
+    
+    if(nThreads>24)
+        nThreads=-1;
+    //LogPrintf("poolmine  nThreads %i\n",nThreads);
     uint64_t nNonceBegin = 0;
     if (params.size() > 3)
         nNonceBegin = (uint64_t)params[3].get_int64();
-    uint64_t nNonceEnd = 0;
+    //LogPrintf("poolmine  nNonceBegin %i\n",nNonceBegin);
+    uint64_t nNonceEnd = 0xffffffffffffffff;
     if (params.size() > 4)
         nNonceEnd = (uint64_t)params[4].get_int64();
     if(nNonceEnd<=nNonceBegin)
         return Value(0);
-    return Value((int64_t)PoolMiner(fGenerate,block,nNonceBegin,nNonceEnd,nThreads));
+    uint32_t nbit=0;
+    if (params.size() > 5)
+        nbit = (uint32_t)params[5].get_int();
+    //LogPrintf("poolmine  nNonceEnd %i\n",nNonceEnd);
+    return Value((int64_t)PoolMiner(fGenerate,block,nNonceBegin,nNonceEnd,nThreads,nbit));
     
 }
 Value submitblock(const Array& params, bool fHelp)
@@ -835,4 +856,14 @@ Value estimatepriority(const Array& params, bool fHelp)
         nBlocks = 1;
 
     return mempool.estimatePriority(nBlocks);
+}
+Value mhash(const Array& params, bool fHelp) // TO DO: Help msg
+{
+    if (fHelp || params.size() != 2)
+        return Value(false);
+    vector<unsigned char> vMsg=ParseHexV(params[0],"msg");
+    uint256 hash=Hash(vMsg.begin(),vMsg.end());
+    int height=params[1].get_int();
+    mixHash(&hash,height);
+    return Value(hash.GetHex());
 }

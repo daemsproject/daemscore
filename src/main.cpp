@@ -1081,7 +1081,7 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
         {
             fTxOverride=pool.CheckTxOverride(tx,entryOverrided,tx4CheckVins);
             if (!fTxOverride){
-                return state.DoS(100, error("AcceptToMemoryPool: : invalid tx override"),
+                return state.DoS(5, error("AcceptToMemoryPool: : invalid tx override"),
                      REJECT_INVALID, "txoverride");
             }
             break;
@@ -2963,7 +2963,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, bool fCheckPOW, bo
     // Check transactions
     // Coinbase locktime only allow blockheight, lock by time is not allowed
     BOOST_FOREACH(const CTxOut& txout, block.vtx[0].vout)
-        if ((txout.nLockTime<block.nBlockHeight+COINBASE_MATURITY)||(txout.nLockTime>LOCKTIME_THRESHOLD))
+        if ((txout.nLockTime<block.nBlockHeight+COINBASE_MATURITY)||(txout.nLockTime>=LOCKTIME_THRESHOLD))
         {
             return state.DoS(100, error("CheckBlock()  : coinbase locktime, expected blockheight to spend: %i", block.nBlockHeight+COINBASE_MATURITY),
                              REJECT_INVALID, "bad-coinbase-locktime");

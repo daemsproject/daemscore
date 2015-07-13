@@ -792,7 +792,7 @@ bool CTxMemPool::CheckTxOverride(const CTransaction &tx,CTxMemPoolEntry &entryOv
         return false;
     for(unsigned int i=0;i<entryOverrided.GetTx().vin.size();i++)
     {
-        if(tx.vin[i]!=entryOverrided.GetTx().vin[i])
+        if(tx.vin[i].prevout!=entryOverrided.GetTx().vin[i].prevout)
         {
             LogPrintf("tx override:origin vin %i does not equal to new vin\n",i);
             return false;
