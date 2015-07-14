@@ -427,6 +427,21 @@ public:
         }
     }
 
+    
+    void PushMessage(CDataStream s,const char* pszCommand)
+    {
+        try
+        {
+            BeginMessage(pszCommand);
+            ssSend +=s;
+            EndMessage();
+        }
+        catch (...)
+        {
+            AbortMessage();
+            throw;
+        }
+    }
     template<typename T1>
     void PushMessage(const char* pszCommand, const T1& a1)
     {

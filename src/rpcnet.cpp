@@ -443,7 +443,7 @@ Value broadcastmessage(const Array& params, bool fHelp)
     CDataStream s(data,SER_NETWORK, PROTOCOL_VERSION);
     BOOST_FOREACH(CNode* pnode, vNodes)
     {
-        pnode->PushMessage(strCommand.c_str(), data);
+        pnode->PushMessage(s,strCommand.c_str());
     }
     return Value("sent");
 }
