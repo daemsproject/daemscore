@@ -1386,7 +1386,8 @@ void CWallet::AvailableCoins(vector<COutput>& vCoins, bool fOnlyConfirmed, const
                 if (pcoin->GetBlocksToMaturity(i) > 0)
                     continue;
                 isminetype mine = IsMine(pcoin->vout[i]);
-                if (!(IsSpent(wtxid, i,pcoin->vout[i].nValue)) && mine != ISMINE_NO &&
+                if (mine != ISMINE_NO )
+                    if(!(IsSpent(wtxid, i,pcoin->vout[i].nValue)) && 
                     !IsLockedCoin((*it).first, i,pcoin->vout[i].nValue) && pcoin->vout[i].nValue > 0 &&
                     (!coinControl || !coinControl->HasSelected() || coinControl->IsSelected((*it).first, i,pcoin->vout[i].nValue)))
                         vCoins.push_back(COutput(pcoin, i, nDepth, (mine & ISMINE_SPENDABLE) != ISMINE_NO));
