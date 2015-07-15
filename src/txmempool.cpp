@@ -513,15 +513,15 @@ void CTxMemPool::remove(const CTransaction &origTx, std::list<CTransaction>& rem
 
             removed.push_back(tx);
             totalTxSize -= mapTx[hash].GetTxSize();
-            std::cout << "hash " << hash.GetHex() << "\n";
-            for (std::map<uint256, CTxMemPoolEntry>::const_iterator it = mapTx.begin(); it != mapTx.end(); it++) {
-                std::cout << "mTxid " << it->first.GetHex() << "\n";
-            }
+//            std::cout << "hash " << hash.GetHex() << "\n";
+//            for (std::map<uint256, CTxMemPoolEntry>::const_iterator it = mapTx.begin(); it != mapTx.end(); it++) {
+//                std::cout << "mTxid " << it->first.GetHex() << "\n";
+//            }
 
             mapTx.erase(hash);
-            for (std::map<uint256, CTxMemPoolEntry>::const_iterator it = mapTx.begin(); it != mapTx.end(); it++) {
-                std::cout << "mTxid after" << it->first.GetHex() << "\n";
-            }
+//            for (std::map<uint256, CTxMemPoolEntry>::const_iterator it = mapTx.begin(); it != mapTx.end(); it++) {
+//                std::cout << "mTxid after" << it->first.GetHex() << "\n";
+//            }
             removeFromQueue(hash);
             
             nTransactionsUpdated++;

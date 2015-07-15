@@ -273,7 +273,7 @@ static const CRPCCommand vRPCCommands[] =
     { "network",            "getpeerinfo",            &getpeerinfo,            true,      false,      false },
     { "network",            "ping",                   &ping,                   true,      false,      false },
     { "network",            "broadcastmessage",       &broadcastmessage,       true,      false,      false },
-    { "network",            "broadcastblock",         &broadcastblock,         true,      false,      false },
+ 
 
 
     /* Block chain and UTXO */
@@ -287,6 +287,7 @@ static const CRPCCommand vRPCCommands[] =
     { "blockchain",         "getdifficulty",          &getdifficulty,          true,      false,      false },
     { "blockchain",         "getmempoolinfo",         &getmempoolinfo,         true,      true,       false },
     { "blockchain",         "getrawmempool",          &getrawmempool,          true,      false,      false },
+    { "blockchain",         "getfeerate",             &getfeerate,             true,      false,      false },
     { "blockchain",         "gettxout",               &gettxout,               true,      false,      false },
     { "blockchain",         "gettxoutsetinfo",        &gettxoutsetinfo,        true,      false,      false },
     { "blockchain",         "verifychain",            &verifychain,            true,      false,      false },

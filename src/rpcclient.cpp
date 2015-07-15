@@ -105,6 +105,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "poolmine", 5 },
     { "mhash", 1 },
      { "getblockbyheight", 1 },
+    { "getfeerate", 0 },
 };
 
 class CRPCConvertTable

@@ -219,7 +219,41 @@ Value getrawmempool(const Array& params, bool fHelp)
         return a;
     }
 }
-
+Value getfeerate(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() > 1)
+        throw runtime_error(
+            "getfeerate ( int )\n"
+            "\nReturns the feerate per byte of the the corresponding size in blocks. Positive number means blocks in mempool, negative number means blocks in blockchain.\n");
+    float nSamplePoint = 10;
+    double nFeeRate=1000;
+    if (params.size() > 0)
+    {
+        nSamplePoint = params[0].get_real();  
+        LogPrintf("getfeerate sample point:%i \n",nSamplePoint);
+        if(nSamplePoint<0)
+        {
+            int nBlockHeight=chainActive.Height()+(int)nSamplePoint;
+            if(nBlockHeight<=0)
+                throw JSONRPCError(RPC_INVALID_PARAMETER, "Block height out of range");
+            CBlock block;
+            if (!ReadBlockFromDisk(block, chainActive[nBlockHeight])) 
+                throw JSONRPCError(RPC_INVALID_PARAMETER, "Block not found");
+            if(block.vtx.size()>1)
+            {
+                nFeeRate=block.vtx[1].GetFeeRate();
+                for(unsigned int i=2;i<block.vtx.size();i++)
+                    if (nFeeRate>block.vtx[i].GetFeeRate())
+                        nFeeRate=block.vtx[i].GetFeeRate();   
+            }
+        }
+        else
+        {
+            nFeeRate=(double)max((double)1000,mempool.getEntranceFeeRate((int)(nSamplePoint*DEFAULT_BLOCK_MAX_SIZE)));
+        }
+    }
+    return Value(nFeeRate);
+}
 Value getblockhash(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 1)

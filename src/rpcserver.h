@@ -149,7 +149,6 @@ extern json_spirit::Value ping(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value addnode(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getaddednodeinfo(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getnettotals(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value broadcastblock(const Array& params, bool fHelp);
 extern json_spirit::Value broadcastmessage(const Array& params, bool fHelp);
 
 extern json_spirit::Value dumpprivkey(const json_spirit::Array& params, bool fHelp); // in rpcdump.cpp
@@ -241,6 +240,7 @@ extern json_spirit::Value getchaintips(const json_spirit::Array& params, bool fH
 extern json_spirit::Value invalidateblock(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value reconsiderblock(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getcontent(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getfeerate(const Array& params, bool fHelp);
 
 // New
 extern json_spirit::Value getcontentbylink(const json_spirit::Array& params, bool fHelp);

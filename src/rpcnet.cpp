@@ -447,17 +447,3 @@ Value broadcastmessage(const Array& params, bool fHelp)
     }
     return Value("sent");
 }
-Value broadcastblock(const Array& params, bool fHelp)
-{
-    if (fHelp || params.size() < 1)
-        throw runtime_error(            "broadcastblock\n"       );    
-    std::vector<unsigned char> data = ParseHexV(params[0], "parameter 1");    
-    CDataStream s(data,SER_NETWORK, PROTOCOL_VERSION);
-    CBlock block;
-    s>>block;
-    BOOST_FOREACH(CNode* pnode, vNodes)
-    {
-       // pnode->PushMessage(strCommand.c_str(), data);
-    }
-    return Value("sent");
-}
