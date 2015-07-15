@@ -230,7 +230,7 @@ Value getfeerate(const Array& params, bool fHelp)
     if (params.size() > 0)
     {
         nSamplePoint = params[0].get_real();  
-        LogPrintf("getfeerate sample point:%i \n",nSamplePoint);
+        //LogPrintf("getfeerate sample point:%i \n",nSamplePoint);
         if(nSamplePoint<0)
         {
             int nBlockHeight=chainActive.Height()+(int)nSamplePoint;
