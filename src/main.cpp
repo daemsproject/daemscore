@@ -957,6 +957,9 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state)
     if (tx.vout.empty())
         return state.DoS(10, error("CheckTransaction() : vout empty"),
                          REJECT_INVALID, "bad-txns-vout-empty");
+    if (tx.vout.size()>65536)
+        return state.DoS(100, error("CheckTransaction() : nvout over limit"),
+                         REJECT_INVALID, "bad-txns-nvout-overlimit");
     // Size limits
     if (::GetSerializeSize(tx, SER_NETWORK, PROTOCOL_VERSION) > MAX_STANDARD_TX_SIZE)
         return state.DoS(100, error("CheckTransaction() : size limits failed"),
