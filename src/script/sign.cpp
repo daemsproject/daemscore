@@ -211,18 +211,20 @@ static CScript CombineMultisig(const CScript& scriptPubKey, const CTransaction& 
     // Now build a merged CScript:
     unsigned int wSigsHave = 0;
     CScript result; 
+    int count=0;
     for (unsigned int i = 0; i < nPubKeys && wSigsHave < wSigsRequired; i++)
     {
         if (sigs.count(vSolutions[i*2+1]))
         {
             result << sigs[vSolutions[i*2+1]];
              wSigsHave += (int)vSolutions[i*2+2][0];
+             count++;
         }
     }
-
+    result << count;
     return result;
 }
-//TODO adjust 
+
 static CScript CombineSignatures(const CScript& scriptPubKey, const CTransaction& txTo, unsigned int nIn,
                                  const txnouttype txType, const vector<valtype>& vSolutions,
                                  vector<valtype>& sigs1, vector<valtype>& sigs2)

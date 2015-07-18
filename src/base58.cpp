@@ -463,9 +463,6 @@ bool CBitcoinAddress::IsScript() const
 void CBitcoinSecret::SetKey(const CKey& vchSecret)
 {
     assert(vchSecret.IsValid());
-    if (vchSecret.IsCompressed())
-        SetData(Params().Base32Prefix(CChainParams::SECRET_KEY_CPR), vchSecret.begin(), vchSecret.size());
-    else
         SetData(Params().Base32Prefix(CChainParams::SECRET_KEY), vchSecret.begin(), vchSecret.size());
 }
 
@@ -473,14 +470,15 @@ CKey CBitcoinSecret::GetKey()
 {
     CKey ret;
     assert(vchData.size() >= 32);
-    ret.Set(vchData.begin(), vchData.end(), vchVersion == Params().Base32Prefix(CChainParams::SECRET_KEY_CPR));
+    ret.Set(vchData.begin(), vchData.end(), vchVersion == Params().Base32Prefix(CChainParams::SECRET_KEY));
+    LogPrintf("vchVersion:%s",HexStr(vchVersion));
     return ret;
 }
 
 bool CBitcoinSecret::IsValid() const
 {
     bool fExpectedFormat = vchData.size() == 32; // || (vchData.size() == 33 && vchData[32] == 1);
-    bool fCorrectVersion = vchVersion == Params().Base32Prefix(CChainParams::SECRET_KEY) || vchVersion == Params().Base32Prefix(CChainParams::SECRET_KEY_CPR);
+    bool fCorrectVersion = vchVersion == Params().Base32Prefix(CChainParams::SECRET_KEY);
     return fExpectedFormat && fCorrectVersion;
 }
 

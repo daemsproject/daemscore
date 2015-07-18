@@ -106,6 +106,8 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "mhash", 1 },
      { "getblockbyheight", 1 },
     { "getfeerate", 0 },
+     { "getextkey", 2 },
+    { "getextpubkey", 2 },
 };
 
 class CRPCConvertTable

@@ -152,3 +152,74 @@ Value isvalidpubkeyaddress(const Array& params, bool fHelp) // TO DO: Help msg
         return Value(false);
     return Value(true);
 }
+Value getextkey(const Array& params, bool fHelp) // TO DO: Help msg
+{
+    if (fHelp || params.size() !=3)
+        throw runtime_error("");
+    //std::vector<unsigned char> vbasepriv = ParseHexV(params[0],"basepriv");
+    
+    //basekey.Set(vbasepriv.begin(),vbasepriv.end(),true);
+    //std::vector<unsigned char> vsteppriv = ParseHexV(params[1],"steppriv");    
+    //stepkey.Set(vsteppriv.begin(),vsteppriv.end(),true);    /
+    string strAccount = params[0].get_str();    
+    CBitcoinSecret add;
+    if (!add.SetString(strAccount))
+        throw JSONRPCError(RPC_WALLET_INVALID_ACCOUNT_NAME, "Invalid basekey");   
+    CKey basekey=add.GetKey();
+    strAccount = params[1].get_str();    
+     if (!add.SetString(strAccount))
+        throw JSONRPCError(RPC_WALLET_INVALID_ACCOUNT_NAME, "Invalid stepkey");   
+    CKey stepkey=add.GetKey();
+    uint64_t nStep = params[2].get_int64();
+    CKey extkey;
+    basekey.AddSteps(stepkey,nStep,extkey);    
+    return Value(CBitcoinSecret(extkey).ToString());
+}
+Value getextpubkey(const Array& params, bool fHelp) // TO DO: Help msg
+{
+    if (fHelp || params.size() !=3)
+        throw runtime_error("");
+    CPubKey basepub = AccountFromValue(params[0]);
+    CPubKey steppub = AccountFromValue(params[1]);
+    uint64_t nStep = params[2].get_int64();
+    CPubKey extpub;
+    basepub.AddSteps(steppub,uint256(nStep),extpub);
+    
+    return Value(CBitcoinAddress(extpub).ToString());
+}
+Value gethash(const Array& params, bool fHelp) // TO DO: Help msg
+{
+    if (fHelp || params.size() <1)
+        throw runtime_error("");
+    string format="string";
+    string formatout="hex";
+    if(params.size()>1)
+        format=params[1].get_str();
+    if(params.size()>1)
+        formatout=params[2].get_str();
+    uint256 hash;
+    if(format=="hex")
+    {
+        std::vector<unsigned char> vch = ParseHexV(params[0],"basepriv");
+        hash=Hash(vch.begin(),vch.end());
+    }    
+    else if(format=="base64")
+    {
+        string str=DecodeBase64(params[0].get_str());
+        hash=Hash(str.begin(),str.end());
+    }
+    else
+    {
+        string str=params[0].get_str();
+        hash=Hash(str.begin(),str.end());
+    }
+    string result;
+   if(formatout=="base64")
+   {
+       result= EncodeBase64((unsigned char*)hash.begin(),32);
+   }
+   else
+       result= hash.GetHex();
+    
+    return Value(result);
+}

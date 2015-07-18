@@ -71,7 +71,7 @@ bool CKey::GetPubKey(CPubKey& result) const {
         return false;
     
     int clen = 65;
-    int ret = secp256k1_ec_pubkey_create((unsigned char*)result.begin(), &clen, begin(), fCompressed);
+    int ret = secp256k1_ec_pubkey_create((unsigned char*)result.begin(), &clen, begin(), true);
     assert((int)result.size() == clen);
     assert(ret);
     assert(result.IsValid());
@@ -100,7 +100,7 @@ bool CKey::Sign(const uint256 &hash, std::vector<unsigned char>& vchSig, uint32_
 }
 
 bool CKey::VerifyPubKey(const CPubKey& pubkey) const {
-    if (pubkey.IsCompressed() != fCompressed) {
+    if (pubkey.IsCompressed() != true) {
         return false;
     }
     //if(fEncrypted)

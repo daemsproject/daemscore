@@ -356,6 +356,9 @@ static const CRPCCommand vRPCCommands[] =
     { "util",               "standardizebase32",      &standardizebase32,      true,      true,       false },
     { "util",               "comparebase32",          &comparebase32,          true,      true,       false },
     { "util",               "isvalidpubkeyaddress",   &isvalidpubkeyaddress,   true,      true,       false },
+    { "util",               "getextkey",                &getextkey,            true,      true,       false },
+    { "util",               "getextpubkey",             &getextpubkey,         true,      true,       false },
+    { "util",               "gethash",               &gethash,                    true,      true,       false },
 
     /* Not shown in help */
     { "hidden",             "invalidateblock",        &invalidateblock,        true,      true,       false },

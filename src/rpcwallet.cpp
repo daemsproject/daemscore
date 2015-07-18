@@ -517,8 +517,7 @@ Value signmessage(const Array& params, bool fHelp)
     if (!pwalletMain->GetKey(keyID, key))
         throw JSONRPCError(RPC_WALLET_ERROR, "Private key not available");
 
-    CHashWriter ss(SER_GETHASH, 0);
-    ss << strMessageMagic;
+    CHashWriter ss(SER_GETHASH, 0);    
     ss << strMessage;
 
     vector<unsigned char> vchSig;

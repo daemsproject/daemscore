@@ -101,11 +101,12 @@ public:
         }        
         memcpy(vch, (unsigned char*)&pbegin[0], len);
         fValid = true;
+        fCompressed = fCompressedIn;
         if(len == 48)
             fEncrypted=true;
         else
                 GetPubKey(pubKey);
-        fCompressed = fCompressedIn;
+        
         
     }
 //    template <typename T>

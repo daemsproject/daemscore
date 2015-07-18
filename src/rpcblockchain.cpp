@@ -185,7 +185,7 @@ Value getrawmempool(const Array& params, bool fHelp)
         BOOST_FOREACH(const PAIRTYPE(uint256, CTxMemPoolEntry)& entry, mempool.mapTx)
         {
             const uint256& hash = entry.first;
-            std::cout << "getrawmempool mTxid " << hash.GetHex() << "\n";
+            //std::cout << "getrawmempool mTxid " << hash.GetHex() << "\n";
             const CTxMemPoolEntry& e = entry.second;
             Object info;
             info.push_back(Pair("size", (int)e.GetTxSize()));

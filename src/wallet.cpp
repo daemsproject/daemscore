@@ -589,26 +589,22 @@ void CWallet::SyncMetaData(pair<TxSpends::iterator, TxSpends::iterator> range)
  * Outpoint is spent if any non-conflicted transaction
  * spends it:
  */
-bool CWallet::IsSpent(const uint256& hash, unsigned int n,CAmount value) const
+bool CWallet::IsSpent(const uint256& hash, unsigned int n,CAmount value,CCoinsViewCache* view) const
 {
-//    const COutPoint outpoint(hash, n,value);
-//    pair<TxSpends::const_iterator, TxSpends::const_iterator> range;
-//    range = mapTxSpends.equal_range(outpoint);
-//
-//    for (TxSpends::const_iterator it = range.first; it != range.second; ++it)
-//    {
-//        const uint256& wtxid = it->second;
-//        std::map<uint256, CWalletTx>::const_iterator mit = mapWallet.find(wtxid);
-//        if (mit != mapWallet.end() && mit->second.GetDepthInMainChain() >= 0)
-//            return true; // Spent
-//    }
-//    return false;
-    //browser :rewrite this function by enquering from the whole coin db
-    CCoinsViewCache view(pcoinsTip);    
-    const CCoins* coins = view.AccessCoins(hash);
-            if (!coins || !coins->IsAvailable(n)||mempool.mapNextTx.count(COutPoint(hash,n,value))) {
-                return true;
-       }
+    bool fnew=false;
+    if (view==NULL)
+    {
+        fnew=true;
+        view = new CCoinsViewCache(pcoinsTip);    
+    }
+    const CCoins* coins = view->AccessCoins(hash);
+    if (!coins || !coins->IsAvailable(n)||mempool.mapNextTx.count(COutPoint(hash,n,value))) {
+        if(fnew)
+            delete view;
+        return true;
+    }
+     if(fnew)
+        delete view;
     return false;
 }
 
@@ -1381,13 +1377,13 @@ void CWallet::AvailableCoins(vector<COutput>& vCoins, bool fOnlyConfirmed, const
             
             if (nDepth <= 0)
                 continue;
-
+            CCoinsViewCache* view = new CCoinsViewCache(pcoinsTip); 
             for (unsigned int i = 0; i < pcoin->vout.size(); i++) {
                 if (pcoin->GetBlocksToMaturity(i) > 0)
                     continue;
                 isminetype mine = IsMine(pcoin->vout[i]);
                 if (mine != ISMINE_NO )
-                    if(!(IsSpent(wtxid, i,pcoin->vout[i].nValue)) && 
+                    if(!(IsSpent(wtxid, i,pcoin->vout[i].nValue,view)) && 
                     !IsLockedCoin((*it).first, i,pcoin->vout[i].nValue) && pcoin->vout[i].nValue > 0 &&
                     (!coinControl || !coinControl->HasSelected() || coinControl->IsSelected((*it).first, i,pcoin->vout[i].nValue)))
                         vCoins.push_back(COutput(pcoin, i, nDepth, (mine & ISMINE_SPENDABLE) != ISMINE_NO));
@@ -2064,6 +2060,7 @@ std::map<CTxDestination, CAmount> CWallet::GetAddressBalances()
 
     {
         LOCK(cs_wallet);
+        CCoinsViewCache* view = new CCoinsViewCache(pcoinsTip); 
         BOOST_FOREACH(PAIRTYPE(uint256, CWalletTx) walletEntry, mapWallet)
         {
             CWalletTx *pcoin = &walletEntry.second;
@@ -2084,7 +2081,7 @@ std::map<CTxDestination, CAmount> CWallet::GetAddressBalances()
                 if(!ExtractDestination(pcoin->vout[i].scriptPubKey, addr))
                     continue;
 
-                CAmount n = IsSpent(walletEntry.first, i,pcoin->vout[i].nValue) ? 0 : pcoin->vout[i].nValue;
+                CAmount n = IsSpent(walletEntry.first, i,pcoin->vout[i].nValue,view) ? 0 : pcoin->vout[i].nValue;
 
                 if (!balances.count(addr))
                     balances[addr] = 0;

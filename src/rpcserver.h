@@ -267,13 +267,16 @@ extern json_spirit::Value readfile(const json_spirit::Array& params, bool fHelp)
 extern json_spirit::Value writefile(const json_spirit::Array& params, bool fHelp);
 
 
-extern json_spirit::Value encodebase32(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value encodebase32(const json_spirit::Array& params, bool fHelp);//rpc util
 extern json_spirit::Value decodebase32(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value encodebase32check(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value decodebase32check(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value standardizebase32(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value comparebase32(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value isvalidpubkeyaddress(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getextkey(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getextpubkey(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value gethash(const json_spirit::Array& params, bool fHelp);
 
 extern json_spirit::Value devtest(const json_spirit::Array& params, bool fHelp); // to be deleted
 

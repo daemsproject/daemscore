@@ -62,6 +62,10 @@ static const unsigned int DEFAULT_BLOCK_PRIORITY_SIZE = 1;
 static const bool DEFAULT_ALERTS = true;
 /** The maximum size for transactions we're willing to relay/mine */
 static const unsigned int MAX_STANDARD_TX_SIZE = 1050000;
+/** The maximum number of vin allowed in one transaction **/
+static const unsigned int MAX_TX_N_VIN = 1000;
+/** The maximum number of vout allowed in one transaction **/
+static const unsigned int MAX_TX_N_VOUT = 65536;
 /** The maximum allowed number of signature check operations in a block (network rule) */
 static const unsigned int MAX_BLOCK_SIGOPS = MAX_BLOCK_SIZE/50;
 /** Maximum number of signature check operations in an IsStandard() P2SH script */
@@ -101,7 +105,11 @@ static const unsigned int DATABASE_WRITE_INTERVAL = 3600;
 /** Maximum length of reject messages. */
 static const unsigned int MAX_REJECT_MESSAGE_LENGTH = 111;
 // Tx entrance threshould to mempool, set at 10 blocks
-static const unsigned int TX_ENTRANCE_THRESHOULD = DEFAULT_BLOCK_MAX_SIZE*10;
+static const unsigned int MEMPOOL_ENTRANCE_THRESHOULD = DEFAULT_BLOCK_MAX_SIZE*10;
+
+/** Dust Threshold: outputs below this value in bytes will be rejected  */
+static const unsigned int DUST_THRESHOLD = 104; // bytes
+
 
 /** "reject" message codes */
 static const unsigned char REJECT_MALFORMED = 0x01;
@@ -376,7 +384,7 @@ bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex);
 bool DisconnectBlock(CBlock& block, CValidationState& state, CBlockIndex* pindex, CCoinsViewCache& coins, bool* pfClean = NULL);
 
 /** Apply the effects of this block (with given index) on the UTXO set represented by coins */
-bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pindex, CCoinsViewCache& coins, bool fJustCheck = false,bool fUpdateTam=true);
+bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pindex, CCoinsViewCache& coins, bool fJustCheck = false);
 
 /** Context-independent validity checks */
 bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state, bool fCheckPOW = true);

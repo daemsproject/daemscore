@@ -24,10 +24,9 @@
 
 #include <boost/thread.hpp>
 #include <boost/tuple/tuple.hpp>
-//#include <mutex>
 
 using namespace std;
-//std::mutex mtx;
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // BitcoinMiner
@@ -151,172 +150,171 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn,const int nHeightIn
     // Collect memory pool transactions into the block
     CAmount nFees = 0;
     uint64_t nBlockSize = 1000;
-        uint64_t nBlockTx = 0;
-        int nBlockSigOps = 100;
-    if(nHeightIn<=0)
+    uint64_t nBlockTx = 0;
+    int nBlockSigOps = 100;
     {
         LOCK2(cs_main, mempool.cs);
-        
-        
-        CCoinsViewCache view(pcoinsTip);
-
-        // Priority order to process transactions
-        list<COrphan> vOrphan; // list memory doesn't move
-        map<uint256, vector<COrphan*> > mapDependers;
-        // Collect transactions into block
-        
-
-        for (int i=0;i<(int)mempool.queue.size();i++)
+        if(nHeightIn<=0)
         {
-            const CTransaction& tx = mempool.mapTx[mempool.queue[i]].GetTx();
-            if (tx.IsCoinBase() || !IsFinalTx(tx, nHeight))
-                continue;
+            CCoinsViewCache view(pcoinsTip);
 
-            COrphan* porphan = NULL;
-            CAmount nTotalIn = 0;
-            bool fMissingInputs = false;
-            BOOST_FOREACH(const CTxIn& txin, tx.vin)
+            // Priority order to process transactions
+            list<COrphan> vOrphan; // list memory doesn't move
+            map<uint256, vector<COrphan*> > mapDependers;
+            // Collect transactions into block
+
+            for (int i=0;i<(int)mempool.queue.size();i++)
             {
-                // Read prev transaction
-                if (!view.HaveCoins(txin.prevout.hash))
-                {
-                    //don't take in transactions with prevout in mempool,because txs are queued by fee, not sequence, we can't guarantee it's
-                    //previous tx can be included in this block
-                    fMissingInputs = true;
-                    break;
-                    // This should never happen; all transactions in the memory
-                    // pool should connect to either transactions in the chain
-                    // or other transactions in the memory pool.
-                    if (!mempool.mapTx.count(txin.prevout.hash))
-                    {
-                        LogPrintf("ERROR: mempool transaction missing input\n");
-                        if (fDebug) assert("mempool transaction missing input" == 0);
-                        fMissingInputs = true;
-                        if (porphan)
-                            vOrphan.pop_back();
-                        break;
-                    }
+                const CTransaction& tx = mempool.mapTx[mempool.queue[i]].GetTx();
+                if (tx.IsCoinBase() || !IsFinalTx(tx, nHeight))
+                    continue;
 
-                    // Has to wait for dependencies
-                    if (!porphan)
+                COrphan* porphan = NULL;
+                CAmount nTotalIn = 0;
+                bool fMissingInputs = false;
+                BOOST_FOREACH(const CTxIn& txin, tx.vin)
+                {
+                    // Read prev transaction
+                    if (!view.HaveCoins(txin.prevout.hash))
                     {
-                        // Use list for automatic deletion
-                        vOrphan.push_back(COrphan(&tx));
-                        porphan = &vOrphan.back();
+                        //don't take in transactions with prevout in mempool,because txs are queued by fee, not sequence, we can't guarantee it's
+                        //previous tx can be included in this block
+                        fMissingInputs = true;
+                        break;
+                        // This should never happen; all transactions in the memory
+                        // pool should connect to either transactions in the chain
+                        // or other transactions in the memory pool.
+                        if (!mempool.mapTx.count(txin.prevout.hash))
+                        {
+                            LogPrintf("ERROR: mempool transaction missing input\n");
+                            if (fDebug) assert("mempool transaction missing input" == 0);
+                            fMissingInputs = true;
+                            if (porphan)
+                                vOrphan.pop_back();
+                            break;
+                        }
+
+                        // Has to wait for dependencies
+                        if (!porphan)
+                        {
+                            // Use list for automatic deletion
+                            vOrphan.push_back(COrphan(&tx));
+                            porphan = &vOrphan.back();
+                        }
+                        mapDependers[txin.prevout.hash].push_back(porphan);
+                        porphan->setDependsOn.insert(txin.prevout.hash);
+                        nTotalIn += mempool.mapTx[txin.prevout.hash].GetTx().vout[txin.prevout.n].nValue;
+                        continue;
                     }
-                    mapDependers[txin.prevout.hash].push_back(porphan);
-                    porphan->setDependsOn.insert(txin.prevout.hash);
-                    nTotalIn += mempool.mapTx[txin.prevout.hash].GetTx().vout[txin.prevout.n].nValue;
+                    const CCoins* coins = view.AccessCoins(txin.prevout.hash);
+                    assert(coins);
+
+                    CAmount nValueIn = coins->vout[txin.prevout.n].nValue;
+                    nTotalIn += nValueIn;
+
+                }
+                if (fMissingInputs) continue;
+                // Size limits
+                unsigned int nTxSize = ::GetSerializeSize(tx, SER_NETWORK, PROTOCOL_VERSION);
+                if (nBlockSize + nTxSize >= nBlockMaxSize){
+    //                //judge if to remove smaller txs before ,or remove this one                
+    //                if(mempool.getQueueSizeAfter(i)<(nBlockMaxSize-nBlockSize)){
+    //                    //remove txs before this big tx
+    //                    unsigned int spaceLeft=nBlockMaxSize-nBlockSize;
+    //                    bool fHasSpace=false;
+    //                    int j=0;                    
+    //                    for(j=pblock->vtx.size()-1;j>=0;j--){                        
+    //                        if(pblock->vtx[j].GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION)<nTxSize){
+    //                            spaceLeft+=pblock->vtx[j].GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION);                            
+    //                            if (spaceLeft>nTxSize){
+    //                                fHasSpace=true;
+    //                                break;
+    //                            }
+    //                        }else
+    //                            break;
+    //                    }
+    //                    if (fHasSpace){
+    //                        for(int k=pblock->vtx.size()-1;k>=j;k--){
+    //                            nBlockSigOps -= pblocktemplate->vTxSigOps[k];
+    //                            nFees -= pblocktemplate->vTxFees[k];                        
+    //                            pblock->vtx.pop_back();//.erase(pblock->vtx[k]*);
+    //                            pblocktemplate->vTxFees.pop_back();//.erase(k);
+    //                            pblocktemplate->vTxSigOps.pop_back();//.erase(k);
+    //                            --nBlockTx;
+    //                        }
+    //                        nBlockSize=nBlockMaxSize-spaceLeft;
+    //                    }else
+    //                        continue;
+    //                }else
                     continue;
                 }
-                const CCoins* coins = view.AccessCoins(txin.prevout.hash);
-                assert(coins);
 
-                CAmount nValueIn = coins->vout[txin.prevout.n].nValue;
-                nTotalIn += nValueIn;
+                // Legacy limits on sigOps:
+                unsigned int nTxSigOps = GetLegacySigOpCount(tx);
+                if (nBlockSigOps + nTxSigOps >= MAX_BLOCK_SIGOPS)
+                    continue;
 
+                if (!view.HaveInputs(tx))
+                    continue;
+                CAmount nTxFees = tx.GetFee();
+                nTxSigOps += GetP2SHSigOpCount(tx, view);
+                if (nBlockSigOps + nTxSigOps >= MAX_BLOCK_SIGOPS)
+                    continue;
+                // Note that flags: we don't want to set mempool/IsStandard()
+                // policy here, but we still have to ensure that the block we
+                // create only contains transactions that are valid in new blocks.
+                CValidationState state;
+                if (!CheckInputs(tx, tx,state, view, true, MANDATORY_SCRIPT_VERIFY_FLAGS, true))
+                    continue;
+                CTxUndo txundo;
+                UpdateCoins(tx, state, view, txundo, nHeight);
+                // Added
+                pblock->vtx.push_back(tx);
+                pblocktemplate->vTxFees.push_back(nTxFees);
+                pblocktemplate->vTxSigOps.push_back(nTxSigOps);
+                nBlockSize += nTxSize;
+                ++nBlockTx;
+                nBlockSigOps += nTxSigOps;
+                nFees += nTxFees;
+                if (nBlockSize+nMinTxSize>nBlockMaxSize) 
+                    break;
             }
-            if (fMissingInputs) continue;
-            // Size limits
-            unsigned int nTxSize = ::GetSerializeSize(tx, SER_NETWORK, PROTOCOL_VERSION);
-            if (nBlockSize + nTxSize >= nBlockMaxSize){
-//                //judge if to remove smaller txs before ,or remove this one                
-//                if(mempool.getQueueSizeAfter(i)<(nBlockMaxSize-nBlockSize)){
-//                    //remove txs before this big tx
-//                    unsigned int spaceLeft=nBlockMaxSize-nBlockSize;
-//                    bool fHasSpace=false;
-//                    int j=0;                    
-//                    for(j=pblock->vtx.size()-1;j>=0;j--){                        
-//                        if(pblock->vtx[j].GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION)<nTxSize){
-//                            spaceLeft+=pblock->vtx[j].GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION);                            
-//                            if (spaceLeft>nTxSize){
-//                                fHasSpace=true;
-//                                break;
-//                            }
-//                        }else
-//                            break;
-//                    }
-//                    if (fHasSpace){
-//                        for(int k=pblock->vtx.size()-1;k>=j;k--){
-//                            nBlockSigOps -= pblocktemplate->vTxSigOps[k];
-//                            nFees -= pblocktemplate->vTxFees[k];                        
-//                            pblock->vtx.pop_back();//.erase(pblock->vtx[k]*);
-//                            pblocktemplate->vTxFees.pop_back();//.erase(k);
-//                            pblocktemplate->vTxSigOps.pop_back();//.erase(k);
-//                            --nBlockTx;
-//                        }
-//                        nBlockSize=nBlockMaxSize-spaceLeft;
-//                    }else
-//                        continue;
-//                }else
-                continue;
-            }
+        }
+        CBlock prevBlock;
+        ReadBlockFromDisk(prevBlock, pindexPrev);
+        CAmount prevCoinbaseFee=prevBlock.vtx[0].GetFee();
+        nLastBlockTx = nBlockTx;
+        nLastBlockSize = nBlockSize;
+    //        LogPrintf("CreateNewBlock(): total size %u\n", nBlockSize);
 
-            // Legacy limits on sigOps:
-            unsigned int nTxSigOps = GetLegacySigOpCount(tx);
-            if (nBlockSigOps + nTxSigOps >= MAX_BLOCK_SIGOPS)
-                continue;
+        // Compute final coinbase transaction.
+        CAmount coinbaseInput=GetBlockValue(nHeight, nFees)+prevCoinbaseFee;        
+        txNew.vin[0].prevout.nValue = coinbaseInput;        
+        txNew.vout[0].nValue = 0;
+        CAmount coinbaseFee=CFeeRate(DEFAULT_TRANSACTION_FEE).GetFee(txNew.GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION)+10);
+        CAmount coinbaseOutput=coinbaseInput-coinbaseFee;
+    
+    if(nHeightIn<=0&&coinbaseOutput<=minRelayTxFee.GetFee(DUST_THRESHOLD))
+            return NULL;  
+        txNew.vout[0].nValue =coinbaseOutput;
+        pblock->vtx[0] = txNew;
+        pblocktemplate->vTxFees[0] = -nFees;
 
-            if (!view.HaveInputs(tx))
-                continue;
-            CAmount nTxFees = tx.GetFee();
-            nTxSigOps += GetP2SHSigOpCount(tx, view);
-            if (nBlockSigOps + nTxSigOps >= MAX_BLOCK_SIGOPS)
-                continue;
-            // Note that flags: we don't want to set mempool/IsStandard()
-            // policy here, but we still have to ensure that the block we
-            // create only contains transactions that are valid in new blocks.
-            CValidationState state;
-            if (!CheckInputs(tx, tx,state, view, true, MANDATORY_SCRIPT_VERIFY_FLAGS, true))
-                continue;
-            CTxUndo txundo;
-            UpdateCoins(tx, state, view, txundo, nHeight);
-            // Added
-            pblock->vtx.push_back(tx);
-            pblocktemplate->vTxFees.push_back(nTxFees);
-            pblocktemplate->vTxSigOps.push_back(nTxSigOps);
-            nBlockSize += nTxSize;
-            ++nBlockTx;
-            nBlockSigOps += nTxSigOps;
-            nFees += nTxFees;
-            if (nBlockSize+nMinTxSize>nBlockMaxSize) 
-                break;
+        // Fill in header
+        pblock->hashPrevBlock  = pindexPrev->GetBlockHash();
+        UpdateTime(pblock, pindexPrev);
+        pblock->nBits          = GetNextWorkRequired(pindexPrev, pblock);
+        pblock->nNonce         = 0;
+        pblocktemplate->vTxSigOps[0] = GetLegacySigOpCount(pblock->vtx[0]);
+
+        CValidationState state;
+        if (nHeightIn<=0&&!TestBlockValidity(state, *pblock, pindexPrev, false, false))
+        {
+            LogPrintf("CreateNewBlock() : TestBlockValidity failed \n" );
+            return NULL;
+          //  throw std::runtime_error("CreateNewBlock() : TestBlockValidity failed");
         }
     }
-    CBlock prevBlock;
-    ReadBlockFromDisk(prevBlock, pindexPrev);
-    CAmount prevCoinbaseFee=prevBlock.vtx[0].GetFee();
-    nLastBlockTx = nBlockTx;
-    nLastBlockSize = nBlockSize;
-//        LogPrintf("CreateNewBlock(): total size %u\n", nBlockSize);
-
-    // Compute final coinbase transaction.
-    CAmount coinbaseInput=GetBlockValue(nHeight, nFees)+prevCoinbaseFee;        
-    txNew.vin[0].prevout.nValue = coinbaseInput;        
-    txNew.vout[0].nValue = 0;
-    CAmount coinbaseFee=CFeeRate(DEFAULT_TRANSACTION_FEE).GetFee(txNew.GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION)+10);
-    CAmount coinbaseOutput=coinbaseInput-coinbaseFee;
-    //LogPrintf("CreateNewBlock(): value %u\n", coinbaseOutput);
-    if (coinbaseOutput>0)                
-        txNew.vout[0].nValue =coinbaseOutput;
-    pblock->vtx[0] = txNew;
-    pblocktemplate->vTxFees[0] = -nFees;
-
-    // Fill in header
-    pblock->hashPrevBlock  = pindexPrev->GetBlockHash();
-    UpdateTime(pblock, pindexPrev);
-    pblock->nBits          = GetNextWorkRequired(pindexPrev, pblock);
-    pblock->nNonce         = 0;
-    pblocktemplate->vTxSigOps[0] = GetLegacySigOpCount(pblock->vtx[0]);
-
-    CValidationState state;
-    if (nHeightIn<=0&&!TestBlockValidity(state, *pblock, pindexPrev, false, false))
-    {
-        LogPrintf("CreateNewBlock() : TestBlockValidity failed \n" );
-        return NULL;
-      //  throw std::runtime_error("CreateNewBlock() : TestBlockValidity failed");
-    }
-    
     return pblocktemplate.release();
 }
 
@@ -426,15 +424,11 @@ void BitcoinMiner(CWallet *pwallet,bool fExtendID)
             CBlockIndex* pindexPrev = chainActive.Tip();
 
             auto_ptr<CBlockTemplate> pblocktemplate(CreateNewBlockWithKey(miningID));
-            //if no fee collected
-            if (pblocktemplate->block.vtx[0].vout[0].nValue==0)  {              
-                MilliSleep(10);
-                continue;
-            }
+            //if no fee collected            
             if (!pblocktemplate.get())
             {
-                LogPrintf("Error in CccoinMiner: Keypool ran out, please call keypoolrefill before restarting the mining thread\n");
-                return;
+                MilliSleep(10);
+                continue;
             }
             CBlock *pblock = &pblocktemplate->block;
             //IncrementExtraNonce(pblock, pindexPrev, nExtraNonce);
@@ -594,7 +588,7 @@ void PoolMiningThread(CBlockHeader& block,uint64_t nNonceBegin,uint64_t nNonceEn
             uint256 thash;
             while (true) {
                 unsigned int nHashesDone = 0;
-                block1.nNonce += 1;
+                //block1.nNonce += 1;
                 while(true)
                 {
                     thash=block1.GetHash();
@@ -609,12 +603,12 @@ void PoolMiningThread(CBlockHeader& block,uint64_t nNonceBegin,uint64_t nNonceEn
                         LogPrintf("proof-of-work found  \n  powhash: %s  \ntarget: %s\n", thash.GetHex(), hashTarget.GetHex());
                         //TODO feedback 
                         SetThreadPriority(THREAD_PRIORITY_LOWEST);
-                        //mtx.lock();
+                        static CCriticalSection cs;
+                        {
+                            LOCK(cs);     
                         nPoolMiningResult=block1.nNonce ;
-                        //mtx.unlock();
+                        }
                             throw boost::thread_interrupted();
-
-                       
                     }
                     block1.nNonce += 1;
                     nHashesDone += 1;

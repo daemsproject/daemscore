@@ -106,7 +106,6 @@ bool DecodeHexTx(CTransaction& tx, const std::string& strHexTx)
         vrecvretrieve<<tx;
         if(vrecvcopy!=vrecvretrieve)
             return false;
-
     }
     catch (const std::exception &) {
         return false;
@@ -114,7 +113,6 @@ bool DecodeHexTx(CTransaction& tx, const std::string& strHexTx)
 
     return true;
 }
-
 
 bool DecodeHexBlk(CBlock& block, const std::string& strHexBlk)
 {

@@ -49,9 +49,6 @@ CSqliteWrapper::CSqliteWrapper(const boost::filesystem::path& path, bool fWipe)
 CSqliteWrapper::~CSqliteWrapper()
 {
     sqlite3_close(pdb);
-    delete pdb;
-    pdb = NULL;
-    
 }
 bool CSqliteWrapper::CreateTables()
 {

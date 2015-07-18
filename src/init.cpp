@@ -185,13 +185,13 @@ void Shutdown()
         delete pblocktree;
         pblocktree = NULL;
         delete pTxAddressMapDBView;
-        pTxAddressMapDBView = NULL;
+        pTxAddressMapDBView = NULL; 
         delete pTxAddressMap;
         pTxAddressMap=NULL;
         delete pDomainDBView;
         pDomainDBView = NULL;    
         delete pTagDBView;
-        pTagDBView = NULL;   
+        pTagDBView = NULL; 
     }
 #ifdef ENABLE_WALLET
     //if (pwalletMain)

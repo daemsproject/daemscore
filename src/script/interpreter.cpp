@@ -242,7 +242,7 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
     if (script.size() > 10000)
         return set_error(serror, SCRIPT_ERR_SCRIPT_SIZE);
     int nOpCount = 0;
-    bool fRequireMinimal = (flags & SCRIPT_VERIFY_MINIMALDATA) != 0;
+    bool fRequireMinimal = false;
 
     try
     {
@@ -785,7 +785,7 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                     scriptCode.FindAndDelete(CScript(vchSig));
 
                     bool fSuccess = checker.CheckSig(vchSig, vchPubKey, scriptCode);
-                    //LogPrintf("interprerter.cpp:checksig %b\n",fSuccess);  
+
                     popstack(stack);
                     popstack(stack);
                     stack.push_back(fSuccess ? vchTrue : vchFalse);
@@ -804,9 +804,7 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                 {
                     // ([sig ...] num_of_signatures [pubkey ...] num_of_pubkeys -- bool)
 
-                    // [weight] weight_to_spend [pubkeyHash][weightOfHash] ... 
-//                        if(!rPubKey.RecoverCompact(sighash,vchSigCompact))
-//        return false;
+                    // [weight] weight_to_spend [pubkey][weightOfHash] ... 
                     
                     int i = 1;
                     if ((int)stack.size() < i)
@@ -1036,10 +1034,8 @@ uint256 SignatureHash(const CScript& scriptCode, const CTransaction& txTo, unsig
     ss << txTmp << nHashType;
     return ss.GetHash();
 }
-
 bool TransactionSignatureChecker::VerifySignature(const std::vector<unsigned char>& vchSig, const CPubKey& pubkey, const uint256& sighash) const
 {
-        //LogPrintf("interpreter.cpp:TransactionSignatureChecker::VerifySignature \n"); 
     CPubKey rPubKey;
     std::vector<unsigned char> vchSigCompact;
     vchSigCompact = vchSig;
@@ -1050,8 +1046,8 @@ bool TransactionSignatureChecker::VerifySignature(const std::vector<unsigned cha
         return false;
     if(rPubKey == pubkey)
     return true;
-    rPubKey.Compress();
-    
+    if(!rPubKey.Compress())
+        return false;
     return rPubKey == pubkey;
 }
 

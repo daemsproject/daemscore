@@ -715,7 +715,7 @@ bool IsStandardTx(const CTransaction& tx, string& reason)
 //        if (whichType == TX_NULL_DATA)
 //            nDataOut++;
         if (txout.scriptPubKey.size()==0&&txout.nValue>0){
-            reason = "nullwithvalue";
+            reason = "null-addr-with-value";
             return false;
         }
         else if ((whichType == TX_MULTISIG) && (!fIsBareMultisigStd)) {
@@ -904,6 +904,8 @@ bool AreInputsStandard(const CTransaction& tx, const CCoinsViewCache& mapInputs)
         }
 
         if (stack.size() != (unsigned int)nArgsExpected){
+            if (whichType == TX_MULTISIG)
+                return true;
             LogPrintf("Non-standard input: nArgsExpected e\n");
             return false;
     }
@@ -957,10 +959,14 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state)
     if (tx.vout.empty())
         return state.DoS(10, error("CheckTransaction() : vout empty"),
                          REJECT_INVALID, "bad-txns-vout-empty");
-    if (tx.vout.size()>65536)
+    
+    // Size limits
+    if (tx.vout.size()>MAX_TX_N_VOUT)
         return state.DoS(100, error("CheckTransaction() : nvout over limit"),
                          REJECT_INVALID, "bad-txns-nvout-overlimit");
-    // Size limits
+    if (tx.vin.size()> MAX_TX_N_VIN)
+        return state.DoS(100, error("CheckTransaction() : nvin over limit"),
+                         REJECT_INVALID, "bad-txns-nvin-overlimit");
     if (::GetSerializeSize(tx, SER_NETWORK, PROTOCOL_VERSION) > MAX_STANDARD_TX_SIZE)
         return state.DoS(100, error("CheckTransaction() : size limits failed"),
                          REJECT_INVALID, "bad-txns-oversize");
@@ -1068,8 +1074,12 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
 
     // is it already in the memory pool?
     uint256 hash = tx.GetHash();
-    if (pool.exists(hash))
+    if (pool.exists(hash)){
+        LogPrintf("AcceptToMemoryPool: : tx already exists");
         return false;
+    }
+        
+        
 
     bool fTxOverride=false;
     CTxMemPoolEntry entryOverrided;
@@ -1115,6 +1125,7 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
             if (!view.HaveCoins(txin.prevout.hash)) {
                 if (pfMissingInputs)
                     *pfMissingInputs = true;
+                LogPrintf("AcceptToMemoryPool: : missing inputs");
                 return false;
             }
         }
@@ -1209,8 +1220,8 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
         if (fRejectInsaneFee && nFees > ::minRelayTxFee.GetFee(nSize) * 10000)
             return state.Invalid(error("AcceptToMemoryPool: : insane fees %s, %d > %d",hash.ToString(),nFees, ::minRelayTxFee.GetFee(nSize) * 10000),
                     REJECT_INVALID, "insane fees");
-        if (pool.getEntranceFeeRate(TX_ENTRANCE_THRESHOULD)>=tx.GetFeeRate())
-            return state.Invalid(error("AcceptToMemoryPool: : fee lower than threshould %s, fee rate %d",hash.ToString(),tx.GetFeeRate()),
+        if (pool.getEntranceFeeRate(MEMPOOL_ENTRANCE_THRESHOULD)>=tx.GetFeeRate())
+            return state.Invalid(error("AcceptToMemoryPool: : feerate lower than threshould %s, fee rate %d",hash.ToString(),tx.GetFeeRate()),
                     REJECT_INVALID, "insufficient fees");
         // Check against previous transactions
         // This is done last to help prevent CPU exhaustion denial-of-service attacks.
@@ -2091,7 +2102,7 @@ static int64_t nTimeIndex = 0;
 static int64_t nTimeCallbacks = 0;
 static int64_t nTimeTotal = 0;
 
-bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pindex, CCoinsViewCache& view, bool fJustCheck,bool fUpdateTam)
+bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pindex, CCoinsViewCache& view, bool fJustCheck)
 {
     AssertLockHeld(cs_main);
     // Check it again in case a previous version let a bad block in
@@ -2198,7 +2209,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
             blockundo.vtxundo.push_back(CTxUndo());
         }
         ///LogPrintf("%s : 21", __func__);
-        if(fUpdateTam)
+        if(!fJustCheck)
         {
             UpdateTxAddressMap(tx,pos,state,view,false);
             UpdateDomainDB(tx,block,i,state,view,false);
@@ -3275,7 +3286,7 @@ bool ProcessNewBlock(CValidationState &state, CNode* pfrom, CBlock* pblock, CDis
 bool TestBlockValidity(CValidationState &state, const CBlock& block, CBlockIndex * const pindexPrev, bool fCheckPOW, bool fCheckMerkleRoot)
 {
     AssertLockHeld(cs_main);
-    //note:for mining,because it's running in multi threads, sometings the chainactive changes while a threads submits a new block, 
+    //note:for mining,because it's running in multi threads, sometimes the chainactive changes while a threads submits a new block, 
     //so we change assert to a normal if
     //assert(pindexPrev == chainActive.Tip());
     if (pindexPrev != chainActive.Tip()){

@@ -205,8 +205,7 @@ void CDomain::Clear()
 //LogPrintf("GetUpdateSql\n");
 //    const char* tableName=(nDomainGroup==DOMAIN_10000?"domainf":"domainfai");
 //    LogPrintf("GetInsertSql 10%s \n",tableName);
-//    const char* updateStateMent="UPDATE %s SET expiredate =%i, owner= x'%s', redirecttype=%i,redirrectto =x'%s', \
-//            alias='%s', icon=x'%s',intro='%s',redirecthsitory=x'%s',tag1='%s',tag2='%s',tag3='%s' WHERE domainname = '%s';";
+//    const char* updateStateMent="UPDATE %s SET expiredate =%i, owner= x'%s', redirecttype=%i,redirrectto =x'%s', alias='%s', icon=x'%s',intro='%s',redirecthsitory=x'%s',tag1='%s',tag2='%s',tag3='%s' WHERE domainname = '%s';";
 //    char sql[2000];    
 ////    char* ch[12];
 ////    LogPrintf("GetInsertSql4 owner %s\n",HexStr(domain.owner.begin(),domain.owner.end()));

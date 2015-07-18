@@ -43,7 +43,7 @@ Value GetNetworkHashPS(int lookup, int height) {
 
     // If lookup is -1, then use blocks since last difficulty change.
     if (lookup <= 0)
-        lookup = pb->nHeight % 240 + 1;
+        lookup = pb->nHeight % Params().Interval() + 1;
 
     // If lookup is larger than chain, then set it to chain length.
     if (lookup > pb->nHeight)
@@ -738,6 +738,8 @@ Value poolmine(const Array& params, bool fHelp)
     uint32_t nbit=0;
     if (params.size() > 5)
         nbit = (uint32_t)params[5].get_int();
+    if (fGenerate)
+        mapArgs["-gen"] = "0";
     //LogPrintf("poolmine  nNonceEnd %i\n",nNonceEnd);
     return Value((int64_t)PoolMiner(fGenerate,block,nNonceBegin,nNonceEnd,nThreads,nbit));
     
@@ -860,7 +862,14 @@ Value estimatepriority(const Array& params, bool fHelp)
 Value mhash(const Array& params, bool fHelp) // TO DO: Help msg
 {
     if (fHelp || params.size() != 2)
-        return Value(false);
+        throw runtime_error(
+            "mhash\n"            
+            "\nArguments:\n"
+            "1. message(hex)\n"
+            "2. height(int)\n"    
+            "\nResult:\n"
+            "hash : hex\n"
+            );
     vector<unsigned char> vMsg=ParseHexV(params[0],"msg");
     uint256 hash=Hash(vMsg.begin(),vMsg.end());
     int height=params[1].get_int();

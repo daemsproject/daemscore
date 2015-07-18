@@ -305,7 +305,8 @@ Value listunspent(const Array& params, bool fHelp)
     set<CBitcoinAddress> setAddress;
     if (params.size() > 2) {
         Array inputs = params[2].get_array();
-        BOOST_FOREACH(Value& input, inputs) {
+        BOOST_FOREACH(Value& input, inputs)
+        {
             CBitcoinAddress address(input.get_str());
             if (!address.IsValid())
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, string("Invalid Cccoin address: ")+input.get_str());
@@ -319,7 +320,8 @@ Value listunspent(const Array& params, bool fHelp)
     vector<COutput> vecOutputs;
     assert(pwalletMain != NULL);
     pwalletMain->AvailableCoins(vecOutputs, false);
-    BOOST_FOREACH(const COutput& out, vecOutputs) {
+    BOOST_FOREACH(const COutput& out, vecOutputs) 
+    {
         if (out.nDepth < nMinDepth || out.nDepth > nMaxDepth)
             continue;
 
@@ -447,7 +449,11 @@ Value createrawtransaction(const Array& params, bool fHelp)
             scriptPubKey = GetScriptForDestination(address.Get());
         }
         const Value& value_v = find_value(o, "satoshi");
+        if (value_v.type() != int_type)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, missing satoshi key");
         CAmount nAmount = value_v.get_int64();
+        if (nAmount < 0 || nAmount > MAX_MONEY)
+            throw JSONRPCError(RPC_MISC_ERROR, string("Vout value out of range"));
         const Value& content_v = find_value(o, "content");
         string strContent = "";
         if (!content_v.is_null()) {
@@ -569,7 +575,7 @@ Value decodescript(const Array& params, bool fHelp)
 
     Object r;
     CScript script;
-    if (params[0].get_str().size() > 0){
+    if (params[0].get_str().size() > 0) {
         vector<unsigned char> scriptData(ParseHexV(params[0], "argument"));
         script = CScript(scriptData.begin(), scriptData.end());
     } else {
@@ -647,8 +653,7 @@ Value signrawtransaction(const Array& params, bool fHelp)
             if (vrecvcopy != vrecvretrieve)
                 throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "TX decode failed");
             txVariants.push_back(tx);
-        }
-        catch (const std::exception &) {
+        } catch (const std::exception &) {
             throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "TX decode failed");
         }
     }

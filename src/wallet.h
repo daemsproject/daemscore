@@ -207,7 +207,7 @@ public:
     bool SelectCoinsMinConf(const CAmount& nTargetValue, int nConfMine, int nConfTheirs, std::vector<COutput> vCoins, std::set<std::pair<const CWalletTx*,unsigned int> >& setCoinsRet, CAmount& nValueRet) const;
     
 
-    bool IsSpent(const uint256& hash, unsigned int n,CAmount value) const;
+    bool IsSpent(const uint256& hash, unsigned int n,CAmount value,CCoinsViewCache* view=NULL) const;
 
     bool IsLockedCoin(uint256 hash, unsigned int n,CAmount value) const;
     void LockCoin(COutPoint& output);

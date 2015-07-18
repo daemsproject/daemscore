@@ -119,13 +119,13 @@ public:
         vAlertPubKey = ParseHex("040184710fa689ad5023690c80f3a49c8f13f8d45b8c857fbcbc8bc4a8e4d3eb4b10f4d4604fa08dce601aaf0f470216fe1b51850b4acf21b179c45070ac7b03a9");
         nDefaultPort = 7333;
         bnProofOfWorkLimit = ~uint256(0) >> 8;
-        nSubsidyHalvingInterval = 480;
+        nSubsidyHalvingInterval = 1;
         nEnforceBlockUpgradeMajority = 750;
         nRejectBlockOutdatedMajority = 950;
         nToCheckBlockUpgradeMajority = 1000;
         nMinerThreads = 0;
-        nTargetTimespan = 12 * 60 * 60; // 12 hr
-        nTargetSpacing = 30; // 3 minutes // Todo change back to 3 *60
+        nTargetTimespan = 30;//12 * 60 * 60; // 12 hr
+        nTargetSpacing = 30;//3 *60;
 
         /**
          * Build the genesis block. Note that the output of the genesis coinbase cannot
@@ -191,7 +191,6 @@ public:
         base32Prefixes[SCRIPT_ADDRESS]      = list_of(0x90);    //  (n bytes)(S)(7 bytes)
         base32Prefixes[SCRIPTHASH_ADDRESS]  = list_of(0x38);    //  (32 bytes)(H)(7 bytes)
         base32Prefixes[SECRET_KEY]          = list_of(0x48);
-        base32Prefixes[SECRET_KEY_CPR]      = list_of(0x49);
         base32Prefixes[EXT_PUBLIC_KEY]      = list_of(0x04)(0x88)(0xB2)(0x1E);
         base32Prefixes[EXT_SECRET_KEY]      = list_of(0x04)(0x88)(0xAD)(0xE4);
 
@@ -256,7 +255,6 @@ public:
         base32Prefixes[SCRIPT_ADDRESS]      = list_of(196);
         base32Prefixes[SCRIPTHASH_ADDRESS]  = list_of(197);
         base32Prefixes[SECRET_KEY]          = list_of(239);    
-        base32Prefixes[SECRET_KEY_CPR]      = list_of(240);
         base32Prefixes[EXT_PUBLIC_KEY]      = list_of(0x04)(0x88)(0xB2)(0x1E);
         base32Prefixes[EXT_SECRET_KEY]      = list_of(0x04)(0x88)(0xAD)(0xE4);
 
