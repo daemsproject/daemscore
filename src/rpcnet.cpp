@@ -75,7 +75,7 @@ static void CopyNodeStats(std::vector<CNodeStats>& vstats)
 
 Value getpeerinfo(const Array& params, bool fHelp)
 {
-    if (fHelp || params.size() != 0)
+    if (fHelp || params.size() >1)
         throw runtime_error(
             "getpeerinfo\n"
             "\nReturns data about each connected network node as a json array of objects.\n"
@@ -116,7 +116,10 @@ Value getpeerinfo(const Array& params, bool fHelp)
     CopyNodeStats(vstats);
 
     Array ret;
-
+    if(params.size()==1&&params[1].get_str()=="doc")
+    {
+        
+    }
     BOOST_FOREACH(const CNodeStats& stats, vstats) {
         Object obj;
         CNodeStateStats statestats;
@@ -436,14 +439,21 @@ Value getnetworkinfo(const Array& params, bool fHelp)
 }
 Value broadcastmessage(const Array& params, bool fHelp)
 {
-    if (fHelp || params.size() < 2)
+    if (fHelp || params.size() < 1)
         throw runtime_error(            "broadcastmessage\n"       );
     string strCommand = params[0].get_str();
-    std::vector<unsigned char> data = ParseHexV(params[1], "parameter 1");
-    CDataStream s(data,SER_NETWORK, PROTOCOL_VERSION);
-    BOOST_FOREACH(CNode* pnode, vNodes)
+    if(params.size()>1)
     {
+        std::vector<unsigned char> data = ParseHexV(params[1], "parameter 1");
+        CDataStream s(data,SER_NETWORK, PROTOCOL_VERSION);
+        BOOST_FOREACH(CNode* pnode, vNodes)
+       
         pnode->PushMessage(s,strCommand.c_str());
+    }
+    else
+    {
+         BOOST_FOREACH(CNode* pnode, vNodes)
+        pnode->PushMessage(strCommand.c_str());
     }
     return Value("sent");
 }
