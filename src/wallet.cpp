@@ -1678,7 +1678,7 @@ bool CWallet::CreateTransactionUnsigned(const CPaymentOrder& pr,
 }
 bool CWallet::SignTransaction(const CWalletTx& wtxIn,CWalletTx& wtxSigned,int nSigType)
 {
-                
+                LogPrintf("wallet.cpp:signtransaction");
     CMutableTransaction txSigned=CMutableTransaction(wtxIn);    
                 unsigned int nIn = 0;
                 BOOST_FOREACH(CTxIn in, wtxIn.vin){
@@ -1694,6 +1694,7 @@ bool CWallet::SignTransaction(const CWalletTx& wtxIn,CWalletTx& wtxSigned,int nS
 }
 bool SignAndSendTx(CWallet* pwallet,const CWalletTx& tx,const int nSigType, const int nOP,const SecureString& ssInput,const bool fDelete,CWalletTx& wtxSigned,std::string& result)
 {      
+    LogPrintf("SignAndSendTx nOp:%i \n",nOP);
     if(nOP==1)
         if(!pwallet->SetPassword(ssInput)){
             if(fDelete)
@@ -1715,11 +1716,15 @@ bool SignAndSendTx(CWallet* pwallet,const CWalletTx& tx,const int nSigType, cons
             mtx.vin[i].scriptSig=sigs[i];
         *static_cast<CTransaction*>(&wtxSigned) = CTransaction(mtx);
     }
-    else if(!pwallet->SignTransaction(tx, wtxSigned,nSigType)){
+    else{
+        LogPrintf("SignAndSendTx:no password\n");
+    
+        if(!pwallet->SignTransaction(tx, wtxSigned,nSigType)){
         if(fDelete)
         delete pwallet;
         result= ("{\"error\":\"sign transaction failed\"}");            
         return false;
+        }
     }
      LogPrintf("SignAndSendTx:signOK\n");
     if (!wtxSigned.AcceptToMemoryPool(false))

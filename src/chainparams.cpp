@@ -127,11 +127,11 @@ public:
         txNew.vin[0].scriptSig = CScript() << (int)0;
         txNew.vin[0].prevout.nValue=456000;
         txNew.vout[0].nValue = 0;
-        txNew.vout[0].scriptPubKey = CScript() << OP_HASH160 << ParseHex("0674680b2184c078815a0a69b702d8617e62678a") << OP_EQUAL;
+        txNew.vout[0].scriptPubKey = CScript() << OP_HASH160 << ParseHex("6fd16238813d981a3366c8f66be34b20e6a1c9fa") << OP_EQUAL;
         txNew.vout[0].strContent=pszTimestamp;
         txNew.vout[0].nLockTime = 499999999;
         txNew.vout[1].nValue = 0;
-        txNew.vout[1].scriptPubKey = CScript() << ParseHex("51210202c97efa472248a345790491abe99c662bf715ee7d9bc6097c286904e069be945121024385cc4aff77a5f16a4c9595e621faca7afa1b4713634e9dec00a5ff70ec0291512102aed8d853cccc7caf32e7cca0befe3bde24092b4611f487f9e44ee7b7801ebf7f5121034b9a092b8a87dc2470e343ebd3f245d9d746cb67c91855077f4516308983f2065121028b13408cd91b5f16e226f6178eae76983391c04788ea83cb6cbfa63a03397c7551210221c75e6fa6c81b74ff71cd5dcff208854046915dffcac53a6846fc1cf0878fba5156ae"); 
+        txNew.vout[1].scriptPubKey = CScript() << ParseHex("51210202c974218072f0d8bc416c45e9810c59b081bae492dca0b4832ef0e9077b6e9d51210343b1dcfa6be152f72d38dfc827c472139164bbb8ce269307834add763c07033951210399c026a70df6ca2370b572afc43efcbdc1e282e019ae0ab080bc4b33c44609e35121034b9a0940b374e3125a2b494134b37c67802efc5dab0318f7163c0b1879ad897051210394bcb5121b56eafbe1db4dbc600debc0c434cdcd35de92f9b9a75bb582d107da5121036a6b39054042b5b379b309b7ac60e31b6596e74d1a5a3aa1889fc0bbb49049fa5156ae"); 
         const string intro = "Developed by Alex, HTL, John Doe ,Jonas, Fred ,Lee. Based on Satoshi Nakamoto's great work";
         txNew.vout[1].strContent=intro;
         txNew.vout[1].nLockTime=499999999;
@@ -142,19 +142,19 @@ public:
         genesis.nBlockHeight = 0;
         genesis.nTime    = 1437548320;
         genesis.nBits    = 0x1e0fffff;
-        genesis.nNonce   = 772592;
-        //std::cout << "tx size: " << txNew.GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION) << "\n";        
-        uint256 powHash;
-        powHash = genesis.GetPoWHash();
-        while (powHash > ~uint256(0) >> 20){
-            if (++genesis.nNonce==0) break;
-            powHash = genesis.GetPoWHash();
-        }
-        //std::cout << "nonce: " << genesis.nNonce << "\n";
+        genesis.nNonce   = 361424;
+//        std::cout << "tx size: " << txNew.GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION) << "\n";        
+//        uint256 powHash;
+//        powHash = genesis.GetPoWHash();
+//        while (powHash > ~uint256(0) >> 20){
+//            if (++genesis.nNonce==0) break;
+//            powHash = genesis.GetPoWHash();
+//        }
+//        std::cout << "nonce: " << genesis.nNonce << "\n";
         hashGenesisBlock = genesis.GetHash();
         
-        //CTransaction gtx;
-        //gtx = genesis.vtx.front();
+//        CTransaction gtx;
+//        gtx = genesis.vtx.front();
 //        std::cout << "g rtx: \n" << EncodeHexTx(gtx) << "\n";
 //        std::cout << "g tx: \n" << gtx.ToString() << "\n";
 //        std::cout << "g blk: \n" << genesis.ToString() << "\n";
@@ -163,8 +163,8 @@ public:
 //        std::cout << "g powh: \n" << genesis.GetPoWHash().ToString() << "\n";
 //        std::cout << "g mroot: \n" << genesis.hashMerkleRoot.ToString() << "\n";
         
-        assert(hashGenesisBlock == uint256("e76e83122b99d9285700699befa7099e46e3d3414af6e2042d520d1a70ad58ee"));
-        assert(genesis.hashMerkleRoot == uint256("dca9be18ef6754a9aeedba93c2cc5f7b6e94d946c1b475033c0bde9da1a67c69"));
+        assert(hashGenesisBlock == uint256("ceb597f31f1a574c69dacf592d1c91b2e6de0797d43f65c54d5b03180a2e1d87"));
+        assert(genesis.hashMerkleRoot == uint256("08c7280ac0e2f5a77456100108f392b29ffd9c42c4b5285ae122fc958d54f616"));
         
         vSeeds.push_back(CDNSSeedData("dns.f", "dnsseed.f"));
 
@@ -223,8 +223,8 @@ public:
         genesis.nTime = 1427227400;
         genesis.nNonce = 607439;
         hashGenesisBlock = genesis.GetHash();
-        //std::cout << "t g hash: \n" << hashGenesisBlock.ToString() << "\n";
-        assert(hashGenesisBlock == uint256("541761dfb477da23b2885e0f1f39c93f5bd134d3fc0a0ba487985d0d2517ae8d"));
+//        std::cout << "t g hash: \n" << hashGenesisBlock.ToString() << "\n";
+        assert(hashGenesisBlock == uint256("c784b3dafa3f5bdfb441ec0090df58450d4193082b9f83d6be904bdcccd4cfc3"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
@@ -283,8 +283,8 @@ public:
         genesis.nNonce = 607439;
         hashGenesisBlock = genesis.GetHash();
         nDefaultPort = 19444;
-        //std::cout << "rt g hash: \n" << hashGenesisBlock.ToString() << "\n";
-        assert(hashGenesisBlock == uint256("13b0161b9d1ae6262c897a9ea1cbf82a06c57e7ed6cdc3d2b7ae7100d044cbd4"));
+//        std::cout << "rt g hash: \n" << hashGenesisBlock.ToString() << "\n";
+        assert(hashGenesisBlock == uint256("1acb364a762cb106a085c141d1f20be0439dd64c79a18547fe48e18ec786756e"));
 
         vFixedSeeds.clear(); //! Regtest mode doesn't have any fixed seeds.
         vSeeds.clear();  //! Regtest mode doesn't have any DNS seeds.
