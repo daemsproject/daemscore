@@ -29,6 +29,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "getaddednodeinfo", 0 },
     { "setgenerate", 0 },
     { "setgenerate", 1 },
+    { "setgenerate", 3 },
     { "getnetworkhashps", 0 },
     { "getnetworkhashps", 1 },
     { "sendtoaddress", 1 },
@@ -108,6 +109,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "getfeerate", 0 },
      { "getextkey", 2 },
     { "getextpubkey", 2 },
+     
 };
 
 class CRPCConvertTable
