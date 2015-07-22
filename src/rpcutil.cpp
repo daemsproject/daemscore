@@ -171,8 +171,10 @@ Value getextkey(const Array& params, bool fHelp) // TO DO: Help msg
         throw JSONRPCError(RPC_WALLET_INVALID_ACCOUNT_NAME, "Invalid stepkey");   
     CKey stepkey=add.GetKey();
     uint64_t nStep = params[2].get_int64();
+    if (nStep==0)
+        return Value(params[0]);
     CKey extkey;
-    basekey.AddSteps(stepkey,nStep,extkey);    
+    basekey.AddSteps(stepkey,Hash(&nStep,&nStep+1),extkey);    
     return Value(CBitcoinSecret(extkey).ToString());
 }
 Value getextpubkey(const Array& params, bool fHelp) // TO DO: Help msg
@@ -183,7 +185,9 @@ Value getextpubkey(const Array& params, bool fHelp) // TO DO: Help msg
     CPubKey steppub = AccountFromValue(params[1]);
     uint64_t nStep = params[2].get_int64();
     CPubKey extpub;
-    basepub.AddSteps(steppub,uint256(nStep),extpub);
+    if (nStep==0)
+        return Value(params[0]);
+    basepub.AddSteps(steppub,Hash(&nStep,&nStep+1),extpub);
     
     return Value(CBitcoinAddress(extpub).ToString());
 }

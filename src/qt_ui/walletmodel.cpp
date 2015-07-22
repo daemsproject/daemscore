@@ -444,6 +444,7 @@ QString WalletModel::DoPayment(const CPaymentOrder& pr)
     }  
     std::string result;
     CWalletTx wtxSigned; 
+    LogPrintf("walletmodel:dopayment:sign and send");
     SignAndSendTx(pwallet,tx,pr.nSigType,nOP,ssInput,fDelete,wtxSigned,result);
     return QString().fromStdString(result);
 }
