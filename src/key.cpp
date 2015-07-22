@@ -175,10 +175,14 @@ bool CKey::Derive(CKey& keyChild, unsigned char ccChild[32], unsigned int nChild
 bool CKey::AddSteps(const CKey& stepKey,const uint64_t& steps,CKey& resultKey)const {
     if(fEncrypted)
         return false;
+    
     CKey temp=stepKey;
     resultKey=*this;
+    if(steps==0)
+        return true;    
     uint256 tweak(steps);
     bool ret=secp256k1_ec_privkey_tweak_mul((unsigned char*)temp.begin(),(unsigned char*)&tweak);
+    //LogPrintf("ckey addstep aftermulti:%s",HexStr(temp.begin(),temp.end()));
     ret = secp256k1_ec_privkey_tweak_add((unsigned char*)resultKey.begin(), (unsigned char*)temp.begin());
     resultKey.GetPubKey(resultKey.pubKey);
     return ret;
