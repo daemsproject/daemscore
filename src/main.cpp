@@ -302,7 +302,7 @@ void UpdatePreferredDownload(CNode* node, CNodeState* state)
     nPreferredDownload -= state->fPreferredDownload;
 
     // Whether this node should be marked as a preferred download node.
-    state->fPreferredDownload = true;     // (!node->fInbound || node->fWhitelisted) && !node->fOneShot && !node->fClient;
+    state->fPreferredDownload = !node->fOneShot && !node->fClient;
 
     nPreferredDownload += state->fPreferredDownload;
 }
@@ -685,8 +685,8 @@ bool IsStandardTx(const CTransaction& tx, string& reason)
         reason = "vout-count";
         return false;
     }
-    //BOOST_FOREACH(const CTxIn& txin, tx.vin)
-    //{
+    BOOST_FOREACH(const CTxIn& txin, tx.vin)
+    {
         // Biggest 'standard' txin is a 15-of-15 P2SH multisig with compressed
         // keys. (remember the 520 byte limit on redeemScript size) That works
         // out to a (15*(33+1))+3=513 byte redeemScript, 513+1+15*(73+1)+3=1627
@@ -694,15 +694,15 @@ bool IsStandardTx(const CTransaction& tx, string& reason)
         // future-proofing. That's also enough to spend a 20-of-20
         // CHECKMULTISIG scriptPubKey, though such a scriptPubKey is not
         // considered standard)
-//        if (txin.scriptSig.size() > MAX_STANDARD_TX_SIZE) {
-//            reason = "scriptsig-size";
-//            return false;
-//        }
+        if (txin.scriptSig.size() > 10000) {
+            reason = "scriptsig-size";
+            return false;
+        }
 //        if (!txin.scriptSig.IsPushOnly()) {
 //            reason = "scriptsig-not-pushonly";
 //            return false;
 //        }
-   // }
+    }
 
     //unsigned int nDataOut = 0;
     txnouttype whichType;
@@ -4231,13 +4231,28 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
                 pfrom->fGetAddr = true;
             }
             addrman.Good(pfrom->addr);
-        } else {
-            if (((CNetAddr)pfrom->addr) == (CNetAddr)addrFrom)
+        }
+        else if(!pfrom->fClient)
+            {
+            if (((CNetAddr) pfrom->addr) == (CNetAddr) addrFrom) 
             {
                 addrman.Add(addrFrom, addrFrom);
                 addrman.Good(addrFrom);
+            } else 
+            {
+                CAddress addrConnect = pfrom->addr;
+                addrConnect.SetPort(addrFrom.GetPort());
+
+                CNode* pnode = ConnectNode(addrConnect);
+                if (pnode != NULL) 
+                {
+                    addrman.Add(addrFrom, addrFrom);
+                    addrman.Good(addrFrom);
+                    pnode->fDisconnect = true;
             }
+
             }
+        }
         
         // Relay alerts
         RelayAlerts(pfrom);
@@ -4333,7 +4348,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
                 }
             }
             // Do not store addresses outside our network
-            if (fReachable)
+            //if (fReachable)
                 vAddrOk.push_back(addr);
             }
         addrman.Add(vAddrOk, pfrom->addr, 2 * 60 * 60);

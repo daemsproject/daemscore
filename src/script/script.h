@@ -14,8 +14,9 @@
 #include <string.h>
 #include <string>
 #include <vector>
+static const unsigned int MAX_SCRIPT_ELEMENT_SIZE = 3000; // bytes
 
-static const unsigned int MAX_SCRIPT_ELEMENT_SIZE = 1050000; // bytes same as main.h MAX_STANDARD_TX_SIZE
+static const unsigned int MAX_STACK_SIZE = 200; // bytes
 
 template <typename T>
 std::vector<unsigned char> ToByteVector(const T& in)
@@ -512,6 +513,14 @@ public:
             if (pvchRet)
                 pvchRet->assign(pc, pc + nSize);
             pc += nSize;
+        }
+        if (OP_1 <= opcode && opcode <= OP_16)
+        {
+            if (pvchRet)
+            {
+                pvchRet->push_back((unsigned char) (opcode - OP_1 + 1));
+            }
+
         }
 
         opcodeRet = (opcodetype)opcode;

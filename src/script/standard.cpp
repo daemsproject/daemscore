@@ -85,6 +85,7 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, vector<vector<unsi
         // Compare
         CScript::const_iterator pc1 = script1.begin();
         CScript::const_iterator pc2 = script2.begin();
+        unsigned int wTotal = 0;
         while (true)
         {
             if (pc1 == script1.end() && pc2 == script2.end())
@@ -94,7 +95,10 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, vector<vector<unsi
                 if (typeRet == TX_MULTISIG)
                 {
                     // Additional checks for TX_MULTISIG:
-                    unsigned char n = vSolutionsRet.back()[0];
+                    unsigned int n = CScriptNum(vSolutionsRet.back(),false).getint();
+                    unsigned int wRequired = CScriptNum(vSolutionsRet.front(), false).getint();
+                    if(wTotal < wRequired)
+                        return false;
                     if(n != (vSolutionsRet.size() - 2) / 2)
                         return false;
                 }
@@ -104,18 +108,34 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, vector<vector<unsi
                 break;
             if (!script2.GetOp(pc2, opcode2, vch2))
                 break;
-
             // Template matching opcodes:
-            if (opcode2 == OP_PUBKEYS)
+            if (opcode2 == OP_PUBKEYS) {
+                bool finvalid=false;
+                while (true) {
+                    if (vch1.size() > 8 && vch1.size() <= 65) 
             {
-                while (vch1.size() <= 65)
+                        vSolutionsRet.push_back(vch1);
+                        if (!script1.GetOp(pc1, opcode1, vch1)) 
                 {
+                            finvalid = true;
+                            break;
+                        }
+                        int wPubkey = vch1.size() > 0 ? CScriptNum(vch1, false).getint() : CScriptNum((int) opcode1 - (int) (OP_1 - 1)).getint();
+                        if ((wTotal + wPubkey) < wTotal) 
+                        {
+                            finvalid = true;
+                            break;
+                        } else
+                            wTotal += wPubkey;
                     vSolutionsRet.push_back(vch1);
                     if (!script1.GetOp(pc1, opcode1, vch1))
+                            finvalid = true;
+                    } else {
                         break;
-                    if(vch1.size() < 1)
-                        break;
+                    }
                 }
+                if(finvalid)
+                        break;
                 if (!script2.GetOp(pc2, opcode2, vch2))
                     break;
                 // Normal situation is to fall through
@@ -124,7 +144,7 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, vector<vector<unsi
 
             if (opcode2 == OP_PUBKEY)
             {
-                if ( vch1.size() > 65)
+                if (vch1.size() > 65)
                     break;
                 vSolutionsRet.push_back(vch1);
             }
@@ -328,27 +348,32 @@ CScript GetScriptForMultisig(int nRequired, const std::vector<CPubKey>& keys)
     return script;
 }
 
-CScript GetScriptForMultisigByWeight(int wRequired, const std::vector<CTxDestination>& dests, const std::vector<int>& weights) 
+CScript GetScriptForMultisigByWeight(const unsigned int wRequired, const std::vector<CTxDestination>& dests, const std::vector<unsigned int>& weights) 
 {
     CScript script;
-    std::vector<unsigned char> sv = EncodeVarInt(wRequired);
-    script << ToByteVector(sv);
+    script += GetScriptNum(wRequired);
     if (dests.size() != weights.size())
         return false;
     int i = 0;
     BOOST_FOREACH(const CTxDestination& dest, dests) {
         boost::apply_visitor(CScriptVisitor(&script), dest);
-        script << EncodeVarInt(weights[i]);
+        script += GetScriptNum(weights[i]);
         i++;
     }
-    if(i <=16)
-        script <<CScript::EncodeOP_N(i);
-    else
-    {
-        const CScriptNum is(i);
-        script << is;
-    }
+    script += GetScriptNum(i);
     script << OP_CHECKMULTISIG;
     return script;
 }
 
+CScript GetScriptNum(const unsigned int n)
+{
+       CScript script;
+    if(n <=16)
+        script <<CScript::EncodeOP_N(n);
+    else
+    {
+        const CScriptNum is(n);
+        script << is;
+    }
+    return script;
+}

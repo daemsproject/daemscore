@@ -246,8 +246,9 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
 
     try
     {
-        while (pc < pend)
-        {
+        while (pc < pend) {
+            if (stack.size() > MAX_STACK_SIZE)
+                return set_error(serror, SCRIPT_ERR_STACKOVERFLOW);
             bool fExec = !count(vfExec.begin(), vfExec.end(), false);
 
             //
@@ -807,27 +808,31 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                     // [weight] weight_to_spend [pubkey][weightOfHash] ... 
                     
                     int i = 1;
-                    if ((int)stack.size() < i)
+                        if ((int) stack.size() < i)
                         return set_error(serror, SCRIPT_ERR_INVALID_STACK_OPERATION);
 
                     int nKeysCount = CScriptNum(stacktop(-i), fRequireMinimal).getint();
-                    if (nKeysCount < 0)
+                        if (nKeysCount <= 0)
                         return set_error(serror, SCRIPT_ERR_PUBKEY_COUNT);
                     nOpCount += nKeysCount;
                     i += 2;
                     int ikey = i;
                     int ikeyS = i;
-                    i += nKeysCount * 2 ;
-                    if ((int)stack.size() < i)
+                    i += nKeysCount * 2;
+                    if ((int) stack.size() < i)
                         return set_error(serror, SCRIPT_ERR_INVALID_STACK_OPERATION);
                     
                     int wRequired = CScriptNum(stacktop(-i + 1), fRequireMinimal).getint();
+                        if(wRequired <= 0)
+                            return set_error(serror, SCRIPT_ERR_CHECKMULTISIGVERIFY);
                     int nSigsCount = CScriptNum(stacktop(-i), fRequireMinimal).getint();
+                    if (nSigsCount <= 0)
+                        return set_error(serror, SCRIPT_ERR_CHECKMULTISIGVERIFY);
                     if (nSigsCount < 0 || nSigsCount > nKeysCount)
                         return set_error(serror, SCRIPT_ERR_SIG_COUNT);
                     int isig = ++i;
                     i += nSigsCount -1;
-                    if ((int)stack.size() < i)
+                    if ((int) stack.size() < i)
                         return set_error(serror, SCRIPT_ERR_INVALID_STACK_OPERATION);
 
                     // Subset of script starting at the most recent codeseparator
@@ -836,21 +841,22 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                     // Drop the signatures, since there's no way for a signature to sign itself
                     for (int k = 0; k < nSigsCount; k++)
                     {
-                        valtype& vchSig = stacktop(-isig-k);
+                        valtype& vchSig = stacktop(-isig - k);
                         scriptCode.FindAndDelete(CScript(vchSig));
                     }
 
                     bool fSuccess = true;
                     int wSigned = 0;
                     std::vector<vector<unsigned char> > vchPubKeyRet;
-                        for(int i=0; i< nKeysCount; i++){
+                        for (int i = 0; i< nKeysCount; i++) 
+                        {
                             valtype& vchPubKey = stacktop(-ikey);
                             vchPubKeyRet.push_back(vchPubKey);
-                            ikey +=2;
+                            ikey += 2;
                         }
-                    while ( nSigsCount > 0)
+                    while (nSigsCount > 0)
                     {
-                        valtype& vchSig    = stacktop(-isig);
+                        valtype& vchSig = stacktop(-isig);
                         
                         std::vector<unsigned char> vchRecoveredPubKey;
                         if(!checker.RecoverPubKey(vchSig, vchRecoveredPubKey, scriptCode))
@@ -858,8 +864,10 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                         isig++;
                         bool fOk = false;
                         int rphIndex = 0;
-                        BOOST_FOREACH(vector<unsigned char>& vchPubKey , vchPubKeyRet){
-                                if(vchPubKey == vchRecoveredPubKey){
+                        
+                        BOOST_FOREACH(vector<unsigned char>& vchPubKey, vchPubKeyRet)
+                        {
+                                if (vchPubKey == vchRecoveredPubKey) {
                                     fOk = true;
                                     break;
                                 }
@@ -1050,25 +1058,6 @@ bool TransactionSignatureChecker::VerifySignature(const std::vector<unsigned cha
         return false;
     return rPubKey == pubkey;
 }
-
-//bool TransactionSignatureChecker::VerifySignatureByPubKeyHash(const std::vector<unsigned char>& vchSig, const std::vector<unsigned char>& pubkeyhash, const uint256& sighash) const
-//{
-//    valtype vchHash(20);
-//    CHash160().Write(begin_ptr(pubkeyhash), pubkeyhash.size()).Finalize(begin_ptr(vchHash));
-//    std::vector<unsigned char> pubkeyhash2;
-//    pubkeyhash2 = pubkeyhash;
-//    std::reverse(pubkeyhash2.begin(),pubkeyhash2.end());
-//    CPubKey rPubKey;
-//    std::vector<unsigned char> vchSigCompact;
-//    vchSigCompact = vchSig;
-//    vchSigCompact.resize(65);
-//    if(!rPubKey.RecoverCompact(sighash,vchSigCompact))
-//        return false;
-//    if(HexStr(pubkeyhash2) != rPubKey.GetID().GetHex())
-//        return false;
-//    
-//    return true;
-//}
 
 bool TransactionSignatureChecker::CheckSig(const vector<unsigned char>& vchSigIn, const vector<unsigned char>& vchPubKey, const CScript& scriptCode) const
 {

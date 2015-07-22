@@ -1844,17 +1844,17 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
 
                     // Never create dust outputs; if we would, just
                     // add the dust to the fee.
-//                    if (newTxOut.nValue < DUST_THRESHOLD)
-//                    {
-//                        nFeeRet += nChange;
-//                        reservekey.ReturnKey();
-//                    }
-//                    else
-//                    {
+                    if (newTxOut.nValue < DUST_THRESHOLD)
+                    {
+                        nFeeRet += nChange;
+                        reservekey.ReturnKey();
+                    }
+                    else
+                    {
                         // Insert change txn at random position:
                         vector<CTxOut>::iterator position = txNew.vout.begin()+GetRandInt(txNew.vout.size()+1);
                         txNew.vout.insert(position, newTxOut);
-//                    }
+                    }
                 }
                 else
                     reservekey.ReturnKey();

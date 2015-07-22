@@ -216,12 +216,12 @@ Value validateaddress(const Array& params, bool fHelp)
  */
 CScript _createmultisig_redeemScript(const Array& params)
 {
-    int nRequired = params[0].get_int();
+    unsigned int nRequired = (unsigned int)params[0].get_int();
     if (nRequired < 1)
         throw runtime_error("a multisignature address must require at least weight one to redeem");
     Object sendTo = params[1].get_obj();
     vector<CTxDestination> setDest;
-    vector<int> setWeight;
+    vector<unsigned int> setWeight;
     BOOST_FOREACH(const Pair& s, sendTo) {
         CBitcoinAddress address(s.name_);
         if (!address.IsValid())
@@ -230,7 +230,7 @@ CScript _createmultisig_redeemScript(const Array& params)
         //        if (setDest. .count(address))
         //            throw JSONRPCError(RPC_INVALID_PARAMETER, string("Invalid parameter, duplicated address: ")+s.name_);
         setDest.push_back(address.Get());
-        setWeight.push_back(s.value_.get_int());
+        setWeight.push_back((unsigned int)s.value_.get_int());
 
     }
     CScript result = GetScriptForMultisigByWeight(nRequired, setDest, setWeight);

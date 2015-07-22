@@ -55,7 +55,7 @@ bool SignN(const vector<valtype>& multisigdata, const CKeyStore& keystore, uint2
         CPubKey keyID=CPubKey(pubkey);
         i++;
         if (Sign1(keyID, keystore, hash, nHashType, scriptSigRet)){
-            wSigned += (int)multisigdata[i][0];
+            wSigned += CScriptNum(multisigdata[i],false).getint();
         }
     }
         int sigCount = (multisigdata.size() - 2) / 2; // minus weightRequred byte and keyCount byte
@@ -217,7 +217,7 @@ static CScript CombineMultisig(const CScript& scriptPubKey, const CTransaction& 
         if (sigs.count(vSolutions[i*2+1]))
         {
             result << sigs[vSolutions[i*2+1]];
-             wSigsHave += (int)vSolutions[i*2+2][0];
+             wSigsHave += CScriptNum(vSolutions[i*2+2],false).getint();
              count++;
         }
     }
