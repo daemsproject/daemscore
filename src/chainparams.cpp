@@ -100,15 +100,15 @@ public:
         pchMessageStart[2] = 0xdd;
         pchMessageStart[3] = 0xde;
         vAlertPubKey = ParseHex("040184710fa689ad5023690c80f3a49c8f13f8d45b8c857fbcbc8bc4a8e4d3eb4b10f4d4604fa08dce601aaf0f470216fe1b51850b4acf21b179c45070ac7b03a9");
-        nDefaultPort = 7333;
+        nDefaultPort = 7331;
         bnProofOfWorkLimit = ~uint256(0) >> 8;
         nSubsidyHalvingInterval =  480;
         nEnforceBlockUpgradeMajority = 750;
         nRejectBlockOutdatedMajority = 950;
         nToCheckBlockUpgradeMajority = 1000;
         nMinerThreads = 0;
-        nTargetTimespan = 12 * 60 * 60; // 12 hr
-        nTargetSpacing = 3 * 60; // 3 minutes
+        nTargetTimespan = 10 * 60; // 12 hr
+        nTargetSpacing = 10; // 3 minutes
 
         /**
          * Build the genesis block. Note that the output of the genesis coinbase cannot
