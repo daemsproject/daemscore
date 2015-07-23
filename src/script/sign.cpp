@@ -32,7 +32,7 @@ bool Sign1(const CPubKey& address, const CKeyStore& keystore, uint256 hash, int 
          LogPrintf("Sign1 keystore::GetKey failed\n");
         return false;
     }
-    LogPrintf("sign.cpp sign1,key:%s \n",HexStr(key.pubKey.begin(),key.pubKey.end()));
+   // LogPrintf("sign.cpp sign1,key:%s \n",HexStr(key.pubKey.begin(),key.pubKey.end()));
     vector<unsigned char> vchSig;
     if (!key.SignCompact(hash, vchSig)){
         LogPrintf("Sign1 signcompact failed\n");
@@ -142,7 +142,7 @@ bool SignSignature(const CKeyStore &keystore, const CScript& fromPubKey, CMutabl
 
 bool SignSignature(const CKeyStore &keystore, const CTransaction& txFrom, CMutableTransaction& txTo, unsigned int nIn, int nHashType)
 {
-    LogPrintf("sign.cpp signsignature nIn:%u,txTo.vin.size:%u",nIn,txTo.vin.size());
+    //LogPrintf("sign.cpp signsignature nIn:%u,txTo.vin.size:%u",nIn,txTo.vin.size());
     assert(nIn < txTo.vin.size());
     CTxIn& txin = txTo.vin[nIn];
     assert(txin.prevout.n < txFrom.vout.size());

@@ -1692,9 +1692,12 @@ bool CWallet::SignTransaction(const CWalletTx& wtxIn,CWalletTx& wtxSigned,int nS
                 *static_cast<CTransaction*>(&wtxSigned) = CTransaction(txSigned);
                 return true;
 }
+bool DecodeSigs(string ssInput,std::vector<CScript> sigs){
+    return false;
+}
 bool SignAndSendTx(CWallet* pwallet,const CWalletTx& tx,const int nSigType, const int nOP,const SecureString& ssInput,const bool fDelete,CWalletTx& wtxSigned,std::string& result)
 {      
-    LogPrintf("SignAndSendTx nOp:%i \n",nOP);
+    //LogPrintf("SignAndSendTx nOp:%i \n",nOP);
     if(nOP==1)
         if(!pwallet->SetPassword(ssInput)){
             if(fDelete)
@@ -1705,19 +1708,26 @@ bool SignAndSendTx(CWallet* pwallet,const CWalletTx& tx,const int nSigType, cons
     if(nOP==2){
         //TODO signer funcs
         std::vector<CScript> sigs;
-//        if (!DecodeSigs(string(ssInput.begin(),ssInput.end()),sigs)){
-//            if(fDelete)
-//            delete pwallet;
-//            result=("{\"error\":\"invalid signatures\"}");
-//            return false;
-//        }        
+        if (!DecodeSigs(string(ssInput.begin(),ssInput.end()),sigs)){
+            if(fDelete)
+            delete pwallet;
+            result=("{\"error\":\"invalid signatures\"}");
+            return false;
+        }        
+        if(sigs.size()<tx.vin.size())
+        {
+            if(fDelete)
+            delete pwallet;
+            result=("{\"error\":\"signatures number not enough\"}");
+            return false;
+        }
         CMutableTransaction mtx=CMutableTransaction(tx);        
         for(unsigned int i=0;i<mtx.vin.size();i++)
             mtx.vin[i].scriptSig=sigs[i];
         *static_cast<CTransaction*>(&wtxSigned) = CTransaction(mtx);
     }
     else{
-        LogPrintf("SignAndSendTx:no password\n");
+        //LogPrintf("SignAndSendTx:no password\n");
     
         if(!pwallet->SignTransaction(tx, wtxSigned,nSigType)){
         if(fDelete)
@@ -1735,7 +1745,7 @@ bool SignAndSendTx(CWallet* pwallet,const CWalletTx& tx,const int nSigType, cons
             result =("{\"error\":\"tx rejected\"}");
             return false;            
         }
-     LogPrintf("SignAndSendTx:acceptedto mempool\n");
+     //LogPrintf("SignAndSendTx:acceptedto mempool\n");
      RelayTransaction(wtxSigned);
      LogPrintf("SignAndSendTx:sendtx :%s\n",EncodeHexTx(CTransaction(wtxSigned)));
      if(fDelete)
@@ -1800,18 +1810,7 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
                     strFailReason = _("Insufficient funds");
                     return false;
                 }
-//                BOOST_FOREACH(/(const CWalletTx*, unsigned int) pcoin, setCoins)
-//                {
-//                    CAmount nCredit = pcoin.first->vout[pcoin.second].nValue;
-//                    //The coin age after the next block (depth+1) is used instead of the current,
-//                    //reflecting an assumption the user would accept a bit more delay for
-//                    //a chance at a free transaction.
-//                    //But mempool inputs might still be in the mempool, so their age stays 0
-//                    int age = pcoin.first->GetDepthInMainChain();
-//                    if (age != 0)
-//                        age += 1;
-//                    dPriority += (double)nCredit * age;
-                //}
+
 
                 CAmount nChange = nValueIn - nValue - nFeeRet;
 
@@ -1887,21 +1886,7 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
                     strFailReason = _("Transaction too large");
                     return false;
                 }
-                //dPriority = wtxNew.ComputePriority(dPriority, nBytes);
-
-                // Can we complete this as a free transaction?
-//                if (fSendFreeTransactions && nBytes <= MAX_FREE_TRANSACTION_CREATE_SIZE)
-//                {
-//                    // Not enough fee: enough priority?
-//                    double dPriorityNeeded = mempool.estimatePriority(nTxConfirmTarget);
-//                    // Not enough mempool history to estimate: use hard-coded AllowFree.
-//                    if (dPriorityNeeded <= 0 && AllowFree())
-//                        break;
-//
-//                    // Small enough, and priority high enough, to send for free
-//                    if (dPriorityNeeded > 0 && dPriority >= dPriorityNeeded)
-//                        break;
-//                }
+               
 
                 CAmount nFeeNeeded = GetMinimumFee(nBytes, nTxConfirmTarget, mempool);
 

@@ -916,6 +916,7 @@ public:
 
     std::set<uint256> GetConflicts() const;
 };
+bool DecodeSigs(string ssInput,std::vector<CScript> sigs);
 bool SignAndSendTx(CWallet* pwallet,const CWalletTx& tx,const int nSigType,const int nOP,const SecureString& ssInput,const bool fDelete,CWalletTx& wtxSigned,std::string& result);
 
 
