@@ -300,6 +300,6 @@ void JsInterface::jscallback(std::string strToken,bool fSuccess,QString dataJson
     //webpage->page()->mainFrame()->evaluateJavaScript("console.log('evaluate js:'"+errorfunc+");var func="+errorfunc+";func("+dataJson+");");
 }
 //typedef std::basic_string<char, std::char_traits<char>, secure_allocator<char> > SecureString;
-bool DecodeSigs(string ssInput,std::vector<CScript> sigs){
-    return false;
-}
+//bool DecodeSigs(string ssInput,std::vector<CScript> sigs){
+//    return false;
+//}

@@ -50,7 +50,7 @@ private:
     WalletModel *walletModel;
     
 };
-bool DecodeSigs(string ssInput,std::vector<CScript> sigs);
+//bool DecodeSigs(string ssInput,std::vector<CScript> sigs);
 
 #endif	/* JSINTERFACE_H */
 
