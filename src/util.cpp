@@ -397,6 +397,7 @@ boost::filesystem::path GetDefaultDataDir()
     return pathRet / "Fai";
 #else
     // Unix
+    //LogPrintf("GetDefaultDataDir \n");
     return pathRet / ".fai";
 #endif
 #endif
@@ -413,7 +414,7 @@ const boost::filesystem::path &GetDataDir(bool fNetSpecific)
     LOCK(csPathCached);
 
     fs::path &path = fNetSpecific ? pathCachedNetSpecific : pathCached;
-
+    //std::cout<<"getdatadir path:"<<path.string()<<"\n";
     // This can be called during exceptions by LogPrintf(), so we cache the
     // value so we don't have to do memory allocations after that.
     if (!path.empty())
@@ -421,12 +422,14 @@ const boost::filesystem::path &GetDataDir(bool fNetSpecific)
 
     if (mapArgs.count("-datadir")) {
         path = fs::system_complete(mapArgs["-datadir"]);
+       // std::cout<<"getdatadir path from -datadir:"<<path.string()<<"\n";
         if (!fs::is_directory(path)) {
             path = "";
             return path;
         }
     } else {
         path = GetDefaultDataDir();
+       // std::cout<<"getdatadir path freom GetDefaultDataDir:"<<path.string()<<"\n";
     }
     if (fNetSpecific)
         path /= BaseParams().DataDir();

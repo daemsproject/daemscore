@@ -37,18 +37,18 @@ void ScriptPubKeyToJSON(const CScript& scriptPubKey, Object& out, bool fIncludeH
 {
     txnouttype type;
     vector<CTxDestination> addresses;
-    int nRequired;
+    unsigned int wRequired;
 
     out.push_back(Pair("asm", scriptPubKey.ToString()));
     if (fIncludeHex)
         out.push_back(Pair("hex", HexStr(scriptPubKey.begin(), scriptPubKey.end())));
 
-    if (!ExtractDestinations(scriptPubKey, type, addresses, nRequired)) {
+    if (!ExtractDestinations(scriptPubKey, type, addresses, wRequired)) {
         out.push_back(Pair("type", GetTxnOutputType(type)));
         return;
     }
 
-    out.push_back(Pair("reqSigs", nRequired));
+    out.push_back(Pair("reqSigWeight", (uint64_t)wRequired));
     out.push_back(Pair("type", GetTxnOutputType(type)));
 
     Array a;
@@ -68,7 +68,7 @@ std::string GetBinaryContent(const std::string& content)
     return IsStringPrint(content)? std::string(content.begin(), content.end()): "";
 }
 
-void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry,const int nContentLenLimit)
+void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry,const int nContentLenLimit,std::map<int,CScript>* pmapPrevoutScriptPubKey)
 {
    // LogPrintf("TxToJSON1\n");    
     //LogPrintf("TxToJSON2\n");
@@ -86,7 +86,8 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry,con
     //LogPrintf("TxToJSON4\n");
     Array vin;
     Array arrAddresses;
-    BOOST_FOREACH(const CTxIn& txin, tx.vin) {
+    for(int i=0;i<(int)tx.vin.size();i++) {
+        const CTxIn& txin=tx.vin[i];
         Object in;
         in.push_back(Pair("txid", txin.prevout.hash.GetHex()));
         in.push_back(Pair("vout", (int64_t) txin.prevout.n));
@@ -96,16 +97,29 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry,con
             CTransaction prevTx;
             uint256 tmphash;
             //LogPrintf("rpcrawtransaction txtojson: prevout hash:%s \n",txin.prevout.hash.GetHex());
-            if (!GetTransaction(txin.prevout.hash, prevTx, tmphash, true)){
+            CScript prevoutScriptPubKey;
+            if(pmapPrevoutScriptPubKey!=NULL&&(*pmapPrevoutScriptPubKey)[i].size()!=0)
+            {
+                
+                prevoutScriptPubKey=(*pmapPrevoutScriptPubKey)[i];
+            }
+            else
+            {
+                if (!GetTransaction(txin.prevout.hash, prevTx, tmphash, true))
+                {
                    LogPrintf("TxToJSON null vin prevout\n");
-                continue;
+                    continue;
+                }
+                prevoutScriptPubKey=prevTx.vout[txin.prevout.n].scriptPubKey;
+                if(pmapPrevoutScriptPubKey!=NULL)
+                    (*pmapPrevoutScriptPubKey)[i]=prevoutScriptPubKey;
             }
             Object a;
-            ScriptPubKeyToJSON(prevTx.vout[txin.prevout.n].scriptPubKey, a, true);
+            ScriptPubKeyToJSON(prevoutScriptPubKey, a, true);
             in.push_back(Pair("scriptPubKey", a));
             
             string add;
-            ScriptPubKeyToString(prevTx.vout[txin.prevout.n].scriptPubKey,add);            
+            ScriptPubKeyToString(prevoutScriptPubKey,add);            
             arrAddresses.push_back(Value(add)); 
         }
             Object o;

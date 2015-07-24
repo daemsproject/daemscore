@@ -199,7 +199,8 @@ int ScriptSigArgsExpected(txnouttype t, const std::vector<std::vector<unsigned c
         case TX_MULTISIG:
             if (vSolutions.size() < 1 || vSolutions[0].size() < 1)
                 return -1;
-            return vSolutions[0][0] + 1;
+            //multisig sigcount can't be evaluated
+            return 1;
         case TX_SCRIPTHASH:
             return 1; // doesn't include args needed by the script
         case TX_SCRIPT: // Todo return real sig arg count
@@ -214,16 +215,6 @@ bool IsStandard(const CScript& scriptPubKey, txnouttype& whichType)
     if (!Solver(scriptPubKey, whichType, vSolutions))
         return false;
 
-//    if (whichType == TX_MULTISIG)
-//    {
-//        unsigned char m = vSolutions.front()[0];
-//        unsigned char n = vSolutions.back()[0];
-//        // Support up to x-of-3 multisig txns as standard
-//        if (n < 1 || n > 3)
-//            return false;
-//        if (m < 1 || m > n)
-//            return false;
-//    }
 
     return whichType != TX_NONSTANDARD;
 }
@@ -253,7 +244,7 @@ bool ExtractDestination(const CScript& scriptPubKey, CTxDestination& addressRet)
     return false;
 }
 
-bool ExtractDestinations(const CScript& scriptPubKey, txnouttype& typeRet, vector<CTxDestination>& addressRet, int& nRequiredRet)
+bool ExtractDestinations(const CScript& scriptPubKey, txnouttype& typeRet, vector<CTxDestination>& addressRet, unsigned int& wRequiredRet)
 {
     addressRet.clear();
     typeRet = TX_NONSTANDARD;
@@ -267,7 +258,7 @@ bool ExtractDestinations(const CScript& scriptPubKey, txnouttype& typeRet, vecto
 
     if (typeRet == TX_MULTISIG)
     {
-        nRequiredRet = vSolutions.front()[0];
+        wRequiredRet = CScriptNum(vSolutions.front(),false).getint();
         for (unsigned int i = 1; i < vSolutions.size()-1; i++)
         {
             CPubKey pubKey(vSolutions[i]);
@@ -283,7 +274,7 @@ bool ExtractDestinations(const CScript& scriptPubKey, txnouttype& typeRet, vecto
     }
     else
     {
-        nRequiredRet = 1;
+        wRequiredRet = 1;
         CTxDestination address;
         if (!ExtractDestination(scriptPubKey, address))
             return false;

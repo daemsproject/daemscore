@@ -507,10 +507,8 @@ bool ScriptPubKeyToString(const CScript& script, string& str)
 {
     txnouttype type;
     vector<CTxDestination> addresses;
-    int nRequired;
-    //LogPrintf("ScriptPubKeyToString %s\n",script.ToString());
-    ExtractDestinations(script, type, addresses, nRequired);
-    //LogPrintf("ScriptPubKeyToString %u\n",addresses.size());
+    unsigned int wRequired;
+    ExtractDestinations(script, type, addresses, wRequired);
     if (addresses.size() == 0)
         return false;
     str = CBitcoinAddress(addresses[0]).ToString();

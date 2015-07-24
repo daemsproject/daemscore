@@ -46,9 +46,9 @@ bool Sign1(const CPubKey& address, const CKeyStore& keystore, uint256 hash, int 
 
 bool SignN(const vector<valtype>& multisigdata, const CKeyStore& keystore, uint256 hash, int nHashType, CScript& scriptSigRet)
 {
-    int wSigned = 0;
-    int wRequired = multisigdata.front()[0];
-    
+    unsigned int wSigned = 0;
+    unsigned int wRequired = (unsigned int)CScriptNum(multisigdata.front(),false).getint();
+    int sigCount=0;
     for (unsigned int i = 1; i < multisigdata.size()-1 && wSigned < wRequired; i++)
     {
         const valtype& pubkey = multisigdata[i];
@@ -56,9 +56,9 @@ bool SignN(const vector<valtype>& multisigdata, const CKeyStore& keystore, uint2
         i++;
         if (Sign1(keyID, keystore, hash, nHashType, scriptSigRet)){
             wSigned += CScriptNum(multisigdata[i],false).getint();
+            sigCount++;
         }
     }
-        int sigCount = (multisigdata.size() - 2) / 2; // minus weightRequred byte and keyCount byte
         
         if(sigCount <=16)
             scriptSigRet <<CScript::EncodeOP_N(sigCount);
@@ -190,7 +190,7 @@ static CScript CombineMultisig(const CScript& scriptPubKey, const CTransaction& 
 
     // Build a map of pubkey -> signature by matching sigs to pubkeys:
     assert(vSolutions.size() > 1);
-    unsigned int wSigsRequired = vSolutions.front()[0];
+    unsigned int wSigsRequired = CScriptNum(vSolutions.front(),false).getint();
     unsigned int nPubKeys = (vSolutions.size()-2) /2;
     map<valtype, valtype> sigs;
     BOOST_FOREACH(const valtype& sig, allsigs)
@@ -212,7 +212,7 @@ static CScript CombineMultisig(const CScript& scriptPubKey, const CTransaction& 
     unsigned int wSigsHave = 0;
     CScript result; 
     int count=0;
-    for (unsigned int i = 0; i < nPubKeys && wSigsHave < wSigsRequired; i++)
+    for (unsigned int i = 0; (i < nPubKeys) && (wSigsHave < wSigsRequired); i++)
     {
         if (sigs.count(vSolutions[i*2+1]))
         {

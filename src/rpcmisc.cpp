@@ -147,8 +147,8 @@ public:
             pwalletMain->GetCScript(scriptID, subscript);
             std::vector<CTxDestination> addresses;
             txnouttype whichType;
-            int nRequired;
-            ExtractDestinations(subscript, whichType, addresses, nRequired);
+            unsigned int wRequired;
+            ExtractDestinations(subscript, whichType, addresses, wRequired);
             obj.push_back(Pair("script", GetTxnOutputType(whichType)));
             obj.push_back(Pair("hex", HexStr(subscript.begin(), subscript.end())));
             Array a;
@@ -156,7 +156,7 @@ public:
             a.push_back(CBitcoinAddress(addr).ToString());
             obj.push_back(Pair("addresses", a));
             if (whichType == TX_MULTISIG)
-                obj.push_back(Pair("sigsrequired", nRequired));
+                obj.push_back(Pair("sigsweightrequired", (uint64_t)wRequired));
         }
         return obj;
     }

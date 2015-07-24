@@ -180,9 +180,8 @@ bool CWallet::SwitchToAccount(CPubKey idIn,bool fSetDefault){
     if(pwalletdb->IsWalletExists(idIn))
         {        
       //  LogPrintf("wallet.cpp:SwitchToAccount 3 \n"); 
-            id=idIn;
-            ClearPassword();
-            ClearSharedKey();
+            id=idIn;            
+            ClearKeysStore();
             bool fFirstRunRet;
             if (LoadWallet(fFirstRunRet,true)==DB_LOAD_OK)
             {
@@ -2249,8 +2248,8 @@ public:
     void Process(const CScript &script) {
         txnouttype type;
         std::vector<CTxDestination> vDest;
-        int nRequired;
-        if (ExtractDestinations(script, type, vDest, nRequired)) {
+        unsigned int wRequired;
+        if (ExtractDestinations(script, type, vDest, wRequired)) {
             BOOST_FOREACH(const CTxDestination &dest, vDest)
                 boost::apply_visitor(*this, dest);
         }
@@ -2309,31 +2308,40 @@ bool CWallet::GetDestData(const CTxDestination &dest, const std::string &key, st
     }
     return false;
 }
-CAmount CWalletTx::GetAvailableCredit(bool fUseCache) const
+CAmount CWalletTx::GetAvailableCredit(bool fUseCache,CCoinsViewCache* view) const
     {
         if (pwallet == 0)
-            return 0;
+            return 0;       
         
-        // Must wait until coinbase is safely deep enough in the chain before valuing it
-        //if (GetBlocksToMaturity() > 0)
-        //    return 0;
         
-        //if (fUseCache && fAvailableCreditCached)
-       //     return nAvailableCreditCached;
+        if (fUseCache && fAvailableCreditCached)
+            return nAvailableCreditCached;
         //LogPrintf("wallet.h GetAvailableCredit:3 \n");
         CAmount nCredit = 0;
         uint256 hashTx = GetHash();
-        CCoinsViewCache view(pcoinsTip);    
-        const CCoins* coins = view.AccessCoins(hashTx);
+        
+    bool fnew=false;
+    if (view==NULL)
+    {
+        fnew=true;
+        view = new CCoinsViewCache(pcoinsTip);    
+    }        
+        const CCoins* coins = view->AccessCoins(hashTx);
         if (!coins)
+        {
+             if(fnew)
+                delete view;
                 return 0;        
+        }
         //LogPrintf("wallet.cpp GetAvailableCredit vout size:%u \n",coins->vout.size());
         for (unsigned int i = 0; i < vout.size(); i++)
         {
                 //LogPrintf("wallet.cpp vout%u value:%u \n",i,vout[i].nValue);
                 //LogPrintf("wallet.cpp coinavailable:%b \n",coins->IsAvailable(i));
                 //LogPrintf("wallet.cpp in mempool:%b \n",mempool.mapNextTx.count(COutPoint(hashTx,i,vout[i].nValue)));
-            if (coins->IsAvailable(i)&&!mempool.mapNextTx.count(COutPoint(hashTx,i,vout[i].nValue))&&GetBlocksToMaturity(i) == 0)
+            bool fLocked=(GetBlocksToMaturity(i)!=0);
+            fHasLockedVout |=fLocked;
+            if (coins->IsAvailable(i)&&!mempool.mapNextTx.count(COutPoint(hashTx,i,vout[i].nValue))&&!fLocked)
             {
                 //LogPrintf("wallet.h GetAvailableCredit:5 \n");
                 const CTxOut &txout = vout[i];
@@ -2341,13 +2349,19 @@ CAmount CWalletTx::GetAvailableCredit(bool fUseCache) const
                 //LogPrintf("wallet.cpp coinavailable:%b \n",pwallet->IsMine(txout));
                 //LogPrintf("wallet.cpp GetAvailableCredit: %u \n",nCredit);
                 if (!MoneyRange(nCredit))
+                {
+                     if(fnew)
+                        delete view;
                     throw std::runtime_error("CWalletTx::GetAvailableCredit() : value out of range");
+                }
             }
             
         }
 
-        //nAvailableCreditCached = nCredit;
-        //fAvailableCreditCached = true;
+        nAvailableCreditCached = nCredit;
+        fAvailableCreditCached = !fHasLockedVout;
+         if(fnew)
+            delete view;
         return nCredit;
     }
 

@@ -316,7 +316,7 @@ extern CPaymentOrder GetPublishProductPaymentRequest(const Array arr);
 extern CPaymentOrder GetBuyProductPaymentRequest(const Array arr);
 extern CPaymentOrder GetBuyProductPaymentRequest(const Array arr);
 extern CWalletTx CreateRawTransaction(CPaymentOrder pr,bool& fRequestPassword,CWallet*& pwallet);
-extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, json_spirit::Object& entry,const int nContentLenLimit=1024);
+extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, json_spirit::Object& entry,const int nContentLenLimit=1024,std::map<int,CScript>* pmapPrevoutScriptPubKey=NULL);
 extern Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDetails = false);
 extern void GetMessagesFromTx(std::vector<CMessage>& vMessages,const CTransaction& tx,const int nBlockHeight,int nTx,int nTime,const std::vector<CScript>& vIDsLocal,
         const std::vector<CScript>& vIDsForeign,int nDirectionFilter,bool fLinkonly,int nPos,int nOffset,int nCount);

@@ -377,8 +377,8 @@ std::vector<CBitcoinAddress> _get_posters(CTransaction tx)
             throw JSONRPCError(RPC_INTERNAL_ERROR, "Get prev tx failed");
         txnouttype type;
         vector<CTxDestination> raddresses;
-        int nRequired;
-        if (!ExtractDestinations(prevTx.vout[in.prevout.n].scriptPubKey, type, raddresses, nRequired))
+        unsigned int wRequired;
+        if (!ExtractDestinations(prevTx.vout[in.prevout.n].scriptPubKey, type, raddresses, wRequired))
             continue;
 
         BOOST_FOREACH(const CTxDestination& raddr, raddresses)

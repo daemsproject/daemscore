@@ -66,18 +66,18 @@ void ScriptPubKeyToUniv(const CScript& scriptPubKey,
 {
     txnouttype type;
     vector<CTxDestination> addresses;
-    int nRequired;
+    unsigned int wRequired;
 
     out.pushKV("asm", scriptPubKey.ToString());
     if (fIncludeHex)
         out.pushKV("hex", HexStr(scriptPubKey.begin(), scriptPubKey.end()));
 
-    if (!ExtractDestinations(scriptPubKey, type, addresses, nRequired)) {
+    if (!ExtractDestinations(scriptPubKey, type, addresses, wRequired)) {
         out.pushKV("type", GetTxnOutputType(type));
         return;
     }
 
-    out.pushKV("reqSigs", nRequired);
+    out.pushKV("reqSigWeight", (uint64_t)wRequired);
     out.pushKV("type", GetTxnOutputType(type));
 
     UniValue a(UniValue::VARR);

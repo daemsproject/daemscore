@@ -1444,7 +1444,7 @@ Value listtransactions(const Array& params, bool fHelp)
     int nFrom = 0;
     if (params.size() > 2)
         nFrom = params[2].get_int();
-    isminefilter filter = ISMINE_ALL;
+    //isminefilter filter = ISMINE_ALL;
     bool fIncludeExtendedKeys=true;
     if(params.size() > 3)
         if(!params[3].get_bool())
@@ -1457,23 +1457,24 @@ Value listtransactions(const Array& params, bool fHelp)
 
     Array ret;
 
-    CWallet::TxItems txOrdered = pwallet->OrderedTxItems(fIncludeExtendedKeys);
+   // CWallet::TxItems txOrdered = pwallet->OrderedTxItems(fIncludeExtendedKeys);
 
     
-    if (nFrom > (int)txOrdered.size())
-        nFrom = txOrdered.size();
-    if ((nFrom + nCount) > (int)txOrdered.size())
-        nCount = txOrdered.size() - nFrom;
+    if (nFrom > (int)pwallet->mapWallet.size())
+        nFrom = pwallet->mapWallet.size();
+    if ((nFrom + nCount) > (int)pwallet->mapWallet.size())
+        nCount = pwallet->mapWallet.size() - nFrom;
     // iterate backwards until we have nCount items to return:    
     int n=0;
-    for (CWallet::TxItems::reverse_iterator it = txOrdered.rbegin(); it != txOrdered.rend(); it++)
+    for (std::map<uint256, CWalletTx>::reverse_iterator it = pwallet->mapWallet.rbegin(); it != pwallet->mapWallet.rend(); it++)
     {
         n++;
         if(n<nFrom)
             continue;
         if(n>nFrom+nCount)
             break;
-        CWalletTx *const pwtx = (*it).second.first;
+        CWalletTx *const pwtx = &(*it).second;
+        std::map<int,CScript> *pmapPrevoutScriptPubKey=&((*it).second.mapPrevoutScriptPubKey);
         //LogPrintf("rpcwallet listtxs pos :%i \n",it->first);
 //        if (pwtx != 0)
 //            ListTransactions(*pwtx, strAccount, 0, true, ret, filter);
@@ -1482,7 +1483,7 @@ Value listtransactions(const Array& params, bool fHelp)
 //            AcentryToJSON(*pacentry, strAccount, ret);
         //LogPrintf("rpcwallet listtxs ntx :%u\n",ret.size());
         Object objTx;
-        TxToJSON(*pwtx,pwtx->hashBlock,objTx);
+        TxToJSON(*pwtx,pwtx->hashBlock,objTx,1024,pmapPrevoutScriptPubKey);
         //LogPrintf("rpcwallet listtxs txtojson done %i\n",it->first);
         ret.push_back(objTx);
         //if ((int)ret.size() >= (nCount+nFrom)) break;

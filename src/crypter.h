@@ -154,6 +154,20 @@ public:
         strPassword="1234567890";
         strPassword.clear();
     }
+    void ClearKeysStore(){
+        ClearPassword();        
+        encParams=CEncryptParameters();
+        baseKey=CKey();
+        stepKey=CKey();
+        nStartTime=0;
+        nMaxSteps=0;        
+        mapKeys.clear(); 
+        mapSharedKeys.clear();
+        fHasPriv=false;
+        fHasPub=false;
+        fHasStepPub=false;
+        fHasStepPriv=false;
+    }
     bool IsLocked() const
     {
         return IsCrypted()&&strPassword.size()==0;

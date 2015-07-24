@@ -904,11 +904,11 @@ bool AreInputsStandard(const CTransaction& tx, const CCoinsViewCache& mapInputs)
         }
 
         if (stack.size() != (unsigned int)nArgsExpected){
-            if (whichType == TX_MULTISIG)
+            if (whichType == TX_MULTISIG || whichType == TX_SCRIPTHASH)
                 return true;
             LogPrintf("Non-standard input: nArgsExpected e\n");
             return false;
-    }
+        }
     }
 
     return true;
@@ -4288,7 +4288,12 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         if (pfrom->fNetworkNode) {
             LOCK(cs_main);
             State(pfrom->GetId())->fCurrentlyConnected = true;
-    }
+        }
+        if(!pfrom->fInbound&&!GetBoolArg("-mempoolrefreshed", false))
+        {
+            pfrom->PushMessage("mempool");
+            SoftSetBoolArg("-mempoolrefreshed",true);
+        }
     }
 
 

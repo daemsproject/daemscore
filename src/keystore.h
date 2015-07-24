@@ -81,6 +81,7 @@ public:
     bool HasSharedKey(const CPubKey IDLocal,const CPubKey IDForeign);
     
     void ClearSharedKey(const CPubKey IDLocal=CPubKey(),const CPubKey IDForeign=CPubKey());
+
     
     void StoreSharedKey(const CPubKey IDLocal,const CPubKey IDForeign,const CKey& sharedKey);
     

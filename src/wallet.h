@@ -552,7 +552,9 @@ public:
     unsigned int nTimeReceived; //! time received by this node
     unsigned int nTimeSmart;
     char fFromMe;
+    
     std::string strFromAccount;
+    
     int64_t nOrderPos; //! position in ordered transaction list
 
     // memory only
@@ -565,6 +567,8 @@ public:
     mutable bool fImmatureWatchCreditCached;
     mutable bool fAvailableWatchCreditCached;
     mutable bool fChangeCached;
+    mutable bool fPrevoutScriptPubKeyCached;
+    mutable bool fHasLockedVout;
     mutable CAmount nDebitCached;
     mutable CAmount nCreditCached;
     mutable CAmount nImmatureCreditCached;
@@ -574,6 +578,7 @@ public:
     mutable CAmount nImmatureWatchCreditCached;
     mutable CAmount nAvailableWatchCreditCached;
     mutable CAmount nChangeCached;
+    std::map<int,CScript> mapPrevoutScriptPubKey;
 
     CWalletTx()
     {
@@ -613,7 +618,9 @@ public:
         fWatchCreditCached = false;
         fImmatureWatchCreditCached = false;
         fAvailableWatchCreditCached = false;
+        fPrevoutScriptPubKeyCached = false;
         fChangeCached = false;
+        fHasLockedVout=true;
         nDebitCached = 0;
         nCreditCached = 0;
         nImmatureCreditCached = 0;
@@ -730,93 +737,78 @@ public:
         int64_t credit = 0;
         if (filter & ISMINE_SPENDABLE)
         {
-            // GetBalance can assume transactions in mapWallet won't change
-            //if (fCreditCached)
-            //    credit += nCreditCached;
-            //else
-            //{
-                nCreditCached = pwallet->GetCredit(*this, ISMINE_SPENDABLE);
-                fCreditCached = true;
+             //GetBalance can assume transactions in mapWallet won't change
+            if (fCreditCached)
                 credit += nCreditCached;
-            //}
+            else
+            {
+                nCreditCached = pwallet->GetCredit(*this, ISMINE_SPENDABLE);
+                fCreditCached = !fHasLockedVout;
+                credit += nCreditCached;
+            }
         }
         if (filter & ISMINE_WATCH_ONLY)
         {
-            //if (fWatchCreditCached)
-            //    credit += nWatchCreditCached;
-           // else
-           // {
-                nWatchCreditCached = pwallet->GetCredit(*this, ISMINE_WATCH_ONLY);
-                fWatchCreditCached = true;
+            if (fWatchCreditCached)
                 credit += nWatchCreditCached;
-           // }
+            else
+            {
+                nWatchCreditCached = pwallet->GetCredit(*this, ISMINE_WATCH_ONLY);
+                fWatchCreditCached = !fHasLockedVout;
+                credit += nWatchCreditCached;
+            }
         }
         return credit;
     }
 
     CAmount GetImmatureCredit(bool fUseCache=true) const
     {
-    //        if (GetBlocksToMaturity() > 0 && IsInMainChain())
-     //   {
-     //       if (fUseCache && fImmatureCreditCached)
-    //            return nImmatureCreditCached;
-    //        nImmatureCreditCached = pwallet->GetCredit(*this, ISMINE_SPENDABLE);
-    //        fImmatureCreditCached = true;
-    //        return nImmatureCreditCached;
-    //    }
-//
-//        return 0;
+        if (fUseCache && fImmatureCreditCached)
+            return nImmatureCreditCached;    
         if (pwallet == 0)
             return 0;
-       // if (fUseCache && fImmatureCreditCached)
-       //     return nImmatureCreditCached;
+        
 
         CAmount nCredit = 0;
         uint256 hashTx = GetHash();
+        fHasLockedVout=false;
         for (unsigned int i = 0; i < vout.size(); i++)
         {
             if (GetBlocksToMaturity(i) == 0)
             continue;
+            fHasLockedVout=true;
             if (!pwallet->IsSpent(hashTx, i,vout[i].nValue))
             {
                 const CTxOut &txout = vout[i];
                 nCredit += pwallet->GetCredit(txout, ISMINE_SPENDABLE);
                 if (!MoneyRange(nCredit))
                     throw std::runtime_error("CWalletTx::GetAvailableCredit() : value out of range");
-    }
+            }
         }
 
- nImmatureCreditCached = nCredit;
-        fImmatureCreditCached = true;
+        nImmatureCreditCached = nCredit;
+        fImmatureCreditCached = !fHasLockedVout;
         return nCredit;
     }
     
-    CAmount GetAvailableCredit(bool fUseCache=true) const;
+    CAmount GetAvailableCredit(bool fUseCache=true,CCoinsViewCache* view=NULL) const;
     
 
     CAmount GetImmatureWatchOnlyCredit(const bool& fUseCache=true) const
     {
-       // if (GetBlocksToMaturity() > 0 && IsInMainChain())
-        //{
-        //    if (fUseCache && fImmatureWatchCreditCached)
-       //         return nImmatureWatchCreditCached;
-      //      nImmatureWatchCreditCached = pwallet->GetCredit(*this, ISMINE_WATCH_ONLY);
-       //     fImmatureWatchCreditCached = true;
-       //     return nImmatureWatchCreditCached;
-        //}
-
-        //return 0;
         if (pwallet == 0)
             return 0;
-        //if (fUseCache && fImmatureWatchCreditCached)
-        //    return nImmatureWatchCreditCached;
+        if (fUseCache && fImmatureWatchCreditCached)
+            return nImmatureWatchCreditCached;
 
         CAmount nCredit = 0;
         uint256 hashTx = GetHash();
+        fHasLockedVout=false;
         for (unsigned int i = 0; i < vout.size(); i++)
         {
             if (GetBlocksToMaturity(i) == 0)
             continue;
+            fHasLockedVout=true;
             if (!pwallet->IsSpent(hashTx, i,vout[i].nValue))
             {
                 const CTxOut &txout = vout[i];
@@ -826,7 +818,7 @@ public:
     }
         }
         nImmatureWatchCreditCached = nCredit;
-        fImmatureWatchCreditCached = true;
+        fImmatureWatchCreditCached = !fHasLockedVout;
         return nCredit;
     }
 
@@ -837,8 +829,8 @@ public:
 
 
 
-        //if (fUseCache && fAvailableWatchCreditCached)
-        //    return nAvailableWatchCreditCached;
+        if (fUseCache && fAvailableWatchCreditCached)
+            return nAvailableWatchCreditCached;
 
         CAmount nCredit = 0;
         for (unsigned int i = 0; i < vout.size(); i++)
@@ -856,7 +848,7 @@ public:
         }
 
         nAvailableWatchCreditCached = nCredit;
-        fAvailableWatchCreditCached = true;
+        fAvailableWatchCreditCached = !fHasLockedVout;
         return nCredit;
     }
 
