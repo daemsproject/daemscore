@@ -15,6 +15,7 @@
 #include "crypter.h"
 #include "keystore.h"
 #include "hash.h"
+#include "clientversion.h"
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 #include <boost/scoped_ptr.hpp>
@@ -547,7 +548,34 @@ bool CWalletDB::GetIdObj(const std::string& strId,json_spirit::Object& objId){
         }    
     return false;
 }
-
+std::vector<CWalletTx> CWalletDB::ReadUnConfirmedTxs()
+{
+    std::vector<CWalletTx> vunconfirmedTxs;
+    std::string strFileName="unconfirmedtxs";      
+    json_spirit::Value valId;
+    filesystem::path fpFile=GetDataDir()  / strFileName;
+    string strFileContent;
+    if(FileToString(fpFile.string(), strFileContent)){
+        LogPrintf("ReadUnConfirmedTxs %s \n",HexStr(strFileContent.begin(),strFileContent.end()));
+        CDataStream ss(strFileContent.c_str(),strFileContent.c_str()+strFileContent.size(), 2, CLIENT_VERSION);
+        LogPrintf("ReadUnConfirmedTxs ss size: %i",ss.size());
+        ss>>vunconfirmedTxs;
+    } 
+         return vunconfirmedTxs;
+}
+bool CWalletDB::WriteUnConfirmedTxs(std::vector<CWalletTx> vunconfirmedTxs)
+{    
+    std::string strFileName="unconfirmedtxs";      
+    json_spirit::Value valId;
+    filesystem::path fpFile=GetDataDir()  / strFileName;   
+    CDataStream ss( 2, CLIENT_VERSION);
+        ss<<vunconfirmedTxs;         
+         ofstream fout;  
+    fout.open(fpFile.string().c_str());  
+    assert(fout.is_open());  
+    fout << ss.str() << endl; 
+    return true;
+}
 bool CWalletDB::WriteName(const std::string& strAddress, const std::string& strName)
 {
     nWalletDBUpdated++;

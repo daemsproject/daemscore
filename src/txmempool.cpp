@@ -439,6 +439,12 @@ bool CTxMemPool::addUnchecked(const uint256& hash, const CTxMemPoolEntry &entry)
             mapNextTx[tx.vin[i].prevout] = CInPoint(&tx, i);
         nTransactionsUpdated++;
         totalTxSize += entry.GetTxSize();
+        std::list<CTransaction> removed;
+        while(totalTxSize>nMaxMempoolSize)
+        {
+            CTransaction tx=mapTx[queue.back()].GetTx();
+            remove(tx, removed, true);  
+        }
     }
     return true;
 }

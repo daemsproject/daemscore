@@ -106,7 +106,8 @@ static const unsigned int DATABASE_WRITE_INTERVAL = 360;//3600
 static const unsigned int MAX_REJECT_MESSAGE_LENGTH = 111;
 // Tx entrance threshould to mempool, set at 10 blocks
 static const unsigned int MEMPOOL_ENTRANCE_THRESHOLD = DEFAULT_BLOCK_MAX_SIZE * 40;
-
+//max mempool size,to avoid memory overflow crash. set at 960 blocks~=1.1GB
+//static const unsigned int DEFAULT_MAX_MEMPOOL_SIZE = DEFAULT_BLOCK_MAX_SIZE * 960;
 /** Dust Threshold: outputs below this value in bytes will be rejected  */
 static const unsigned int DUST_THRESHOLD = 104; // bytes
 
@@ -146,6 +147,7 @@ extern bool fCheckBlockIndex;
 extern unsigned int nCoinCacheSize;
 extern CFeeRate minRelayTxFee;
 extern bool fAlerts;
+extern uint64_t nMaxMempoolSize;
 
 /** Best header we've seen so far (used for getheaders queries' starting points). */
 extern CBlockIndex *pindexBestHeader;

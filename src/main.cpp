@@ -54,7 +54,7 @@ bool fIsBareMultisigStd = true;
 bool fCheckBlockIndex = false;
 unsigned int nCoinCacheSize = 5000;
 bool fAlerts = DEFAULT_ALERTS;
-
+uint64_t nMaxMempoolSize=DEFAULT_BLOCK_MAX_SIZE * 960;
 
 CFeeRate minRelayTxFee = CFeeRate(1000);
 
@@ -1293,7 +1293,7 @@ bool GetTransaction(const uint256 &hash, CTransaction &txOut, uint256 &hashBlock
                     //LogPrintf("main:gettransaction9\n");
                     return error("%s : Deserialize or I/O error - %s", __func__, e.what());
                 }
-                LogPrintf("Getransaction, txid:%s,block hash:%s,block prev:%s ,blockheight:%i\n",hash.GetHex(),header.GetHash().GetHex(),header.hashPrevBlock.GetHex(),header.nBlockHeight);
+                //LogPrintf("Getransaction, txid:%s,block hash:%s,block prev:%s ,blockheight:%i\n",hash.GetHex(),header.GetHash().GetHex(),header.hashPrevBlock.GetHex(),header.nBlockHeight);
                 hashBlock = header.GetHash();
                 //LogPrintf("main:gettransaction10\n");
                 if (txOut.GetHash() != hash)
@@ -4781,7 +4781,13 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         std::vector<uint256> vtxid;
         mempool.queryHashes(vtxid);
         vector<CInv> vInv;
-        BOOST_FOREACH(uint256& hash, vtxid) {
+        unsigned int queueLength=0;    
+        for (unsigned int i=0;i<mempool.queue.size();i++){        
+            queueLength+=mempool.mapTx[mempool.queue[i]].GetTxSize();
+            if (queueLength>MEMPOOL_ENTRANCE_THRESHOLD)
+                break;
+            uint256 hash=mempool.queue[i];        
+       // BOOST_FOREACH(uint256& hash, vtxid) {
             CInv inv(MSG_TX, hash);
             CTransaction tx;
             bool fInMemPool = mempool.lookup(hash, tx);

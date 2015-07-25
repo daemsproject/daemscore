@@ -884,7 +884,9 @@ Value sendrawtransaction(const Array& params, bool fHelp)
         throw JSONRPCError(RPC_TRANSACTION_ALREADY_IN_CHAIN, "transaction already in block chain");
     }
     RelayTransaction(tx);
-
+    CWalletTx wtx(pwalletMain,tx);
+    wtx.nTimeReceived=GetTime();
+    pwalletMain->addUnconfirmedTx(wtx);
     return hashTx.GetHex();
 }
 CWalletTx CreateRawTransaction(CPaymentOrder pr,bool& fRequestPassword,CWallet*& pwallet){

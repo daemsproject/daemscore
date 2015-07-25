@@ -646,6 +646,7 @@ bool AppInit2(boost::thread_group& threadGroup)
     // Make sure enough file descriptors are available
     int nBind = std::max((int)mapArgs.count("-bind") + (int)mapArgs.count("-whitebind"), 1);
     nMaxConnections = GetArg("-maxconnections", 125);
+    nMaxMempoolSize = GetArg("-maxmempoolsize", 960)*DEFAULT_BLOCK_MAX_SIZE;
     nMaxConnections = std::max(std::min(nMaxConnections, (int)(FD_SETSIZE - nBind - MIN_CORE_FILEDESCRIPTORS)), 0);
     int nFD = RaiseFileDescriptorLimit(nMaxConnections + MIN_CORE_FILEDESCRIPTORS);
     if (nFD < MIN_CORE_FILEDESCRIPTORS)
@@ -1327,7 +1328,7 @@ bool AppInit2(boost::thread_group& threadGroup)
     if (pwalletMain) {
         //pwalletMain->LoadTxs();
         // Add wallet transactions that aren't already in a block to mapTransactions
-        //pwalletMain->ReacceptWalletTransactions();
+        pwalletMain->ReacceptWalletTransactions();
 
         // Run a thread to flush wallet periodically
         //threadGroup.create_thread(boost::bind(&ThreadFlushWalletDB, boost::ref(pwalletMain->strWalletFile)));

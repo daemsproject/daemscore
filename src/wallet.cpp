@@ -204,7 +204,7 @@ bool CWallet::SwitchToAccount(CPubKey idIn,bool fSetDefault){
 CPubKey CWallet::GenerateNewKey()
 {
     AssertLockHeld(cs_wallet); // mapKeyMetadata
-    bool fCompressed = CanSupportFeature(FEATURE_COMPRPUBKEY); // default to compressed public keys if we want 0.6.0 wallets
+    //bool fCompressed = CanSupportFeature(FEATURE_COMPRPUBKEY); // default to compressed public keys if we want 0.6.0 wallets
     nMaxSteps++;
     //CPubKey extPub=baseKey.pubKey;
     //extPub.AddSteps(stepKey.pubKey,nMaxSteps);
@@ -1044,7 +1044,7 @@ void CWalletTx::GetAmounts(list<COutputEntry>& listReceived,
             address = CNoDestination();
         }
 
-        COutputEntry output = {address, txout.nValue, (int)i};
+        COutputEntry output = {address, txout.nValue, (int)i,false};
 
         // If we are debited by the transaction, add the output as a "sent" entry
         if (nDebit > 0)
@@ -1057,7 +1057,7 @@ void CWalletTx::GetAmounts(list<COutputEntry>& listReceived,
     if(nExtOuts==0&&nDebit>0)//all vouts are mine,this is a in-wallet tx
     {
         
-            COutputEntry output = {CNoDestination(), nFee, 0};
+            COutputEntry output = {CNoDestination(), nFee, 0,false};
             listSent.push_back(output);
     }
         
@@ -1154,11 +1154,16 @@ int CWallet::ScanForWalletTransactions(CBlockIndex* pindexStart, bool fUpdate)
 void CWallet::ReacceptWalletTransactions()
 {
     LOCK2(cs_main, cs_wallet);
-    BOOST_FOREACH(PAIRTYPE(const uint256, CWalletTx)& item, mapWallet)
-    {
-        const uint256& wtxid = item.first;
-        CWalletTx& wtx = item.second;
-        assert(wtx.GetHash() == wtxid);
+    std::vector<CWalletTx> vunconfirmedTxs=pwalletdb->ReadUnConfirmedTxs();
+
+    for(std::vector<CWalletTx>::iterator it=vunconfirmedTxs.begin();it<vunconfirmedTxs.end();it++)
+        {       
+            CWalletTx& wtx=*it;
+    //BOOST_FOREACH(PAIRTYPE(const uint256, CWalletTx)& item, mapWallet)
+    //{
+        //const uint256& wtxid = item.first;
+        //CWalletTx& wtx = item.second;
+        //assert(wtx.GetHash() == wtxid);
 
         int nDepth = wtx.GetDepthInMainChain();
         if(nDepth < 0)
@@ -1169,10 +1174,15 @@ void CWallet::ReacceptWalletTransactions()
                 LOCK(mempool.cs);
                 wtx.AcceptToMemoryPool(false);
             }
-            else
-                mapWallet.erase(wtxid);
+           // else
+           //     mapWallet.erase(wtxid);
+        }
+        else if (nDepth>0)
+        {
+            vunconfirmedTxs.erase(it);
         }
     }
+    pwalletdb->WriteUnConfirmedTxs(vunconfirmedTxs);
 }
 
 void CWalletTx::RelayWalletTransaction()
@@ -1220,20 +1230,37 @@ void CWallet::ResendWalletTransactions()
         LOCK(cs_wallet);
         // Sort them in chronological order
         multimap<unsigned int, CWalletTx*> mapSorted;
-        BOOST_FOREACH(PAIRTYPE(const uint256, CWalletTx)& item, mapWallet)
-        {
-            CWalletTx& wtx = item.second;
+        std::vector<CWalletTx> vunconfirmedTxs=pwalletdb->ReadUnConfirmedTxs();
+
+        for(std::vector<CWalletTx>::iterator it=vunconfirmedTxs.begin();it<vunconfirmedTxs.end();it++)
+        {       
+            CWalletTx& wtx=*it;
+            if(wtx.GetDepthInMainChain()==0)
+            {
             // Don't rebroadcast until it's had plenty of time that
             // it should have gotten in already by now.
             if (nTimeBestReceived - (int64_t)wtx.nTimeReceived > 5 * 60)
                 mapSorted.insert(make_pair(wtx.nTimeReceived, &wtx));
+            }
+            else
+            {
+                vunconfirmedTxs.erase(it);
+            }
         }
         BOOST_FOREACH(PAIRTYPE(const unsigned int, CWalletTx*)& item, mapSorted)
         {
             CWalletTx& wtx = *item.second;
             wtx.RelayWalletTransaction();
         }
+        pwalletdb->WriteUnConfirmedTxs(vunconfirmedTxs);
     }
+}
+bool CWallet::addUnconfirmedTx(const CWalletTx& wtx)
+{
+    LOCK(cs_wallet);
+    std::vector<CWalletTx> vunconfirmedTxs=pwalletdb->ReadUnConfirmedTxs();
+    vunconfirmedTxs.push_back(wtx);
+    return pwalletdb->WriteUnConfirmedTxs(vunconfirmedTxs);
 }
 
 /** @} */ // end of mapWallet
@@ -1248,6 +1275,7 @@ void CWallet::ResendWalletTransactions()
 
 bool CWallet::LoadTxs(){
     //TODO load from disk file     
+    //ReAcceptWalletTransactions();
     std::vector<CPubKey> vIds;
         for (KeyMap::iterator it = mapKeys.begin(); it != mapKeys.end(); ++it)
             vIds.push_back(it->first);    
@@ -1746,6 +1774,7 @@ bool SignAndSendTx(CWallet* pwallet,const CWalletTx& tx,const int nSigType, cons
         }
      //LogPrintf("SignAndSendTx:acceptedto mempool\n");
      RelayTransaction(wtxSigned);
+     pwallet->addUnconfirmedTx(wtxSigned);
      LogPrintf("SignAndSendTx:sendtx :%s\n",EncodeHexTx(CTransaction(wtxSigned)));
      if(fDelete)
         delete pwallet;
@@ -1957,6 +1986,7 @@ bool CWallet::CommitTransaction(CWalletTx& wtxNew, CReserveKey& reservekey)
             return false;
         }
         wtxNew.RelayWalletTransaction();
+        addUnconfirmedTx(wtxNew);
     }
     return true;
 }

@@ -102,7 +102,7 @@ private:
     QAction *shopAction;
     QAction *domainNameAction;
     QAction *downloaderAction;
-    QAction *playerAction;
+    //QAction *playerAction;
     QAction *quitAction;
     
     //QAction *usedSendingAddressesAction;
@@ -126,6 +126,8 @@ private:
     //QAction *openRPCConsoleAction;
     //QAction *openAction;
     QAction *showHelpMessageAction;
+    QAction *settingsAction;
+    QAction *serviceManagerAction;
 
     QSystemTrayIcon *trayIcon;
     QMenu *trayIconMenu;
@@ -220,7 +222,7 @@ private slots:
     void gotoBrowserPage();  
     void gotoShopPage();
     void gotoDownloaderPage();
-    void gotTVPage();
+    void gotoSettingsPage();
     /** Show about dialog */    
     void aboutClicked();
     /** Show help message dialog */

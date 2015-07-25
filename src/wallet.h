@@ -270,6 +270,7 @@ public:
     int ScanForWalletTransactions(CBlockIndex* pindexStart, bool fUpdate = false);
     void ReacceptWalletTransactions();
     void ResendWalletTransactions();
+    bool addUnconfirmedTx(const CWalletTx& wtx);
     CAmount GetBalance(std::vector<CPubKey> vIds=std::vector<CPubKey>(0)) const;
     CAmount GetBalance(bool fRefresh=true) ;
     CAmount GetUnconfirmedBalance(bool fRefresh=true) ;

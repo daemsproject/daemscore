@@ -21,6 +21,8 @@
 #include "json/json_spirit_reader_template.h"
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_writer_template.h"
+//#include "wallet.h"
+
 class CAccount;
 class CAccountingEntry;
 struct CBlockLocator;
@@ -28,7 +30,7 @@ struct CBlockLocator;
 
 class CScript;
 class CWallet;
-
+class CWalletTx;
 class uint160;
 class uint256;
 
@@ -83,14 +85,14 @@ class CWalletDB
 public:
     std::string strCurrentWallet;
     int nWalletDBUpdated;
-    boost::filesystem::path fpWalletPath= GetDataDir() / "ids" ;
-    boost::filesystem::path fpConfFile= GetDataDir() / "ids" / "ids.conf";
+    boost::filesystem::path fpWalletPath;//= GetDataDir() / "ids" ;
+    boost::filesystem::path fpConfFile;//= GetDataDir() / "ids" / "ids.conf";
     CWalletDB()
     {   
         LogPrintf("Cwalletdb() \n");
-        //fpWalletPath = GetDataDir() / "ids" ; 
+        fpWalletPath = GetDataDir() / "ids" ; 
         boost::filesystem::create_directories(fpWalletPath);
-        //fpConfFile = GetDataDir() / "ids" / "ids.conf"; 
+        fpConfFile = GetDataDir() / "ids" / "ids.conf"; 
         nWalletDBUpdated=0;
         LogPrintf("Cwalletdb()2 %s\n",fpWalletPath.string());
     }    
@@ -127,8 +129,9 @@ public:
     
     bool WriteName(const std::string& strAddress, const std::string& strName);
     bool EraseName(const std::string& strAddress);
-    
-    
+   
+    bool WriteUnConfirmedTxs(std::vector<CWalletTx> vunconfirmedTxs);
+    std::vector<CWalletTx> ReadUnConfirmedTxs();
 
     
 
