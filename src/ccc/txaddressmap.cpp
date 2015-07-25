@@ -99,12 +99,13 @@ bool CTxAddressMap::AddNewTxs(const  std::map<CScript,CDiskTxPos> &mapTam){
 bool CTxAddressMap::RemoveTxs(const std::map<CScript,CDiskTxPos> &mapTam){
     std::map<CScript, std::vector<CDiskTxPos> >  mapTamList;
     std::vector<CDiskTxPos> vTxPos;
-    //LogPrintf("CTxAddressMap::removeTxs called  %s\n","837a12ff6edf48c868dd6e410ef7983ac9158eac OP_CHECKSIG");
+    //LogPrintf("CTxAddressMap::removeTxs called \n");
     for (std::map<CScript,CDiskTxPos>::const_iterator it=mapTam.begin(); it!=mapTam.end(); it++){          
         base->GetTxPosList(it->first,vTxPos);
-         //LogPrintf("txaddressmap.cpp:removetxs vtxpos length:%u \n",vTxPos.size());
-//        if (it->first.ToString()=="837a12ff6edf48c868dd6e410ef7983ac9158eac OP_CHECKSIG")
-//                LogPrintf("CTxAddressMap::removeTxs:script:%s, vtxpos size:%u\n",it->first.ToString(),vTxPos.size());
+        //LogPrintf("txaddressmap.cpp:removetxs pos to remove:%i,%i,%i \n",it->second.nFile,it->second.nPos,it->second.nTxOffset);
+        //LogPrintf("vtxpos length:%u data:\n",vTxPos.size());
+        //BOOST_FOREACH(const CDiskTxPos&pos, vTxPos) 
+        //        LogPrintf("%i,%i,%i  ",pos.nFile,pos.nPos,pos.nTxOffset);
         std::vector<CDiskTxPos>::iterator it2=find(vTxPos.begin(),vTxPos.end(),it->second);
         if (it2!=vTxPos.end()){             
                 vTxPos.erase(it2);            
@@ -117,7 +118,3 @@ bool CTxAddressMap::RemoveTxs(const std::map<CScript,CDiskTxPos> &mapTam){
     }
     return base->BatchWrite(mapTamList);           
 }
-//    bool getHistory(Script &scriptPubKey);
-//    bool getHistory();    
-//    bool getUnspent(Script &scriptPubKey);
-//    bool getUnspent();

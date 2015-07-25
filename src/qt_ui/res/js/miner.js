@@ -350,7 +350,7 @@ var Miner = new function () {
 
         $('.btn-primary').unbind().click(function () {
             if ($(this).html() == "Start Mining") {
-                BrowserAPI.setGenerate(true, accountID, $('select[name="kernels"]').val(),true ,function () {
+                BrowserAPI.setGenerate(true, accountID, $('select[name="kernels"]').val(),false ,function () {
                     startMining();
                     Miner.makeNotice('success', 'start-success', 'Mining started');
                 }, function (e) {
@@ -360,7 +360,7 @@ var Miner = new function () {
                 });
             }
             else
-                BrowserAPI.setGenerate(false, accountID, $('select[name="kernels"]').val(),true, function () {
+                BrowserAPI.setGenerate(false, accountID, $('select[name="kernels"]').val(),false, function () {
                     stopMining();
                 });
 

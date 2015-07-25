@@ -1220,7 +1220,7 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
         if (fRejectInsaneFee && nFees > ::minRelayTxFee.GetFee(nSize) * 10000)
             return state.Invalid(error("AcceptToMemoryPool: : insane fees %s, %d > %d",hash.ToString(),nFees, ::minRelayTxFee.GetFee(nSize) * 10000),
                     REJECT_INVALID, "insane fees");
-        if (pool.getEntranceFeeRate(MEMPOOL_ENTRANCE_THRESHOULD)>=tx.GetFeeRate())
+        if (pool.getEntranceFeeRate(MEMPOOL_ENTRANCE_THRESHOLD)>=tx.GetFeeRate())
             return state.Invalid(error("AcceptToMemoryPool: : feerate lower than threshould %s, fee rate %d",hash.ToString(),tx.GetFeeRate()),
                     REJECT_INVALID, "insufficient fees");
         // Check against previous transactions
@@ -1293,6 +1293,7 @@ bool GetTransaction(const uint256 &hash, CTransaction &txOut, uint256 &hashBlock
                     //LogPrintf("main:gettransaction9\n");
                     return error("%s : Deserialize or I/O error - %s", __func__, e.what());
                 }
+                LogPrintf("Getransaction, txid:%s,block hash:%s,block prev:%s ,blockheight:%i\n",hash.GetHex(),header.GetHash().GetHex(),header.hashPrevBlock.GetHex(),header.nBlockHeight);
                 hashBlock = header.GetHash();
                 //LogPrintf("main:gettransaction10\n");
                 if (txOut.GetHash() != hash)
@@ -1341,15 +1342,32 @@ bool GetTransaction(const CDiskTxPos &postx, CTransaction &txOut, uint256 &hashB
         LOCK(cs_main);            
                 CAutoFile file(OpenBlockFile(postx, true), SER_DISK, CLIENT_VERSION);
                 if (file.IsNull())
+                {
+                    LogPrintf("Getransaction by pos, file not found \n");
                     return error("%s: OpenBlockFile failed", __func__);
+                }
                 CBlockHeader header;
                 try {
                     file >> header;
                     fseek(file.Get(), postx.nTxOffset, SEEK_CUR);
                     file >> txOut;
                 } catch (std::exception &e) {
+                    LogPrintf("Getransaction by pos, error: %s\n",e.what());
                     return error("%s : Deserialize or I/O error - %s", __func__, e.what());
                 }
+                CValidationState state;
+                if(!CheckTransaction(txOut,state))
+                {
+                    //CBlock block;
+                    LogPrintf("Getransaction by pos, error: tx invalid file%i blockpos %i txpos%i\n",postx.nFile,postx.nPos,postx.nTxOffset);
+                    //ReadBlockFromDisk(block,(CDiskBlockPos) postx);
+                   // BOOST_FOREACH(CTransaction& tx,block)
+                    //        LogPrintf();
+                    
+                    return false;
+                }
+                //LogPrintf("Getransaction by pos, tx:%s,block hash:%s,block prev:%s ,blockheight:%i\n",txOut.ToString(),header.GetHash().GetHex(),header.hashPrevBlock.GetHex(),header.nBlockHeight);
+               
                 hashBlock = header.GetHash();                
                 return true;
 }
@@ -1416,17 +1434,31 @@ bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTr
             uint256 hashBlock;
             //LogPrintf("main:gettx:cdisktxpos after sort file:%i,pos:%u,txpos:%i\n",it2->nFile,it2->nPos,it2->nTxOffset);
             if (nTx>=nOffset&&nTx<nOffset+nNumber)
-                if(GetTransaction(*it2, txOut, hashBlock)){
+            {
+                if(GetTransaction(*it2, txOut, hashBlock))
+                {
                     //LogPrintf("main:gettxhashBlock %s\n",hashBlock.ToString());
-                    if (fNoContent){
+                    if (fNoContent)
+                    {
                         CTransaction newTx;
                         txOut.ClearContent(newTx);                
                         vTxs.push_back(make_pair(newTx,hashBlock));
                     }                
                     else
                         vTxs.push_back(make_pair(txOut,hashBlock));
+                    nTx++;
                 }
-            nTx++;
+                else
+                {
+                    std::cout<<"transaction not found, remove it from tam \n";
+                    //remove this bad tx from tam
+                    std::map<CScript,CDiskTxPos> mapTam;
+                    BOOST_FOREACH(const CScript &id, vIds)
+                        mapTam[id]=*it2;
+                    pTxAddressMap->RemoveTxs(mapTam);                   
+                }
+            }
+            
         }
     return true;
 }
@@ -1766,7 +1798,7 @@ void UpdateTxAddressMap(const CTransaction& tx,const CDiskTxPos& pos,CValidation
             }           
             
             mapTam[coins->vout[prevout.n].scriptPubKey]=pos;
-            //mapTam.insert(std::make_pair(coins->vout[prevout.n].scriptPubKey,pos));
+            
             
       }
     }
@@ -1774,9 +1806,7 @@ void UpdateTxAddressMap(const CTransaction& tx,const CDiskTxPos& pos,CValidation
         //if address is empty don't record it
         if (txout.scriptPubKey.size()==0)
             continue;        
-        //if (mapTam.find(txout.scriptPubKey)==mapTam.end()){
-            //mapTam.insert(std::make_pair(txout.scriptPubKey,pos));
-        //}
+        
         mapTam[txout.scriptPubKey]=pos;
     }
     bool ret;
@@ -2050,6 +2080,8 @@ bool DisconnectBlock(CBlock& block, CValidationState& state, CBlockIndex* pindex
          CDiskTxPos postx;
         if (pblocktree->ReadTxIndex(hash, postx))
             UpdateTxAddressMap(tx,postx,state,view,true);
+        else
+            std::cout<<"disconnect block tx pos not found:"<<hash.GetHex()<<"\n";
     }
 
     // move best block pointer to prevout block
@@ -2402,7 +2434,10 @@ bool static DisconnectTip(CValidationState &state) {
     // Read block from disk.
     CBlock block;
     if (!ReadBlockFromDisk(block, pindexDelete))
+    {
+        LogPrintf("DisconnectTip:can't read block:%s \n",pindexDelete->GetBlockHash().ToString());
         return state.Abort("Failed to read block");
+    }
     // Apply the block atomically to the chain state.
     int64_t nStart = GetTimeMicros();
     {

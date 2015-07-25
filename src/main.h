@@ -101,11 +101,11 @@ static const unsigned int MAX_HEADERS_RESULTS = 2000;
  *  harder). We'll probably want to make this a per-peer adaptive value at some point. */
 static const unsigned int BLOCK_DOWNLOAD_WINDOW = 1024;
 /** Time to wait (in seconds) between writing blockchain state to disk. */
-static const unsigned int DATABASE_WRITE_INTERVAL = 3600;
+static const unsigned int DATABASE_WRITE_INTERVAL = 360;//3600
 /** Maximum length of reject messages. */
 static const unsigned int MAX_REJECT_MESSAGE_LENGTH = 111;
 // Tx entrance threshould to mempool, set at 10 blocks
-static const unsigned int MEMPOOL_ENTRANCE_THRESHOULD = DEFAULT_BLOCK_MAX_SIZE*10;
+static const unsigned int MEMPOOL_ENTRANCE_THRESHOLD = DEFAULT_BLOCK_MAX_SIZE * 40;
 
 /** Dust Threshold: outputs below this value in bytes will be rejected  */
 static const unsigned int DUST_THRESHOLD = 104; // bytes

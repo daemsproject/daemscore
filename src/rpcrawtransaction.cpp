@@ -68,7 +68,7 @@ std::string GetBinaryContent(const std::string& content)
     return IsStringPrint(content)? std::string(content.begin(), content.end()): "";
 }
 
-void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry,const int nContentLenLimit,std::map<int,CScript>* pmapPrevoutScriptPubKey)
+void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry,const int nContentLenLimit,std::map<int,CScript>* pmapPrevoutScriptPubKey,int nTx)
 {
    // LogPrintf("TxToJSON1\n");    
     //LogPrintf("TxToJSON2\n");
@@ -81,7 +81,7 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry,con
 
     if (hashBlock!=0)
     { 
-        entry.push_back(Pair("ntx", GetNTx(txid)));    
+        entry.push_back(Pair("ntx", nTx>=0?nTx:GetNTx(txid)));    
     }
     //LogPrintf("TxToJSON4\n");
     Array vin;
@@ -105,6 +105,7 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry,con
             }
             else
             {
+               // LogPrintf("TxToJSON tx:%s,get prevout tx:%s\n",tx.GetHash().GetHex(),txin.prevout.hash.GetHex());
                 if (!GetTransaction(txin.prevout.hash, prevTx, tmphash, true))
                 {
                    LogPrintf("TxToJSON null vin prevout\n");

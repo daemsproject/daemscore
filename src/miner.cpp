@@ -413,8 +413,8 @@ void BitcoinMiner(CWallet *pwallet,bool fExtendID)
             if (Params().MiningRequiresPeers()) {
                 // Busy-wait for the network to come online so we don't waste time mining
                 // on an obsolete chain. In regtest mode we expect to fly solo.
-                while (vNodes.empty())
-                    MilliSleep(1000);
+                //while (vNodes.empty())
+                //    MilliSleep(1000);
             }
 
             //
@@ -504,8 +504,8 @@ void BitcoinMiner(CWallet *pwallet,bool fExtendID)
                 // Check for stop or if block needs to be rebuilt
                 boost::this_thread::interruption_point();
                 // Regtest mode doesn't require peers
-                if (vNodes.empty() && Params().MiningRequiresPeers())
-                    break;
+                //if (vNodes.empty() && Params().MiningRequiresPeers())
+                //    break;
                 if (pblock->nNonce >= 0xffff000000000000)
                     break;
                 if (mempool.GetTransactionsUpdated() != nTransactionsUpdatedLast && GetTime() - nStart > 60)

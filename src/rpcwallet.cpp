@@ -19,6 +19,7 @@
 #include <stdint.h>
 
 #include <boost/assign/list_of.hpp>
+#include <bits/stl_pair.h>
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_value.h"
 
@@ -1473,8 +1474,8 @@ Value listtransactions(const Array& params, bool fHelp)
             continue;
         if(n>nFrom+nCount)
             break;
-        CWalletTx *const pwtx = &(*it).second;
-        std::map<int,CScript> *pmapPrevoutScriptPubKey=&((*it).second.mapPrevoutScriptPubKey);
+        CWalletTx *const pwtx = &it->second;
+        std::map<int,CScript> *pmapPrevoutScriptPubKey=&(it->second.mapPrevoutScriptPubKey);
         //LogPrintf("rpcwallet listtxs pos :%i \n",it->first);
 //        if (pwtx != 0)
 //            ListTransactions(*pwtx, strAccount, 0, true, ret, filter);
@@ -1483,12 +1484,18 @@ Value listtransactions(const Array& params, bool fHelp)
 //            AcentryToJSON(*pacentry, strAccount, ret);
         //LogPrintf("rpcwallet listtxs ntx :%u\n",ret.size());
         Object objTx;
-        TxToJSON(*pwtx,pwtx->hashBlock,objTx,1024,pmapPrevoutScriptPubKey);
+        TxToJSON(*pwtx,pwtx->hashBlock,objTx,1024,pmapPrevoutScriptPubKey,pwtx->nIndex);
         //LogPrintf("rpcwallet listtxs txtojson done %i\n",it->first);
         ret.push_back(objTx);
         //if ((int)ret.size() >= (nCount+nFrom)) break;
     }
-    //LogPrintf("rpcwallet listtx  tx tojson done\n");
+//    for (std::map<uint256, CWalletTx>::reverse_iterator it = pwallet->mapWallet.rbegin(); it != pwallet->mapWallet.rend(); it++)
+//    {
+//         LogPrintf("\n txid:%s prevouts: ",it->second.GetHash().GetHex());
+//        for(int i=0;i<it->second.mapPrevoutScriptPubKey.size();i++)
+//        LogPrintf("%s ",it->second.mapPrevoutScriptPubKey[i].ToString());
+//    }
+        //LogPrintf("rpcwallet listtx  tx tojson done\n");
     // ret is newest to oldest
 
 //    Array::iterator first = ret.begin();
