@@ -954,10 +954,10 @@ public:
     bool SetUnit(const std::string& ccname, const std::string& cttStr);
     std::string ToHumanString();
     bool GetCcUnit(const_iterator& pc, cctype& ccRet, std::string& content) const;
-    bool ReadVarInt(const_iterator& pc, u_int64_t& n)const;
-    bool ReadCompactSize(const_iterator& pc, u_int64_t& n)const;
-    bool WriteVarInt(u_int64_t num);
-    bool WriteCompactSize(u_int64_t num);
+    bool ReadVarInt(const_iterator& pc, uint64_t& n)const;
+    bool ReadCompactSize(const_iterator& pc, uint64_t& n)const;
+    bool WriteVarInt(uint64_t num);
+    bool WriteCompactSize(uint64_t num);
     bool ReadData(const_iterator & pc, int len, std::string& str)const;
     bool ReadDataReverse(const_iterator & pc, int len, std::string& str)const;
     std::string TrimToHumanString(const std::string& str)const;

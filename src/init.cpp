@@ -133,7 +133,7 @@ public:
 
 static CCoinsViewDB *pcoinsdbview = NULL;
 static CCoinsViewErrorCatcher *pcoinscatcher = NULL;
-static CTxAddressMapViewDB *pTxAddressMapDBView = NULL;
+static CScript2TxPosViewDB *pScript2TxPosDBView = NULL;
 //static CDomainViewDB *pDomainDBView = NULL;
 
 
@@ -184,10 +184,10 @@ void Shutdown()
         pcoinsdbview = NULL;
         delete pblocktree;
         pblocktree = NULL;
-        delete pTxAddressMapDBView;
-        pTxAddressMapDBView = NULL; 
-        delete pTxAddressMap;
-        pTxAddressMap=NULL;
+        delete pScript2TxPosDBView;
+        pScript2TxPosDBView = NULL; 
+        delete pScript2TxPosDB;
+        pScript2TxPosDB=NULL;
         delete pDomainDBView;
         pDomainDBView = NULL;    
         delete pTagDBView;
@@ -1033,8 +1033,8 @@ bool AppInit2(boost::thread_group& threadGroup)
                 delete pcoinsdbview;
                 delete pcoinscatcher;
                 delete pblocktree;
-                delete pTxAddressMapDBView;
-                delete pTxAddressMap;
+                delete pScript2TxPosDBView;
+                delete pScript2TxPosDB;
                 delete pDomainDBView;
                 delete pTagDBView;
                 
@@ -1045,8 +1045,8 @@ bool AppInit2(boost::thread_group& threadGroup)
                 pcoinsdbview = new CCoinsViewDB(nCoinDBCache, false, fReindex);
                 pcoinscatcher = new CCoinsViewErrorCatcher(pcoinsdbview);
                 pcoinsTip = new CCoinsViewCache(pcoinscatcher);
-                pTxAddressMapDBView = new CTxAddressMapViewDB(nBlockTreeDBCache, false, fReindex);                
-                pTxAddressMap=new CTxAddressMap(pTxAddressMapDBView);
+                pScript2TxPosDBView = new CScript2TxPosViewDB(nBlockTreeDBCache, false, fReindex);                
+                pScript2TxPosDB=new CScript2TxPosDB(pScript2TxPosDBView);
                 pDomainDBView = new CDomainViewDB(fReindex);   
                 pTagDBView = new CTagViewDB(fReindex); 
                 

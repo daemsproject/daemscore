@@ -140,7 +140,7 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry,con
         out.push_back(Pair("satoshi", txout.nValue));
         out.push_back(Pair("n", (int64_t)i));
         if((int)txout.strContent.size()>nContentLenLimit)
-            out.push_back(Pair("contentlen", txout.strContent.size()));
+            out.push_back(Pair("contentlen", (int)txout.strContent.size()));
         else
         {
             out.push_back(Pair("content", HexStr(txout.strContent.begin(), txout.strContent.end())));

@@ -77,7 +77,7 @@ Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDe
             txs.push_back(tx.GetHash().GetHex());
     }
     result.push_back(Pair("tx", txs));
-    result.push_back(Pair("txCount", txs.size()));
+    result.push_back(Pair("txCount", (int)txs.size()));
     result.push_back(Pair("time", block.GetBlockTime()));
     result.push_back(Pair("nonce", (uint64_t)block.nNonce));
     result.push_back(Pair("bits", strprintf("%08x", block.nBits)));

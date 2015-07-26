@@ -57,6 +57,10 @@ public:
     //void showOutOfSyncWarning(bool fShow);
     void gotoWebPage(int nPageID,QUrl url=QUrl(""));
     void closeWebPage(int nPageID);
+    void installWebPage(const string strPageName);
+    bool readFileList(const std::string strFileList,std::string& strMainFile,json_spirit::Array& arrFiles);
+    bool copyQrcToDisc(const std::pair<string,string>& pair);
+    std::string qrcFileToString(const std::string fileName);
 private:
     //ClientModel *clientModel;
     //WalletModel *walletModel;

@@ -548,7 +548,7 @@ CBlockIndex* FindForkInGlobalIndex(const CChain& chain, const CBlockLocator& loc
 
 CCoinsViewCache *pcoinsTip = NULL;
 CBlockTreeDB *pblocktree = NULL;
-CTxAddressMap *pTxAddressMap=NULL;
+CScript2TxPosDB *pScript2TxPosDB=NULL;
 CDomainViewDB *pDomainDBView = NULL;
 CTagViewDB *pTagDBView = NULL;
 //////////////////////////////////////////////////////////////////////////////
@@ -1356,7 +1356,7 @@ bool GetTransaction(const CDiskTxPos &postx, CTransaction &txOut, uint256 &hashB
                     return error("%s : Deserialize or I/O error - %s", __func__, e.what());
                 }
                 CValidationState state;
-                if(!CheckTransaction(txOut,state))
+                if(!CheckBlockHeader(header,state)||!CheckTransaction(txOut,state))
                 {
                     //CBlock block;
                     LogPrintf("Getransaction by pos, error: tx invalid file%i blockpos %i txpos%i\n",postx.nFile,postx.nPos,postx.nTxOffset);
@@ -1450,12 +1450,12 @@ bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTr
                 }
                 else
                 {
-                    std::cout<<"transaction not found, remove it from tam \n";
+                    LogPrintf("transaction not found, remove it from Script2TxPosDB \n");
                     //remove this bad tx from tam
-                    std::map<CScript,CDiskTxPos> mapTam;
+                    std::map<CScript,CDiskTxPos> mappScript2TxPos;
                     BOOST_FOREACH(const CScript &id, vIds)
-                        mapTam[id]=*it2;
-                    pTxAddressMap->RemoveTxs(mapTam);                   
+                        mappScript2TxPos[id]=*it2;
+                    pScript2TxPosDB->RemoveTxs(mappScript2TxPos);                   
                 }
             }
             
@@ -1467,7 +1467,7 @@ bool GetDiskTxPoses (const std::vector<CScript>& vIds,std::vector<CDiskTxPos>& v
      
     for (std::vector<CScript>::const_iterator it = vIds.begin();it != vIds.end(); it++) {
         std::vector<CDiskTxPos> vTxPos;
-        pTxAddressMap->GetTxPosList(*it,vTxPos);
+        pScript2TxPosDB->GetTxPosList(*it,vTxPos);
         //LogPrintf("main:gettx: vtxpos size%u",vTxPos.size());
 
         for (std::vector<CDiskTxPos>::iterator it2 = vTxPos.begin();it2 != vTxPos.end(); it2++) {
@@ -1784,20 +1784,20 @@ void UpdateCoins(const CTransaction& tx, CValidationState &state, CCoinsViewCach
     // add outputs
     inputs.ModifyCoins(tx.GetHash())->FromTx(tx, nHeight);
 }
-void UpdateTxAddressMap(const CTransaction& tx,const CDiskTxPos& pos,CValidationState &state,const CCoinsViewCache& inputs,bool fErase){
-    std::map<CScript,CDiskTxPos> mapTam;//=std::map<CScript,CDiskTxPos>();    
-    //LogPrintf("UpdateTxAddressMap %s\n",tx.GetHash().ToString());
+void UpdateScript2TxPosDB(const CTransaction& tx,const CDiskTxPos& pos,CValidationState &state,const CCoinsViewCache& inputs,bool fErase){
+    std::map<CScript,CDiskTxPos> mapScript2TxPos; 
+   
     if(!tx.IsCoinBase()){        
       BOOST_FOREACH(const CTxIn &txin, tx.vin) {                  
             const COutPoint &prevout = txin.prevout;
             
             const CCoins *coins = inputs.AccessCoins(prevout.hash);  
             if (coins==NULL){
-                LogPrintf("UpdateTxAddressMap error null coin\n");
+                LogPrintf("UpdateScript2TxPosDB error null coin\n");
                 continue;
             }           
             
-            mapTam[coins->vout[prevout.n].scriptPubKey]=pos;
+            mapScript2TxPos[coins->vout[prevout.n].scriptPubKey]=pos;
             
             
       }
@@ -1807,13 +1807,13 @@ void UpdateTxAddressMap(const CTransaction& tx,const CDiskTxPos& pos,CValidation
         if (txout.scriptPubKey.size()==0)
             continue;        
         
-        mapTam[txout.scriptPubKey]=pos;
+        mapScript2TxPos[txout.scriptPubKey]=pos;
     }
     bool ret;
     if (fErase)
-        ret = pTxAddressMap->RemoveTxs(mapTam);
+        ret = pScript2TxPosDB->RemoveTxs(mapScript2TxPos);
     else
-        ret = pTxAddressMap->AddNewTxs(mapTam);    
+        ret = pScript2TxPosDB->AddNewTxs(mapScript2TxPos);    
     assert(ret);    
 }
 void UpdateDomainDB(const CTransaction& tx,const CBlock& block,const int nTx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse)
@@ -2076,10 +2076,10 @@ bool DisconnectBlock(CBlock& block, CValidationState& state, CBlockIndex* pindex
                 coins->vout[out.n] = undo.txout;
             }
         }
-        // undo txaddressmap
+        // undo UpdateScript2TxPosDB
          CDiskTxPos postx;
         if (pblocktree->ReadTxIndex(hash, postx))
-            UpdateTxAddressMap(tx,postx,state,view,true);
+            UpdateScript2TxPosDB(tx,postx,state,view,true);
         else
             std::cout<<"disconnect block tx pos not found:"<<hash.GetHex()<<"\n";
     }
@@ -2243,7 +2243,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
         ///LogPrintf("%s : 21", __func__);
         if(!fJustCheck)
         {
-            UpdateTxAddressMap(tx,pos,state,view,false);
+            UpdateScript2TxPosDB(tx,pos,state,view,false);
             UpdateDomainDB(tx,block,i,state,view,false);
             UpdateTagDB(tx,block,i,state,view,false);
         }

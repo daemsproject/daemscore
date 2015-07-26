@@ -21,6 +21,8 @@
 #include "jsinterface.h"
 #include "ui_interface.h"
 #include "util.h"
+#include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
 #include <QAction>
 #include <QActionGroup>
 #include <QFileDialog>
@@ -70,113 +72,14 @@ MainView::MainView(QString languageIn,BitcoinGUI *parent,JsInterface *_js):
         setCurrentWidget(*vWebPages.begin());
 //    for (std::vector<WebPage*>::iterator it=vWebPages.begin();it!=vWebPages.end();it++)
 //        addWidget(*it);
-    //addWidget(overviewPage);
-    //addWidget(transactionsPage);
-    //addWidget(receiveCoinsPage);
-    //addWidget(sendCoinsPage);
 
-    // Clicking on a transaction on the overview pre-selects the transaction on the transaction history page
-    //connect(overviewPage, SIGNAL(transactionClicked(QModelIndex)), transactionView, SLOT(focusTransaction(QModelIndex)));
 
-    // Double-clicking on a transaction on the transaction history page shows details
-    //connect(transactionView, SIGNAL(doubleClicked(QModelIndex)), transactionView, SLOT(showDetails()));
-
-    // Clicking on "Export" allows to export the transaction list
-    //connect(exportButton, SIGNAL(clicked()), transactionView, SLOT(exportClicked()));
-
-    // Pass through messages from sendCoinsPage
-    //connect(sendCoinsPage, SIGNAL(message(QString,QString,unsigned int)), this, SIGNAL(message(QString,QString,unsigned int)));
-    // Pass through messages from transactionView
-    //connect(transactionView, SIGNAL(message(QString,QString,unsigned int)), this, SIGNAL(message(QString,QString,unsigned int)));
-    //if (gui)
-    //{
-        // Clicking on a transaction on the overview page simply sends you to transaction history page
-        //connect(overviewPage, SIGNAL(transactionClicked(QModelIndex)), gui, SLOT(gotoHistoryPage()));
-
-        // Receive and report messages
-       // connect(this, SIGNAL(message(QString,QString,unsigned int)), gui, SLOT(message(QString,QString,unsigned int)));
-
-        // Pass through encryption status changed signals
-        //connect(this, SIGNAL(encryptionStatusChanged(int)), gui, SLOT(setEncryptionStatus(int)));
-
-        // Pass through transaction notifications
-        //connect(this, SIGNAL(incomingTransaction(QString,int,CAmount,QString,QString)), gui, SLOT(incomingTransaction(QString,int,CAmount,QString,QString)));
-    //}
 }
 
 MainView::~MainView()
 {
 }
 
-//void MainView::setBitcoinGUI(BitcoinGUI *gui)
-//{
-//    if (gui)
-//    {
-        
-
-        // Receive and report messages
-        //connect(this, SIGNAL(message(QString,QString,unsigned int)), gui, SLOT(message(QString,QString,unsigned int)));
-
-        // Pass through encryption status changed signals
-        //connect(this, SIGNAL(encryptionStatusChanged(int)), gui, SLOT(setEncryptionStatus(int)));
-
-        // Pass through transaction notifications
-        //connect(this, SIGNAL(incomingTransaction(QString,int,CAmount,QString,QString)), gui, SLOT(incomingTransaction(QString,int,CAmount,QString,QString)));
-//    }
-//}
-
-//void MainView::setClientModel(ClientModel *clientModel)
-//{
-//    this->clientModel = clientModel;
-
-//}
-
-//void MainView::setWalletModel(WalletModel *walletModel)
-//{
-    //this->walletModel = walletModel;
-
-    // Put transaction list in tabs
-    //walletPage->setWalletModel(walletModel);
-
-
-    //if (walletModel)
-    //{
-        // Receive and pass through messages from wallet model
-        //connect(walletModel, SIGNAL(message(QString,QString,unsigned int)), this, SIGNAL(message(QString,QString,unsigned int)));
-
-        // Handle changes in encryption status
-        //connect(walletModel, SIGNAL(encryptionStatusChanged(int)), this, SIGNAL(encryptionStatusChanged(int)));
-        //updateEncryptionStatus();
-
-        // Balloon pop-up for new transaction
-        //connect(walletModel->getTransactionTableModel(), SIGNAL(rowsInserted(QModelIndex,int,int)),
-        //        this, SLOT(processNewTransaction(QModelIndex,int,int)));
-
-        // Ask for passphrase if needed
-        //connect(walletModel, SIGNAL(requireUnlock()), this, SLOT(unlockWallet()));
-
-        // Show progress dialog
-        //connect(walletModel, SIGNAL(showProgress(QString,int)), this, SLOT(showProgress(QString,int)));
-    //}
-//}
-
-//void MainView::processNewTransaction(const QModelIndex& parent, int start, int /*end*/)
-//{
-//    // Prevent balloon-spam when initial block download is in progress
-//    if (!walletModel || !clientModel || clientModel->inInitialBlockDownload())
-//        return;
-//
-//    TransactionTableModel *ttm = walletModel->getTransactionTableModel();
-//    if (!ttm || ttm->processingQueuedTransactions())
-//        return;
-//
-//    QString date = ttm->index(start, TransactionTableModel::Date, parent).data().toString();
-//    qint64 amount = ttm->index(start, TransactionTableModel::Amount, parent).data(Qt::EditRole).toULongLong();
-//    QString type = ttm->index(start, TransactionTableModel::Type, parent).data().toString();
-//    QString address = ttm->index(start, TransactionTableModel::ToAddress, parent).data().toString();
-//
-//    emit incomingTransaction(date, walletModel->getOptionsModel()->getDisplayUnit(), amount, type, address);
-//}
 void MainView::gotoWebPage(int nPageID,QUrl url)
 {
     LogPrintf("gotowebpage pageid:%i,url:%s \n",nPageID,url.toString().toStdString());
@@ -205,116 +108,6 @@ void MainView::closeWebPage(int nPageID){
     }
 }
 
-//
-//void MainView::gotoSignMessageTab(QString addr)
-//{
-//    // calls show() in showTab_SM()
-//    SignVerifyMessageDialog *signVerifyMessageDialog = new SignVerifyMessageDialog(this);
-//    signVerifyMessageDialog->setAttribute(Qt::WA_DeleteOnClose);
-//    signVerifyMessageDialog->setModel(walletModel);
-//    signVerifyMessageDialog->showTab_SM(true);
-//
-//    if (!addr.isEmpty())
-//        signVerifyMessageDialog->setAddress_SM(addr);
-//}
-//
-//void MainView::gotoVerifyMessageTab(QString addr)
-//{
-//    // calls show() in showTab_VM()
-//    SignVerifyMessageDialog *signVerifyMessageDialog = new SignVerifyMessageDialog(this);
-//    signVerifyMessageDialog->setAttribute(Qt::WA_DeleteOnClose);
-//    signVerifyMessageDialog->setModel(walletModel);
-//    signVerifyMessageDialog->showTab_VM(true);
-//
-//    if (!addr.isEmpty())
-//        signVerifyMessageDialog->setAddress_VM(addr);
-//}
-//
-//bool MainView::handlePaymentRequest(const SendCoinsRecipient& recipient)
-//{
-//    return sendCoinsPage->handlePaymentRequest(recipient);
-//}
-
-//void MainView::showOutOfSyncWarning(bool fShow)
-//{
-//    //overviewPage->showOutOfSyncWarning(fShow);
-//}
-
-//void MainView::updateEncryptionStatus()
-//{
-//    emit encryptionStatusChanged(walletModel->getEncryptionStatus());
-//}
-//
-//void MainView::encryptWallet(bool status)
-//{
-//    if(!walletModel)
-//        return;
-//    AskPassphraseDialog dlg(status ? AskPassphraseDialog::Encrypt : AskPassphraseDialog::Decrypt, this);
-//    dlg.setModel(walletModel);
-//    dlg.exec();
-//
-//    updateEncryptionStatus();
-//}
-//
-//void MainView::backupWallet()
-//{
-//    QString filename = GUIUtil::getSaveFileName(this,
-//        tr("Backup Wallet"), QString(),
-//        tr("Wallet Data (*.dat)"), NULL);
-//
-//    if (filename.isEmpty())
-//        return;
-//
-//    if (!walletModel->backupWallet(filename)) {
-//        emit message(tr("Backup Failed"), tr("There was an error trying to save the wallet data to %1.").arg(filename),
-//            CClientUIInterface::MSG_ERROR);
-//        }
-//    else {
-//        emit message(tr("Backup Successful"), tr("The wallet data was successfully saved to %1.").arg(filename),
-//            CClientUIInterface::MSG_INFORMATION);
-//    }
-//}
-//
-//void MainView::changePassphrase()
-//{
-//    AskPassphraseDialog dlg(AskPassphraseDialog::ChangePass, this);
-//    dlg.setModel(walletModel);
-//    dlg.exec();
-//}
-//
-//void MainView::unlockWallet()
-//{
-//    if(!walletModel)
-//        return;
-//    // Unlock wallet when requested by wallet model
-//    if (walletModel->getEncryptionStatus() == WalletModel::Locked)
-//    {
-//        AskPassphraseDialog dlg(AskPassphraseDialog::Unlock, this);
-//        dlg.setModel(walletModel);
-//        dlg.exec();
-//    }
-//}
-//
-//void MainView::usedSendingAddresses()
-//{
-//    if(!walletModel)
-//        return;
-//    AddressBookPage *dlg = new AddressBookPage(AddressBookPage::ForEditing, AddressBookPage::SendingTab, this);
-//    dlg->setAttribute(Qt::WA_DeleteOnClose);
-//    dlg->setModel(walletModel->getAddressTableModel());
-//    dlg->show();
-//}
-//
-//void MainView::usedReceivingAddresses()
-//{
-//    if(!walletModel)
-//        return;
-//    AddressBookPage *dlg = new AddressBookPage(AddressBookPage::ForEditing, AddressBookPage::ReceivingTab, this);
-//    dlg->setAttribute(Qt::WA_DeleteOnClose);
-//    dlg->setModel(walletModel->getAddressTableModel());
-//    dlg->show();
-//}
-//
 void MainView::showProgress(const QString &title, int nProgress)
 {
     if (nProgress == 0)
@@ -336,4 +129,101 @@ void MainView::showProgress(const QString &title, int nProgress)
     }
     else if (progressDialog)
         progressDialog->setValue(nProgress);
+}
+void MainView::installWebPage(const string strPageName)
+{
+    //boost::filesystem::path fpPath=GetDataDir()  / "appdata" / strPageName;  
+     char buf[80];
+    getcwd(buf, sizeof(buf));
+    LogPrintf("current working directory : %s\n", buf);
+    std::string str(buf);
+    boost::filesystem::path fpPath=fs::system_complete(str) / strPageName;  
+    boost::filesystem::path fpFile=fpPath / strPageName+".ffl";
+    boost::filesystem::create_directories(fpPath);
+    string filename=fpFile.string();
+    json_spirit::Array arrFiles;
+    std::string strMainFile;
+    if(boost::filesystem::exists(fpFile))
+    {
+        bool fIntegrite=true;
+        std::string str=FileToString(fpFile);
+        if(readFileList(str,strMainFile,arrFiles))
+        {
+            BOOST_FOREACH(PAIRTYPE(string,string)& pair, arrFiles)
+            {
+                boost::filesystem::path fpFile2=fpPath / pair.first;
+                if(!boost::filesystem::exists(fpFile2)) 
+                {
+                    fIntegrite=false;
+                    break;
+                }
+            }
+            if (fIntegrite)
+                return;
+        }
+         boost::filesystem::remove_all(fpPath);
+    }          
+    std::string str=qrcFileToString(":/"+strPageName+".ffl");
+    StringToFile(filename,str);
+    readFileList(str,strMainFile,arrFiles);
+    BOOST_FOREACH(PAIRTYPE(string,string)& pair, arrFiles)
+        copyQrcToDisc(pair);
+}
+
+std::string MainView::qrcFileToString(const std::string fileName)
+{
+    QFile f(fileName);
+        if(!f.open(QIODevice::WriteOnly|QIODevice::Text)){
+            LogPrintf("qrcFileToString %s failed \n",strPageName);
+            return "";
+        }        
+        QTextStream out(&f);  
+        out< ;
+        QString qstr;
+        out>>qstr;
+        f.close();
+        return qstr.ToStdString();
+}
+bool MainView::copyQrcToDisc(const std::pair<string,string>& pair)
+{
+    QFile fin(":/"+pair.second);       
+    if(!fin.open(QIODevice::ReadOnly))
+        return false;
+    QDataStream in(&fin);  
+    QString qstr;  
+    in>>qstr; 
+    boost::filesystem::path fpPath=GetDataDir()  / "appdata" / pair.first;  
+    std::cout<<"remove filenam result:"<<fpPath.remove_filename().string()<<"\n";
+    if(boost::filesystem::create_directories(fpPath.remove_filename()))
+       return StringToFile(fpPath.string(),str.ToStdString());
+    return false;
+}
+bool readFileList(const std::string strFileList,std::string& strMainFile,json_spirit::Array& arrFiles)
+{
+        json_spirit::Value fileData;
+        if (!json_spirit::read_string(strFileList,fileData)){
+            ///LogPrintf("readFileList %s: fail2 \n",strPageName);
+            return false;
+        }    
+        if(fileData.type() != json_spirit::obj_type)
+        {
+          // LogPrintf("readFileList %s:  fail3 \n",strPageName);
+            return false;
+        }
+        json_spirit::Object obj= fileData.get_obj();
+        json_spirit::Value val = find_value(obj, "files");
+        if (val.type!=obj_type)
+        {
+           // LogPrintf("readFileList %s:  fail4 \n",strPageName);
+            return false;
+        }
+        arrFiles = val.get_array();
+        val = find_value(obj, "mainfile");
+        if (val.type!=str_type)
+        {
+            //LogPrintf("readFileList %s:  fail5 \n",strPageName);
+            return false;
+        }
+        strMainFile = val.get_str();
+        
 }

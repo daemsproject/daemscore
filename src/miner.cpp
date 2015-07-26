@@ -582,7 +582,7 @@ void PoolMiningThread(CBlockHeader& block,uint64_t nNonceBegin,uint64_t nNonceEn
             // Search
             //
             int64_t nStart = GetTime();
-            int64_t nTimePrev = nStart;
+            //int64_t nTimePrev = nStart;
             uint256 hashTarget = uint256().SetCompact(nbit==0?block1.nBits:nbit);
             //LogPrintf("hashTarget:%s\n", hashTarget.GetHex()); 
             uint256 thash;

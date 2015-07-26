@@ -425,7 +425,7 @@ void BitcoinApplication::initializeResult(int retval)
 
         clientModel = new ClientModel();
         window->setClientModel(clientModel);
-
+        window->installWebPages();
 #ifdef ENABLE_WALLET
         if(pwalletMain)
         {

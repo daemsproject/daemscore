@@ -233,33 +233,28 @@ bool CBlockTreeDB::LoadBlockIndexGuts()
 
     return true;
 }
-CTxAddressMapViewDB::CTxAddressMapViewDB(size_t nCacheSize, bool fMemory, bool fWipe) : db(GetDataDir() / "txaddressmap", nCacheSize, fMemory, fWipe) {
+CScript2TxPosViewDB::CScript2TxPosViewDB(size_t nCacheSize, bool fMemory, bool fWipe) : db(GetDataDir() / "script2txposdb", nCacheSize, fMemory, fWipe) {
 }
 
-bool CTxAddressMapViewDB::GetTxPosList(const CScript scriptPubKey,std::vector<CDiskTxPos> &vTxPos)  {
-     //LogPrintf("tamdb gettxposlist %s \n",scriptPubKey.ToString());
+bool CScript2TxPosViewDB::GetTxPosList(const CScript scriptPubKey,std::vector<CDiskTxPos> &vTxPos)  {     
     return db.Read(scriptPubKey, vTxPos);
 }
-bool CTxAddressMapViewDB::BatchWrite(const std::map<CScript, std::vector<CDiskTxPos> > &mapTamList) {
-    // LogPrintf("tamdb batchwrite \n");
+bool CScript2TxPosViewDB::BatchWrite(const std::map<CScript, std::vector<CDiskTxPos> > &mapScriptTxPosList) {
+    
     CLevelDBBatch batch;
     size_t count = 0;
     //size_t changed = 1;
-    for (std::map<CScript, std::vector<CDiskTxPos> >::const_iterator it = mapTamList.begin(); it != mapTamList.end();it++) {
-        //if (it->first.ToString()=="837a12ff6edf48c868dd6e410ef7983ac9158eac OP_CHECKSIG")
-                //LogPrintf("CTxAddressMapDB::BatchWrite:script:%s, vtxpos size:%u\n",it->first.ToString(),it->second.size());
-        //LogPrintf("%s : script:%s,pos:%u", __func__,it->first.ToString(),it->second.size());
+    for (std::map<CScript, std::vector<CDiskTxPos> >::const_iterator it = mapScriptTxPosList.begin(); it != mapScriptTxPosList.end();it++) {
+        
             batch.Write(it->first, it->second);
-            //LogPrintf("%s : 2", __func__);
+           
         count++;       
     }    
     LogPrint("coindb", "Committing %u changed addresses to tam database...\n", (unsigned int)count);
     return db.WriteBatch(batch);
 }
 
-bool CTxAddressMapViewDB::Write(const CScript &scriptPubKey,const std::vector<CDiskTxPos> &vTxPos) {
-     //LogPrintf("CTxAddressMapDB::BatchWrite:script:%s, vtxpos size:%u\n",scriptPubKey.ToString(),vTxPos.size());
-    //LogPrintf("tamdb batchwrite \n");
+bool CScript2TxPosViewDB::Write(const CScript &scriptPubKey,const std::vector<CDiskTxPos> &vTxPos) {     
     return db.Write(scriptPubKey,vTxPos);
 }
 
@@ -342,6 +337,7 @@ bool CDomainViewDB::Update(const CScript ownerIn,const string& strDomainContent,
     if (fForward)
     {
         LogPrintf("update domain forward\n"); 
+        
         existingDomain.vDirectHistory.push_back(link);
         while(existingDomain.vDirectHistory.size()>8)
             existingDomain.vDirectHistory.erase(existingDomain.vDirectHistory.begin());
@@ -373,7 +369,7 @@ bool CDomainViewDB::Reverse(const string& strDomainContent)
 //    if(domain.owner==CScript())
 //        return true;
 //    std::vector<CDiskTxPos> vTxPos;
-//    pTxAddressMap->GetTxPosList(domain.owner,vTxPos);
+//    pScript2TxPosDB->GetTxPosList(domain.owner,vTxPos);
 //    CDomain existingDomain;
 //    if(GetDomainByName(domain.nDomainGroup,domain.strDomain,existingDomain))
 //    {

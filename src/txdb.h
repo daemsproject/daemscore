@@ -62,17 +62,15 @@ public:
     bool ReadFlag(const std::string &name, bool &fValue);
     bool LoadBlockIndexGuts();
 };
-//ccc:txaddressmap db, because this map is very big, no memory cache is available
-class CTxAddressMapViewDB :public CTxAddressMapView
+//ccc:CScript2TxPosViewDB, because this map is very big, no memory cache is available
+class CScript2TxPosViewDB :public CScript2TxPosDBView
 {
 protected:
     CLevelDBWrapper db;
-public:
-    //std::string strtest="db loaded";
-    CTxAddressMapViewDB(size_t nCacheSize, bool fMemory = false, bool fWipe = false);
-    bool GetTxPosList(const CScript scriptPubKey,std::vector<CDiskTxPos> &vTxPos);
-    //bool BatchErase(const std::vector<std::pair<CScript, std::vector<CDiskTxPos> > > &vTamList);
-    bool BatchWrite(const std::map<CScript,std::vector<CDiskTxPos> > &mapTamList);  
+public:    
+    CScript2TxPosViewDB(size_t nCacheSize, bool fMemory = false, bool fWipe = false);
+    bool GetTxPosList(const CScript scriptPubKey,std::vector<CDiskTxPos> &vTxPos);    
+    bool BatchWrite(const std::map<CScript,std::vector<CDiskTxPos> > &mapScriptTxPosList);  
     bool Write(const CScript &scriptPubKey,const std::vector<CDiskTxPos> &vTxPos);
 };
 class CDomainViewDB //:public CDomainView

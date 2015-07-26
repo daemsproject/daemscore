@@ -927,7 +927,7 @@ CPaymentOrder GetBuyProductPaymentRequest(const Array arr)
         strError="product data is empty";
         throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
     }
-    CAmount nTotal;
+    //CAmount nTotal;
     //std::vector<std::pair<int,string> > vcc;
     for(unsigned int i=0;i<arrProducts.size();i++)
     {

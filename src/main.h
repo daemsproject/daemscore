@@ -14,7 +14,7 @@
 #include "chain.h"
 #include "chainparams.h"
 #include "coins.h"
-#include "ccc/txaddressmap.h"
+#include "ccc/script2txposdb.h"
 #include "ccc/domain.h"
 #include "primitives/block.h"
 #include "primitives/transaction.h"
@@ -296,8 +296,8 @@ bool CheckInputs(const CTransaction& tx,const CTransaction& tx4CheckVins, CValid
 
 /** Apply the effects of this transaction on the UTXO set represented by view */
 void UpdateCoins(const CTransaction& tx, CValidationState &state, CCoinsViewCache &inputs, CTxUndo &txundo, int nHeight);
-/** Apply tx changes to txaddressmap db*/
-void UpdateTxAddressMap(const CTransaction& tx,const CDiskTxPos& pos,CValidationState &state,const CCoinsViewCache& inputs,bool fErase=false);
+/** Apply tx changes to Script2TxPosDB*/
+void UpdateScript2TxPosDB(const CTransaction& tx,const CDiskTxPos& pos,CValidationState &state,const CCoinsViewCache& inputs,bool fErase=false);
 void UpdateDomainDB(const CTransaction& tx,const CBlock& block,const int nTx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse);
 void UpdateTagDB(const CTransaction& tx,const CBlock& block,const int nTx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse);
 
@@ -544,8 +544,8 @@ extern CChain chainActive;
 
 /** Global variable that points to the active CCoinsView (protected by cs_main) */
 extern CCoinsViewCache *pcoinsTip;
-/** Global variable that points to the active TxAddressMapView (protected by cs_main) */
-extern CTxAddressMap *pTxAddressMap;
+/** Global variable that points to the active CScript2TxPosDB (protected by cs_main) */
+extern CScript2TxPosDB *pScript2TxPosDB;
 extern CDomainViewDB *pDomainDBView;
 extern CTagViewDB *pTagDBView;
 

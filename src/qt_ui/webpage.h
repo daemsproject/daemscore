@@ -27,6 +27,7 @@ public:
     ~WebPage();
     QString language;
     int nPageID;    
+    
 private slots:    
     void addJSObject();
 private:    

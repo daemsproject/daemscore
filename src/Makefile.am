@@ -88,7 +88,7 @@ BITCOIN_CORE_H = \
   clientversion.h \
   coincontrol.h \
   coins.h \
-  ccc/txaddressmap.h \
+  ccc/script2txposdb.h \
   ccc/domain.h \
   compat.h \
   compressor.h \
@@ -255,7 +255,7 @@ libbitcoin_common_a_SOURCES = \
   ccc/link.cpp \
   ccc/jsondb.cpp \
   coins.cpp \
-  ccc/txaddressmap.cpp \
+  ccc/script2txposdb.cpp \
   ccc/domain.cpp \
   compressor.cpp \
   primitives/block.cpp \

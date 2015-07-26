@@ -1157,7 +1157,7 @@ void CWallet::ReacceptWalletTransactions()
     std::vector<CWalletTx> vunconfirmedTxs=pwalletdb->ReadUnConfirmedTxs();
 
     for(std::vector<CWalletTx>::iterator it=vunconfirmedTxs.begin();it<vunconfirmedTxs.end();it++)
-        {       
+    {       
             CWalletTx& wtx=*it;
     //BOOST_FOREACH(PAIRTYPE(const uint256, CWalletTx)& item, mapWallet)
     //{
@@ -1166,6 +1166,7 @@ void CWallet::ReacceptWalletTransactions()
         //assert(wtx.GetHash() == wtxid);
 
         int nDepth = wtx.GetDepthInMainChain();
+        //LogPrintf("ReacceptWalletTransactions txid:%s,depth:%i \n",wtx.GetHash().GetHex(),nDepth);
         if(nDepth < 0)
         {
             if (!wtx.IsCoinBase())

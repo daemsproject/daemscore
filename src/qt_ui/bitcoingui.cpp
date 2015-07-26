@@ -19,6 +19,7 @@
 #include "userconfirmdialog.h"
 #include "ui_userconfirmdialog.h"
 #include "accountdialog.h"
+
 #ifdef ENABLE_WALLET
 //#include "mainframe.h"
 #include "mainview.h"
@@ -37,6 +38,8 @@
 #include "util.h"
 
 #include <iostream>
+#include <boost/assign.hpp>
+
 
 #include <QAction>
 #include <QApplication>
@@ -63,6 +66,7 @@
 #include <QUrl>
 #else
 #include <QUrlQuery>
+#include <bits/stl_pair.h>
 #endif
 
 const QString BitcoinGUI::DEFAULT_WALLET = "~Default";
@@ -406,7 +410,7 @@ LogPrintf("bitcoingui:createactions 2 \n");
     connect(toggleHideAction, SIGNAL(triggered()), this, SLOT(toggleHidden()));
     connect(showHelpMessageAction, SIGNAL(triggered()), this, SLOT(showHelpMessageClicked()));
     connect(settingsAction, SIGNAL(triggered()), this, SLOT(gotoSettingsPage()));
-    //connect(serviceManagerAction, SIGNAL(triggered()), this, SLOT(gotoServicePage()));
+    connect(serviceManagerAction, SIGNAL(triggered()), this, SLOT(gotoSettingsPage()));
     //LogPrintf("bitcoingui:createactions 6 \n");
 #ifdef ENABLE_WALLET
     
@@ -674,6 +678,7 @@ void BitcoinGUI::createTrayIconMenu()
 #ifndef Q_OS_MAC
 void BitcoinGUI::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
 {
+    LogPrintf("trayIconActivated reason:%i \n",reason);
     if(reason == QSystemTrayIcon::Trigger)
     {
         // Click on system tray icon triggers show/hide of the main window
@@ -801,6 +806,18 @@ enum pageid
     TVPAGE_ID=10,
     DOWNLOADERPAGE_ID=11
 };
+static std::map<int,std::string> mapPageNames=boost::assign::map_list_of
+(WALLETPAGE_ID,"wallet")
+(BROWSERPAGE_ID,"browser")
+(PUBLISHERPAGE_ID,"publisher")
+(MESSENGERPAGE_ID,"messenger")
+(DOMAINPAGE_ID,"domain")
+(SETTINGPAGE_ID,"settings")
+(SERVICEPAGE_ID,"service")
+(SHOPPAGE_ID,"shop")
+(TVPAGE_ID,"tv")
+(DOWNLOADERPAGE_ID,"downloader")
+;
 void BitcoinGUI::gotoWalletPage()
 {
     walletAction->setChecked(true);
@@ -864,6 +881,13 @@ void BitcoinGUI::domainNameClicked()
 //    if (walletFrame) walletFrame->gotoVerifyMessageTab(addr);
 //}
 #endif // ENABLE_WALLET
+void installWebPages()
+{
+    for(int i=1;i<11;i++)
+    {
+       if(mainView) mainView->installWebPage(mapPageNames[i]);
+    }
+}
 
 void BitcoinGUI::setNumConnections(int count)
 {

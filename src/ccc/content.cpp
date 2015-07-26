@@ -181,7 +181,7 @@ bool CContent::FirstCc(const cctype& ccIn)const
 {
     const_iterator pc = begin();
     cctype cc;
-    u_int64_t n;
+    uint64_t n;
     if (!ReadVarInt(pc, n))
         return false;
     cc = (cctype) n;
@@ -199,7 +199,7 @@ int CContent::GetFirstCc()const
         return 0;
     const_iterator pc = begin();
     //cctype cc;
-    u_int64_t n;
+    uint64_t n;
     if (!ReadVarInt(pc, n))
         return 0;
     return n;
@@ -320,11 +320,11 @@ bool CContent::GetCcUnit(const_iterator& pc, cctype& ccRet, std::string& content
     ccRet = CC_NULL;
     if (pc >= end())
         return false;
-    u_int64_t n;
+    uint64_t n;
     if (!ReadVarInt(pc, n))
         return false;
     ccRet = (cctype) n;
-    u_int64_t len;
+    uint64_t len;
     if (!ReadCompactSize(pc, len))
         return false;
     if (len > 0) {
@@ -339,7 +339,7 @@ bool CContent::GetCcUnit(const_iterator& pc, cctype& ccRet, std::string& content
     return pc <= end() ? true : false;
 }
 
-bool CContent::WriteVarInt(u_int64_t n)
+bool CContent::WriteVarInt(uint64_t n)
 {
     char tmp[8];
     int len = 0;
@@ -358,7 +358,7 @@ bool CContent::WriteVarInt(u_int64_t n)
     return true;
 }
 
-bool CContent::ReadVarInt(const_iterator& pc, u_int64_t& n)const
+bool CContent::ReadVarInt(const_iterator& pc, uint64_t& n)const
 {
     n = 0;
     unsigned char chData = 0xff;
@@ -377,7 +377,7 @@ bool CContent::ReadVarInt(const_iterator& pc, u_int64_t& n)const
     return (chData & 0x80) ? false : true;
 }
 
-bool CContent::WriteCompactSize(u_int64_t n)
+bool CContent::WriteCompactSize(uint64_t n)
 {
     std::ostringstream os;
     if (n < 253) {
@@ -413,7 +413,7 @@ bool CContent::WriteCompactSize(u_int64_t n)
     return true;
 }
 
-bool CContent::ReadCompactSize(const_iterator& pc, u_int64_t& nSizeRet)const
+bool CContent::ReadCompactSize(const_iterator& pc, uint64_t& nSizeRet)const
 {
     if (pc == end())
         return false;
@@ -486,7 +486,7 @@ bool CContent::ReadDataReverse(const_iterator& pc, int len, std::string& result)
 
 bool IsCcParent(const cctype& cc)
 {
-    u_int64_t cc2 = cc;
+    uint64_t cc2 = cc;
     return (cc2 % 2 == 1) ? true : false;
 }
 

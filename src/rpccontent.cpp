@@ -438,7 +438,7 @@ Value getcontentbystring(const Array& params, bool fHelp)
     unsigned char cflag = CONTENT_SHOW_ADDR;
     CLink clink;
     std::vector<CBitcoinAddress> posters;
-    CAmount nValue;
+    CAmount nValue=0;
     CScript scriptPubKey;
 
     Object r = _output_content(content, cformat, cflag, clink, posters, nValue, scriptPubKey);

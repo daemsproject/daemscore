@@ -92,4 +92,4 @@ public:
 
 
 
-#endif // CCCOIN_TXADDRESSMAP_H
+#endif // BROWSER_DOMAIN_H
