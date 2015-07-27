@@ -7,8 +7,10 @@
 
 #include "settings.h"
 #include "util.h"
+#include "contentutil.h"
 #include "domain.h"
 #include "main.h"
+#include "filepackage.h"
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 using namespace std;
@@ -57,7 +59,7 @@ bool CSettings::LoadSettings()
     Object& obj2 = val.get_obj();
     BOOST_FOREACH(PAIRTYPE(int,string)& pair, obj2)
     {
-        if(pair.first>=1&&pair.first<=11&&IsValidDomain(pair.second))
+        if(pair.first>=1&&pair.first<=11&&IsValidDomainFormat(pair.second))
         {
             mapPageDomain[pair.first]=pair.second;
             CLink link;
@@ -65,6 +67,7 @@ bool CSettings::LoadSettings()
             {
                 mapPageLink[pair.first]=link;
                 
+                CFilePackage(link).InstallPackage(mapPageNames[pair.first]);
             }
             
             
@@ -89,7 +92,7 @@ bool CSettings::LoadSettings()
     return true;
    
 }
-pDomainDBView->GetDomainByName(const string strDomainName,CDomain& domain)const ;
+
 bool CSettings::SaveSettings()
 {
     filesystem::path fpFile=GetDataDir() / "appdata" / "settings.json";
@@ -159,7 +162,7 @@ bool CSettings::GetSetting(const string settingType,const string key,string& val
 //        }
 //    }
 //    else
-        if(settingType=="pagedomain"&&IsValidDomain(value))
+        if(settingType=="pagedomain"&&IsValidDomainFormat(value))
     {
         map<int,string>::iterator it=find(mapPageNames,key);
         if(it!=mapPageNames.end())

@@ -8,6 +8,7 @@
 #include "addrman.h"
 #include "alert.h"
 #include "chainparams.h"
+#include "ccc/settings.h"
 #include "checkpoints.h"
 #include "checkqueue.h"
 #include "init.h"
@@ -59,6 +60,7 @@ uint64_t nMaxMempoolSize=DEFAULT_BLOCK_MAX_SIZE * 960;
 CFeeRate minRelayTxFee = CFeeRate(1000);
 
 CTxMemPool mempool(::minRelayTxFee);
+CSettings settings;
 
 struct COrphanTx {
     CTransaction tx;
@@ -73,7 +75,6 @@ static void CheckBlockIndex();
 /** Constant stuff for coinbase transactions we create: */
 CScript COINBASE_FLAGS;
 
-const string strMessageMagic = "Bitcoin Signed Message:\n";
 
 // Internal stuff
 namespace {
@@ -1544,6 +1545,8 @@ bool GetPubKeyFromBlockChain(CScript script,CPubKey& pubKey)
      }
      return false;
 }
+
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // CBlock and CBlockIndex

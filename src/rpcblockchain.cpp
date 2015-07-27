@@ -277,16 +277,7 @@ Value getblockhash(const Array& params, bool fHelp)
     return pblockindex->GetBlockHash().GetHex();
 }
 
-bool _getBlockByHeight(const int nHeight, CBlock& blockOut, CBlockIndex*& pblockindex)
-{
-    if (nHeight < 0 || nHeight > chainActive.Height())
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "Block height out of range");
-    pblockindex = chainActive[nHeight];
-    
-    if (!ReadBlockFromDisk(blockOut, pblockindex))
-        throw JSONRPCError(RPC_INTERNAL_ERROR, "Can't read block from disk");
-    return true;
-}
+
 
 Value getblockbyheight(const Array& params, bool fHelp)
 {
@@ -329,7 +320,7 @@ Value getblockbyheight(const Array& params, bool fHelp)
     int nHeight = params[0].get_int();
     CBlockIndex* pblockindex;
     CBlock block;
-    if(!_getBlockByHeight(nHeight, block, pblockindex))
+    if(!GetBlockByHeight(nHeight, block, pblockindex))
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Get block failed");
     bool fVerbose = true;
     if (params.size() > 1)

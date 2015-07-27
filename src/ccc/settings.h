@@ -7,6 +7,10 @@
 
 #ifndef SETTINGS_H
 #define	SETTINGS_H
+
+//#include "ccc/link.h"
+//#include "ccc/content.h"
+
 using namespace std;
 using namespace json_spirit;
 enum servicecode
@@ -106,6 +110,7 @@ static std::map<int,std::string> mapDefaultPageDomain=boost::assign::map_list_of
 (TVPAGE_ID,"tv.f")
 (DOWNLOADERPAGE_ID,"downloader.f");
 
+class CLink;
 
 class CSettings {
 public:

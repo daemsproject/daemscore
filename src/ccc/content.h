@@ -11,13 +11,13 @@
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_value.h"
 #include "uint256.h"
-#include "script/script.h"
+//#include "script/script.h"
 #include "ccc/link.h"
 #include "amount.h"
 using namespace json_spirit;
 using namespace std;
 using std::string;
-
+class CScript;
 enum stringformat
 {
     STR_FORMAT_BIN = 0,
@@ -973,6 +973,7 @@ public:
     bool Decode(std::vector<std::pair<int, string> >& vDecoded)const;
     bool DecodeDomainInfo(string& strAlias, string& strIntro, CLink& iconLink, std::vector<string>& vTags)const;
     bool DecodeLink(int& redirectType, string& redirectTo)const;
+    bool CContent::DecodeFileString(std::string& strFile);
     bool GetTags(std::vector<std::pair<int, std::string> >& vTagList) const;
     bool _GetTags(std::vector<std::pair<int, std::string> >& vTagList, int ccp = -1) const;
     //bool DecodeTagP(std::vector<std::string> vTag)const;

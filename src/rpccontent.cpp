@@ -12,7 +12,7 @@
 #include "ccc/link.h"
 #include "txdb.h"
 #include <stdint.h>
-
+#include "contentutil.h"
 #include "json/json_spirit_value.h"
 #include "base58.h"
 #include "utilstrencodings.h"
@@ -51,7 +51,7 @@ enum cttflag
 };
 
 void ScriptPubKeyToJSON(const CScript& scriptPubKey, Object& out, bool fIncludeHex);
-bool _getBlockByHeight(const int nHeight, CBlock& blockOut, CBlockIndex*& pblockindex);
+bool GetBlockByHeight(const int nHeight, CBlock& blockOut, CBlockIndex*& pblockindex);
 
 CContent _create_text_content(std::string str)
 {
@@ -76,28 +76,28 @@ CContent _create_text_content(std::string str)
     return ctt;
 }
 
-CContent _create_file_content(std::string str)
-{
-    Array fileArray;
-    Object fileObj1;
-    Object fileObj2;
-    fileObj1.push_back(Pair("cc_name", "CC_FILE_NAME"));
-    fileObj1.push_back(Pair("content", basename(str.c_str())));
-    fileObj2.push_back(Pair("cc_name", "CC_FILE"));
-    std::string fileStr;
-    FileToString(str, fileStr);
-    fileObj2.push_back(Pair("content", fileStr));
-    fileArray.push_back(fileObj1);
-    fileArray.push_back(fileObj2);
-
-    Array cttArray;
-    Object cttObj;
-    cttObj.push_back(Pair("cc_name", "CC_FILE_P"));
-    cttObj.push_back(Pair("content", fileArray));
-    cttArray.push_back(cttObj);
-    CContent ctt(cttArray);
-    return ctt;
-}
+//CContent _create_file_content(std::string str)
+//{
+//    Array fileArray;
+//    Object fileObj1;
+//    Object fileObj2;
+//    fileObj1.push_back(Pair("cc_name", "CC_FILE_NAME"));
+//    fileObj1.push_back(Pair("content", basename(str.c_str())));
+//    fileObj2.push_back(Pair("cc_name", "CC_FILE"));
+//    std::string fileStr;
+//    FileToString(str, fileStr);
+//    fileObj2.push_back(Pair("content", fileStr));
+//    fileArray.push_back(fileObj1);
+//    fileArray.push_back(fileObj2);
+//
+//    Array cttArray;
+//    Object cttObj;
+//    cttObj.push_back(Pair("cc_name", "CC_FILE_P"));
+//    cttObj.push_back(Pair("content", fileArray));
+//    cttArray.push_back(cttObj);
+//    CContent ctt(cttArray);
+//    return ctt;
+//}
 
 CContent _create_content(const Array& params)
 {
@@ -264,33 +264,11 @@ Value getlink(const Array& params, bool fHelp) // TO DO: Help msg
     return result;
 }
 
-bool _getTxFrBlock(const CBlock& block, const int nTx, CTransaction& txOut)
-{
-    if (nTx <= (int) block.vtx.size()) {
-        txOut = block.vtx[nTx];
-        return true;
-    } else
-        return false;
-}
 
-bool _getVoutFrTx(const CTransaction& tx, const int nVout, CTxOut& vout)
-{
-    if (nVout <= (int) tx.vout.size()) {
-        vout = tx.vout[nVout];
-        return true;
-    } else
-        return false;
-}
 
-bool _getContentFrTx(const CTransaction& tx, const int nVout, CContent& content)
-{
-    if (nVout <= (int) tx.vout.size()) {
-        CTxOut vout = tx.vout[nVout];
-        content.SetString(vout.strContent);
-        return true;
-    } else
-        return false;
-}
+
+
+
 
 Object _voutToJson(const CTxOut& txout)
 {
@@ -310,7 +288,7 @@ Object _output_content(const CContent& cttIn, const int& cformat, const unsigned
     CContent ctt = cttIn;
     Object r;
     if (cttf & CONTENT_SIMPLE_FORMAT) {
-        r.push_back(Pair(clink.ToString(), ctt.size()));
+        r.push_back(Pair(clink.ToString(), (int)ctt.size()));
         return r;
     }
     if (cttf & CONTENT_SHOW_LINK)
@@ -358,7 +336,7 @@ Object _output_content(const CContent& cttIn, const int& cformat, const unsigned
             break;
         case CONTENT_FORMAT_SIZE:
         default:
-            r.push_back(Pair("content", ctt.size()));
+            r.push_back(Pair("content", (int)ctt.size()));
     }
     return r;
 }
@@ -397,13 +375,13 @@ Value getcontentbylink(const Array& params, bool fHelp)
     CLink clink(params[0].get_str());
     CBlockIndex* pblockindex;
     CBlock block;
-    if (!_getBlockByHeight(clink.nHeight, block, pblockindex))
+    if (!GetBlockByHeight(clink.nHeight, block, pblockindex))
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Get block failed");
     CTransaction tx;
-    if (!_getTxFrBlock(block, clink.nTx, tx))
+    if (!GetTxFromBlock(block, clink.nTx, tx))
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Get tx failed");
     CContent content;
-    if (!_getContentFrTx(tx, clink.nVout, content))
+    if (!GetContentFromVout(tx, clink.nVout, content))
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Get content failed");
     int cformat = (params.size() == 2) ? params[1].get_int() : CONTENT_FORMAT_STR_HEX;
     std::vector<CBitcoinAddress> posters = _get_posters(tx);
@@ -411,20 +389,7 @@ Value getcontentbylink(const Array& params, bool fHelp)
     Object r = _output_content(content, cformat, cflag, clink, posters, tx.vout[clink.nVout].nValue, tx.vout[clink.nVout].scriptPubKey);
     return r;
 }
-CContent _getcontentbylink(const CLink clink)
-{
-    CBlockIndex* pblockindex;
-    CBlock block;
-    if (!_getBlockByHeight(clink.nHeight, block, pblockindex))
-        return CContent();
-    CTransaction tx;
-    if (!_getTxFrBlock(block, clink.nTx, tx))
-        return CContent();
-    CContent content;
-    if (!_getContentFrTx(tx, clink.nVout, content))
-        return CContent();
-    return content;
-}
+
 
 Value getcontentbystring(const Array& params, bool fHelp)
 {
@@ -621,7 +586,7 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
         for (int i = 0; i < total; i++) {
             CBlockIndex* pblockindex;
             CBlock block;
-            if (!_getBlockByHeight(nHeight, block, pblockindex))
+            if (!GetBlockByHeight(nHeight, block, pblockindex))
                 throw JSONRPCError(RPC_INTERNAL_ERROR, "Get block failed");
             int nTx = 0;
 
@@ -686,7 +651,7 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
                         int nTx = GetNTx(it->first.GetHash()); // Very inefficient
                         CLink clink(pindex->nHeight, nTx, i);
                         CContent ctt;
-                        if (_getContentFrTx(it->first, i, ctt)) {
+                        if (GetContentFromVout(it->first, i, ctt)) {
                             if ((int) ctt.size() >= minsz) {
                                 b += ctt.size();
                                 if (c > maxc || b > maxb)
@@ -1199,13 +1164,13 @@ json_spirit::Value searchproducts(const json_spirit::Array& params, bool fHelp){
    {
        CBlockIndex* pblockindex;
         CBlock block;
-        if (!_getBlockByHeight(vLink[i].nHeight, block, pblockindex))
+        if (!GetBlockByHeight(vLink[i].nHeight, block, pblockindex))
             continue;
         CTransaction tx;
-        if (!_getTxFrBlock(block, vLink[i].nTx, tx))
+        if (!GetTxFromBlock(block, vLink[i].nTx, tx))
             continue;
         CContent content;
-        if (!_getContentFrTx(tx, vLink[i].nVout, content))
+        if (!GetContentFromVout(tx, vLink[i].nVout, content))
             continue;    
        CProduct product;
        

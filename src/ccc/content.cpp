@@ -81,21 +81,21 @@ Array CContent::ToJson(stringformat fFormat, bool fRecursive)const
                 case STR_FORMAT_BIN:
                 case STR_FORMAT_BIN_SUM:
                     if (fFormat == STR_FORMAT_BIN_SUM && contentStr.size() > STR_FORMAT_SUM_MAXSIZE)
-                        ccUnit.push_back(Pair("length", contentStr.size()));
+                        ccUnit.push_back(Pair("length", (int)contentStr.size()));
                     else
                         ccUnit.push_back(Pair("content", contentStr));
                     break;
                 case STR_FORMAT_HEX:
                 case STR_FORMAT_HEX_SUM:
                     if (fFormat == STR_FORMAT_HEX_SUM && contentStr.size() > STR_FORMAT_SUM_MAXSIZE)
-                        ccUnit.push_back(Pair("length", contentStr.size()));
+                        ccUnit.push_back(Pair("length", (int)contentStr.size()));
                     else
                         ccUnit.push_back(Pair("content", HexStr(contentStr)));
                     break;
                 case STR_FORMAT_B64:
                 case STR_FORMAT_B64_SUM:
                     if (fFormat == STR_FORMAT_B64_SUM && contentStr.size() > STR_FORMAT_SUM_MAXSIZE)
-                        ccUnit.push_back(Pair("length", contentStr.size()));
+                        ccUnit.push_back(Pair("length", (int)contentStr.size()));
                     else
                         ccUnit.push_back(Pair("content", EncodeBase64(contentStr)));
                     break;
@@ -514,7 +514,7 @@ bool CContent::Decode(std::vector<std::pair<int, string> >& vDecoded)const
         cctype cc;
         CContent contentStr;
         if (!GetCcUnit(pc, cc, contentStr))
-            break;
+            return false;
         vDecoded.push_back(make_pair(cc, contentStr));
     }
     if (pc > end())
@@ -591,6 +591,38 @@ bool CContent::DecodeDomainInfo(string& strAlias, string& strIntro, CLink& iconL
     }
     LogPrintf("CContent DecodeDomainInfo done\n");
     return true;
+}
+bool CContent::DecodeFileString(std::string& strFile)
+{
+    std::vector<std::pair<int, string> > vDecoded;
+    if(!Decode(vDecoded))
+        return false;
+    switch(vDecoded[0].first)
+    {
+        case CC_FILE_P:
+        {
+            std::vector<std::pair<int, string> > vDecoded1;
+            if(!CContent(vDecoded[0].second).Decode(vDecoded1))
+                 return false;    
+            for (unsigned int i = 0; i < vDecoded1.size(); i++) {
+                if(vDecoded1[0].first==CC_FILE)
+                {
+                    strFile= vDecoded1[0].second;         
+                    return true;
+                }
+            }
+            return false;
+        }
+            break;
+        }
+        case CC_FILE:
+            strFile= vDecoded[0].second;         
+                    return true;
+        default:
+            return false;
+    }
+    
+    
 }
 bool CContent::GetTags(std::vector<std::pair<int,std::string> >& vTagList) const
 {

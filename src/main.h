@@ -15,7 +15,8 @@
 #include "chainparams.h"
 #include "coins.h"
 #include "ccc/script2txposdb.h"
-#include "ccc/domain.h"
+#include "ccc/settings.h"
+//#include "ccc/domain.h"
 #include "primitives/block.h"
 #include "primitives/transaction.h"
 #include "net.h"
@@ -49,6 +50,7 @@ class CInv;
 class CScriptCheck;
 class CValidationInterface;
 class CValidationState;
+class CDomain;
 
 struct CBlockTemplate;
 struct CNodeStateStats;
@@ -134,7 +136,6 @@ typedef boost::unordered_map<uint256, CBlockIndex*, BlockHasher> BlockMap;
 extern BlockMap mapBlockIndex;
 extern uint64_t nLastBlockTx;
 extern uint64_t nLastBlockSize;
-extern const std::string strMessageMagic;
 extern int64_t nTimeBestReceived;
 extern CWaitableCriticalSection csBestBlock;
 extern CConditionVariable cvBlockChange;
@@ -148,7 +149,7 @@ extern unsigned int nCoinCacheSize;
 extern CFeeRate minRelayTxFee;
 extern bool fAlerts;
 extern uint64_t nMaxMempoolSize;
-
+extern CSettings settings;
 /** Best header we've seen so far (used for getheaders queries' starting points). */
 extern CBlockIndex *pindexBestHeader;
 
@@ -317,6 +318,7 @@ int GetBlocksToMaturity(const unsigned int nLockTime);
 int GetLockLasting(uint32_t nLockTime);
 uint32_t LockTimeToTime(uint32_t nLockTime);
 CScript GetTxInScriptPubKey(const CTxIn& txin);
+
 
 /** Undo information for a CBlock */
 class CBlockUndo

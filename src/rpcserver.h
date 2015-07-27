@@ -284,12 +284,12 @@ extern json_spirit::Value createcontent(const json_spirit::Array& params, bool f
 extern json_spirit::Value decodecontent(const json_spirit::Array& params, bool fHelp);
 
 extern CContent _create_text_content(std::string str);
-extern CContent _create_file_content(std::string str);
+//extern CContent _create_file_content(std::string str);
 extern CContent _create_content(const json_spirit::Array& params);
 extern json_spirit::Object _decode_content(const json_spirit::Array& params);
-extern bool _getTxFrBlock(const CBlock& block, const int nTx, CTransaction& txOut);
-extern bool _getVoutFrTx(const CTransaction& tx, const int nVout, CTxOut& vout);
-extern bool _getContentFrTx(const CTransaction& tx, const int nVout, CContent& content);
+extern bool GetTxFromBlock(const CBlock& block, const int nTx, CTransaction& txOut);
+extern bool GetVoutFromTx(const CTransaction& tx, const int nVout, CTxOut& vout);
+extern bool GetContentFromVout(const CTransaction& tx, const int nVout, CContent& content);
 extern json_spirit::Object _voutToJson(const CTxOut& txout);
 extern json_spirit::Object _output_content(const CContent& cttIn, const int& cformat, const unsigned char& cttf, const CLink& clinkIn, const std::vector<CBitcoinAddress>& posters, const CAmount nValue, const CScript& scriptPubKey);
 extern std::vector<CBitcoinAddress> _get_posters(CTransaction tx);
@@ -325,5 +325,5 @@ extern void GetMessagesFromTx(std::vector<CMessage>& vMessages,const CTransactio
 //extern uint32_t LockTimeToTime(uint32_t nLockTime);
 extern void SortMessages(std::vector<CMessage>& vMsg,std::vector<CScript> vIDsLocal);
 extern Value gettxmessages(const json_spirit::Array& params, bool fHelp);
-extern CContent _getcontentbylink(const CLink clink);
+
 #endif // BITCOIN_RPCSERVER_H

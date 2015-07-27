@@ -1323,7 +1323,7 @@ bool AppInit2(boost::thread_group& threadGroup)
 
     SetRPCWarmupFinished();
     uiInterface.InitMessage(_("Done loading"));
-
+    settings.LoadSettings();
 #ifdef ENABLE_WALLET
     if (pwalletMain) {
         //pwalletMain->LoadTxs();
