@@ -4273,19 +4273,27 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
             {
                 addrman.Add(addrFrom, addrFrom);
                 addrman.Good(addrFrom);
-            } else 
+            } 
+            else 
             {
-                CAddress addrConnect = pfrom->addr;
-                addrConnect.SetPort(addrFrom.GetPort());
-
-                CNode* pnode = ConnectNode(addrConnect);
-                if (pnode != NULL) 
+                bool fTried=false;
+                BOOST_FOREACH(CNode* pnode, vNodes) {
+                    if ((CNetAddr)pnode->addr==(CNetAddr)pfrom->addr)
+                        fTried=true;
+                }
+                if (!fTried)
                 {
-                    addrman.Add(addrFrom, addrFrom);
-                    addrman.Good(addrFrom);
-                    pnode->fDisconnect = true;
-            }
+                    CAddress addrConnect = pfrom->addr;
+                    addrConnect.SetPort(addrFrom.GetPort());
 
+                    CNode* pnode = ConnectNode(addrConnect);
+                    if (pnode != NULL) 
+                    {
+                        addrman.Add(addrFrom, addrFrom);
+                        addrman.Good(addrFrom);
+                        pnode->fDisconnect = true;
+                    }
+                }
             }
         }
         

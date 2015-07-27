@@ -75,11 +75,44 @@ static std::map<int,std::string> mapPageNames=boost::assign::map_list_of
 (TVPAGE_ID,"tv")
 (DOWNLOADERPAGE_ID,"downloader")
 ;
+static std::map<int,std::string> mapDefaultServiceDomain=boost::assign::map_list_of
+            (SERVICE_FULLNODE,"")
+    (SERVICE_NAT,"")
+    (SERVICE_STUN,"stun.f")
+    (SERVICE_FULLNODEPLUS,"fullnodeplus.f")
+    (SERVICE_ICQ,"icq.f"),
+    (SERVICE_RELAY,"relay.f")
+    (SERVICE_SEARCHENGINE,"search.f")
+    (SERVICE_MININGPOOL,"pool.f"),
+    (SERVICE_OFFCHAIN_MESSAGE,"offchainmessage.f")
+    (SERVICE_OFFCHAIN_PRIVATE,"offchainprivate.f")
+    (SERVICE_OFFCHAIN_PUBLIC,"offchain.f")
+    (SERVICE_MALL,"mall.f")
+    (SERVICE_BANK,"bank.f")
+    (SERVICE_TORRENTFILE,"torrent.f")
+    (SERVICE_EMAIL,"email.f"),
+    (SERVICE_NOBLOCKCHAINDATA,"")
+    (SERVICE_APP,"");
+
+static std::map<int,std::string> mapDefaultPageDomain=boost::assign::map_list_of
+            (WALLETPAGE_ID,"wallet.f")
+(BROWSERPAGE_ID,"browser.f")
+(PUBLISHERPAGE_ID,"publisher.f")
+(MESSENGERPAGE_ID,"messenger.f")
+(DOMAINPAGE_ID,"domainpage.f")
+(SETTINGPAGE_ID,"settings.f")
+(SERVICEPAGE_ID,"servicepage.f")
+(SHOPPAGE_ID,"shop.f")
+(TVPAGE_ID,"tv.f")
+(DOWNLOADERPAGE_ID,"downloader.f");
+
 
 class CSettings {
 public:
-    map<int,string> mapServiceDomain;
+    //map<int,CServiceSettings> mapServiceSettings;
+    //map<int,string> mapServiceDomain;
     map<int,string> mapPageDomain;
+    map<int,CLink>mapPageLink;
     uint64_t nServiceFlags;
     string language;
     
@@ -91,6 +124,21 @@ public:
     bool ChangeSetting(const string settingType,const string key,const string& value);
 private:
 };
-
+class CServiceSettings
+{
+public:
+    int nServiceID;
+    //int nDomains;
+    //map<int,string> mapDomains;
+    bool fServerOn;
+    bool fClientOn;
+//    CServiceSettings(const int nServiceIDIn);
+//    bool LoadSettings();
+//    bool SaveSettings();
+//    Value ToJson();    
+//    bool GetSetting(const string settingType,const string key,string& value);
+//    bool ChangeSetting(const string settingType,const string key,const string& value);
+    
+};
 #endif	/* SETTINGS_H */
 

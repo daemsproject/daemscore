@@ -9,6 +9,9 @@
 #define	FILEPACKAGE_H
 using namespace std;
 using namespace json_spirit;
+class CLink;
+class CContent;
+class Value;
 class CFilePackage
 {
 public:
@@ -22,7 +25,7 @@ public:
     bool SetContent(const CContent contentIn);
     bool SetJson(const Value json);
     Value ToJson();
-    bool InstallPackage();
+    bool InstallPackage(const CLink link);
     
 };
 
