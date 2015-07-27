@@ -4278,7 +4278,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
             {
                 bool fTried=false;
                 BOOST_FOREACH(CNode* pnode, vNodes) {
-                    if ((CNetAddr)pnode->addr==(CNetAddr)pfrom->addr)
+                    if ((CNetAddr)pnode->addr==(CNetAddr)pfrom->addr&&pnode->addr!=pfrom->addr)
                         fTried=true;
                 }
                 if (!fTried)
