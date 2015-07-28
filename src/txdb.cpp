@@ -8,6 +8,7 @@
 #include "pow.h"
 #include "uint256.h"
 #include "timedata.h"
+#include "ccc/domain.h"
 #include <stdint.h>
 
 #include <boost/thread.hpp>

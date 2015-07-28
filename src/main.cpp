@@ -9,6 +9,8 @@
 #include "alert.h"
 #include "chainparams.h"
 #include "ccc/settings.h"
+#include "ccc/link.h"
+#include "ccc/content.h"
 #include "checkpoints.h"
 #include "checkqueue.h"
 #include "init.h"

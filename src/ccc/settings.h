@@ -5,8 +5,8 @@
  * Created on July 26, 2015, 8:37 PM
  */
 
-#ifndef SETTINGS_H
-#define	SETTINGS_H
+#ifndef CCCOIN_SETTINGS_H
+#define	CCCOIN_SETTINGS_H
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_value.h"
 #include <string>
@@ -151,5 +151,5 @@ public:
 //    bool ChangeSetting(const string settingType,const string key,const string& value);
     
 };
-#endif	/* SETTINGS_H */
+#endif	/* CCCOIN_SETTINGS_H */
 

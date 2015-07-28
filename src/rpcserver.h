@@ -10,8 +10,8 @@
 #include "rpcprotocol.h"
 #include "uint256.h"
 #include "primitives/transaction.h"
-#include "ccc/content.h"
-#include "ccc/link.h"
+//#include "ccc/content.h"
+//#include "ccc/link.h"
 #include "base58.h"
 #include <list>
 #include <map>
@@ -25,6 +25,10 @@
 class CBlockIndex;
 class CNetAddr;
 class CBlock;
+class CContent;
+class CLink;
+class CMessage;
+
 class AcceptedConnection
 {
 public:

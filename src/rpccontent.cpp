@@ -10,9 +10,10 @@
 #include "util.h"
 #include "ccc/content.h"
 #include "ccc/link.h"
+#include "ccc/domain.h"
 #include "txdb.h"
 #include <stdint.h>
-#include "contentutil.h"
+#include "ccc/contentutil.h"
 #include "json/json_spirit_value.h"
 #include "base58.h"
 #include "utilstrencodings.h"
@@ -102,7 +103,7 @@ CContent _create_text_content(std::string str)
 CContent _create_content(const Array& params)
 {
     std::string str = params[0].get_str();
-    CContent ctt = FileExists(str) ? _create_file_content(str) : _create_text_content(str);
+    CContent ctt =  _create_text_content(str);//FileExists(str) ? _create_file_content(str) :
     return ctt;
 }
 

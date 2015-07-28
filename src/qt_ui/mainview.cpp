@@ -20,6 +20,7 @@
 #include "walletmodel.h"
 #include "jsinterface.h"
 #include "ui_interface.h"
+
 #include "util.h"
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
@@ -30,7 +31,7 @@
 #include <QProgressDialog>
 #include <QPushButton>
 #include <QVBoxLayout>
-
+using namespace boost::filesystem;
 MainView::MainView(QString languageIn,BitcoinGUI *parent,JsInterface *_js):
     QStackedWidget(parent),
         language(languageIn),
@@ -137,8 +138,8 @@ void MainView::installWebPage(const string strPageName)
     getcwd(buf, sizeof(buf));
     LogPrintf("current working directory : %s\n", buf);
     std::string str(buf);
-    boost::filesystem::path fpPath=fs::system_complete(str) / strPageName;  
-    boost::filesystem::path fpFile=fpPath / strPageName+".ffl";
+    boost::filesystem::path fpPath=system_complete(str) / strPageName;  
+    boost::filesystem::path fpFile=fpPath / (strPageName+".ffl");
     boost::filesystem::create_directories(fpPath);
     string filename=fpFile.string();
     json_spirit::Array arrFiles;
@@ -146,12 +147,14 @@ void MainView::installWebPage(const string strPageName)
     if(boost::filesystem::exists(fpFile))
     {
         bool fIntegrite=true;
-        std::string str=FileToString(fpFile);
-        if(readFileList(str,strMainFile,arrFiles))
+        std::string str;        
+        if(FileToString(fpFile.string(),str)&&readFileList(str,strMainFile,arrFiles))
         {
-            BOOST_FOREACH(PAIRTYPE(string,string)& pair, arrFiles)
+            for(unsigned int i=0;i<arrFiles.size();i++)
             {
-                boost::filesystem::path fpFile2=fpPath / pair.first;
+                Object obj=arrFiles[i].get_obj();
+                
+                boost::filesystem::path fpFile2=fpPath / obj[0].name_;
                 if(!boost::filesystem::exists(fpFile2)) 
                 {
                     fIntegrite=false;
@@ -163,42 +166,46 @@ void MainView::installWebPage(const string strPageName)
         }
          boost::filesystem::remove_all(fpPath);
     }          
-    std::string str=qrcFileToString(":/"+strPageName+".ffl");
+    str=qrcFileToString(":/"+strPageName+".ffl");
     StringToFile(filename,str);
     readFileList(str,strMainFile,arrFiles);
-    BOOST_FOREACH(PAIRTYPE(string,string)& pair, arrFiles)
-        copyQrcToDisc(pair);
+    for(unsigned int i=0;i<arrFiles.size();i++)
+            {
+                Object obj=arrFiles[i].get_obj();
+        
+        copyQrcToDisc(obj[0].name_,obj[0].value_.get_str());
+    }
 }
 
 std::string MainView::qrcFileToString(const std::string fileName)
 {
-    QFile f(fileName);
+    QFile f(QString().fromStdString(fileName));
         if(!f.open(QIODevice::WriteOnly|QIODevice::Text)){
-            LogPrintf("qrcFileToString %s failed \n",strPageName);
+            LogPrintf("qrcFileToString %s failed \n",fileName);
             return "";
         }        
         QTextStream out(&f);  
-        out< ;
+        //out< ;
         QString qstr;
         out>>qstr;
         f.close();
-        return qstr.ToStdString();
+        return qstr.toStdString();
 }
-bool MainView::copyQrcToDisc(const std::pair<string,string>& pair)
+bool MainView::copyQrcToDisc(string to,string from)
 {
-    QFile fin(":/"+pair.second);       
+    QFile fin(QString().fromStdString(":/"+from));       
     if(!fin.open(QIODevice::ReadOnly))
         return false;
     QDataStream in(&fin);  
     QString qstr;  
     in>>qstr; 
-    boost::filesystem::path fpPath=GetDataDir()  / "appdata" / pair.first;  
-    std::cout<<"remove filenam result:"<<fpPath.remove_filename().string()<<"\n";
+    boost::filesystem::path fpPath=GetDataDir()  / "appdata" / to;  
+    std::cout<<"remove filename result:"<<fpPath.remove_filename().string()<<"\n";
     if(boost::filesystem::create_directories(fpPath.remove_filename()))
-       return StringToFile(fpPath.string(),str.ToStdString());
+       return StringToFile(fpPath.string(),qstr.toStdString());
     return false;
 }
-bool readFileList(const std::string strFileList,std::string& strMainFile,json_spirit::Array& arrFiles)
+bool MainView::readFileList(const std::string strFileList,std::string& strMainFile,json_spirit::Array& arrFiles)
 {
         json_spirit::Value fileData;
         if (!json_spirit::read_string(strFileList,fileData)){
@@ -212,14 +219,14 @@ bool readFileList(const std::string strFileList,std::string& strMainFile,json_sp
         }
         json_spirit::Object obj= fileData.get_obj();
         json_spirit::Value val = find_value(obj, "files");
-        if (val.type!=obj_type)
+        if (val.type()!=obj_type)
         {
            // LogPrintf("readFileList %s:  fail4 \n",strPageName);
             return false;
         }
         arrFiles = val.get_array();
         val = find_value(obj, "mainfile");
-        if (val.type!=str_type)
+        if (val.type()!=str_type)
         {
             //LogPrintf("readFileList %s:  fail5 \n",strPageName);
             return false;

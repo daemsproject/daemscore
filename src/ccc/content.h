@@ -11,13 +11,13 @@
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_value.h"
 #include "uint256.h"
-//#include "script/script.h"
+#include "script/script.h"
 #include "ccc/link.h"
 #include "amount.h"
 using namespace json_spirit;
 using namespace std;
 using std::string;
-class CScript;
+
 enum stringformat
 {
     STR_FORMAT_BIN = 0,

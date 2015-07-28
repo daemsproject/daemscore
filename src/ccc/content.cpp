@@ -10,6 +10,7 @@
 #include "base58.h"
 #include "streams.h"
 
+
 #include "json/json_spirit_writer_template.h"
 using namespace boost;
 using namespace std;

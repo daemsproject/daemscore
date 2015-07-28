@@ -167,17 +167,17 @@ void JsInterface::notifyNewExtendedKey(const std::string id)
     notifyObj.push_back(Pair("id",Value(id)));
     emit notify(QString().fromStdString(write_string(Value(notifyObj),false)));
 }
-enum pageid
-{
-    WALLETPAGE_ID=1,
-    BROWSERPAGE_ID=2,
-    PUBLISHERPAGE_ID=3,
-    MESSENGERPAGE_ID=4,
-    MINERPAGE_ID=5,
-    DOMAINPAGE_ID=6,
-    SETTINGPAGE_ID=7,
-    SERVICEPAGE_ID=8
-};
+//enum pageid
+//{
+//    WALLETPAGE_ID=1,
+//    BROWSERPAGE_ID=2,
+//    PUBLISHERPAGE_ID=3,
+//    MESSENGERPAGE_ID=4,
+//    MINERPAGE_ID=5,
+//    DOMAINPAGE_ID=6,
+//    SETTINGPAGE_ID=7,
+//    SERVICEPAGE_ID=8
+//};
 std::string appNames[9]={"null","wallet","browser","publisher","messenger","miner","domainname","setting","service"};
 QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
     json_spirit::Value valData;

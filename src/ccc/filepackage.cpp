@@ -12,8 +12,12 @@
 #include "json/json_spirit_value.h"
 #include "ccc/link.h"
 #include "util.h"
+#include "script/script.h"
 #include "ccc/content.h"
 #include "ccc/contentutil.h"
+#include <boost/foreach.hpp>
+using namespace std;
+using namespace boost;
 bool CFilePackage::SetLink(const CLink linkIn)
 {
     link=linkIn;
@@ -29,8 +33,9 @@ bool CFilePackage::SetContent(const CContent contentIn)
     contentIn.Decode(vDecoded);
     if(vDecoded.size()>0&&vDecoded[0].first==CC_FILE_PACKAGE_P)
     {
+        string content2;
         vDecoded.clear();
-        if(!CContent(vDecoded[0].second).Decode(vDecoded))
+        if(!CContent(content2).Decode(vDecoded))
             return false;
         for(unsigned int i=0;i<vDecoded.size();i++)
         {
@@ -40,56 +45,70 @@ bool CFilePackage::SetContent(const CContent contentIn)
                 std::vector<std::pair<int, string> > vDecoded1;
                  if(!CContent(vDecoded[i].second).Decode(vDecoded1))
                      return false;
-                std::vector<std::pair<int, string> > it=find(vDecoded1.begin(),vDecoded1.end(),CC_FILE_NAME);
-                if (it==vDecoded1.end())
-                    return false;
-                string strFileName=it->second;
-                it=find(vDecoded1.begin(),vDecoded1.end(),CC_LINK);
-                if (it==vDecoded1.end())
-                {
-                    it=find(vDecoded1.begin(),vDecoded1.end(),CC_COMBINE_P);
-                    if (it==vDecoded1.end())
-                        return false;
-                    std::vector<std::pair<int, string> > vDecoded2;
-                    if(!CContent(it->second).Decode(vDecoded2))
-                        return false;
-                    for(unsigned int j=0;j<vDecoded.size();j++)
+                bool fFound=false;
+                string strFileName;
+                for(unsigned int i=0;i<vDecoded1.size();i++)
+                    if(vDecoded1[i].first==CC_FILE_NAME)
                     {
-                        if(vDecoded[j].first!=CC_LINK)
-                            return false;
-                        CLink fileLink;
-                        if(!fileLink.Unserialize(strFileLink)))
-                            return false;
-                        vlink.push_back(fileLink);
+                        strFileName=vDecoded1[i].second;
+                        fFound=true;
+                        break;
                     }
-                }
-                else
+                if (!fFound)
+                    return false;
+                fFound=false;
+                for(unsigned int i=0;i<vDecoded1.size();i++)
+                    if(vDecoded1[i].first==CC_FILE_NAME)
+                    {
+                        string strFileLink=vDecoded1[i].second;
+                        CLink fileLink;
+                        if(!fileLink.Unserialize(strFileLink))
+                            return false;                   
+                        vlink.push_back(fileLink);
+                        mapFileList[strFileName]=vlink;
+                        fFound=true;
+                        break;
+                    }
+                
+                if (!fFound)
                 {
-                    string strFileLink=it->second;
-                   
-                    if(!fileLink.Unserialize(strFileLink)))
-                        return false;
-                   
-                    vlink.push_back(fileLink);
-                    mapFileList.push_back(strFileName,vlink);
+                    fFound=false;
+                    for(unsigned int i=0;i<vDecoded1.size();i++)
+                    if(vDecoded1[i].first==CC_FILE_COMBINE_P)
+                    {                    
+                        std::vector<std::pair<int, string> > vDecoded2;
+                        if(!CContent(vDecoded1[i].second).Decode(vDecoded2))
+                            return false;
+                        for(unsigned int j=0;j<vDecoded.size();j++)
+                        {
+                            if(vDecoded[j].first!=CC_LINK)
+                                return false;
+                            CLink fileLink;
+                            if(!fileLink.Unserialize(vDecoded[j].second))
+                                return false;
+                            vlink.push_back(fileLink);
+                        }
+                        break;
+                    }
+                    if (!fFound)
+                    return false;
                 }
-            }
-            
-            switch (vDecoded[i].first)
-            {
-                case CC_FILE_PACKAGE_MAINFILE
+                
             }
         }
         if(mapFileList.size()==0)
-            return false;
-        std::vector<std::pair<int, string> > it=find(vDecoded.begin(),vDecoded.end(),CC_FILE_PACKAGE_MAINFILE);
-        if (it!=vDecoded1.end())
+            return false;        
+        for(unsigned int i=0;i<vDecoded.size();i++)
         {
-            if(it->second.size()==0)
-                return false;
-            if(find(mapFileList.begin(),mapFileList.end(),it->second)==mapFileList.end())
-                return false;                
-            strMainFile=it->second;
+            if(vDecoded[i].first==CC_FILE_PACKAGE_MAINFILE)
+            {
+                if(vDecoded[i].second.size()==0)
+                    return false;
+                if(mapFileList.find(vDecoded[i].second)==mapFileList.end())
+                    return false;                
+                strMainFile=vDecoded[i].second;
+                return true;
+            }
         }
     }
     return false;
@@ -99,13 +118,13 @@ bool CFilePackage::InstallPackage(string strDirName)
     boost::filesystem::path fpPath=GetDataDir()  / "appdata" / strDirName;
      if(!boost::filesystem::create_directories(fpPath))
          return false;
-     BOOST_FOREACH(Pair<string,vector<CLink> >& pair,mapFileList)
+     for(map<string,vector<CLink> >::iterator it=mapFileList.begin();it!=mapFileList.end();it++)
      {
          string strFilecontent;
-        if(GetFileFromLinks(pair.second,strFilecontent))
+        if(GetFileFromLinks(it->second,strFilecontent))
         {
-            boost::filesystem::path fpFile=fpPath / pair.first;
-            if(!StringToFile(fpPath,strFilecontent))
+            boost::filesystem::path fpFile=fpPath / it->first;
+            if(!StringToFile(fpPath.string(),strFilecontent))
                 return false;
         }
          return false;

@@ -50,7 +50,6 @@ class CInv;
 class CScriptCheck;
 class CValidationInterface;
 class CValidationState;
-class CDomain;
 
 struct CBlockTemplate;
 struct CNodeStateStats;

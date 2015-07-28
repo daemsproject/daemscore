@@ -5,13 +5,14 @@
  * Created on July 26, 2015, 6:59 PM
  */
 
-#ifndef FILEPACKAGE_H
-#define	FILEPACKAGE_H
+#ifndef CCCOIN_FILEPACKAGE_H
+#define	CCCOIN_FILEPACKAGE_H
 #include <boost/filesystem.hpp>
 #include "json/json_spirit_value.h"
+#include "ccc/link.h"
 using namespace std;
 using namespace json_spirit;
-class CLink;
+
 class CContent;
 //namespace json_spirit
 //{
@@ -39,5 +40,5 @@ public:
 };
 
 
-#endif	/* FILEPACKAGE_H */
+#endif	/* CCCOIN_FILEPACKAGE_H */
 

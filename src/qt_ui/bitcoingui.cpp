@@ -792,32 +792,32 @@ void BitcoinGUI::changePassphrase()
         if(dlg.exec()){
         }
 }
-enum pageid
-{
-    WALLETPAGE_ID=1,
-    BROWSERPAGE_ID=2,
-    PUBLISHERPAGE_ID=3,
-    MESSENGERPAGE_ID=4,
-    MINERPAGE_ID=5,
-    DOMAINPAGE_ID=6,
-    SETTINGPAGE_ID=7,
-    SERVICEPAGE_ID=8,
-    SHOPPAGE_ID=9,
-    TVPAGE_ID=10,
-    DOWNLOADERPAGE_ID=11
-};
-static std::map<int,std::string> mapPageNames=boost::assign::map_list_of
-(WALLETPAGE_ID,"wallet")
-(BROWSERPAGE_ID,"browser")
-(PUBLISHERPAGE_ID,"publisher")
-(MESSENGERPAGE_ID,"messenger")
-(DOMAINPAGE_ID,"domain")
-(SETTINGPAGE_ID,"settings")
-(SERVICEPAGE_ID,"service")
-(SHOPPAGE_ID,"shop")
-(TVPAGE_ID,"tv")
-(DOWNLOADERPAGE_ID,"downloader")
-;
+//enum pageid
+//{
+//    WALLETPAGE_ID=1,
+//    BROWSERPAGE_ID=2,
+//    PUBLISHERPAGE_ID=3,
+//    MESSENGERPAGE_ID=4,
+//    MINERPAGE_ID=5,
+//    DOMAINPAGE_ID=6,
+//    SETTINGPAGE_ID=7,
+//    SERVICEPAGE_ID=8,
+//    SHOPPAGE_ID=9,
+//    TVPAGE_ID=10,
+//    DOWNLOADERPAGE_ID=11
+//};
+//static std::map<int,std::string> mapPageNames=boost::assign::map_list_of
+//(WALLETPAGE_ID,"wallet")
+//(BROWSERPAGE_ID,"browser")
+//(PUBLISHERPAGE_ID,"publisher")
+//(MESSENGERPAGE_ID,"messenger")
+//(DOMAINPAGE_ID,"domain")
+//(SETTINGPAGE_ID,"settings")
+//(SERVICEPAGE_ID,"service")
+//(SHOPPAGE_ID,"shop")
+//(TVPAGE_ID,"tv")
+//(DOWNLOADERPAGE_ID,"downloader")
+//;
 void BitcoinGUI::gotoWalletPage()
 {
     walletAction->setChecked(true);
@@ -881,7 +881,7 @@ void BitcoinGUI::domainNameClicked()
 //    if (walletFrame) walletFrame->gotoVerifyMessageTab(addr);
 //}
 #endif // ENABLE_WALLET
-void installWebPages()
+void BitcoinGUI::installWebPages()
 {
     for(int i=1;i<11;i++)
     {

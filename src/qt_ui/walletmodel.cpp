@@ -14,6 +14,8 @@
 #include "keystore.h"
 #include "main.h"
 #include "ccc/ecminer.h"
+#include "ccc/content.h"
+#include "ccc/domain.h"
 #include "sync.h"
 #include "ui_interface.h"
 #include "wallet.h"

@@ -8,7 +8,7 @@
 #include "rpcserver.h"
 #include "sync.h"
 #include "util.h"
-
+#include "ccc/contentutil.h"
 #include <stdint.h>
 
 #include "json/json_spirit_value.h"

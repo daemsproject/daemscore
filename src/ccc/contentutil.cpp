@@ -1,9 +1,12 @@
 
 #include "main.h"
+#include "txdb.h"
 #include "ccc/link.h"
 #include "ccc/content.h"
 #include "ccc/domain.h"
 //#include "utilstrencodings.h"
+#include "ccc/content.h"
+#include "ccc/contentutil.h"
 #include <string>
 #include <boost/foreach.hpp>
 #include "util.h"
@@ -16,11 +19,10 @@ bool GetContentByLink(const CLink clink,CContent& content)
         return false;
     CTransaction tx;
     if (!GetTxFromBlock(block, clink.nTx, tx))
-        return false;
-    CContent content;
+        return false;    
     if (!GetContentFromVout(tx, clink.nVout, content))
         return false;
-    return content;
+    return true;
 }
 bool GetBlockByHeight(const int nHeight, CBlock& blockOut, CBlockIndex*& pblockindex)
 {
@@ -72,7 +74,7 @@ bool GetDomainLink (const string strDomain,CLink& link)
         {
             if(link.SetString(domain.redirectTo))
             {
-                LogPrintf("GetDomainLink %s %s\n",HexStr(domain.rredirectTo.begin(),domain.rredirectTo.end()),link.ToString(LINK_FORMAT_DEC));
+                LogPrintf("GetDomainLink %s %s\n",HexStr(domain.redirectTo.begin(),domain.redirectTo.end()),link.ToString(LINK_FORMAT_DEC));
                 return true;
             }
         }

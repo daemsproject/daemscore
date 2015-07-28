@@ -8,6 +8,7 @@
 #include "amount.h"
 #include <QUrl>
 #include <QStackedWidget>
+#include "json/json_spirit_value.h"
 
 class BitcoinGUI;
 class ClientModel;
@@ -57,9 +58,9 @@ public:
     //void showOutOfSyncWarning(bool fShow);
     void gotoWebPage(int nPageID,QUrl url=QUrl(""));
     void closeWebPage(int nPageID);
-    void installWebPage(const string strPageName);
+    void installWebPage(const std::string strPageName);
     bool readFileList(const std::string strFileList,std::string& strMainFile,json_spirit::Array& arrFiles);
-    bool copyQrcToDisc(const std::pair<string,string>& pair);
+    bool copyQrcToDisc(std::string to,std::string from);
     std::string qrcFileToString(const std::string fileName);
 private:
     //ClientModel *clientModel;

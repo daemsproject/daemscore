@@ -5,19 +5,22 @@
  * Created on July 26, 2015, 8:37 PM
  */
 
-#include "settings.h"
+
 #include "util.h"
 #include "contentutil.h"
 #include "domain.h"
 #include "main.h"
 #include "filepackage.h"
+#include "settings.h"
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_value.h"
+
 using namespace std;
 using namespace json_spirit;
 using namespace boost;
+
 CSettings::CSettings()
 {
     //load default settings    
@@ -63,7 +66,7 @@ bool CSettings::LoadSettings()
     for(unsigned int i=0;i<obj2.size();i++)
     {
         //pair<string,Value> pair=obj2[i];
-        int name=atoi(obj2[i].name_);
+        int name=atoi(obj2[i].name_.c_str());
         string str=obj2[i].value_.get_str();
         if(name>=1&&name<=11&&IsValidDomainFormat(str))
         {
