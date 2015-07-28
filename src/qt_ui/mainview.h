@@ -59,7 +59,7 @@ public:
     void gotoWebPage(int nPageID,QUrl url=QUrl(""));
     void closeWebPage(int nPageID);
     void installWebPage(const std::string strPageName);
-    bool readFileList(const std::string strFileList,std::string& strMainFile,json_spirit::Array& arrFiles);
+    void loadWebPage(int nPageID);
     bool copyQrcToDisc(std::string to,std::string from);
     std::string qrcFileToString(const std::string fileName);
 private:

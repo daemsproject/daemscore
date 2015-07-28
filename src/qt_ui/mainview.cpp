@@ -20,6 +20,8 @@
 #include "walletmodel.h"
 #include "jsinterface.h"
 #include "ui_interface.h"
+#include "ccc/filepackage.h"
+#include "ccc/settings.h"
 #include "json/json_spirit_reader_template.h"
 #include "util.h"
 #include <boost/filesystem.hpp>
@@ -102,6 +104,17 @@ void MainView::gotoWebPage(int nPageID,QUrl url)
     //setCurrentWidget(*vWebPages.rbegin());
     //setCurrentWidget(walletPage);
 }
+void MainView::loadWebPage(int nPageID)
+{
+    //QDir dir(QString().fromStdString(GetDataDir().string()));
+    //QUrl url= QUrl("file://"+dir.path().toUtf8() + "/appdata/settings/filepackage/settings_en.html"); 
+    string strPath;
+    GetFilePackageMain(mapPageNames[nPageID],strPath);
+    QUrl url=QUrl(QString().fromStdString("file://"+strPath));
+    
+    LogPrintf("gotosettings page url:%s \n",url.toString().toStdString());
+    gotoWebPage(nPageID,url);
+}
 void MainView::closeWebPage(int nPageID){
     for(std::vector<WebPage*>::iterator it=vWebPages.begin();it!=vWebPages.end();it++){
         if((*it)->nPageID==nPageID)
@@ -131,45 +144,27 @@ void MainView::showProgress(const QString &title, int nProgress)
     else if (progressDialog)
         progressDialog->setValue(nProgress);
 }
+
 void MainView::installWebPage(const string strPageName)
 {
+    if(CheckFilePackage(strPageName))
+        return;
     boost::filesystem::path fpPath=GetDataDir()  / "appdata" / strPageName / "filepackage"  ;  
     // char buf[80];
     //getcwd(buf, sizeof(buf));
     //LogPrintf("current working directory : %s\n", buf);
     //std::string str(buf);
-    //boost::filesystem::path fpPath=system_complete(str).parent_path().parent_path().parent_path() / "cccpages" / strPageName;  
-    boost::filesystem::path fpFile=fpPath / (strPageName+".package.json");
+    //boost::filesystem::path fpPath=system_complete(str).parent_path().parent_path().parent_path() / "cccpages" / strPageName; 
     LogPrintf("current working directory : %s\n", fpPath.string());
-    boost::filesystem::create_directories(fpPath);
+    boost::filesystem::path fpFile=fpPath / (strPageName+".package.json");
     string filename=fpFile.string();
+    boost::filesystem::create_directories(fpPath);
+    // boost::filesystem::remove_all(fpPath);
+    string str=qrcFileToString(":/"+strPageName+".package.json");
     json_spirit::Array arrFiles;
     std::string strMainFile;
-    if(boost::filesystem::exists(fpFile))
-    {
-        bool fIntegrite=true;
-        std::string str;        
-        if(FileToString(fpFile.string(),str)&&readFileList(str,strMainFile,arrFiles))
-        {
-            for(unsigned int i=0;i<arrFiles.size();i++)
-            {
-                Object obj=arrFiles[i].get_obj();
-                
-                boost::filesystem::path fpFile2=fpPath / obj[0].name_;
-                if(!boost::filesystem::exists(fpFile2)) 
-                {
-                    fIntegrite=false;
-                    break;
-                }
-            }
-            if (fIntegrite)
-                return;
-        }
-        // boost::filesystem::remove_all(fpPath);
-    }          
-    string str=qrcFileToString(":/"+strPageName+".package.json");
     StringToFile(filename,str);
-    readFileList(str,strMainFile,arrFiles);
+    ReadFilePackageList(str,strMainFile,arrFiles);
     for(unsigned int i=0;i<arrFiles.size();i++)
             {
                 Object obj=arrFiles[i].get_obj();
@@ -205,33 +200,4 @@ bool MainView::copyQrcToDisc(string to,string from)
     if(boost::filesystem::create_directories(fpPath.remove_filename()))
        return StringToFile(fpPath.string(),qstr.toStdString());
     return false;
-}
-bool MainView::readFileList(const std::string strFileList,std::string& strMainFile,json_spirit::Array& arrFiles)
-{
-        json_spirit::Value fileData;
-        if (!json_spirit::read_string(strFileList,fileData)){
-            ///LogPrintf("readFileList %s: fail2 \n",strPageName);
-            return false;
-        }    
-        if(fileData.type() != json_spirit::obj_type)
-        {
-          // LogPrintf("readFileList %s:  fail3 \n",strPageName);
-            return false;
-        }
-        json_spirit::Object obj= fileData.get_obj();
-        json_spirit::Value val = find_value(obj, "files");
-        if (val.type()!=obj_type)
-        {
-           // LogPrintf("readFileList %s:  fail4 \n",strPageName);
-            return false;
-        }
-        arrFiles = val.get_array();
-        val = find_value(obj, "mainfile");
-        if (val.type()!=str_type)
-        {
-            //LogPrintf("readFileList %s:  fail5 \n",strPageName);
-            return false;
-        }
-        strMainFile = val.get_str();
-        
 }

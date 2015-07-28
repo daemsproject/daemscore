@@ -38,7 +38,9 @@ public:
     void Clear();
     
 };
-
+bool ReadFilePackageList(const std::string strFileList,std::string& strMainFile,json_spirit::Array& arrFiles);
+bool GetFilePackageMain(const string packageName,string& path);
+bool CheckFilePackage(const string packageName);
 
 #endif	/* CCCOIN_FILEPACKAGE_H */
 

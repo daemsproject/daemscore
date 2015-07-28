@@ -10,12 +10,14 @@
 #include "filepackage.h"
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_value.h"
+#include "json/json_spirit_reader_template.h"
 #include "ccc/link.h"
 #include "util.h"
 #include "script/script.h"
 #include "ccc/content.h"
 #include "ccc/contentutil.h"
 #include <boost/foreach.hpp>
+#include <boost/filesystem.hpp>
 using namespace std;
 using namespace boost;
 bool CFilePackage::SetLink(const CLink linkIn)
@@ -131,6 +133,7 @@ bool CFilePackage::InstallPackage(string strDirName)
      }  
      return true;    
 }
+
 void CFilePackage::Clear()
 {
     link=CLink();    
@@ -140,4 +143,82 @@ void CFilePackage::Clear()
     strMainFile="";
     fValid=false;            
 }
-
+bool GetFilePackageMain(const string packageName,string& path)
+{
+    boost::filesystem::path fpPath=GetDataDir()  / "appdata" / packageName / "filepackage"  ;    
+    boost::filesystem::path fpFile=fpPath / (packageName+".package.json");
+    LogPrintf("GetFilePackageMain fpPath:%s,fpFile %s \n",fpPath.string(),fpFile.string());    
+    json_spirit::Array arrFiles;
+    std::string strMainFile;
+    if(boost::filesystem::exists(fpFile))
+    {        
+        LogPrintf("GetFilePackageMain file exists \n");    
+        std::string str;        
+        if(ReadFileToString(fpFile.string(),str)&&ReadFilePackageList(str,strMainFile,arrFiles))
+        {
+            path=fpPath.string();            
+            path.append("/").append(strMainFile);   
+            return true;         
+        }
+        LogPrintf("GetFilePackageMain file to string %s \n",str);  
+    }
+    return false;
+}
+bool CheckFilePackage(const string packageName)
+{
+     boost::filesystem::path fpPath=GetDataDir()  / "appdata" / packageName / "filepackage"  ;
+    boost::filesystem::path fpFile=fpPath / (packageName+".package.json");
+    string filename=fpFile.string();   
+    json_spirit::Array arrFiles;
+    std::string strMainFile;
+    bool fIntegrite=false;
+    if(boost::filesystem::exists(fpFile))
+    {
+        fIntegrite=true;
+        std::string str;        
+        if(FileToString(fpFile.string(),str)&&ReadFilePackageList(str,strMainFile,arrFiles))
+        {
+            for(unsigned int i=0;i<arrFiles.size();i++)
+            {
+                Object obj=arrFiles[i].get_obj();
+                
+                boost::filesystem::path fpFile2=fpPath / obj[0].name_;
+                if(!boost::filesystem::exists(fpFile2)) 
+                {
+                    fIntegrite=false;
+                    break;
+                }
+            }            
+        }        
+    }    
+    return fIntegrite;
+}
+bool ReadFilePackageList(const std::string strFileList,std::string& strMainFile,json_spirit::Array& arrFiles)
+{
+        json_spirit::Value fileData;
+        if (!json_spirit::read_string(strFileList,fileData)){
+            LogPrintf("readFileList %s: fail2 \n",strFileList);
+            return false;
+        }    
+        if(fileData.type() != json_spirit::obj_type)
+        {
+           LogPrintf("readFileList %s:  fail3 \n",strFileList);
+            return false;
+        }
+        json_spirit::Object obj= fileData.get_obj();
+        json_spirit::Value val = find_value(obj, "files");
+        if (val.type()!=array_type)
+        {
+            LogPrintf("readFileList %s:  fail4 %i\n",val.type());
+            return false;
+        }
+        arrFiles = val.get_array();
+        val = find_value(obj, "mainfile");
+        if (val.type()!=str_type)
+        {
+            LogPrintf("readFileList %s:  fail5 \n",strFileList);
+            return false;
+        }
+        strMainFile = val.get_str();
+        return true;
+}

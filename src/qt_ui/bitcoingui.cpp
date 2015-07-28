@@ -895,15 +895,20 @@ void BitcoinGUI::gotoShopPage()
 void BitcoinGUI::gotoDownloaderPage()
 {
     downloaderAction->setChecked(true);
-    QUrl url= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/downloader_en.html"); 
-    if (mainView) mainView->gotoWebPage(DOWNLOADERPAGE_ID,url);
+//    QUrl url= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/downloader_en.html"); 
+//    if (mainView) mainView->gotoWebPage(DOWNLOADERPAGE_ID,url);
+    if (mainView) mainView->loadWebPage(DOWNLOADERPAGE_ID);
 }
 void BitcoinGUI::gotoSettingsPage()
-{
-    QDir dir(QString().fromStdString(GetDataDir().string())); 
-    QUrl url= QUrl("file://"+dir.path().toUtf8() + "/appdata/settings/filepackage/settings_en.html"); 
-    LogPrintf("gotosettings page url:%s \n",url.toString().toStdString());
+{    
+     QDir dir(QDir::currentPath());
+    dir.cdUp();
+    dir.cdUp();
+    dir.cdUp();
+    dir.cd(QString().fromStdString("cccpages"));
+    QUrl url= QUrl("file://"+dir.path().toUtf8() + "/html/settings_en.html"); 
     if (mainView) mainView->gotoWebPage(SETTINGPAGE_ID,url);
+    
 }
 void BitcoinGUI::domainNameClicked()
 {
@@ -923,7 +928,7 @@ void BitcoinGUI::domainNameClicked()
 #endif // ENABLE_WALLET
 void BitcoinGUI::installWebPages()
 {
-    for(int i=1;i<11;i++)
+    for(int i=1;i<=11;i++)
     {
        if(mainView) mainView->installWebPage(mapPageNames[i]);
     }

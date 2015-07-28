@@ -556,7 +556,7 @@ std::vector<CWalletTx> CWalletDB::ReadUnConfirmedTxs()
     filesystem::path fpFile=GetDataDir()  / strFileName;
     string strFileContent;
     if(FileToString(fpFile.string(), strFileContent)){
-        LogPrintf("ReadUnConfirmedTxs %s \n",HexStr(strFileContent.begin(),strFileContent.end()));
+        //LogPrintf("ReadUnConfirmedTxs %s \n",HexStr(strFileContent.begin(),strFileContent.end()));
         CDataStream ss(strFileContent.c_str(),strFileContent.c_str()+strFileContent.size(), 2, CLIENT_VERSION);
         LogPrintf("ReadUnConfirmedTxs ss size: %i",ss.size());
         ss>>vunconfirmedTxs;
