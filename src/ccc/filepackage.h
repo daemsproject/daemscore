@@ -8,14 +8,15 @@
 #ifndef FILEPACKAGE_H
 #define	FILEPACKAGE_H
 #include <boost/filesystem.hpp>
+#include "json/json_spirit_value.h"
 using namespace std;
 using namespace json_spirit;
 class CLink;
 class CContent;
-namespace json_spirit
-{
-class Value;
-}
+//namespace json_spirit
+//{
+//class Value;
+//}
 class CFilePackage
 {
 public:

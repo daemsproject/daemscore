@@ -14,6 +14,7 @@
 #include <string.h>
 #include <string>
 #include <vector>
+
 static const unsigned int MAX_SCRIPT_ELEMENT_SIZE = 3000; // bytes
 
 static const unsigned int MAX_STACK_SIZE = 200; // bytes

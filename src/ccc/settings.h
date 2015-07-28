@@ -7,6 +7,12 @@
 
 #ifndef SETTINGS_H
 #define	SETTINGS_H
+#include "json/json_spirit_utils.h"
+#include "json/json_spirit_value.h"
+#include <string>
+#include <vector>
+#include <map>
+#include <boost/assign.hpp>
 
 //#include "ccc/link.h"
 //#include "ccc/content.h"
@@ -43,7 +49,7 @@ static std::map<int,std::string> mapServiceNames=boost::assign::map_list_of
     (SERVICE_ICQ,"ICQ service")
     (SERVICE_RELAY,"relay service")
     (SERVICE_SEARCHENGINE,"search engine service")
-    (SERVICE_MININGPOOL,"mining pool servcie")
+    (SERVICE_MININGPOOL,"mining pool service")
     (SERVICE_OFFCHAIN_MESSAGE,"offchain message storage service")
     (SERVICE_OFFCHAIN_PRIVATE,"offchain private storage service")
     (SERVICE_OFFCHAIN_PUBLIC,"offchain public storage service")
@@ -84,19 +90,19 @@ static std::map<int,std::string> mapDefaultServiceDomain=boost::assign::map_list
     (SERVICE_NAT,"")
     (SERVICE_STUN,"stun.f")
     (SERVICE_FULLNODEPLUS,"fullnodeplus.f")
-    (SERVICE_ICQ,"icq.f"),
+    (SERVICE_ICQ,"icq.f")
     (SERVICE_RELAY,"relay.f")
     (SERVICE_SEARCHENGINE,"search.f")
-    (SERVICE_MININGPOOL,"pool.f"),
+    (SERVICE_MININGPOOL,"pool.f")
     (SERVICE_OFFCHAIN_MESSAGE,"offchainmessage.f")
     (SERVICE_OFFCHAIN_PRIVATE,"offchainprivate.f")
     (SERVICE_OFFCHAIN_PUBLIC,"offchain.f")
     (SERVICE_MALL,"mall.f")
     (SERVICE_BANK,"bank.f")
     (SERVICE_TORRENTFILE,"torrent.f")
-    (SERVICE_EMAIL,"email.f"),
+    (SERVICE_EMAIL,"email.f")
     (SERVICE_NOBLOCKCHAINDATA,"")
-    (SERVICE_APP,"");
+    (SERVICE_APP,"app.f");
 
 static std::map<int,std::string> mapDefaultPageDomain=boost::assign::map_list_of
             (WALLETPAGE_ID,"wallet.f")

@@ -13,6 +13,8 @@
 #include "filepackage.h"
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
+#include "json/json_spirit_utils.h"
+#include "json/json_spirit_value.h"
 using namespace std;
 using namespace json_spirit;
 using namespace boost;
@@ -30,7 +32,7 @@ bool CSettings::LoadSettings()
     if(!FileExists(fpFile.string()))
         return SaveSettings();
     Value val;
-    if(!ReadFileToJson(fpFile.string(),val)||!(val.type() == obj_type)       
+    if(!ReadFileToJson(fpFile.string(),val)||!(val.type() == obj_type))       
     {
          SaveSettings();
         return false;
@@ -49,42 +51,45 @@ bool CSettings::LoadSettings()
 //        if(pair.first>=0&&pair.first<=31&&IsValidDomain(pair.second))                
 //            mapServiceDomain[pair.first]=pair.second;
 //    }
-    json_spirit::Value& val2 = find_value(obj, "pagedomains");
-    if (val2.type!=obj_type)
+    json_spirit::Value val2 = find_value(obj, "pagedomains");
+    if (val2.type()!=obj_type)
     {
-        LogPrintf("LoadSettings %s:  pagedomains fail \n",);
+        LogPrintf("LoadSettings:  pagedomains fail \n");
        SaveSettings();
         return false;
     }
     Object& obj2 = val.get_obj();
-    BOOST_FOREACH(PAIRTYPE(int,string)& pair, obj2)
+    //BOOST_FOREACH(Object& pair, obj2)
+    for(unsigned int i=0;i<obj2.size();i++)
     {
-        if(pair.first>=1&&pair.first<=11&&IsValidDomainFormat(pair.second))
+        //pair<string,Value> pair=obj2[i];
+        int name=atoi(obj2[i].name_);
+        string str=obj2[i].value_.get_str();
+        if(name>=1&&name<=11&&IsValidDomainFormat(str))
         {
-            mapPageDomain[pair.first]=pair.second;
+            mapPageDomain[name]=str;
             CLink link;
-            if(GetDomainLink(pair.second,link)&&link!=mapPageLink[pair.first])
+            if(GetDomainLink(str,link)&&link!=mapPageLink[name])
             {
-                mapPageLink[pair.first]=link;
-                
-                CFilePackage(link).InstallPackage(mapPageNames[pair.first]);
+                mapPageLink[name]=link;                
+                CFilePackage(link).InstallPackage(mapPageNames[name]);
             }
             
             
         }
     }
-    json_spirit::Value& val3 = find_value(obj, "serviceflags");
-    if (val3.type!=int_type)
+    json_spirit::Value val3 = find_value(obj, "serviceflags");
+    if (val3.type()!=int_type)
     {
-        LogPrintf("LoadSettings %s:  serviceflags fail \n",);
+        LogPrintf("LoadSettings:  serviceflags fail \n");
        SaveSettings();
         return false;
     }
     nServiceFlags=val3.get_uint64();
-    json_spirit::Value& val4 = find_value(obj, "language");
-    if (val4.type!=str_type)
+    json_spirit::Value val4 = find_value(obj, "language");
+    if (val4.type()!=str_type)
     {
-        LogPrintf("LoadSettings %s:  language fail \n",);
+        LogPrintf("LoadSettings:  language fail \n");
        SaveSettings();
         return false;
     }
@@ -101,14 +106,14 @@ bool CSettings::SaveSettings()
 Value CSettings::ToJson()
 {
     Object obj;
-    obj.push_back(pair("language",language));
-    obj.push_back(pair("serviceflags",nServiceFlags));
+    obj.push_back(Pair("language",language));
+    obj.push_back(Pair("serviceflags",nServiceFlags));
 //    Object obj1;
 //    BOOST_FOREACH(PAIRTYPE(int,string)& pair, mapServiceDomain)
 //        obj1.push_back(Pair(mapServiceNames[pair.first],pair.second));
 //    obj.push_back(Pair("servicedomain",obj1));
     Object obj2;
-    BOOST_FOREACH(PAIRTYPE(int,string)& pair, mapPageDomain)
+    BOOST_FOREACH(PAIRTYPE(const int,string)& pair, mapPageDomain)
         obj2.push_back(Pair(mapPageNames[pair.first],pair.second));
     obj.push_back(Pair("pagedomain",obj2));
     return Value(obj);
@@ -127,10 +132,10 @@ bool CSettings::GetSetting(const string settingType,const string key,string& val
 //    else
     if(settingType=="pagedomain")
     {
-        map<int,string>::iterator it=find(mapPageNames,key);
-        if(it!=mapPageNames.end())
+        BOOST_FOREACH(PAIRTYPE(const int,string)& pair,mapPageNames)
+            if(pair.second==key)
         {
-            value=mapPageDomain[it->first];
+            value=mapPageDomain[pair.first];
             return true;
         }
     }
@@ -141,10 +146,10 @@ bool CSettings::GetSetting(const string settingType,const string key,string& val
     }
     else if(settingType=="serviceflages")
     {
-        map<int,string>::iterator it=find(mapServiceNames,key);
-        if(it!=mapServiceNames.end())
+        BOOST_FOREACH(PAIRTYPE(const int,string)& pair,mapServiceNames)
+            if(pair.second==key)        
         {
-            value=((nServiceFlags>>it->first)&1)?"true":"false";
+            value=((nServiceFlags>>pair.first)&1)?"true":"false";
             return true;
         }
     }
@@ -164,31 +169,31 @@ bool CSettings::GetSetting(const string settingType,const string key,string& val
 //    else
         if(settingType=="pagedomain"&&IsValidDomainFormat(value))
     {
-        map<int,string>::iterator it=find(mapPageNames,key);
-        if(it!=mapPageNames.end())
-        {
-            mapPageDomain[it->first]=value;
+        BOOST_FOREACH(PAIRTYPE(const int,string)& pair,mapPageNames)
+            if(pair.second==key)
+            {
+                mapPageDomain[pair.first]=value;
             
-            return SaveSettings();
-        }
+                return SaveSettings();
+            }
     }
-    else if(settingType="language")
+    else if(settingType=="language")
     {
         language=value;
         return SaveSettings();
     }
-    else if(settingType="serviceflages")
+    else if(settingType=="serviceflages")
     {
-        map<int,string>::iterator it=find(mapServiceNames,key);
-        if(it!=mapServiceNames.end())
-        {
-            uint64_t mask=0xffffffff-1<<(it->first);
-            mask;
-            nServiceFlags&=mask;
-            if(value=="true")
-                nServiceFlags |=1<<it->first;
-            return SaveSettings();
-        }
+       BOOST_FOREACH(PAIRTYPE(const int,string)& pair,mapServiceNames)
+            if(pair.second==key)        
+            {
+                uint64_t mask=0xffffffff-(1<<(pair.first));             
+                
+                nServiceFlags&=mask;
+                if(value=="true")
+                    nServiceFlags |=1<<pair.first;
+                return SaveSettings();
+            }
     }
     return false;
 }

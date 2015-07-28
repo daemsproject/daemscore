@@ -78,7 +78,7 @@ BITCOIN_CORE_H = \
   bloom.h \
   ccc/content.h \
   ccc/link.h \
-  ccc/jsondb.h \  
+  ccc/jsondb.h \
   chain.h \
   chainparams.h \
   chainparamsbase.h \
@@ -90,6 +90,9 @@ BITCOIN_CORE_H = \
   coins.h \
   ccc/script2txposdb.h \
   ccc/domain.h \
+  ccc/contentutil.h\
+  ccc/settings.h\
+  ccc/filepackage.h\
   compat.h \
   compressor.h \
   primitives/block.h \
@@ -177,6 +180,9 @@ libbitcoin_server_a_SOURCES = \
   init.cpp \
   leveldbwrapper.cpp \
   ccc/sqlitewrapper.cpp \
+  ccc/settings.cpp\
+  ccc/contentutil.cpp\
+  ccc/filepackage.cpp\
   main.cpp \
   merkleblock.cpp \
   miner.cpp \
@@ -274,7 +280,7 @@ libbitcoin_common_a_SOURCES = \
   script/script.cpp \
   script/sign.cpp \
   script/standard.cpp \
-  script/script_error.cpp \ 
+  script/script_error.cpp \
   $(BITCOIN_CORE_H)
 
 # util: shared between all executables.

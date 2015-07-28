@@ -613,8 +613,6 @@ bool CContent::DecodeFileString(std::string& strFile)
             }
             return false;
         }
-            break;
-        }
         case CC_FILE:
             strFile= vDecoded[0].second;         
                     return true;
