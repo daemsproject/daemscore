@@ -13,6 +13,7 @@
 #include "primitives/transaction.h"
 //#include "wallet.h"
 #include "jsinterface.h"
+#include "allocators.h"
 #include <QLabel>
 #include <QMainWindow>
 #include <QMap>

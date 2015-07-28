@@ -21,6 +21,7 @@
 #include "script/standard.h"
 #include "txdb.h"
 #include "ui_interface.h"
+#include "ccc/settings.h"
 #include "util.h"
 #include "utilmoneystr.h"
 #ifdef ENABLE_WALLET

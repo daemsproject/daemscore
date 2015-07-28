@@ -4,8 +4,8 @@
 #include "ccc/link.h"
 #include "ccc/content.h"
 #include "ccc/domain.h"
+#include "timedata.h"
 //#include "utilstrencodings.h"
-#include "ccc/content.h"
 #include "ccc/contentutil.h"
 #include <string>
 #include <boost/foreach.hpp>
@@ -90,8 +90,7 @@ bool GetFileFromLinks(const vector<CLink>& vlinks,string& strFile)
         CContent content;
         if(!GetContentByLink(vlinks[0],content))
             return false;
-        return content.DecodeFileString(strFile);        
-            
+        return content.DecodeFileString(strFile);   
     }    
     for(unsigned int i=0;i<vlinks.size();i++)
     {
@@ -101,9 +100,117 @@ bool GetFileFromLinks(const vector<CLink>& vlinks,string& strFile)
         std::vector<std::pair<int, string> > vDecoded;
         if(!content.Decode(vDecoded))
             return false;
-        if(vDecoded[0].first!=CC_FILE_PART)
+        if(vDecoded[0].first==CC_FILE_PART)            
+            strFile+=vDecoded[0].second;
+        else if(vDecoded[0].first==CC_FILE_PART_P)
+        {
+            std::vector<std::pair<int, string> > vDecoded1;
+            if(!CContent(vDecoded[0].second).Decode(vDecoded1))
+                return false;
+            bool fFound=false;
+            for(unsigned int i=0;i<vDecoded1.size();i++)
+                if(vDecoded1[i].first==CC_FILE_PART)  
+                {
+                    fFound=true;
+                    strFile+=vDecoded[0].second;
+                    break;
+                }
+            if (!fFound)
+                return false;            
+        }
+        else
             return false;
-        strFile+=vDecoded[0].second;
     }
     return true;
+}
+int GetNTx(const uint256 &hashTx) 
+{
+    CTransaction tx;
+    uint256 hashBlock = 0;
+    if (!GetTransaction(hashTx, tx, hashBlock, true))
+    {
+        error("No information available about transaction");
+        return -1;
+    }
+    CBlock block;
+    CBlockIndex* pblockindex = mapBlockIndex[hashBlock];
+    if (pblockindex==NULL||!ReadBlockFromDisk(block, pblockindex))
+    {
+        error("Can't read block from disk");
+        return -1;
+    }
+    return GetNTx(tx, block);
+}
+
+int GetNTx(const CTransaction &tx, const CBlock &block)
+{
+    int nTx = 0;
+
+    BOOST_FOREACH(const CTransaction&bTx, block.vtx)
+    {
+        if (tx == bTx)
+            return nTx;
+        nTx++;
+    }
+    return -1;
+}
+bool GetPubKeyFromBlockChain(CScript script,CPubKey& pubKey)
+{
+    std::vector<CScript> vScript;
+    vScript.push_back(script);
+    std::vector<CDiskTxPos> vTxPos;
+     GetDiskTxPoses (vScript,vTxPos);
+     if(vTxPos.size()==0)
+         return false;
+     for(unsigned int i=0;i<vTxPos.size();i++)
+     {
+          CTransaction tx;
+        uint256 hashBlock;                 
+        if(GetTransaction(vTxPos[i], tx, hashBlock)){            
+            CTransaction prevTx;
+            uint256 tmphash;
+            if (!GetTransaction(tx.vin[0].prevout.hash, prevTx, tmphash, true))
+                continue;            
+            if(prevTx.vout[tx.vin[0].prevout.n].scriptPubKey==script)
+              return false;//RecoverPubKey(tx,0,pubKey);                
+        }
+     }
+     return false;
+}
+CScript GetTxInScriptPubKey(const CTxIn& txin)
+{
+    CTransaction prevTx;
+    uint256 tmphash;
+    if (!GetTransaction(txin.prevout.hash, prevTx, tmphash, true)) {
+        LogPrintf("GetTxInScriptPubKey: null vin prevout\n");
+        return CScript();
+    }    
+    return  prevTx.vout[txin.prevout.n].scriptPubKey;    
+}
+int GetBlocksToMaturity(const unsigned int nLockTime)
+{
+    if (nLockTime!=0){        
+        if ((int64_t)nLockTime < LOCKTIME_THRESHOLD )
+            return max(0, (int)((int)nLockTime+1 - (int)chainActive.Height()));  
+        else{
+            int lockBlocks;
+            lockBlocks=(int)(((int64_t)nLockTime-GetAdjustedTime())/Params().TargetSpacing());
+            return max(0, lockBlocks);
+        }
+    }
+        return 0;
+}
+//this function is relative time to chainactive.tip
+int GetLockLasting(uint32_t nLockTime)
+{
+    int64_t blocks = 0;
+    if (nLockTime != 0) {
+        if (nLockTime < LOCKTIME_THRESHOLD) { 
+            blocks = max(0, (int) ((int) nLockTime + 1 - (int) chainActive.Height()));
+            return blocks * Params().TargetSpacing();
+        } else {
+            return (int) max((int) 0, (int)(nLockTime - chainActive.Tip()->nTime));                
+        }
+    }
+    return 0;
 }

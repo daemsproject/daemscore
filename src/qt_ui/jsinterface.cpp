@@ -15,9 +15,11 @@
 #include "bitcoingui.h"
 #include "wallet.h"
 #include "walletmodel.h"
+
 //#include "main.h"
 #include "init.h"
 #include "ccc/content.h"
+#include "ccc/settings.h"
 #include "json/json_spirit_value.h"
 #include "json/json_spirit_utils.h"
 using namespace std;

@@ -9,6 +9,7 @@
 #include "uint256.h"
 #include "timedata.h"
 #include "ccc/domain.h"
+#include "ccc/contentutil.h"
 #include <stdint.h>
 
 #include <boost/thread.hpp>

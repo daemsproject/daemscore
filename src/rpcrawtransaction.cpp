@@ -9,6 +9,7 @@
 #include "init.h"
 #include "keystore.h"
 #include "main.h"
+#include "ccc/contentutil.h"
 #include "net.h"
 #include "rpcserver.h"
 #include "ccc/content.h"

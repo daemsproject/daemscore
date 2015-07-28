@@ -19,6 +19,7 @@
 #include "userconfirmdialog.h"
 #include "ui_userconfirmdialog.h"
 #include "accountdialog.h"
+#include "ccc/settings.h"
 
 #ifdef ENABLE_WALLET
 //#include "mainframe.h"
@@ -821,36 +822,74 @@ void BitcoinGUI::changePassphrase()
 void BitcoinGUI::gotoWalletPage()
 {
     walletAction->setChecked(true);
-    if (mainView) mainView->gotoWebPage(WALLETPAGE_ID);
+    QDir dir(QDir::currentPath());
+    dir.cdUp();
+    dir.cdUp();
+    dir.cdUp();
+    dir.cd(QString().fromStdString("cccpages"));
+    QUrl url= QUrl("file://"+dir.path().toUtf8() + "/html/wallet_en.html"); 
+    LogPrintf("gotobrowser page url:%s \n",url.toString().toStdString());
+    if (mainView) mainView->gotoWebPage(WALLETPAGE_ID,url);
 }
 void BitcoinGUI::gotoBrowserPage()
 {
-    QUrl url= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/browser_en.html"); 
+    QDir dir(QDir::currentPath());
+    dir.cdUp();
+    dir.cdUp();
+    dir.cdUp();
+    dir.cd(QString().fromStdString("cccpages"));
+    QUrl url= QUrl("file://"+dir.path().toUtf8() + "/html/browser_en.html"); 
+    LogPrintf("gotobrowser page url:%s \n",url.toString().toStdString());
     browserAction->setChecked(true);
     if (mainView) mainView->gotoWebPage(BROWSERPAGE_ID,url);
 }
 void BitcoinGUI::gotoPublisherPage()
 {
-    QUrl url=QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/publisher_en.html"); 
+    
+    //QUrl url=QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/publisher_en.html"); 
+    QDir dir(QDir::currentPath());
+    dir.cdUp();
+    dir.cdUp();
+    dir.cdUp();
+    dir.cd(QString().fromStdString("cccpages"));
+    QUrl url= QUrl("file://"+dir.path().toUtf8() + "/html/publisher_en.html"); 
     publisherAction->setChecked(true);
     if (mainView) mainView->gotoWebPage(PUBLISHERPAGE_ID,url);
 }
 void BitcoinGUI::gotoMessengerPage()
 {
-    QUrl url= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/messenger_en.html"); 
+    //QUrl url= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/messenger_en.html"); 
+    QDir dir(QDir::currentPath());
+    dir.cdUp();
+    dir.cdUp();
+    dir.cdUp();
+    dir.cd(QString().fromStdString("cccpages"));
+    QUrl url= QUrl("file://"+dir.path().toUtf8() + "/html/messenger_en.html"); 
     messengerAction->setChecked(true);
     if (mainView) mainView->gotoWebPage(MESSENGERPAGE_ID,url);
 }
 void BitcoinGUI::gotoMinerPage()
 {
     minerAction->setChecked(true);
-    QUrl minerUrl= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/miner_en.html"); 
-    if (mainView) mainView->gotoWebPage(MINERPAGE_ID,minerUrl);
+    //QUrl minerUrl= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/miner_en.html"); 
+    QDir dir(QDir::currentPath());
+    dir.cdUp();
+    dir.cdUp();
+    dir.cdUp();
+    dir.cd(QString().fromStdString("cccpages"));
+    QUrl url= QUrl("file://"+dir.path().toUtf8() + "/html/miner_en.html"); 
+    if (mainView) mainView->gotoWebPage(MINERPAGE_ID,url);
 }
 void BitcoinGUI::gotoShopPage()
 {
     shopAction->setChecked(true);
-    QUrl url= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/shop_en.html"); 
+    //QUrl url= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/shop_en.html"); 
+    QDir dir(QDir::currentPath());
+    dir.cdUp();
+    dir.cdUp();
+    dir.cdUp();
+    dir.cd(QString().fromStdString("cccpages"));
+    QUrl url= QUrl("file://"+dir.path().toUtf8() + "/html/shop_en.html"); 
     if (mainView) mainView->gotoWebPage(SHOPPAGE_ID,url);
 }
 void BitcoinGUI::gotoDownloaderPage()
@@ -861,8 +900,9 @@ void BitcoinGUI::gotoDownloaderPage()
 }
 void BitcoinGUI::gotoSettingsPage()
 {
-    
-    QUrl url= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/settings_en.html"); 
+    QDir dir(QString().fromStdString(GetDataDir().string())); 
+    QUrl url= QUrl("file://"+dir.path().toUtf8() + "/appdata/settings/filepackage/settings_en.html"); 
+    LogPrintf("gotosettings page url:%s \n",url.toString().toStdString());
     if (mainView) mainView->gotoWebPage(SETTINGPAGE_ID,url);
 }
 void BitcoinGUI::domainNameClicked()

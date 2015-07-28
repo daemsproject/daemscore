@@ -10,6 +10,7 @@
 #include "net.h"
 #include "netbase.h"
 #include "rpcserver.h"
+#include "ccc/contentutil.h"
 #include "timedata.h"
 #include "util.h"
 #include "ccc/domain.h"

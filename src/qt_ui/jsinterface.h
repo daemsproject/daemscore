@@ -3,13 +3,13 @@
 #define	JSINTERFACE_H
 #include <QFutureWatcher>
 #include <QtWidgets>
-#include <QWebView>
-#include "primitives/transaction.h"
-#include "wallet.h"
-#include "json/json_spirit_reader_template.h"
-#include "json/json_spirit_utils.h"
-#include "json/json_spirit_writer_template.h"
-
+//#include <QWebView>
+//#include "primitives/transaction.h"
+//#include "wallet.h"
+//#include "json/json_spirit_reader_template.h"
+//#include "json/json_spirit_utils.h"
+//#include "json/json_spirit_writer_template.h"
+#include "uint256.h"
 class BitcoinGUI;
 class CPaymentOrder;
 class CWalletTx;

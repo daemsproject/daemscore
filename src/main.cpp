@@ -765,33 +765,7 @@ bool IsFrozen(const CTransaction &tx,const unsigned int nPos, int nBlockHeight, 
     return true;
 }
 
-int GetBlocksToMaturity(const unsigned int nLockTime)
-{
-    if (nLockTime!=0){        
-        if ((int64_t)nLockTime < LOCKTIME_THRESHOLD )
-            return max(0, (int)((int)nLockTime+1 - (int)chainActive.Height()));  
-        else{
-            int lockBlocks;
-            lockBlocks=(int)(((int64_t)nLockTime-GetAdjustedTime())/Params().TargetSpacing());
-            return max(0, lockBlocks);
-        }
-    }
-        return 0;
-}
-//this function is relative time to chainactive.tip
-int GetLockLasting(uint32_t nLockTime)
-{
-    int64_t blocks = 0;
-    if (nLockTime != 0) {
-        if (nLockTime < LOCKTIME_THRESHOLD) { 
-            blocks = max(0, (int) ((int) nLockTime + 1 - (int) chainActive.Height()));
-            return blocks * Params().TargetSpacing();
-        } else {
-            return (int) max((int) 0, (int)(nLockTime - chainActive.Tip()->nTime));                
-        }
-    }
-    return 0;
-}
+
 uint32_t LockTimeToTime(uint32_t nLockTime)
 {
     int64_t blocks = 0;
@@ -825,16 +799,7 @@ bool IsFrozen(const CCoins &tx,const unsigned int nPos, int nBlockHeight, int64_
         return false;
     return true;
 }
-CScript GetTxInScriptPubKey(const CTxIn& txin)
-{
-    CTransaction prevTx;
-    uint256 tmphash;
-    if (!GetTransaction(txin.prevout.hash, prevTx, tmphash, true)) {
-        LogPrintf("GetTxInScriptPubKey: null vin prevout\n");
-        return CScript();
-    }    
-    return  prevTx.vout[txin.prevout.n].scriptPubKey;    
-}
+
 /**
  * Check transaction inputs to mitigate two
  * potential denial-of-service attacks:
@@ -1493,60 +1458,7 @@ bool GetDiskTxPoses (const std::vector<CScript>& vIds,std::vector<CDiskTxPos>& v
     return true;
 }
     
-int GetNTx(const uint256 &hashTx) 
-{
-    CTransaction tx;
-    uint256 hashBlock = 0;
-    if (!GetTransaction(hashTx, tx, hashBlock, true))
-    {
-        error("No information available about transaction");
-        return -1;
-    }
-    CBlock block;
-    CBlockIndex* pblockindex = mapBlockIndex[hashBlock];
-    if (pblockindex==NULL||!ReadBlockFromDisk(block, pblockindex))
-    {
-        error("Can't read block from disk");
-        return -1;
-    }
-    return GetNTx(tx, block);
-}
 
-int GetNTx(const CTransaction &tx, const CBlock &block)
-{
-    int nTx = 0;
-
-    BOOST_FOREACH(const CTransaction&bTx, block.vtx)
-    {
-        if (tx == bTx)
-            return nTx;
-        nTx++;
-    }
-    return -1;
-}
-bool GetPubKeyFromBlockChain(CScript script,CPubKey& pubKey)
-{
-    std::vector<CScript> vScript;
-    vScript.push_back(script);
-    std::vector<CDiskTxPos> vTxPos;
-     GetDiskTxPoses (vScript,vTxPos);
-     if(vTxPos.size()==0)
-         return false;
-     for(unsigned int i=0;i<vTxPos.size();i++)
-     {
-          CTransaction tx;
-        uint256 hashBlock;                 
-        if(GetTransaction(vTxPos[i], tx, hashBlock)){            
-            CTransaction prevTx;
-            uint256 tmphash;
-            if (!GetTransaction(tx.vin[0].prevout.hash, prevTx, tmphash, true))
-                continue;            
-            if(prevTx.vout[tx.vin[0].prevout.n].scriptPubKey==script)
-              return false;//RecoverPubKey(tx,0,pubKey);                
-        }
-     }
-     return false;
-}
 
 
 //////////////////////////////////////////////////////////////////////////////

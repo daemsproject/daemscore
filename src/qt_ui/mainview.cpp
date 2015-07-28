@@ -20,7 +20,7 @@
 #include "walletmodel.h"
 #include "jsinterface.h"
 #include "ui_interface.h"
-
+#include "json/json_spirit_reader_template.h"
 #include "util.h"
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
@@ -133,13 +133,14 @@ void MainView::showProgress(const QString &title, int nProgress)
 }
 void MainView::installWebPage(const string strPageName)
 {
-    //boost::filesystem::path fpPath=GetDataDir()  / "appdata" / strPageName;  
-     char buf[80];
-    getcwd(buf, sizeof(buf));
-    LogPrintf("current working directory : %s\n", buf);
-    std::string str(buf);
-    boost::filesystem::path fpPath=system_complete(str) / strPageName;  
-    boost::filesystem::path fpFile=fpPath / (strPageName+".ffl");
+    boost::filesystem::path fpPath=GetDataDir()  / "appdata" / strPageName / "filepackage"  ;  
+    // char buf[80];
+    //getcwd(buf, sizeof(buf));
+    //LogPrintf("current working directory : %s\n", buf);
+    //std::string str(buf);
+    //boost::filesystem::path fpPath=system_complete(str).parent_path().parent_path().parent_path() / "cccpages" / strPageName;  
+    boost::filesystem::path fpFile=fpPath / (strPageName+".package.json");
+    LogPrintf("current working directory : %s\n", fpPath.string());
     boost::filesystem::create_directories(fpPath);
     string filename=fpFile.string();
     json_spirit::Array arrFiles;
@@ -164,9 +165,9 @@ void MainView::installWebPage(const string strPageName)
             if (fIntegrite)
                 return;
         }
-         boost::filesystem::remove_all(fpPath);
+        // boost::filesystem::remove_all(fpPath);
     }          
-    str=qrcFileToString(":/"+strPageName+".ffl");
+    string str=qrcFileToString(":/"+strPageName+".package.json");
     StringToFile(filename,str);
     readFileList(str,strMainFile,arrFiles);
     for(unsigned int i=0;i<arrFiles.size();i++)
@@ -199,7 +200,7 @@ bool MainView::copyQrcToDisc(string to,string from)
     QDataStream in(&fin);  
     QString qstr;  
     in>>qstr; 
-    boost::filesystem::path fpPath=GetDataDir()  / "appdata" / to;  
+    boost::filesystem::path fpPath=GetDataDir()  / "appdata" / to / "filepackage";  
     std::cout<<"remove filename result:"<<fpPath.remove_filename().string()<<"\n";
     if(boost::filesystem::create_directories(fpPath.remove_filename()))
        return StringToFile(fpPath.string(),qstr.toStdString());

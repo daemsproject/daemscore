@@ -78,6 +78,7 @@ static std::map<int,std::string> mapPageNames=boost::assign::map_list_of
 (BROWSERPAGE_ID,"browser")
 (PUBLISHERPAGE_ID,"publisher")
 (MESSENGERPAGE_ID,"messenger")
+(MINERPAGE_ID,"miner")
 (DOMAINPAGE_ID,"domain")
 (SETTINGPAGE_ID,"settings")
 (SERVICEPAGE_ID,"service")

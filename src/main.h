@@ -15,7 +15,7 @@
 #include "chainparams.h"
 #include "coins.h"
 #include "ccc/script2txposdb.h"
-#include "ccc/settings.h"
+//#include "ccc/settings.h"
 //#include "ccc/domain.h"
 #include "primitives/block.h"
 #include "primitives/transaction.h"
@@ -50,7 +50,7 @@ class CInv;
 class CScriptCheck;
 class CValidationInterface;
 class CValidationState;
-
+class CSettings;
 struct CBlockTemplate;
 struct CNodeStateStats;
 
@@ -214,10 +214,7 @@ bool GetTransaction(const CDiskTxPos &postx, CTransaction &txOut, uint256 &hashB
 /**get all transactions related to the id list, with block hash*/
 bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTransaction, uint256> >& vTxs,bool fIncludeUnconfirmed =true,bool fNoContent=false,unsigned int nOffset=0,unsigned int nNumber=1000000);
 bool GetDiskTxPoses (const std::vector<CScript>& vIds,std::vector<CDiskTxPos>& vTxPosAll);
-bool GetPubKeyFromBlockChain(CScript script,CPubKey& pubKey);
-/** Get nTx from block*/
-int GetNTx(const uint256 &hashTx);
-int GetNTx(const CTransaction &tx,const CBlock &block);
+
 /** Find the best known block, and make it the tip of the block chain */
 bool ActivateBestChain(CValidationState &state, CBlock *pblock = NULL);
 CAmount GetBlockValue(int nHeight, const CAmount& nFees);
@@ -313,10 +310,8 @@ bool IsFinalTx(const CTransaction &tx, int nBlockHeight = 0, int64_t nBlockTime 
 //cccoin: Check if tx is in frozen period
 bool IsFrozen(const CTransaction &tx, const unsigned int nPos, int nBlockHeight=0, int64_t nBlockTime=0);
 bool IsFrozen(const CCoins &tx,const unsigned int nPos, int nBlockHeight=0, int64_t nBlockTime=0);
-int GetBlocksToMaturity(const unsigned int nLockTime);
-int GetLockLasting(uint32_t nLockTime);
 uint32_t LockTimeToTime(uint32_t nLockTime);
-CScript GetTxInScriptPubKey(const CTxIn& txin);
+
 
 
 /** Undo information for a CBlock */

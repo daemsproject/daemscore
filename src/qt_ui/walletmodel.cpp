@@ -16,6 +16,7 @@
 #include "ccc/ecminer.h"
 #include "ccc/content.h"
 #include "ccc/domain.h"
+#include "ccc/contentutil.h"
 #include "sync.h"
 #include "ui_interface.h"
 #include "wallet.h"
