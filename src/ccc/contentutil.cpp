@@ -13,15 +13,19 @@
 
 bool GetContentByLink(const CLink clink,CContent& content)
 {
+    LogPrintf("GetContentByLink1 \n");
     CBlockIndex* pblockindex;
     CBlock block;
     if (!GetBlockByHeight(clink.nHeight, block, pblockindex))
         return false;
+    LogPrintf("GetContentByLink2 \n");
     CTransaction tx;
     if (!GetTxFromBlock(block, clink.nTx, tx))
         return false;    
+    LogPrintf("GetContentByLink3 \n");
     if (!GetContentFromVout(tx, clink.nVout, content))
         return false;
+    LogPrintf("GetContentByLink 4\n");
     return true;
 }
 bool GetBlockByHeight(const int nHeight, CBlock& blockOut, CBlockIndex*& pblockindex)
@@ -69,10 +73,10 @@ bool GetDomainLink (const string strDomain,CLink& link)
 {    
     CDomain domain;
     if(pDomainDBView->GetDomainByName(strDomain,domain))
-    {
+    {        
         if(domain.redirectType==CC_LINK_TYPE_BLOCKCHAIN)
         {
-            if(link.SetString(domain.redirectTo))
+            if(link.UnserializeConst(domain.redirectTo))
             {
                 LogPrintf("GetDomainLink %s %s\n",HexStr(domain.redirectTo.begin(),domain.redirectTo.end()),link.ToString(LINK_FORMAT_DEC));
                 return true;
@@ -83,10 +87,12 @@ bool GetDomainLink (const string strDomain,CLink& link)
 }
 bool GetFileFromLinks(const vector<CLink>& vlinks,string& strFile)
 {
+    LogPrintf("GetFileFromLinks \n");
     if(vlinks.size()==0)
         return false;
     if(vlinks.size()==1)
     {
+        LogPrintf("GetFileFromLinks size 1\n");
         CContent content;
         if(!GetContentByLink(vlinks[0],content))
             return false;

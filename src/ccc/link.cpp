@@ -55,7 +55,7 @@ bool CLink::SetString(const std::string linkStr)
     // Process link content
     std::size_t posFirstDot = str.find(URI_SEPERATOR);
     if (posFirstDot == std::string::npos) {
-        LogPrintf("%s: Non-standard link2", __func__);
+        LogPrintf("CLink %s: Non-standard link %s\n", __func__,linkStr);
         return false;
     }
     std::string nHeightS = str.substr(0, posFirstDot);
@@ -141,7 +141,11 @@ bool CLink::Unserialize(string& str)
     LogPrintf("CLink::UnSerialize() %i,%i,%i \n", nHeight, nTx, nVout);
     return true;
 }
-
+bool CLink::UnserializeConst(const string& str)
+{
+    string strlink=str;
+    return Unserialize(strlink);
+}
 bool CLink::WriteVarInt(const int nIn, string& str) const
 {
     int n = nIn;

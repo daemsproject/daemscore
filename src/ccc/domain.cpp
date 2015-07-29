@@ -341,6 +341,7 @@ json_spirit::Value CDomain::ToJson()const
     string str;
     ScriptPubKeyToString(owner,str);
     obj.push_back(json_spirit::Pair("owner",str));
+    Object obj1;
     switch (redirectType)
     {
         case CC_LINK_TYPE_SCRIPTPUBKEY:  
@@ -349,13 +350,20 @@ json_spirit::Value CDomain::ToJson()const
             CScript scriptPubKey((unsigned char*)redirectTo.c_str(),(unsigned char*)redirectTo.c_str()+redirectTo.size());
             LogPrintf("scriptPubKey %s\n",scriptPubKey.ToString());
             if(ScriptPubKeyToString(scriptPubKey,strID))
-            {
-                Object obj1;
+            {                
                 obj1.push_back(json_spirit::Pair("linkType","ID"));            
                 obj1.push_back(json_spirit::Pair("target",strID));
                 obj.push_back(json_spirit::Pair("forward",obj1));
             }   
             break;
+        }
+        case CC_LINK_TYPE_BLOCKCHAIN:
+        {
+            obj1.push_back(json_spirit::Pair("linkType","blockchain"));   
+            CLink link;
+            link.UnserializeConst(redirectTo);
+            obj1.push_back(json_spirit::Pair("target",link.ToString(LINK_FORMAT_DEC)));
+            obj.push_back(json_spirit::Pair("forward",obj1));
         }
         default:
             break;

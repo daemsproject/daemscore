@@ -11,6 +11,7 @@
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_value.h"
 #include "json/json_spirit_reader_template.h"
+#include "json/json_spirit_writer_template.h"
 #include "ccc/link.h"
 #include "util.h"
 #include "script/script.h"
@@ -24,8 +25,13 @@ bool CFilePackage::SetLink(const CLink linkIn)
 {
     link=linkIn;
     CContent content;
+    
     if(!GetContentByLink(linkIn,content))
+    {
+        LogPrintf("CFilePackage::SetLink link: %s content:%s\n",link.ToString(),content);
         return false;
+    }
+    LogPrintf("CFilePackage::SetLink link: %s content:%s\n",link.ToString(),content);
     return SetContent(content);
 }
 bool CFilePackage::SetContent(const CContent contentIn)
@@ -33,41 +39,46 @@ bool CFilePackage::SetContent(const CContent contentIn)
     Clear();
     std::vector<std::pair<int, string> > vDecoded;
     contentIn.Decode(vDecoded);
+    LogPrintf("CFilePackage::SetContent decoded size:%i\n",vDecoded.size());
     if(vDecoded.size()>0&&vDecoded[0].first==CC_FILE_PACKAGE_P)
     {
-        string content2;
-        vDecoded.clear();
-        if(!CContent(content2).Decode(vDecoded))
+        CContent content2=vDecoded[0].second;
+        std::vector<std::pair<int, string> > vDecoded1;
+        if(!content2.Decode(vDecoded1))
             return false;
-        for(unsigned int i=0;i<vDecoded.size();i++)
+        LogPrintf("CFilePackage::SetContent decoded1 size %i\n",vDecoded1.size());
+        for(unsigned int i=0;i<vDecoded1.size();i++)
         {
-            if(vDecoded[i].first==CC_FILE_P)
+            LogPrintf("CFilePackage::SetContent decoded1 n %i,cc:%s,content:%s\n",i,GetCcName((cctype)vDecoded1[i].first),vDecoded1[i].second);
+            if(vDecoded1[i].first==CC_FILE_P)
             {
+                LogPrintf("CFilePackage::SetContent filep:%i\n",i);
                  vector<CLink> vlink;            
-                std::vector<std::pair<int, string> > vDecoded1;
-                 if(!CContent(vDecoded[i].second).Decode(vDecoded1))
+                std::vector<std::pair<int, string> > vDecoded2;
+                 if(!CContent(vDecoded1[i].second).Decode(vDecoded2))
                      return false;
                 bool fFound=false;
                 string strFileName;
-                for(unsigned int i=0;i<vDecoded1.size();i++)
-                    if(vDecoded1[i].first==CC_NAME)
+                for(unsigned int j=0;j<vDecoded2.size();j++)
+                    if(vDecoded2[j].first==CC_NAME)
                     {
-                        strFileName=vDecoded1[i].second;
+                        strFileName=vDecoded2[j].second;
                         fFound=true;
                         break;
                     }
                 if (!fFound)
                     return false;
                 fFound=false;
-                for(unsigned int i=0;i<vDecoded1.size();i++)
-                    if(vDecoded1[i].first==CC_LINK)
+                for(unsigned int j=0;j<vDecoded2.size();j++)
+                    if(vDecoded2[j].first==CC_LINK)
                     {
-                        string strFileLink=vDecoded1[i].second;
+                        string strFileLink=vDecoded2[j].second;
                         CLink fileLink;
-                        if(!fileLink.Unserialize(strFileLink))
+                        if(!fileLink.UnserializeConst(strFileLink))
                             return false;                   
                         vlink.push_back(fileLink);
                         mapFileList[strFileName]=vlink;
+                        LogPrintf("CFilePackage::SetContent file name:%s,link:%s\n",strFileName,fileLink.ToString());
                         fFound=true;
                         break;
                     }
@@ -75,18 +86,18 @@ bool CFilePackage::SetContent(const CContent contentIn)
                 if (!fFound)
                 {
                     fFound=false;
-                    for(unsigned int i=0;i<vDecoded1.size();i++)
-                    if(vDecoded1[i].first==CC_FILE_COMBINE_P)
+                    for(unsigned int j=0;i<vDecoded2.size();j++)
+                    if(vDecoded2[j].first==CC_FILE_COMBINE_P)
                     {                    
-                        std::vector<std::pair<int, string> > vDecoded2;
-                        if(!CContent(vDecoded1[i].second).Decode(vDecoded2))
+                        std::vector<std::pair<int, string> > vDecoded3;
+                        if(!CContent(vDecoded2[j].second).Decode(vDecoded3))
                             return false;
-                        for(unsigned int j=0;j<vDecoded.size();j++)
+                        for(unsigned int j=0;j<vDecoded3.size();j++)
                         {
                             if(vDecoded[j].first!=CC_LINK)
                                 return false;
                             CLink fileLink;
-                            if(!fileLink.Unserialize(vDecoded[j].second))
+                            if(!fileLink.UnserializeConst(vDecoded3[j].second))
                                 return false;
                             vlink.push_back(fileLink);
                         }
@@ -100,42 +111,49 @@ bool CFilePackage::SetContent(const CContent contentIn)
         }
         if(mapFileList.size()==0)
             return false;        
-        for(unsigned int i=0;i<vDecoded.size();i++)
+        for(unsigned int i=0;i<vDecoded1.size();i++)
         {
-            if(vDecoded[i].first==CC_FILE_PACKAGE_MAINFILE)
+            if(vDecoded1[i].first==CC_FILE_PACKAGE_MAINFILE)
             {
-                if(vDecoded[i].second.size()==0)
+                if(vDecoded1[i].second.size()==0)
                     return false;
-                if(mapFileList.find(vDecoded[i].second)==mapFileList.end())
+                if(mapFileList.find(vDecoded1[i].second)==mapFileList.end())
                     return false;                
-                strMainFile=vDecoded[i].second;                
+                strMainFile=vDecoded1[i].second;                
             }                        
-            if(vDecoded[i].first==CC_NAME)
+            if(vDecoded1[i].first==CC_NAME)
             {
-                strPackageName=vDecoded[i].second;
+                strPackageName=vDecoded1[i].second;
             }
         }
-        CContent(vDecoded[0].second).GetDataByCC(CC_TAG,vTags,true,true);
-            return true;
+        CContent(vDecoded1[0].second).GetDataByCC(CC_TAG,vTags,true,true);
+        fValid=CheckLinks();
+        return true;
     }
     return false;
 }
 bool CFilePackage::InstallPackage(string strDirName)
 {
-    boost::filesystem::path fpPath=GetDataDir()  / "appdata" / strDirName;
-     if(!boost::filesystem::create_directories(fpPath))
-         return false;
+    LogPrintf("InstallPackage to dir %s nFIles:%i\n",strDirName,mapFileList.size());
+    boost::filesystem::path fpPath=GetDataDir()  / "appdata" / strDirName / "filepackage";
+    boost::filesystem::create_directories(fpPath);     
      for(map<string,vector<CLink> >::iterator it=mapFileList.begin();it!=mapFileList.end();it++)
      {
+         LogPrintf("InstallPackage filename %s link:%s\n",it->first,it->second[0].ToString());
          string strFilecontent;
         if(GetFileFromLinks(it->second,strFilecontent))
         {
+            LogPrintf("InstallPackage filename %s length:%i\n",it->first,strFilecontent.size());
             boost::filesystem::path fpFile=fpPath / it->first;
-            if(!StringToFile(fpPath.string(),strFilecontent))
+            if(!StringToFile(fpFile.string(),strFilecontent))
                 return false;
         }
-         return false;
-     }  
+        else
+            return false;
+     } 
+     boost::filesystem::path fpFile=fpPath / (strDirName+".package.json");
+     LogPrintf("InstallPackage packagefile %s length:%i\n",fpFile.string(),write_string(ToJson(),true));
+     WriteJsonToFile(ToJson(),fpFile.string());
      return true;    
 }
 
@@ -327,7 +345,7 @@ CContent CFilePackage::ToContent()const
     vcc.push_back(make_pair(CC_FILE_PACKAGE_MAINFILE,strMainFile));
     vcc.push_back(make_pair(CC_NAME,strPackageName));
     for(std::map<string,vector<CLink> >::const_iterator it=mapFileList.begin();it!=mapFileList.end();it++)   
-        vcc.push_back(FileToContent(it->first));    
+        vcc.push_back(make_pair(CC_FILE_P,FileToContent(it->first)));    
     if(vTags.size()>0)
         vcc.push_back(make_pair(CC_TAG_P,EncodeContentUnitArray(CC_TAG,vTags)));
        
@@ -337,20 +355,68 @@ CContent CFilePackage::ToContent()const
     return ctt;
     
 }
-pair<int,string> CFilePackage::FileToContent(const string strFileName) const
+string CFilePackage::FileToContent(const string strFileName) const
 {
+    
     std::map<string,vector<CLink> >::const_iterator it=mapFileList.find(strFileName);
+    CContent content;
+     
     if(it==mapFileList.end())
-        return make_pair(CC_LINK,"");
-    if(it->second.size()==1)
-    {       
-        return make_pair(CC_LINK,it->second[0].Serialize());
+    {
+        content.EncodeUnit(CC_LINK,"");
+        return content;
+    }
+    content.EncodeUnit(CC_NAME,it->first);
+     if(it->second.size()==1)
+    { 
+        content.EncodeUnit(CC_LINK,it->second[0].Serialize());
+        
     }
     else 
-    {        
-        CContent content;
+    {       
+        CContent content1;
          for(unsigned i=0;i<it->second.size();i++)
-             content.EncodeUnit(CC_LINK,it->second[i].Serialize());
-        return make_pair(CC_FILE_COMBINE_P,content);
+             content1.EncodeUnit(CC_LINK,it->second[i].Serialize());
+        content.EncodeUnit(CC_FILE_COMBINE_P,content);
+        
     }
+     return content;
+}
+Value CFilePackage::ToJson()const
+{
+    json_spirit::Object obj;
+    obj.push_back(Pair("packagename",Value(strPackageName)));
+    obj.push_back(Pair("mainfile",Value(strMainFile)));
+    Array arr;
+    for(std::map<string,vector<CLink> >::const_iterator it=mapFileList.begin();it!=mapFileList.end();it++)
+    {
+        Object obj1;
+        vector<CLink> vlink=it->second;
+        if(vlink.size()==1)
+        {             
+            obj1.push_back(Pair(it->first,Value(vlink[0].ToString())));
+            arr.push_back(obj1);
+        }
+        else
+        {
+            Array arr2;
+            for(unsigned int i=0;i<vlink.size();i++)
+            {
+                arr2.push_back(Value(vlink[i].ToString()));
+            }
+            obj1.push_back(Pair(it->first,arr2));
+            arr.push_back(obj1);
+        }
+    }
+    obj.push_back(Pair("files",arr));
+    if(vTags.size()>0)
+    {
+        Array arr3;
+        for(unsigned int i=0;i<vTags.size();i++)
+        {
+            arr3.push_back(Value(vTags[i]));
+        }
+        obj.push_back(Pair("tags",arr3));        
+    }
+    return Value(obj);
 }

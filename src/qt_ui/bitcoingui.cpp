@@ -912,7 +912,13 @@ void BitcoinGUI::gotoSettingsPage()
 }
 void BitcoinGUI::domainNameClicked()
 {
-    QUrl url= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/domain_en.html"); 
+    QDir dir(QDir::currentPath());
+    dir.cdUp();
+    dir.cdUp();
+    dir.cdUp();
+    dir.cd(QString().fromStdString("cccpages"));
+    QUrl url= QUrl("file://"+dir.path().toUtf8() + "/html/domain_en.html"); 
+   // QUrl url= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/domain_en.html"); 
     if (mainView) mainView->gotoWebPage(DOMAINPAGE_ID,url);
 }
 

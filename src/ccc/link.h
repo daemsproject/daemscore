@@ -56,6 +56,7 @@ public:
     }
     string Serialize()const;
     bool Unserialize(string& str);
+    bool UnserializeConst(const string& str);
     bool WriteVarInt(const int nIn, string& str) const;
     bool ReadVarInt(string& str, int& n)const;
     //    ADD_SERIALIZE_METHODS;    
@@ -66,8 +67,8 @@ public:
     //        READWRITE(nTx);
     //        READWRITE(nVout);
     //    }
-    Array ToJson()const;
-    bool ToJsonString(std::string& entry)const;
+    //Array ToJson()const;
+    //bool ToJsonString(std::string& entry)const;
     std::string ToString(linkformat linkFormat = LINK_FORMAT_DEC)const;
     void SetEmpty();
     bool IsEmpty() const;

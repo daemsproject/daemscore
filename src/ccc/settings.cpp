@@ -32,6 +32,7 @@ CSettings::CSettings()
 bool CSettings::LoadSettings()
 {
     filesystem::path fpFile=GetDataDir() / "appdata" / "settings.json";
+    //LogPringf("LoadSettings1 \n");
     if(!FileExists(fpFile.string()))
         return SaveSettings();
     Value val;
@@ -40,7 +41,12 @@ bool CSettings::LoadSettings()
          SaveSettings();
         return false;
     }
+    //LogPringf("LoadSettings2 \n");
+    
     Object& obj= val.get_obj();
+    //LogPrintf("LoadSettings obj size%i \n",obj.size());
+    //for(unsigned int i=0;i<obj.size();i++)    
+    //LogPrintf("LoadSettings obj n:%i ,name:%s\n",i,obj[i].name_);
 //    json_spirit::Value& val1 = find_value(obj, "servicedomains");
 //    if (val1.type!=obj_type)
 //    {
@@ -57,28 +63,35 @@ bool CSettings::LoadSettings()
     json_spirit::Value val2 = find_value(obj, "pagedomains");
     if (val2.type()!=obj_type)
     {
-        LogPrintf("LoadSettings:  pagedomains fail \n");
+        //LogPrintf("LoadSettings:  pagedomains val2type:%i \n",val2.type());
        SaveSettings();
         return false;
     }
-    Object& obj2 = val.get_obj();
+    Object& obj2 = val2.get_obj();
     //BOOST_FOREACH(Object& pair, obj2)
     for(unsigned int i=0;i<obj2.size();i++)
     {
         //pair<string,Value> pair=obj2[i];
-        int name=atoi(obj2[i].name_.c_str());
-        string str=obj2[i].value_.get_str();
-        if(name>=1&&name<=11&&IsValidDomainFormat(str))
+        int pageID=GetPageIDByName(obj2[i].name_);
+        if(obj2[i].value_.type()!=str_type)
         {
-            mapPageDomain[name]=str;
+            LogPrintf("LoadSettings:  pagedomains %s val2type:%i \n",obj2[i].name_,obj2[i].value_.type());
+             SaveSettings();
+            return false;
+        }
+        string str=obj2[i].value_.get_str();
+        if(pageID>=1&&pageID<=11&&IsValidDomainFormat(str))
+        {
+            mapPageDomain[pageID]=str;
             CLink link;
-            if(GetDomainLink(str,link)&&link!=mapPageLink[name])
+            
+            if(GetDomainLink(str,link)&&link!=mapPageLink[pageID])
             {
-                mapPageLink[name]=link;                
-                CFilePackage(link).InstallPackage(mapPageNames[name]);
+                LogPrintf("LoadSettings:  pagedomains link changed %s link %s \n",obj2[i].name_,link.ToString());
+                mapPageLink[pageID]=link;                
+                CFilePackage(link).InstallPackage(mapPageNames[pageID]);
             }
-            
-            
+            LogPrintf("LoadSettings:  pagedomains page:%s link %s \n",obj2[i].name_,link.ToString());
         }
     }
     json_spirit::Value val3 = find_value(obj, "serviceflags");
@@ -100,7 +113,13 @@ bool CSettings::LoadSettings()
     return true;
    
 }
-
+int GetPageIDByName(std::string pageName)
+{
+    for(std::map<int,std::string>::iterator it=mapPageNames.begin();it!=mapPageNames.end();it++)
+        if (it->second==pageName)
+            return it->first;
+    return 0;
+}
 bool CSettings::SaveSettings()
 {
     filesystem::path fpFile=GetDataDir() / "appdata" / "settings.json";
@@ -118,7 +137,7 @@ Value CSettings::ToJson()
     Object obj2;
     BOOST_FOREACH(PAIRTYPE(const int,string)& pair, mapPageDomain)
         obj2.push_back(Pair(mapPageNames[pair.first],pair.second));
-    obj.push_back(Pair("pagedomain",obj2));
+    obj.push_back(Pair("pagedomains",obj2));
     return Value(obj);
 }
 bool CSettings::GetSetting(const string settingType,const string key,string& value)

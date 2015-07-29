@@ -62,7 +62,7 @@ Value getmaturetime(const Array& params, bool fHelp)
 
     if (params.size() > 0) {
 
-        int64_t nLockTime = params[0].get_int();
+        int64_t nLockTime = (uint32_t)params[0].get_int64();
         if (nLockTime != 0) {
             if (nLockTime < LOCKTIME_THRESHOLD) {
                 blocks = max(0, (int) ((int) nLockTime + 1 - (int) chainActive.Height()));

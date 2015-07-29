@@ -117,6 +117,7 @@ static std::map<int,std::string> mapDefaultPageDomain=boost::assign::map_list_of
 (TVPAGE_ID,"tv.f")
 (DOWNLOADERPAGE_ID,"downloader.f");
 
+int GetPageIDByName(std::string pageName);
 class CLink;
 
 class CSettings {

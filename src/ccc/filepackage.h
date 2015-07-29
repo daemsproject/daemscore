@@ -36,12 +36,12 @@ public:
     bool SetContent(const CContent contentIn);
     bool SetJson(const Value json);
     CContent ToContent()const;
-    Value ToJson();
+    Value ToJson()const;
     bool InstallPackage( string strDirName);
     void Clear();
     bool CheckLinks();
     bool IsValid(){return fValid;}
-    pair<int,string> FileToContent(const string strFileName) const;
+    string FileToContent(const string strFileName) const;
 };
 bool ReadFilePackageList(const std::string strFileList,std::string& strMainFile,json_spirit::Array& arrFiles);
 bool GetFilePackageMain(const string packageName,string& path);
