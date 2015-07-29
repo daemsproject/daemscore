@@ -28,15 +28,20 @@ public:
     string strPackageName;
     std::map<string,vector<CLink> > mapFileList;
     std::string strMainFile;
-    bool fValid=false;
+    vector<string> vTags;
+    bool fValid;
+    CFilePackage(){fValid=false;};
     CFilePackage(const CLink linkIn){SetLink(linkIn);};
     bool SetLink(const CLink linkIn);
     bool SetContent(const CContent contentIn);
     bool SetJson(const Value json);
+    CContent ToContent()const;
     Value ToJson();
     bool InstallPackage( string strDirName);
     void Clear();
-    
+    bool CheckLinks();
+    bool IsValid(){return fValid;}
+    pair<int,string> FileToContent(const string strFileName) const;
 };
 bool ReadFilePackageList(const std::string strFileList,std::string& strMainFile,json_spirit::Array& arrFiles);
 bool GetFilePackageMain(const string packageName,string& path);

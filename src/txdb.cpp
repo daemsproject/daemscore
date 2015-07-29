@@ -459,10 +459,12 @@ bool CDomainViewDB::_GetDomainByOwner(const int nExtension,const CScript scriptP
 }
 bool CDomainViewDB::GetDomainByName(const string strDomainName,CDomain& domain)const 
 {
-    char* searchColumn="domainname";
+    //char* searchColumn="domainname";
+    string searchColumn="domainname";
     const char* searchValue;//NOte: for varchar, need to add'' arround value
     
-    const char* tableName=(GetDomainGroup(strDomainName)==DOMAIN_10000?"domainf":"domainfai");
+    //const char* tableName=(GetDomainGroup(strDomainName)==DOMAIN_10000?"domainf":"domainfai");
+    string tableName=(GetDomainGroup(strDomainName)==DOMAIN_10000?"domainf":"domainfai");
 //    char** result;
 //    int nRow;
 //    int nColumn;    
@@ -472,7 +474,7 @@ bool CDomainViewDB::GetDomainByName(const string strDomainName,CDomain& domain)c
     std::vector<CDomain> vDomain;
     
     
-    if(db.GetDomain(tableName,searchColumn, searchValue,vDomain)&&vDomain.size()>0)
+    if(db.GetDomain(tableName.c_str(),searchColumn.c_str(), searchValue,vDomain)&&vDomain.size()>0)
     {
         domain=vDomain[0];
         return true;

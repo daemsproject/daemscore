@@ -1244,6 +1244,7 @@ void BitcoinGUI::setEncryptionStatus(int status)
 
 void BitcoinGUI::showNormalIfMinimized(bool fToggleHidden)
 {
+    LogPrintf("showNormalIfMinimized called clientmodel %i,isHidden %b,isMinimized:%b \n",clientModel,isHidden(),isMinimized());
     if(!clientModel)
         return;
 
@@ -1269,6 +1270,7 @@ void BitcoinGUI::showNormalIfMinimized(bool fToggleHidden)
 
 void BitcoinGUI::toggleHidden()
 {
+    LogPrintf("toggleHidden called \n");
     showNormalIfMinimized(true);
 }
 

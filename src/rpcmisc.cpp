@@ -14,6 +14,7 @@
 #include "timedata.h"
 #include "util.h"
 #include "ccc/domain.h"
+#include "ccc/filepackage.h"
 #ifdef ENABLE_WALLET
 #include "wallet.h"
 #include "walletdb.h"
@@ -24,6 +25,7 @@
 #include <boost/assign/list_of.hpp>
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_value.h"
+#include "json/json_spirit_reader_template.h"
 #include "ccc/content.h"
 #include "utilstrencodings.h"
 
@@ -676,7 +678,7 @@ CPaymentOrder GetPublishProductPaymentRequest(const Array arr)
             strError="invalid product name";
                 throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
         }     
-        vcc.push_back(make_pair(CC_PRODUCT_NAME,tmp.get_str()));
+        vcc.push_back(make_pair(CC_NAME,tmp.get_str()));
         LogPrintf("rpcmisc GetPublishProductPaymentRequest product name %s\n", tmp.get_str());
         tmp = find_value(obj, "price");
         CAmount price;
@@ -955,6 +957,80 @@ CPaymentOrder GetBuyProductPaymentRequest(const Array arr)
     pr.fIsValid = true;
     return pr;
 }
+
+CPaymentOrder GetPublishPackagetPaymentRequest(const Array arr)
+{
+    CPaymentOrder pr;
+    pr.fIsValid = false;
+    std::string strError; 
+    if ( arr.size() <2)
+    {
+        strError="parameters count is not 2";
+        throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+    }
+    if(arr[0].type()!=str_type)
+    {
+        strError="parameter 0 is not string type";
+        throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+    }  
+    
+    CScript scriptPubKey;        
+    if(!StringToScriptPubKey(arr[0].get_str(),scriptPubKey)){
+                strError="id is not valid format";
+                throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+    }
+    
+    LogPrintf("rpcmisc GetPublishPackagetPaymentRequest from ID %s\n", scriptPubKey.ToString());
+    pr.vFrom.push_back(scriptPubKey);    
+    CAmount lockValue=0;
+    if(arr.size()>2)
+    {
+        lockValue=AmountFromValue(arr[2]);
+    }
+    uint32_t nLockTime=0;
+    if(arr.size()>3)
+    {
+        nLockTime=(uint32_t)arr[3].get_int64();
+    }
+    Value valfp;
+    if(arr[1].type()==str_type)
+    {
+        json_spirit::read_string(arr[1].get_str(),valfp);
+    }
+    else
+        valfp=arr[1];
+    if(valfp.type()!=obj_type)    
+    {
+        LogPrintf("rpcmisc GetPublishPackagetPaymentRequest pakcage data is not obj type %i\n", arr[1].type()); 
+        strError="pakcage data is not obj type";
+        throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+    }
+    CFilePackage fp;
+    if(!fp.SetJson(valfp))
+    {
+        strError="pakcage data is not vaid";
+        throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+    }
+    if(!fp.IsValid())
+    {
+        strError="pakcage has invalid link";
+        throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+        
+    }
+        //CContent content=payment.ToContent();
+        pr.vout.push_back(CTxOut(lockValue, scriptPubKey, fp.ToContent(),nLockTime));
+        //vcc.push_back(make_pair(CC_PAYMENT_ITEM_P,content));
+       
+        //CContent ctt;
+        //ctt.EncodeP(CC_PAYMENT_P,vcc);    
+        
+       // pr.vout.push_back(CTxOut(0, CScript(), ctt,0));
+    
+    pr.nRequestType=PR_PUBLISH;    
+    //pr.info["domain"]=arr[1].get_str();
+    pr.fIsValid = true;
+    return pr;
+}
 //extern CPaymentOrder GetRenewPaymentRequest(const Array arr)
 //{
 //    CPaymentOrder pr;
@@ -964,44 +1040,4 @@ CPaymentOrder GetBuyProductPaymentRequest(const Array arr)
 //{
 //    CPaymentOrder pr;
 //    return pr;
-//}
-//int GetBlocksToMaturity(const unsigned int nLockTime)
-//{
-//    if (nLockTime!=0){        
-//        if ((int64_t)nLockTime < LOCKTIME_THRESHOLD )
-//            return max(0, (int)((int)nLockTime+1 - (int)chainActive.Height()));  
-//        else{
-//            int lockBlocks;
-//            lockBlocks=(int)(((int64_t)nLockTime-GetAdjustedTime())/Params().TargetSpacing());
-//            return max(0, lockBlocks);
-//        }
-//    }
-//        return 0;
-//}
-////this function is relative time to chainactive.tip
-//int GetLockLasting(uint32_t nLockTime)
-//{
-//    int64_t blocks = 0;
-//    if (nLockTime != 0) {
-//        if (nLockTime < LOCKTIME_THRESHOLD) { 
-//            blocks = max(0, (int) ((int) nLockTime + 1 - (int) chainActive.Height()));
-//            return blocks * Params().TargetSpacing();
-//        } else {
-//            return (int) max((int) 0, (int)(nLockTime - chainActive.Tip()->nTime));                
-//        }
-//    }
-//    return 0;
-//}
-//uint32_t LockTimeToTime(uint32_t nLockTime)
-//{
-//    int64_t blocks = 0;
-//    if (nLockTime != 0) {
-//        if (nLockTime < LOCKTIME_THRESHOLD) { 
-//            blocks = max(0, (int) ((int) nLockTime + 1 - (int) chainActive.Height()));
-//            return (uint32_t)(blocks * Params().TargetSpacing()+GetAdjustedTime());
-//        } else {
-//            return (uint32_t) nLockTime;                
-//        }
-//    }
-//    return 0;
 //}

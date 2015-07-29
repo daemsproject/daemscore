@@ -98,6 +98,12 @@ CC_AUTHOR = 0x36,
 CC_VERSION = 0x38,
 CC_NUMBER = 0x3a,
 CC_ENCODING = 0x3c,
+CC_NAME = 0x3e,
+CC_NAME_P = 0x3f,
+CC_SOURCE = 0x40,
+CC_SOURCE_P = 0x41,
+CC_RECIPIENT = 0x42,
+CC_RECIPIENT_P = 0x43,
 /** Second Level Content Code * */
 // Tag
 CC_TAG_TEXT = 0x031004,
@@ -176,8 +182,6 @@ CC_NUMBER_ENCODING_VARINT = 0x3b10,
 CC_NUMBER_ENCODING_DEC_SCIENTIFIC = 0x3b12,
 CC_NUMBER_ENCODING_BINARY_SCIENTIFIC = 0x3b14,
 // File
-CC_FILE_NAME = 0x0700,
-CC_FILE_NAME_P = 0x0701,
 CC_FILE_TYPESTRING = 0x0702,
 CC_FILE_PART = 0x0704,
 CC_FILE_PART_P = 0x0705,
@@ -185,7 +189,6 @@ CC_FILE_PART_NUMBER = 0x070502,
 CC_FILE_COMBINE_P = 0x0707,
 CC_FILE_PACKAGE_P = 0x0709,
 CC_FILE_PACKAGE_MAINFILE = 0x070900,
-CC_FILE_PACKAGE_NAME = 0x070902,
 // Link
 CC_LINK_TYPESTRING = 0x0900,
 CC_LINK_TYPE_BLOCKCHAIN = 0x0910,
@@ -472,8 +475,6 @@ CC_ENCRYPT_PARAMS_MHASH_HEIGHT = 0x15000e,
 CC_PRODUCT_PRICE = 0x1700,
 CC_PRODUCT_PRICE_P = 0x1701,
 CC_PRODUCT_ID = 0x1702,
-CC_PRODUCT_NAME = 0x1704,
-CC_PRODUCT_NAME_P = 0x1705,
 CC_PRODUCT_PAYTO = 0x1706,
 CC_PRODUCT_INTRO = 0x1708,
 CC_PRODUCT_ICON = 0x170a,
@@ -556,6 +557,12 @@ static std::map<int,std::string> mapCC=boost::assign::map_list_of
 (CC_VERSION,"CC_VERSION")
 (CC_NUMBER,"CC_NUMBER")
 (CC_ENCODING,"CC_ENCODING")
+(CC_NAME,"CC_NAME")
+(CC_NAME_P,"CC_NAME_P")
+(CC_SOURCE,"CC_SOURCE")
+(CC_SOURCE_P,"CC_SOURCE_P")
+(CC_RECIPIENT,"CC_RECIPIENT")
+(CC_RECIPIENT_P,"CC_RECIPIENT_P")
 /** Second Level Content Code * */
 // Tag
 (CC_TAG_TEXT,"CC_TAG_TEXT")
@@ -634,8 +641,6 @@ static std::map<int,std::string> mapCC=boost::assign::map_list_of
 (CC_NUMBER_ENCODING_DEC_SCIENTIFIC,"CC_NUMBER_ENCODING_DEC_SCIENTIFIC")
 (CC_NUMBER_ENCODING_BINARY_SCIENTIFIC,"CC_NUMBER_ENCODING_BINARY_SCIENTIFIC")
 // File
-(CC_FILE_NAME,"CC_FILE_NAME")
-(CC_FILE_NAME_P,"CC_FILE_NAME_P")
 (CC_FILE_TYPESTRING,"CC_FILE_TYPESTRING")
 (CC_FILE_PART,"CC_FILE_PART")
 (CC_FILE_PART_P,"CC_FILE_PART_P")
@@ -643,7 +648,6 @@ static std::map<int,std::string> mapCC=boost::assign::map_list_of
 (CC_FILE_COMBINE_P,"CC_FILE_COMBINE_P")
 (CC_FILE_PACKAGE_P,"CC_FILE_PACKAGE_P")
 (CC_FILE_PACKAGE_MAINFILE,"CC_FILE_PACKAGE_MAINFILE")
-(CC_FILE_PACKAGE_NAME,"CC_FILE_PACKAGE_NAME")
 // Link
 (CC_LINK_TYPESTRING,"CC_LINK_TYPESTRING")
 (CC_LINK_TYPE_BLOCKCHAIN,"CC_LINK_TYPE_BLOCKCHAIN")
@@ -930,8 +934,6 @@ static std::map<int,std::string> mapCC=boost::assign::map_list_of
 (CC_PRODUCT_PRICE,"CC_PRODUCT_PRICE")
 (CC_PRODUCT_PRICE_P,"CC_PRODUCT_PRICE_P")
 (CC_PRODUCT_ID,"CC_PRODUCT_ID")
-(CC_PRODUCT_NAME,"CC_PRODUCT_NAME")
-(CC_PRODUCT_NAME_P,"CC_PRODUCT_NAME_P")
 (CC_PRODUCT_PAYTO,"CC_PRODUCT_PAYTO")
 (CC_PRODUCT_INTRO,"CC_PRODUCT_INTRO")
 (CC_PRODUCT_ICON,"CC_PRODUCT_ICON")
@@ -952,11 +954,14 @@ static std::map<int,std::string> mapCC=boost::assign::map_list_of
 (CC_CONTACT_PHONE,"CC_CONTACT_PHONE")
 (CC_CONTACT_EMAIL,"CC_CONTACT_EMAIL")
 (CC_CONTACT_BLOCKCHAIN,"CC_CONTACT_BLOCKCHAIN")
- ;
+;
 std::string GetCcName(const cctype cc);
 cctype GetCcValue(const std::string ccName);
-std::string GetCcHex(const cctype cc);
+std::string GetCcHex();
 bool IsCcParent(const cctype& cc);
+cctype GetPrimeCC(const cctype cc,unsigned int nDigits=1);
+int GetCcLen(const cctype ccIn);
+
 
 class CContent : public std::string
 {
@@ -1012,10 +1017,18 @@ public:
     bool DecodeDomainInfo(string& strAlias, string& strIntro, CLink& iconLink, std::vector<string>& vTags)const;
     bool DecodeLink(int& redirectType, string& redirectTo)const;
     bool DecodeFileString(std::string& strFile);
-    bool GetTags(std::vector<std::pair<int, std::string> >& vTagList) const;
+    //this fucnction is for TagDB
+    bool GetTags(std::vector<std::pair<int, std::string> >& vTagList) const;       
     bool _GetTags(std::vector<std::pair<int, std::string> >& vTagList, int ccp = -1) const;
+    //this function is for normal use
+    bool GetDataByCC(cctype mainCc,std::vector<string> & vDataString,bool fRecursive=true, bool fIncludeTypeCC=false) const; 
+    
+    
     //bool DecodeTagP(std::vector<std::string> vTag)const;
 };
+CContent EncodeContentUnitArray(const int cc,const vector<string> vContents);
+
+
 
 class CMessage
 {

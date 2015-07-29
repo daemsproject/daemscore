@@ -21,7 +21,7 @@
 #include "json/json_spirit_reader_template.h"
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_writer_template.h"
-
+using namespace json_spirit;
 class CBlockIndex;
 class CNetAddr;
 class CBlock;
@@ -217,6 +217,7 @@ extern json_spirit::Value getmaturetime(const json_spirit::Array& params, bool f
 extern json_spirit::Value getcontacts(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value addcontacts(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getsimplesig(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value publishpackage(const json_spirit::Array& params, bool fHelp);
 
 extern json_spirit::Value getrawtransaction(const json_spirit::Array& params, bool fHelp); // in rcprawtransaction.cpp
 extern json_spirit::Value listunspent(const json_spirit::Array& params, bool fHelp);
@@ -319,6 +320,7 @@ extern CPaymentOrder GetTransferPaymentRequest(const Array arr);
 extern CPaymentOrder GetPublishProductPaymentRequest(const Array arr);
 extern CPaymentOrder GetBuyProductPaymentRequest(const Array arr);
 extern CPaymentOrder GetBuyProductPaymentRequest(const Array arr);
+extern CPaymentOrder GetPublishPackagetPaymentRequest(const Array arr);
 extern CWalletTx CreateRawTransaction(CPaymentOrder pr,bool& fRequestPassword,CWallet*& pwallet);
 extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, json_spirit::Object& entry,const int nContentLenLimit=1024,std::map<int,CScript>* pmapPrevoutScriptPubKey=NULL,int nTx=-1);
 extern Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDetails = false);

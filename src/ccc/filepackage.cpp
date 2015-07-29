@@ -50,7 +50,7 @@ bool CFilePackage::SetContent(const CContent contentIn)
                 bool fFound=false;
                 string strFileName;
                 for(unsigned int i=0;i<vDecoded1.size();i++)
-                    if(vDecoded1[i].first==CC_FILE_NAME)
+                    if(vDecoded1[i].first==CC_NAME)
                     {
                         strFileName=vDecoded1[i].second;
                         fFound=true;
@@ -60,7 +60,7 @@ bool CFilePackage::SetContent(const CContent contentIn)
                     return false;
                 fFound=false;
                 for(unsigned int i=0;i<vDecoded1.size();i++)
-                    if(vDecoded1[i].first==CC_FILE_NAME)
+                    if(vDecoded1[i].first==CC_LINK)
                     {
                         string strFileLink=vDecoded1[i].second;
                         CLink fileLink;
@@ -108,10 +108,15 @@ bool CFilePackage::SetContent(const CContent contentIn)
                     return false;
                 if(mapFileList.find(vDecoded[i].second)==mapFileList.end())
                     return false;                
-                strMainFile=vDecoded[i].second;
-                return true;
+                strMainFile=vDecoded[i].second;                
+            }                        
+            if(vDecoded[i].first==CC_NAME)
+            {
+                strPackageName=vDecoded[i].second;
             }
         }
+        CContent(vDecoded[0].second).GetDataByCC(CC_TAG,vTags,true,true);
+            return true;
     }
     return false;
 }
@@ -141,7 +146,8 @@ void CFilePackage::Clear()
     strPackageName="";
     mapFileList.clear();
     strMainFile="";
-    fValid=false;            
+    fValid=false;    
+    vTags.clear();
 }
 bool GetFilePackageMain(const string packageName,string& path)
 {
@@ -221,4 +227,130 @@ bool ReadFilePackageList(const std::string strFileList,std::string& strMainFile,
         }
         strMainFile = val.get_str();
         return true;
+}
+bool CFilePackage::SetJson(const Value json)
+{
+    Clear();
+    if(json.type() != json_spirit::obj_type)
+    {
+       LogPrintf("SetJson :  Value is not object \n");
+        return false;
+    }
+    json_spirit::Object obj= json.get_obj();
+    json_spirit::Value val = find_value(obj, "files");
+    if (val.type()!=array_type)
+    {
+        LogPrintf("SetJson :  files is not array \n");
+        return false;
+    }
+    Array arrFiles = val.get_array();        
+    for(unsigned int i=0;i<arrFiles.size();i++)
+    {
+        if(arrFiles[i].type()!=obj_type)
+        {
+            LogPrintf("SetJson :  file is not obj \n");
+        return false;
+        }
+        Object obj=arrFiles[i].get_obj();
+        string strFileName=obj[0].name_;
+        vector<CLink> vlinks;
+        CLink flink;        
+        std::vector<string> vstr;
+        if(!GetStringVectorFromValue(obj[0].value_,vstr))
+         {
+              LogPrintf("SetJson :  link is not valid \n");
+                return false;
+         }
+        for(unsigned int i=0;i<vstr.size();i++)         
+        {
+            
+            if(!flink.SetString(vstr[i]))
+            {
+                LogPrintf("SetJson :  link is not valid \n");
+                return false;
+            }
+            LogPrintf("CFilePackage SetJson :  link %s, height:%i,ntx:%i,nvout:%i \n",vstr[i],flink.nHeight,flink.nTx,flink.nVout);
+            vlinks.push_back(flink);            
+        }        
+        mapFileList[strFileName]=vlinks;
+    }
+    val = find_value(obj, "mainfile");
+    if (val.type()!=str_type)
+    {
+        LogPrintf("SetJson :  mainfile is not str \n");
+        return false;
+    }
+    strMainFile = val.get_str();
+    val = find_value(obj, "packagename");
+    if (val.type()==str_type)
+    {
+        strPackageName=val.get_str();
+    }
+    val = find_value(obj, "tags");    
+    GetStringVectorFromValue(val,vTags);    
+    fValid=CheckLinks();
+    return true;
+}
+bool CFilePackage::CheckLinks()
+{
+    for(std::map<string,vector<CLink> >::iterator it=mapFileList.begin();it!=mapFileList.end();it++)
+    {
+        CContent content;
+        
+        if(it->second.size()==1)
+        {
+            LogPrintf("CFilePackage::CheckLinks :  link height:%i,ntx:%i,nvout:%i \n",it->second[0].nHeight,it->second[0].nTx,it->second[0].nVout);
+            if(!GetContentByLink(it->second[0],content))
+                    return false;
+            LogPrintf("CFilePackage::CheckLinks :  link content %s \n",content);
+            vector<string> vFiles;
+            if(!content.GetDataByCC(CC_FILE,vFiles,true,false))
+                    return false;            
+        }
+        else
+        {
+            for(unsigned int i=0;i<it->second.size();i++)
+            {
+                if(!GetContentByLink(it->second[0],content))
+                    return false;
+                vector<string> vParts;
+                if(!content.GetDataByCC(CC_FILE_PART,vParts,true,false))
+                    return false;     
+            }
+        }
+    }
+    return true;
+}
+CContent CFilePackage::ToContent()const
+{   
+    std::vector<std::pair<int,string> > vcc;
+    vcc.push_back(make_pair(CC_FILE_PACKAGE_MAINFILE,strMainFile));
+    vcc.push_back(make_pair(CC_NAME,strPackageName));
+    for(std::map<string,vector<CLink> >::const_iterator it=mapFileList.begin();it!=mapFileList.end();it++)   
+        vcc.push_back(FileToContent(it->first));    
+    if(vTags.size()>0)
+        vcc.push_back(make_pair(CC_TAG_P,EncodeContentUnitArray(CC_TAG,vTags)));
+       
+    
+    CContent ctt;
+    ctt.EncodeP(CC_FILE_PACKAGE_P,vcc); 
+    return ctt;
+    
+}
+pair<int,string> CFilePackage::FileToContent(const string strFileName) const
+{
+    std::map<string,vector<CLink> >::const_iterator it=mapFileList.find(strFileName);
+    if(it==mapFileList.end())
+        return make_pair(CC_LINK,"");
+    if(it->second.size()==1)
+    {       
+        return make_pair(CC_LINK,it->second[0].Serialize());
+    }
+    else 
+    {        
+        CContent content;
+         for(unsigned i=0;i<it->second.size();i++)
+             content.EncodeUnit(CC_LINK,it->second[i].Serialize());
+        return make_pair(CC_FILE_COMBINE_P,content);
+    }
 }

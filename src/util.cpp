@@ -835,7 +835,7 @@ bool ReadFileToJson(const string file_name, json_spirit::Value& fileData){
 }
 bool WriteJsonToFile(const json_spirit::Value& valContent,const string file_name){    
     ofstream fout;  
-    LogPrintf("util.cpp WriteJsonToFile file name:%s \n",file_name);
+    LogPrintf("util.cpp WriteJsonToFile file name:%s content:%s\n",file_name,json_spirit::write_string(valContent,true));
     fout.open(file_name.c_str());  
     if(!fout.is_open())
         return false;
@@ -943,3 +943,33 @@ Value _ValueFromAmount(const CAmount& amount)
 {
     return (double)amount / (double)COIN;
 }
+bool GetStringVectorFromArray(const Array arr,std::vector<string>& vstr)
+{    
+           for(unsigned int i=0;i<arr.size();i++)
+            {     
+               if(arr[i].type()!=str_type)                
+                return false;               
+              vstr.push_back(arr[i].get_str()); 
+           }
+         return true;
+}
+ bool GetStringVectorFromValue(const Value arr,std::vector<string>& vstr)
+ {
+     if(arr.type()==str_type)       
+            vstr.push_back(arr.get_str());
+      else if (arr.type()==array_type)
+        {
+            Array arr1 = arr.get_array(); 
+           for(unsigned int i=0;i<arr1.size();i++)
+            {     
+               if(arr1[i].type()!=str_type)                
+                return false;
+               
+              vstr.push_back(arr1[i].get_str()); 
+           }
+        }
+        else        
+            return false;
+       
+     return true;
+ }

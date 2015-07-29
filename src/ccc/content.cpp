@@ -687,6 +687,64 @@ bool CContent::_GetTags(std::vector<std::pair<int,std::string> >& vTagList,int c
     return vTagList.size() > 0;
 }
 
+bool CContent::GetDataByCC(cctype mainCc,std::vector<string> & vDataString,bool fRecursive, bool fIncludeTypeCC) const
+{
+    if(!IsStandard())
+        return false;
+    std::vector<std::pair<int, string> > vDecoded;
+    Decode(vDecoded);
+    //LogPrintf("CContent::GetDataByCC contentunits: %i \n",vDecoded.size());
+    for(unsigned int i=0; i<vDecoded.size();i++)
+    {
+        int cc=   vDecoded[i].first;      
+        //LogPrintf("CContent::GetDataByCC cc: %i \n",cc);
+        string str=vDecoded[i].second;
+        if (cc == mainCc && str.size() > 0 )
+            vDataString.push_back(str);
+        else if (fRecursive&&cc == mainCc+1) 
+        {
+            std::vector<std::pair<int, string> > vDecoded2;
+            CContent(vDecoded[i].second).Decode(vDecoded2);
+            for (unsigned int i = 0; i < vDecoded2.size(); i++) {
+                CContent(vDecoded2[i].second).GetDataByCC(mainCc,vDataString,fRecursive,fIncludeTypeCC);               
+            }
+        }
+        else if (fIncludeTypeCC&&GetPrimeCC((cctype)cc,GetCcLen((cctype)cc))==mainCc)
+            vDataString.push_back(GetCcName((cctype)cc));
+    }
+    return vDataString.size() > 0;
+}
+cctype GetPrimeCC(const cctype ccIn,unsigned int nDigits)
+{
+    if (nDigits>3)
+        nDigits=3;
+    if (nDigits<1)
+        nDigits=1;
+    for (unsigned int i=0;i<4;i++)
+    {
+        int cc=ccIn>>i*8;
+        if(cc<1>>nDigits*8)
+            return (cctype)(cc-cc%2);
+    }
+    return CC_NULL;
+}
+int GetCcLen(const cctype ccIn)
+{    
+    for (unsigned int i=1;i<=4;i++)
+    {
+        int cc=ccIn>>i*8;
+        if(cc==0)
+            return cc;
+    }
+    return 0;
+}
+CContent EncodeContentUnitArray(const int cc,const vector<string> vContents)
+{
+    CContent content;       
+    for(unsigned int i=0;i<vContents.size();i++)
+        content.EncodeUnit(cc,vContents[i]);     
+    return content;
+}
 Value CMessage::ToJson(bool fLinkOnly)const
 { // to test
     json_spirit::Object obj;
@@ -915,7 +973,7 @@ bool CProduct::SetContent(const CContent content)
             id=str; 
             //LogPrintf("CProduct::SetContent id:%s \n",id);
         }
-        else if(cc==CC_PRODUCT_NAME)
+        else if(cc==CC_NAME)
         {
             name=str;
             //LogPrintf("CProduct::SetContent name:%s \n",name);
@@ -994,7 +1052,7 @@ CContent CProduct::ToContent()const
 {
     std::vector<std::pair<int,string> > vcc;
     vcc.push_back(make_pair(CC_PRODUCT_ID,id));
-    vcc.push_back(make_pair(CC_PRODUCT_NAME,name));
+    vcc.push_back(make_pair(CC_NAME,name));
     CContent cPrice;
     cPrice.WriteVarInt(price);
     vcc.push_back(make_pair(CC_PRODUCT_PRICE,cPrice));

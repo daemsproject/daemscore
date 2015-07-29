@@ -114,6 +114,7 @@ public:
     QString PublishProduct(json_spirit::Array arrData);
     QString BuyProduct(json_spirit::Array arrData);
     QString getSMSAlertMessage(const CPaymentOrder& pr);
+    QString PublishPackage(json_spirit::Array arrData);
     // RAI object for unlocking wallet, returned by requestUnlock()
     class UnlockContext
     {

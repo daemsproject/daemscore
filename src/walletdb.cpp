@@ -7,6 +7,7 @@
 #include "base58.h"
 #include "protocol.h"
 #include "serialize.h"
+#include "streams.h"
 #include "sync.h"
 #include "util.h"
 #include "utiltime.h"
@@ -552,28 +553,79 @@ std::vector<CWalletTx> CWalletDB::ReadUnConfirmedTxs()
 {
     std::vector<CWalletTx> vunconfirmedTxs;
     std::string strFileName="unconfirmedtxs";      
-    json_spirit::Value valId;
+    //json_spirit::Value valId;
     filesystem::path fpFile=GetDataDir()  / strFileName;
-    string strFileContent;
-    if(FileToString(fpFile.string(), strFileContent)){
-        //LogPrintf("ReadUnConfirmedTxs %s \n",HexStr(strFileContent.begin(),strFileContent.end()));
-        CDataStream ss(strFileContent.c_str(),strFileContent.c_str()+strFileContent.size(), 2, CLIENT_VERSION);
-        LogPrintf("ReadUnConfirmedTxs ss size: %i",ss.size());
-        ss>>vunconfirmedTxs;
-    } 
-         return vunconfirmedTxs;
+//    string strFileContent;    
+//    if(ReadFileToString(fpFile.string(), strFileContent)&&strFileContent.size()>0){
+//        //LogPrintf("ReadUnConfirmedTxs %s \n",HexStr(strFileContent.begin(),strFileContent.end()));
+//        CDataStream ss(strFileContent.c_str(),strFileContent.c_str()+strFileContent.size(), 2, CLIENT_VERSION);
+//        LogPrintf("ReadUnConfirmedTxs ss size: %i",ss.size());
+//        if(ss.size()>0)
+//            ss>>vunconfirmedTxs;
+//    } 
+//         return vunconfirmedTxs;
+//         
+         
+           // open input file, and associate with CAutoFile
+    FILE *file = fopen(fpFile.string().c_str(), "rb");
+    CAutoFile filein(file, SER_DISK, CLIENT_VERSION);
+    if (filein.IsNull())
+        return vunconfirmedTxs;
+
+    // use file size to size memory buffer
+    int dataSize = boost::filesystem::file_size(fpFile);    
+    vector<unsigned char> vchData;
+    vchData.resize(dataSize);
+    try {
+        filein.read((char *)&vchData[0], dataSize);
+    }
+    catch (std::exception &e) {
+        return vunconfirmedTxs;
+    }
+    filein.fclose();
+
+    CDataStream ss(vchData, SER_DISK, CLIENT_VERSION);
+    LogPrintf("ReadUnConfirmedTxs ss size: %i",ss.size());
+        if(ss.size()>0)
+            ss>>vunconfirmedTxs;   
+    return vunconfirmedTxs;
 }
 bool CWalletDB::WriteUnConfirmedTxs(std::vector<CWalletTx> vunconfirmedTxs)
 {    
     std::string strFileName="unconfirmedtxs";      
-    json_spirit::Value valId;
-    filesystem::path fpFile=GetDataDir()  / strFileName;   
-    CDataStream ss( 2, CLIENT_VERSION);
-        ss<<vunconfirmedTxs;         
-         ofstream fout;  
-    fout.open(fpFile.string().c_str());  
-    assert(fout.is_open());  
-    fout << ss.str() << endl; 
+    //json_spirit::Value valId;
+    filesystem::path fpFile=GetDataDir()  / strFileName;       
+//    CDataStream ss( 2, CLIENT_VERSION);
+//        ss<<vunconfirmedTxs;         
+//         ofstream fout;  
+//    fout.open(fpFile.string().c_str());  
+//    //assert(fout.is_open());  
+//    fout << ss.str();// << endl; 
+//    return true;
+    
+    
+    
+    
+    
+    
+    // serialize addresses, checksum data up to that point, then append csum
+    CDataStream ss(SER_DISK, CLIENT_VERSION);
+    ss << vunconfirmedTxs;       
+    
+    FILE *file = fopen(fpFile.string().c_str(), "wb");
+    CAutoFile fileout(file, SER_DISK, CLIENT_VERSION);
+    if (fileout.IsNull())
+        return error("%s : Failed to open file %s", __func__, fpFile.string());
+
+    // Write and commit header, data
+    try {
+        fileout << ss;
+    }
+    catch (std::exception &e) {
+        return error("%s : Serialize or I/O error - %s", __func__, e.what());
+    }
+    FileCommit(fileout.Get());
+    fileout.fclose();
     return true;
 }
 bool CWalletDB::WriteName(const std::string& strAddress, const std::string& strName)

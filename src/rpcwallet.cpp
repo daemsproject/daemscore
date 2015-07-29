@@ -2287,3 +2287,7 @@ Value getsimplesig(const json_spirit::Array& params, bool fHelp)
         delete pwallet;
     return Value(hash.GetHex());
 }
+json_spirit::Value publishpackage(const json_spirit::Array& params, bool fHelp)
+{
+    
+}

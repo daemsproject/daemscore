@@ -194,6 +194,8 @@ std::string num2str(const double i);
 int HexStringToInt(const std::string& s);
 CAmount _AmountFromValue(const Value& value);
 Value _ValueFromAmount(const CAmount& amount);
+ bool GetStringVectorFromArray(const Array arr,std::vector<string>& vstr);
+ bool GetStringVectorFromValue(const Value arr,std::vector<string>& vstr);
 /**
  * Standard wrapper for do-something-forever thread functions.
  * "Forever" really means until the thread is interrupted.
