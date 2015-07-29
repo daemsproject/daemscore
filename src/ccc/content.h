@@ -957,7 +957,7 @@ static std::map<int,std::string> mapCC=boost::assign::map_list_of
 ;
 std::string GetCcName(const cctype cc);
 cctype GetCcValue(const std::string ccName);
-std::string GetCcHex();
+std::string GetCcHex(const cctype cc);
 bool IsCcParent(const cctype& cc);
 cctype GetPrimeCC(const cctype cc,unsigned int nDigits=1);
 int GetCcLen(const cctype ccIn);

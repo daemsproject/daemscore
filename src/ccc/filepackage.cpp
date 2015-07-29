@@ -261,10 +261,10 @@ bool CFilePackage::SetJson(const Value json)
               LogPrintf("SetJson :  link is not valid \n");
                 return false;
          }
-        for(unsigned int i=0;i<vstr.size();i++)         
+        for(unsigned int j=0;j<vstr.size();j++)         
         {
             
-            if(!flink.SetString(vstr[i]))
+            if(!flink.SetString(vstr[j]))
             {
                 LogPrintf("SetJson :  link is not valid \n");
                 return false;

@@ -1008,7 +1008,7 @@ CPaymentOrder GetPublishPackagetPaymentRequest(const Array arr)
     CFilePackage fp;
     if(!fp.SetJson(valfp))
     {
-        strError="pakcage data is not vaid";
+        strError="pakcage data is not valid";
         throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
     }
     if(!fp.IsValid())

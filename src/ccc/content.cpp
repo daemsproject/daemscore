@@ -697,16 +697,21 @@ bool CContent::GetDataByCC(cctype mainCc,std::vector<string> & vDataString,bool 
     for(unsigned int i=0; i<vDecoded.size();i++)
     {
         int cc=   vDecoded[i].first;      
-        //LogPrintf("CContent::GetDataByCC cc: %i \n",cc);
+        LogPrintf("CContent::GetDataByCC maincc %s,cc: %s \n",GetCcName((cctype)mainCc),GetCcName((cctype)cc));
         string str=vDecoded[i].second;
         if (cc == mainCc && str.size() > 0 )
             vDataString.push_back(str);
-        else if (fRecursive&&cc == mainCc+1) 
+        else if (fRecursive&&(cc == mainCc+1)) 
         {
+            //LogPrintf("CContent::GetDataByCC maincc %i,cc: %i \n",mainCc,cc);
             std::vector<std::pair<int, string> > vDecoded2;
             CContent(vDecoded[i].second).Decode(vDecoded2);
-            for (unsigned int i = 0; i < vDecoded2.size(); i++) {
-                CContent(vDecoded2[i].second).GetDataByCC(mainCc,vDataString,fRecursive,fIncludeTypeCC);               
+            //LogPrintf("CContent::GetDataByCC recursive vdecoded size %i \n",vDecoded2.size());
+            for (unsigned int j = 0; j < vDecoded2.size(); j++) {
+                LogPrintf("CContent::GetDataByCC recursive vdecoded cc %i,%s, \n",vDecoded2[j].first,GetCcName((cctype)vDecoded2[j].first));
+                CContent content;
+                content.EncodeUnit(vDecoded2[j].first,vDecoded2[j].second);
+                content.GetDataByCC(mainCc,vDataString,fRecursive,fIncludeTypeCC);               
             }
         }
         else if (fIncludeTypeCC&&GetPrimeCC((cctype)cc,GetCcLen((cctype)cc))==mainCc)
