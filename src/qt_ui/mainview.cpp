@@ -109,8 +109,8 @@ void MainView::loadWebPage(int nPageID)
     //QDir dir(QString().fromStdString(GetDataDir().string()));
     //QUrl url= QUrl("file://"+dir.path().toUtf8() + "/appdata/settings/filepackage/settings_en.html"); 
     string strPath;
-    GetFilePackageMain(mapPageNames[nPageID],strPath);
-    QUrl url=QUrl(QString().fromStdString("file://"+strPath));
+    GetFilePackageMain(mapPageNames[nPageID],strPath,true);
+    QUrl url=QUrl(QString().fromStdString(strPath));
     
     LogPrintf("gotosettings page url:%s \n",url.toString().toStdString());
     gotoWebPage(nPageID,url);

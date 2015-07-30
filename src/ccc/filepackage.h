@@ -14,6 +14,7 @@ using namespace std;
 using namespace json_spirit;
 
 class CContent;
+
 //namespace json_spirit
 //{
 //class Value;
@@ -37,15 +38,16 @@ public:
     bool SetJson(const Value json);
     CContent ToContent()const;
     Value ToJson()const;
-    bool InstallPackage( string strDirName);
+    bool InstallPackage(const string strDirName,const bool fInternal=false);
     void Clear();
     bool CheckLinks();
     bool IsValid(){return fValid;}
     string FileToContent(const string strFileName) const;
 };
 bool ReadFilePackageList(const std::string strFileList,std::string& strMainFile,json_spirit::Array& arrFiles);
-bool GetFilePackageMain(const string packageName,string& path);
+bool GetFilePackageMain(const string packageName,string& path,const bool fInternal=false);
 bool CheckFilePackage(const string packageName);
-
+bool GetFilePackageUrl(const CLink link,string& url);
+bool DeleteFilePackage(const CLink link);
 #endif	/* CCCOIN_FILEPACKAGE_H */
 

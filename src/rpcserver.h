@@ -259,6 +259,7 @@ extern json_spirit::Value getbrowserconf(const json_spirit::Array& params, bool 
 extern json_spirit::Value getfollowed(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value setfollow(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value setunfollow(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getfilepackageurl(const json_spirit::Array& params, bool fHelp);
 
 extern json_spirit::Value getdomaininfo(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getdomainsbyowner(const json_spirit::Array& params, bool fHelp);

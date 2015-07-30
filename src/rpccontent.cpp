@@ -10,6 +10,8 @@
 #include "util.h"
 #include "ccc/content.h"
 #include "ccc/link.h"
+#include "ccc/filepackage.h"
+
 #include "ccc/domain.h"
 #include "txdb.h"
 #include <stdint.h>
@@ -1221,3 +1223,18 @@ json_spirit::Value searchproducts(const json_spirit::Array& params, bool fHelp){
     LogPrintf("searchproducts toJson%i \n", arrProducts.size());
     return Value(arrProducts);
 }
+json_spirit::Value getfilepackageurl(const json_spirit::Array& params, bool fHelp)
+{
+    if (fHelp || params.size() < 1)
+        throw runtime_error("Wrong number of parameters");
+    if (params[0].type() != str_type)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter link, expected str");
+    CLink link;
+    if(!link.UnserializeConst(params[0].get_str()))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter link content");
+    string url;
+    if(!GetFilePackageUrl(link,url))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Linked to invalid file package");
+    return Value(url);
+}
+    

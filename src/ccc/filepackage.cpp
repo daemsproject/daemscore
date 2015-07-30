@@ -132,10 +132,14 @@ bool CFilePackage::SetContent(const CContent contentIn)
     }
     return false;
 }
-bool CFilePackage::InstallPackage(string strDirName)
+bool CFilePackage::InstallPackage(const string strDirName,const bool fInternal)
 {
     LogPrintf("InstallPackage to dir %s nFIles:%i\n",strDirName,mapFileList.size());
-    boost::filesystem::path fpPath=GetDataDir()  / "appdata" / strDirName / "filepackage";
+    boost::filesystem::path fpPath;
+    if (fInternal)
+        fpPath=GetDataDir()  / "appdata" / strDirName / "filepackage";
+    else
+        fpPath=GetDataDir()  / "appdata" / "filepackages" / strDirName ;
     boost::filesystem::create_directories(fpPath);     
      for(map<string,vector<CLink> >::iterator it=mapFileList.begin();it!=mapFileList.end();it++)
      {
@@ -167,9 +171,13 @@ void CFilePackage::Clear()
     fValid=false;    
     vTags.clear();
 }
-bool GetFilePackageMain(const string packageName,string& path)
+bool GetFilePackageMain(const string packageName,string& path,const bool fInternal)
 {
-    boost::filesystem::path fpPath=GetDataDir()  / "appdata" / packageName / "filepackage"  ;    
+     boost::filesystem::path fpPath;
+    if (fInternal)
+        fpPath=GetDataDir()  / "appdata" / packageName / "filepackage";
+    else
+        fpPath=GetDataDir()  / "appdata" / "filepackages" / packageName ;      
     boost::filesystem::path fpFile=fpPath / (packageName+".package.json");
     LogPrintf("GetFilePackageMain fpPath:%s,fpFile %s \n",fpPath.string(),fpFile.string());    
     json_spirit::Array arrFiles;
@@ -180,8 +188,8 @@ bool GetFilePackageMain(const string packageName,string& path)
         std::string str;        
         if(ReadFileToString(fpFile.string(),str)&&ReadFilePackageList(str,strMainFile,arrFiles))
         {
-            path=fpPath.string();            
-            path.append("/").append(strMainFile);   
+            boost::filesystem::path fpMainfile=fpPath / strMainFile;            
+            path= "file://"+fpMainfile.string();
             return true;         
         }
         LogPrintf("GetFilePackageMain file to string %s \n",str);  
@@ -419,4 +427,23 @@ Value CFilePackage::ToJson()const
         obj.push_back(Pair("tags",arr3));        
     }
     return Value(obj);
+}
+bool GetFilePackageUrl(const CLink link,string& url)
+{   
+    string packageName=link.ToString();
+    if(GetFilePackageMain(packageName,url,false))
+        return true;
+    CFilePackage package(link);    
+    return package.InstallPackage(packageName,false)&&package.IsValid()&&GetFilePackageMain(packageName,url,false);
+}
+
+bool DeleteFilePackage(const CLink link)
+{
+    
+    boost::filesystem::path fpPath=GetDataDir()  / "appdata" / "filepackages" / link.ToString() ;
+    //fpPath.clear();
+    if(!boost::filesystem::exists(fpPath))
+        return false;
+    boost::filesystem::remove_all(fpPath);
+    return true;
 }

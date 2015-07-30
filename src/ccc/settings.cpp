@@ -89,7 +89,7 @@ bool CSettings::LoadSettings()
             {
                 LogPrintf("LoadSettings:  pagedomains link changed %s link %s \n",obj2[i].name_,link.ToString());
                 mapPageLink[pageID]=link;                
-                CFilePackage(link).InstallPackage(mapPageNames[pageID]);
+                CFilePackage(link).InstallPackage(mapPageNames[pageID],true);
             }
             LogPrintf("LoadSettings:  pagedomains page:%s link %s \n",obj2[i].name_,link.ToString());
         }
