@@ -189,31 +189,51 @@ bool CSettings::GetSetting(const string settingType,const string key,string& val
 //        }
 //    }
 //    else
-        if(settingType=="pagedomain"&&IsValidDomainFormat(value))
+    if(settingType=="pagedomain")
     {
-        BOOST_FOREACH(PAIRTYPE(const int,string)& pair,mapPageNames)
-            if(pair.second==key)
-            {
-                mapPageDomain[pair.first]=value;
+        //LogPrintf("changesettings value:%s \n");
+        if(value=="")
+        {
+            BOOST_FOREACH(PAIRTYPE(const int,string)& pair,mapPageNames)
+                if(pair.second==key&&mapPageDomain[pair.first]!=mapDefaultPageDomain[pair.first])
+                {
+                    mapPageDomain[pair.first]=mapDefaultPageDomain[pair.first];
+                    return SaveSettings();
+                }
+        }         
+        if(IsValidDomainFormat(value))
+        {
+            BOOST_FOREACH(PAIRTYPE(const int,string)& pair,mapPageNames)
+                if(pair.second==key&&mapPageDomain[pair.first]!=value)
+                {
+                    mapPageDomain[pair.first]=value;
+                    return SaveSettings();
+                }
+        }
             
-                return SaveSettings();
-            }
     }
     else if(settingType=="language")
     {
-        language=value;
-        return SaveSettings();
+        if(language!=value)
+        {
+            language=value;
+            return SaveSettings();
+        }
     }
     else if(settingType=="serviceflages")
     {
+        //LogPrintf("changesettings serviceflages key:%s value:%s \n",key,value);
        BOOST_FOREACH(PAIRTYPE(const int,string)& pair,mapServiceNames)
             if(pair.second==key)        
             {
+                //LogPrintf("changesettings serviceflages digits:%i \n",pair.first);
                 uint64_t mask=0xffffffff-(1<<(pair.first));             
                 
                 nServiceFlags&=mask;
+                //LogPrintf("changesettings nServiceFlags %i \n",nServiceFlags);
                 if(value=="true")
                     nServiceFlags |=1<<pair.first;
+                //LogPrintf("changesettings nServiceFlags %i \n",nServiceFlags);
                 return SaveSettings();
             }
     }

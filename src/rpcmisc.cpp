@@ -28,6 +28,7 @@
 #include "json/json_spirit_reader_template.h"
 #include "ccc/content.h"
 #include "utilstrencodings.h"
+#include "ccc/settings.h"
 
 using namespace boost;
 using namespace boost::assign;
@@ -1041,3 +1042,14 @@ CPaymentOrder GetPublishPackagetPaymentRequest(const Array arr)
 //    CPaymentOrder pr;
 //    return pr;
 //}
+Value getsettings(const Array& params, bool fHelp)
+{    
+    return settings.ToJson();
+}
+Value updatesettings(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() != 3)
+        throw runtime_error("updatesetting, 3params");
+     RPCTypeCheck(params, boost::assign::list_of(str_type));    
+    return settings.ChangeSetting(params[0].get_str(),params[1].get_str(),params[2].get_str());        
+}

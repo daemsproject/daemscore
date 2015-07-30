@@ -42,23 +42,23 @@ enum servicecode
 
 };
 static std::map<int,std::string> mapServiceNames=boost::assign::map_list_of
-(SERVICE_FULLNODE,"full node service")
-    (SERVICE_NAT,"NAT peer")
-    (SERVICE_STUN,"STUN service")
-    (SERVICE_FULLNODEPLUS,"full node plus service")
-    (SERVICE_ICQ,"ICQ service")
-    (SERVICE_RELAY,"relay service")
-    (SERVICE_SEARCHENGINE,"search engine service")
-    (SERVICE_MININGPOOL,"mining pool service")
-    (SERVICE_OFFCHAIN_MESSAGE,"offchain message storage service")
-    (SERVICE_OFFCHAIN_PRIVATE,"offchain private storage service")
-    (SERVICE_OFFCHAIN_PUBLIC,"offchain public storage service")
-    (SERVICE_MALL,"offchain mall service")
-    (SERVICE_BANK,"bank service")
-    (SERVICE_TORRENTFILE,"torrent file service")
-    (SERVICE_EMAIL,"email service")
-    (SERVICE_NOBLOCKCHAINDATA,"no block chain data")
-    (SERVICE_APP,"app service");
+(SERVICE_FULLNODE,"full_node_service")
+    (SERVICE_NAT,"NAT_peer")
+    (SERVICE_STUN,"STUN_service")
+    (SERVICE_FULLNODEPLUS,"full_node_plus_service")
+    (SERVICE_ICQ,"ICQ_service")
+    (SERVICE_RELAY,"relay_service")
+    (SERVICE_SEARCHENGINE,"search_engine_service")
+    (SERVICE_MININGPOOL,"mining_pool_service")
+    (SERVICE_OFFCHAIN_MESSAGE,"offchain_message_storage_service")
+    (SERVICE_OFFCHAIN_PRIVATE,"offchain_private_storage_service")
+    (SERVICE_OFFCHAIN_PUBLIC,"offchain_public_storage_service")
+    (SERVICE_MALL,"offchain_mall_service")
+    (SERVICE_BANK,"bank_service")
+    (SERVICE_TORRENTFILE,"torrent_file_service")
+    (SERVICE_EMAIL,"email_service")
+    (SERVICE_NOBLOCKCHAINDATA,"no_block_chain_data")
+    (SERVICE_APP,"app_service");
 enum pageid
 {
     WALLETPAGE_ID=1,
@@ -116,7 +116,6 @@ static std::map<int,std::string> mapDefaultPageDomain=boost::assign::map_list_of
 (SHOPPAGE_ID,"shop.f")
 (TVPAGE_ID,"tv.f")
 (DOWNLOADERPAGE_ID,"downloader.f");
-
 int GetPageIDByName(std::string pageName);
 class CLink;
 

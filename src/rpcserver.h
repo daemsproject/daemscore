@@ -271,6 +271,8 @@ extern json_spirit::Value setconf(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getconf(const json_spirit::Array& params, bool fHelp); 
 extern json_spirit::Value readfile(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value writefile(const json_spirit::Array& params, bool fHelp);
+extern Value getsettings(const Array& params, bool fHelp);
+extern Value updatesettings(const Array& params, bool fHelp);
 
 
 extern json_spirit::Value encodebase32(const json_spirit::Array& params, bool fHelp);//rpc util

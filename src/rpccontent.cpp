@@ -576,14 +576,14 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
     int cformat;
     unsigned char cflag;
     int minsz;
-    bool fAsc;
+    bool fAsc;  // get the block by ascending or descending sequence
     if (!_parse_getcontents_params(params, fbh, maxc, maxb, blkc, withcc, withoutcc, firstcc, cformat, cflag, minsz, gAddrs, fAsc))
         throw runtime_error("Error parsing parameters");
     Array r;
     int c = 0;
     int b = 0;
         int nHeight = fAsc ? fbh : std::min(chainActive.Height(), fbh + blkc);
-        int totalM = chainActive.Height() - fbh + 1;
+    int totalM = fAsc ? chainActive.Height() - fbh + 1 : std::min(blkc, chainActive.Height());
         int total = totalM > blkc ? blkc : totalM;
     if (gAddrs.size() == 0) {
         for (int i = 0; i < total; i++) {

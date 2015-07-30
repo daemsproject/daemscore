@@ -216,6 +216,11 @@ QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
                 return walletModel->BuyProduct(arrData);
             if (command.toStdString()==string("publishpackage"))
                 return walletModel->PublishPackage(arrData);
+            if (command.toStdString()==string("getsettings")||command.toStdString()==string("updatesettings"))
+            {
+                if(nPageID!=SETTINGPAGE_ID)
+                    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid pageID, getettings is forbidden");                
+            }
             if (command.toStdString()==string("writefile")||command.toStdString()==string("readfile")
                     ||command.toStdString()==string("getconf")||command.toStdString()==string("setconf"))
             {
@@ -227,6 +232,7 @@ QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
                 if (nPageID<9&&appNames[nPageID]!=appName)
                     throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid appName, not corresponds to pageid");
             }
+            
                 
         }
         //return QString("{\"error\":\"empty data\"}");

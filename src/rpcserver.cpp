@@ -317,6 +317,8 @@ static const CRPCCommand vRPCCommands[] =
     { "conf",               "getconf",                &getconf,                true,      true,       false },
     { "conf",               "readfile",               &readfile,               true,      true,       false },
     { "conf",               "writefile",              &writefile,              true,      true,       false },
+     { "conf",               "getsettings",              &getsettings,              true,      true,       false },
+     { "conf",               "updatesettings",              &updatesettings,              true,      true,       false },
 
     /* Mining */
     { "mining",             "getblocktemplate",       &getblocktemplate,       true,      false,      false },
