@@ -16,7 +16,7 @@
 #include <vector>
 
 class CCoins;
-class uint256;
+//class uint256;
 
 //! -dbcache default (MiB)
 static const int64_t nDefaultDbCache = 100;
@@ -104,7 +104,7 @@ public:
     //! As we use CDomainView polymorphically, have a virtual destructor
      ~CDomainViewDB() {}
 };
-class CTagViewDB //:public CDomainView
+class CTagViewDB    
 {
 protected:
     CSqliteWrapper db;
@@ -118,5 +118,45 @@ public:
      bool ClearExpired();
     
      ~CTagViewDB() {}
+};
+class CCheque
+{
+public:
+    CScript scriptPubKey;
+    uint256 txid; 
+    ushort nOut;
+    CAmount nValue;
+    uint32_t nLockTime;
+    CCheque(){
+        txid=uint256(0);
+       nOut=0;
+        nValue=0;
+        nLockTime=0;
+    }
+    ADD_SERIALIZE_METHODS;   
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {        
+        READWRITE(scriptPubKey);
+        READWRITE(txid);
+        READWRITE(VARINT(nOut));
+        READWRITE(VARINT(nValue));
+        READWRITE(VARINT(nLockTime));
+    }
+};
+class CScriptCoinDB 
+{
+protected:
+    CSqliteWrapper db;
+public:
+    
+    CScriptCoinDB( bool fWipe = false);
+    
+     bool Search(const vector<CScript>& vScriptPubKey,vector<CCheque> & vCheques)const ;    
+     bool Insert(const CCheque cheque);
+     bool Erase(const uint256 txid, const uint32_t nOut);
+    
+    
+     ~CScriptCoinDB() {}
 };
 #endif // BITCOIN_TXDB_H

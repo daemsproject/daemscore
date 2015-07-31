@@ -11,6 +11,7 @@
 #include "ccc/settings.h"
 #include "ccc/link.h"
 #include "ccc/content.h"
+#include "ccc/p2pservice.h"
 #include "checkpoints.h"
 #include "checkqueue.h"
 #include "init.h"
@@ -554,6 +555,7 @@ CBlockTreeDB *pblocktree = NULL;
 CScript2TxPosDB *pScript2TxPosDB=NULL;
 CDomainViewDB *pDomainDBView = NULL;
 CTagViewDB *pTagDBView = NULL;
+CScriptCoinDB *pScriptCoinDBView =NULL;
 //////////////////////////////////////////////////////////////////////////////
 //
 // mapOrphanTransactions
@@ -1795,6 +1797,59 @@ void UpdateTagDB(const CTransaction& tx,const CBlock& block,const int nTx,CValid
         }        
     }
 }
+void UpdateScriptCoinDB(const CTransaction& tx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse)
+{   
+    uint256 txid=tx.GetHash();
+    if(!tx.IsCoinBase()){        
+      BOOST_FOREACH(const CTxIn &txin, tx.vin)
+      {                  
+            const COutPoint &prevout = txin.prevout;
+            
+            const CCoins *coins = inputs.AccessCoins(prevout.hash);  
+            if (coins==NULL){
+                LogPrintf("UpdateScriptCoinDB error null coin\n");
+                continue;
+            }           
+            if(fReverse)
+            {
+                CCheque cheque;
+                cheque.nLockTime=coins->vout[prevout.n].nLockTime;
+                cheque.nOut=prevout.n;
+                cheque.nValue=prevout.nValue;
+                cheque.scriptPubKey=coins->vout[prevout.n].scriptPubKey;
+                cheque.txid=txid;
+                
+                pScriptCoinDBView->Insert(cheque);
+            }
+            else
+            {
+                pScriptCoinDBView->Erase(prevout.hash,prevout.n);
+            }
+      }
+    }
+    for(unsigned int i=0;i<tx.vout.size();i++) {
+        //if address is empty don't record it
+        if (tx.vout[i].scriptPubKey.size()==0||tx.vout[i].nValue==0)
+            continue;        
+        if(fReverse)
+        {
+            pScriptCoinDBView->Erase(txid,i);
+        }
+        else
+        {
+            CCheque cheque;
+                cheque.nLockTime=tx.vout[i].nLockTime;
+                cheque.nOut=i;
+                cheque.nValue=tx.vout[i].nValue;
+                cheque.scriptPubKey=tx.vout[i].scriptPubKey;
+                cheque.txid=txid;                
+                pScriptCoinDBView->Insert(cheque);
+        }    
+        
+    }
+        
+
+}
 bool CScriptCheck::operator()() {
     const CScript &scriptSig = ptxTo->vin[nIn].scriptSig;
     if (!VerifyScript(scriptSig, scriptPubKey, nFlags, CachingTransactionSignatureChecker(ptxTo, nIn, cacheStore), &error)) {
@@ -1996,7 +2051,11 @@ bool DisconnectBlock(CBlock& block, CValidationState& state, CBlockIndex* pindex
         // undo UpdateScript2TxPosDB
          CDiskTxPos postx;
         if (pblocktree->ReadTxIndex(hash, postx))
+        {
             UpdateScript2TxPosDB(tx,postx,state,view,true);
+            if(settings.nServiceFlags>>3&1)
+            UpdateScriptCoinDB(tx,state,view,true);
+        }
         else
             std::cout<<"disconnect block tx pos not found:"<<hash.GetHex()<<"\n";
     }
@@ -2163,6 +2222,8 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
             UpdateScript2TxPosDB(tx,pos,state,view,false);
             UpdateDomainDB(tx,block,i,state,view,false);
             UpdateTagDB(tx,block,i,state,view,false);
+            if(settings.nServiceFlags>>3&1)
+            UpdateScriptCoinDB(tx,state,view,false);
         }
         UpdateCoins(tx, state, view, i == 0 ? undoDummy : blockundo.vtxundo.back(), pindex->nHeight);        
         //LogPrintf("%s : 22", __func__);
@@ -2624,7 +2685,8 @@ bool ActivateBestChain(CValidationState &state, CBlock *pblock) {
                 BOOST_FOREACH(CNode* pnode, vNodes)
                 {
                     //LogPrintf("relay block:chainnactive higiht:%i pnode->nStartingHeight:%i \n",chainActive.Height(),pnode->nStartingHeight);
-                    if (chainActive.Height() > (pnode->nStartingHeight != -1 ? pnode->nStartingHeight - 2000 : nBlockEstimate))
+                    //ccc:for service flag SERVICE_NOBLOCKCHAINDATA,don't broadcast any blockchain data
+                    if (chainActive.Height() > (pnode->nStartingHeight != -1 ? pnode->nStartingHeight - 2000 : nBlockEstimate)&&(!pnode->nServices>>SERVICE_NOBLOCKCHAINDATA&1))
                         pnode->PushInventory(CInv(MSG_BLOCK, hashNewTip));
                 }
             }
@@ -4728,7 +4790,11 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         if (vInv.size() > 0)
             pfrom->PushMessage("inv", vInv);
     }
-
+    else if (strCommand == "service")
+    {
+        LOCK(cs_main);
+        return ProcessP2PServiceRequest(pfrom, vRecv,  nTimeReceived);
+    }
 
     else if (strCommand == "ping")
     {

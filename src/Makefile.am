@@ -111,6 +111,7 @@ BITCOIN_CORE_H = \
   ccc/sqlitewrapper.h \
   limitedmap.h \
   main.h \
+  ccc/p2pservice.h \
   merkleblock.h \
   miner.h \
   mruset.h \
@@ -184,6 +185,7 @@ libbitcoin_server_a_SOURCES = \
   ccc/contentutil.cpp\
   ccc/filepackage.cpp\
   main.cpp \
+  ccc/p2pservice.cpp \
   merkleblock.cpp \
   miner.cpp \
   net.cpp \

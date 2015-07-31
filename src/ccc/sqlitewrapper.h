@@ -16,6 +16,8 @@
 #include <sqlite3.h>
 class CDomain;
 class CLink;
+struct CCheque;
+class uint256;
 using namespace std;
 class sqlite_error : public std::runtime_error
 {
@@ -49,6 +51,9 @@ public:
     bool GetDomain(const char* tableName,const char* searchColumn,const char* searchValue,std::vector<CDomain>& vDomain) const;
     bool CreateTables();
     bool _CreateTable(const char* tableName);
+    
+    
+    
     bool CreateTagIDTable();
     bool CreateTagTable();
     bool InsertTag(const int cc,const int tagID,const CLink link,const unsigned int nExpireTime);
@@ -56,5 +61,17 @@ public:
     bool InsertTagID(const string tag,int& tagID);
     bool GetTagID(const string tag,int& tagID) const;
     bool ClearExpiredTags(const unsigned int nTime);
+    
+    bool CreateScriptIndexTable();
+    bool CreateTxIndexTable();
+    bool CreateChequeTable();
+    bool InsertScriptIndex(const CScript script,int& scriptIndex);
+    bool GetScriptIndex(const CScript script,int& scriptIndex) const;
+    bool InsertTxIndex(const uint256 txid,int& txIndex);
+    bool GetTxIndex(const uint256 txid,int& txIndex) const;
+    bool GetTxidByTxIndex(const int txIndex, uint256& txid) const;
+    bool InsertCheque(int scriptIndex,int txIndex,ushort nOut, uint64_t nValue,uint32_t nLockTime);
+    bool GetCheques(const vector<CScript>& vScript,vector<CCheque> & vCheques)const;
+    bool EraseCheque(const uint256 txid, const uint32_t nOut);
 };
 #endif // BITCOIN_LEVELDBWRAPPER_H

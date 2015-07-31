@@ -193,6 +193,8 @@ void Shutdown()
         pDomainDBView = NULL;    
         delete pTagDBView;
         pTagDBView = NULL; 
+        delete pScriptCoinDBView;
+        pScriptCoinDBView =NULL;
     }
 #ifdef ENABLE_WALLET
     //if (pwalletMain)
@@ -1038,6 +1040,7 @@ bool AppInit2(boost::thread_group& threadGroup)
                 delete pScript2TxPosDB;
                 delete pDomainDBView;
                 delete pTagDBView;
+                delete pScriptCoinDBView;
                 
         
             
@@ -1050,6 +1053,7 @@ bool AppInit2(boost::thread_group& threadGroup)
                 pScript2TxPosDB=new CScript2TxPosDB(pScript2TxPosDBView);
                 pDomainDBView = new CDomainViewDB(fReindex);   
                 pTagDBView = new CTagViewDB(fReindex); 
+                pScriptCoinDBView = new CScriptCoinDB(fReindex); 
                 
                 if (fReindex)
                     pblocktree->WriteReindexing(true);

@@ -548,3 +548,22 @@ bool CTagViewDB::ClearExpired()
 {
     return db.ClearExpiredTags(GetAdjustedTime());
 }
+CScriptCoinDB::CScriptCoinDB( bool fWipe): db(GetDataDir() / "sqlitedb", fWipe){}
+bool CScriptCoinDB::Insert(const CCheque cheque)
+{
+    int scriptPubKeyIndex;
+    db.InsertScriptIndex(cheque.scriptPubKey,scriptPubKeyIndex);
+    LogPrintf("txdb insert scriptPubKeyID %i \n", scriptPubKeyIndex);
+    int txIndex;
+    db.InsertTxIndex(cheque.txid,txIndex);    
+    return db.InsertCheque(scriptPubKeyIndex,txIndex,cheque.nOut, cheque.nValue,cheque.nLockTime);
+}
+bool CScriptCoinDB::Search(const vector<CScript>& vScriptPubKey,vector<CCheque> & vCheques)const 
+{
+    return db.GetCheques(vScriptPubKey, vCheques);
+
+} 
+bool CScriptCoinDB::Erase(const uint256 txid, const uint32_t nOut)
+{
+    return db.EraseCheque(txid,nOut);
+}

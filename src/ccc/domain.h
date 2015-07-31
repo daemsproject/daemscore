@@ -52,6 +52,25 @@ public:
     char** GetSqlItems()const;
     bool IsLevel2() const;
     json_spirit::Value ToJson()const;
+    
+    
+    ADD_SERIALIZE_METHODS;   
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {        
+        READWRITE(strDomain);
+        READWRITE(owner);
+        READWRITE(redirectType);
+        READWRITE(redirectTo);
+        READWRITE(nExpireTime);
+        READWRITE(strAlias);
+        READWRITE(strIntro);
+        READWRITE(iconLink);
+        READWRITE(vTags);
+        READWRITE(vDirectHistory);
+    }
+    
+    
 };
 int GetDomainGroup(const string strDomain);
 bool IsLevel2Domain(const string strDomain);
