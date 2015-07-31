@@ -565,5 +565,7 @@ bool CScriptCoinDB::Search(const vector<CScript>& vScriptPubKey,vector<CCheque> 
 } 
 bool CScriptCoinDB::Erase(const uint256 txid, const uint32_t nOut)
 {
-    return db.EraseCheque(txid,nOut);
+    int txIndex;
+    db.InsertTxIndex(txid,txIndex); 
+    return db.EraseCheque(txIndex,nOut);
 }

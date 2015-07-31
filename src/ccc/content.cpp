@@ -523,12 +523,12 @@ bool CContent::Decode(std::vector<std::pair<int, string> >& vDecoded)const
     return true;
 }
 
-bool CContent::DecodeLink(int& redirectType, string& redirectTo)const
+bool CContent::DecodeDomainForward(int& redirectType, string& redirectTo)const
 {
-    LogPrintf("CContent DecodeLink\n");
+    //LogPrintf("CContent DecodeLink\n");
     std::vector<std::pair<int, string> > vDecoded;
     Decode(vDecoded);
-    LogPrintf("CContent DecodeLink1\n");
+    //LogPrintf("CContent DecodeLink1\n");
     bool fHasLinkType = false;
     bool fHasLinkContent = false;
     int cc;
@@ -537,11 +537,11 @@ bool CContent::DecodeLink(int& redirectType, string& redirectTo)const
     for (unsigned int i = 0; i < vDecoded.size(); i++) {
         cc = vDecoded[i].first;
         if (cc >= CC_LINK_TYPESTRING && cc <= CC_LINK_TYPE_DOMAIN) {
-            LogPrintf("CContent DecodeLink2\n");
+           // LogPrintf("CContent DecodeLink2\n");
             fHasLinkType = true;
             nLinkType = cc;
         } else if (cc == CC_LINK) {
-            LogPrintf("CContent DecodeLink3\n");
+          //  LogPrintf("CContent DecodeLink3\n");
             str = vDecoded[i].second;
             if (str.size() > 64)
                 return false;
@@ -551,7 +551,7 @@ bool CContent::DecodeLink(int& redirectType, string& redirectTo)const
     }
     if (fHasLinkType&&fHasLinkContent)
     {
-        LogPrintf("CContent DecodeLink success\n");
+       // LogPrintf("CContent DecodeLink success\n");
         redirectType = nLinkType;
         redirectTo = str;
         return true;

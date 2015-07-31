@@ -9,11 +9,13 @@
 //#include "json/json_spirit_reader_template.h"
 //#include "json/json_spirit_utils.h"
 //#include "json/json_spirit_writer_template.h"
+#include "json/json_spirit_value.h"
 #include "uint256.h"
 class BitcoinGUI;
 class CPaymentOrder;
 class CWalletTx;
 class WalletModel;
+//class Array;
 class JsInterface: public QObject
 {
     Q_OBJECT
@@ -35,6 +37,7 @@ signals:
     void feedback(QString str,QString func);
     //void requestPayment(std::string strToken,CPaymentOrder pr, CWalletTx tx,bool fRequestPassword);
     void notify(QString result);
+    void gotoCustomPage(QUrl url,int nFromPageID);
 private slots:
     void notifyBlockHeight(const uint256 blockHash);
     void notifyTransactionChanged(const uint256 txid,const uint256 hashBlock);
@@ -48,7 +51,7 @@ private:
 
     //CWallet *wallet;
     WalletModel *walletModel;
-    
+    QString GoToCustomPage(json_spirit::Array arr,int nPageID);
 };
 //bool DecodeSigs(string ssInput,std::vector<CScript> sigs);
 

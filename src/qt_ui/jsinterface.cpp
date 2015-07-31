@@ -180,15 +180,14 @@ void JsInterface::notifyNewExtendedKey(const std::string id)
 //    SETTINGPAGE_ID=7,
 //    SERVICEPAGE_ID=8
 //};
-std::string appNames[9]={"null","wallet","browser","publisher","messenger","miner","domainname","setting","service"};
+static const std::string appNames[9]={"null","wallet","browser","publisher","messenger","miner","domainname","setting","service"};
 QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
     json_spirit::Value valData;
     json_spirit::Array arrData;
     json_spirit::Value valResult;
     
     try {
-        if (dataJson.size()>0){
-            
+        if (dataJson.size()>0){            
             if (!json_spirit::read_string(dataJson.toStdString(),valData))
                 return QString("{\"error\":\"data is not json format\"}");
             if (valData.type()!=json_spirit::array_type)
@@ -216,11 +215,9 @@ QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
                 return walletModel->BuyProduct(arrData);
             if (command.toStdString()==string("publishpackage"))
                 return walletModel->PublishPackage(arrData);
-            if (command.toStdString()==string("getsettings")||command.toStdString()==string("updatesettings"))
-            {
-                if(nPageID!=SETTINGPAGE_ID)
-                    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid pageID, getettings is forbidden");                
-            }
+            if (command.toStdString()==string("gotocustompage"))
+                return GoToCustomPage(arrData,nPageID);
+            
             if (command.toStdString()==string("writefile")||command.toStdString()==string("readfile")
                     ||command.toStdString()==string("getconf")||command.toStdString()==string("setconf"))
             {
@@ -235,6 +232,11 @@ QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
             
                 
         }
+        if (command.toStdString()==string("getsettings")||command.toStdString()==string("updatesettings"))
+            {
+                if(nPageID!=SETTINGPAGE_ID)
+                    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid pageID, getettings is forbidden");                
+            }
         //return QString("{\"error\":\"empty data\"}");
         valResult= tableRPC.execute(command.toStdString(),arrData);            
         
@@ -313,3 +315,13 @@ void JsInterface::jscallback(std::string strToken,bool fSuccess,QString dataJson
 //bool DecodeSigs(string ssInput,std::vector<CScript> sigs){
 //    return false;
 //}
+QString JsInterface::GoToCustomPage(Array arr,int nPageID)
+{
+    if(arr.size()<1)
+        return QString("{\"error\":\"params less than 1\"}");
+    if(arr[0].type()!=str_type)
+        return QString("{\"error\":\"param 1 is not str\"}");
+    emit gotoCustomPage(QUrl(QString().fromStdString(arr[0].get_str())),nPageID);
+    return QString("OK");
+    
+}

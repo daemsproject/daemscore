@@ -23,10 +23,11 @@ class WebPage:public QWebView
         Q_OBJECT
 
 public:
-    explicit WebPage(QString languageIn,QWidget *parent = 0,JsInterface *_js=0,QUrl urlIn=QUrl(""),int nPageIDin=0);
+    explicit WebPage(QString languageIn,QWidget *parent = 0,JsInterface *_js=0,QUrl urlIn=QUrl(""),int nPageIDin=255,int nFromPageIDIn=0);
     ~WebPage();
     QString language;
     int nPageID;    
+    int nFromPageID;
     
 private slots:    
     void addJSObject();

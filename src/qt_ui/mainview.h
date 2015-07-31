@@ -56,8 +56,8 @@ public:
     //bool handlePaymentRequest(const SendCoinsRecipient& recipient);
 
     //void showOutOfSyncWarning(bool fShow);
-    void gotoWebPage(int nPageID,QUrl url=QUrl(""));
-    void closeWebPage(int nPageID);
+    void gotoWebPage(int nPageID,QUrl url=QUrl(""),int nFromPageID=0);
+    
     void installWebPage(const std::string strPageName);
     void loadWebPage(int nPageID);
     bool copyQrcToDisc(std::string to,std::string from);
@@ -77,8 +77,8 @@ private:
     QProgressDialog *progressDialog;
 
 public slots:
-
-    
+    void gotoCustomPage(QUrl url,int nFromPageID);
+    void closeWebPage(int nPageID,int nSwitchToPageID=0);
     /** Switch to overview (home) page */
     //void gotoOverviewPage();
     /** Switch to history (transactions) page */

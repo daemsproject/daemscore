@@ -20,7 +20,8 @@
 
 
 
-WebPage:: WebPage(QString languageIn,QWidget *parent,JsInterface *_js,QUrl urlIn,int nPageIDin): QWebView(parent),language(languageIn),jsInterface(_js),nPageID(nPageIDin)
+WebPage:: WebPage(QString languageIn,QWidget *parent,JsInterface *_js,QUrl urlIn,int nPageIDin,int nFromPageIDIn): 
+    QWebView(parent),language(languageIn),jsInterface(_js),nPageID(nPageIDin),nFromPageID(nFromPageIDIn)
  {
 //    m_network = new QNetworkAccessManager(this);
 //    m_cache = new QNetworkDiskCache(this);

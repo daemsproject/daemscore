@@ -85,37 +85,37 @@ bool CSqliteWrapper::_CreateTable(const char* tableName)
     tag3 VARCHAR(32) \
     );";    
     sprintf(sql,createtablestatement,tableName);
-    //LogPrintf("CSqliteWrapper _CreateTable statement %s \n",sql);
+    LogPrintf("CSqliteWrapper _CreateTable statement %s \n",sql);
     sqlite3_exec(pdb,sql,0,0,&zErrMsg);
-    //LogPrintf("CSqliteWrapper _CreateTable done %s\n",zErrMsg);
-    const char * createindexstatement="CREATE INDEX IF NOT EXISTS %s %s on %s(%s)";    
-    sprintf(sql,createindexstatement,tableName,"_index_expiredate",tableName,"expiredate");  
-    //LogPrintf("CSqliteWrapper _CreateTable createindexstatement %s \n",sql);
+    LogPrintf("CSqliteWrapper _CreateTable done %s\n",zErrMsg);
+    const char * createindexstatement="CREATE INDEX IF NOT EXISTS %s on %s(%s)";    
+    sprintf(sql,createindexstatement,"index_expiredate",tableName,"expiredate");  
+    LogPrintf("CSqliteWrapper _CreateTable createindexstatement %s \n",sql);
     sqlite3_exec(pdb,sql,0,0,&zErrMsg);
-    sprintf(sql,createindexstatement,tableName,"_index_owner",tableName,"owner");    
-    //LogPrintf("CSqliteWrapper _CreateTable createindexstatement %s \n",sql);
+    sprintf(sql,createindexstatement,"index_owner",tableName,"owner");    
+    LogPrintf("CSqliteWrapper _CreateTable createindexstatement %s \n",sql);
     sqlite3_exec(pdb,sql,0,0,&zErrMsg);
-    //LogPrintf("CSqliteWrapper _CreateTable createindex done %s\n",zErrMsg);
-    sprintf(sql,createindexstatement,tableName,"_index_redirrectto",tableName,"redirrectto");  
-    //LogPrintf("CSqliteWrapper _CreateTable createindexstatement %s \n",sql);
+    LogPrintf("CSqliteWrapper _CreateTable createindex done %s\n",zErrMsg);
+    sprintf(sql,createindexstatement,"index_redirrectto",tableName,"redirrectto");  
+    LogPrintf("CSqliteWrapper _CreateTable createindexstatement %s \n",sql);
     sqlite3_exec(pdb,sql,0,0,&zErrMsg);
-    //LogPrintf("CSqliteWrapper _CreateTable createindex done %s\n",zErrMsg);
-    sprintf(sql,createindexstatement,tableName,"_index_alias",tableName,"alias");    
-    //LogPrintf("CSqliteWrapper _CreateTable createindexstatement %s \n",sql);
+    LogPrintf("CSqliteWrapper _CreateTable createindex done %s\n",zErrMsg);
+    sprintf(sql,createindexstatement,"index_alias",tableName,"alias");    
+    LogPrintf("CSqliteWrapper _CreateTable createindexstatement %s \n",sql);
     sqlite3_exec(pdb,sql,0,0,&zErrMsg);
-    //LogPrintf("CSqliteWrapper _CreateTable createindex done %s\n",zErrMsg);
-    sprintf(sql,createindexstatement,tableName,"_index_tag1",tableName,"tag1");    
-    //LogPrintf("CSqliteWrapper _CreateTable createindexstatement %s \n",sql);
+    LogPrintf("CSqliteWrapper _CreateTable createindex done %s\n",zErrMsg);
+    sprintf(sql,createindexstatement,"index_tag1",tableName,"tag1");    
+    LogPrintf("CSqliteWrapper _CreateTable createindexstatement %s \n",sql);
     sqlite3_exec(pdb,sql,0,0,&zErrMsg);
-    //LogPrintf("CSqliteWrapper _CreateTable createindex done %s\n",zErrMsg);
-    sprintf(sql,createindexstatement,tableName,"_index_tag2",tableName,"tag2");    
-    //LogPrintf("CSqliteWrapper _CreateTable createindexstatement %s \n",sql);
+    LogPrintf("CSqliteWrapper _CreateTable createindex done %s\n",zErrMsg);
+    sprintf(sql,createindexstatement,"index_tag2",tableName,"tag2");    
+   LogPrintf("CSqliteWrapper _CreateTable createindexstatement %s \n",sql);
     sqlite3_exec(pdb,sql,0,0,&zErrMsg);
-    //LogPrintf("CSqliteWrapper _CreateTable createindex done %s\n",zErrMsg);
-    sprintf(sql,createindexstatement,tableName,"_index_tag3",tableName,"tag3");    
-    //LogPrintf("CSqliteWrapper _CreateTable createindexstatement %s \n",sql);
+    LogPrintf("CSqliteWrapper _CreateTable createindex done %s\n",zErrMsg);
+    sprintf(sql,createindexstatement,"index_tag3",tableName,"tag3");    
+    LogPrintf("CSqliteWrapper _CreateTable createindexstatement %s \n",sql);
     sqlite3_exec(pdb,sql,0,0,&zErrMsg);
-    //LogPrintf("CSqliteWrapper _CreateTable createindex done %s\n",zErrMsg);
+    LogPrintf("CSqliteWrapper _CreateTable createindex done %s\n",zErrMsg);
     //LogPrintf("CSqliteWrapper _CreateTable success \n");
     return true;
 }
@@ -130,8 +130,8 @@ bool CSqliteWrapper::CreateTagIDTable()
     LogPrintf("CSqliteWrapper CreateTagIDTable statement %s \n",sql);
     sqlite3_exec(pdb,sql,0,0,&zErrMsg);
     LogPrintf("CSqliteWrapper CreateTagIDTable done %s \n",zErrMsg);
-    const char * createindexstatement="CREATE INDEX IF NOT EXISTS %s %s on %s(%s)";    
-    sprintf(sql,createindexstatement,tableName,"_index_tagid_tag",tableName,"tag");  
+    const char * createindexstatement="CREATE INDEX IF NOT EXISTS %s on %s(%s)";    
+    sprintf(sql,createindexstatement,"index_tagtable_tag",tableName,"tag");  
     LogPrintf("CSqliteWrapper CreateTagIDTable createindexstatement %s \n",sql);
     sqlite3_exec(pdb,sql,0,0,&zErrMsg);
     LogPrintf("CSqliteWrapper CreateTagIDTable createindex done %s\n",zErrMsg);
@@ -629,9 +629,9 @@ bool CSqliteWrapper::CreateScriptIndexTable()
     sprintf(sql,createtablestatement,tableName.c_str());
     LogPrintf("CSqliteWrapper CreateScriptIndexTable statement %s \n",sql);
     sqlite3_exec(pdb,sql,0,0,&zErrMsg);
-    LogPrintf("CSqliteWrapper CreateScriptIndexTable done %s \n",zErrMsg);
-    const char * createindexstatement="CREATE INDEX IF NOT EXISTS %s %s on %s(%s)";    
-    sprintf(sql,createindexstatement,tableName.c_str(),"_index_scriptindextable_script",tableName.c_str(),"script");  
+    LogPrintf("CSqliteWrapper CreateScriptIndexTable result %s \n",zErrMsg);
+    const char * createindexstatement="CREATE INDEX IF NOT EXISTS %s on %s(%s)";    
+    sprintf(sql,createindexstatement,"index_scriptindextable_script",tableName.c_str(),"script");  
     LogPrintf("CSqliteWrapper CreateScriptIndexTable createindexstatement %s \n",sql);
     sqlite3_exec(pdb,sql,0,0,&zErrMsg);
     LogPrintf("CSqliteWrapper CreateScriptIndexTable createindex done %s\n",zErrMsg);
@@ -648,8 +648,8 @@ bool CSqliteWrapper::CreateTxIndexTable()
     LogPrintf("CSqliteWrapper CreateTxIndexTable statement %s \n",sql);
     sqlite3_exec(pdb,sql,0,0,&zErrMsg);
     LogPrintf("CSqliteWrapper CreateTxIndexTable done %s \n",zErrMsg);
-    const char * createindexstatement="CREATE INDEX IF NOT EXISTS %s %s on %s(%s)";    
-    sprintf(sql,createindexstatement,tableName.c_str(),"_index_txindextable_txid",tableName.c_str(),"txid");  
+    const char * createindexstatement="CREATE INDEX IF NOT EXISTS %s on %s(%s)";    
+    sprintf(sql,createindexstatement,"index_txidindextable_txid",tableName.c_str(),"txid");  
     LogPrintf("CSqliteWrapper CreateTxIndexTable createindexstatement %s \n",sql);
     sqlite3_exec(pdb,sql,0,0,&zErrMsg);
     LogPrintf("CSqliteWrapper CreateTxIndexTable createindex done %s\n",zErrMsg);
@@ -662,15 +662,16 @@ bool CSqliteWrapper::CreateChequeTable()
     char* zErrMsg=0;
     char* tableName="chequetable";
     char sql[2000];
-    const char* createtablestatement="CREATE TABLE IF NOT EXISTS %s ( txindex INTEGER , nout INTEGER,scriptindex INTEGER,value INTEGER，locktime INTEGER, PRIMARY KEY (txidex,nout) );";    
+    const char* createtablestatement="CREATE TABLE IF NOT EXISTS %s ( txindex INTEGER , nout INTEGER, scriptindex INTEGER, value INTEGER, locktime INTEGER, PRIMARY KEY (txindex,nout) );";    
     sprintf(sql,createtablestatement,tableName);
     LogPrintf("CSqliteWrapper CreateChequeTable statement %s \n",sql);
-    sqlite3_exec(pdb,sql,0,0,&zErrMsg);
+    sqlite3_exec(pdb,sql,0,0,&zErrMsg); 
     LogPrintf("CSqliteWrapper CreateChequeTable done %s\n",zErrMsg);
-    const char * createindexstatement="CREATE INDEX IF NOT EXISTS %s %s on %s(%s)";    
-    sprintf(sql,createindexstatement,tableName,"_index_chequetable_scriptindex",tableName,"scriptindex");  
+    const char * createindexstatement="CREATE INDEX IF NOT EXISTS %s on %s(%s)";    
+    sprintf(sql,createindexstatement,"index_chequetable_scriptindex",tableName,"scriptindex");  
     LogPrintf("CSqliteWrapper CreateChequeTable createindexstatement %s \n",sql);
-    sqlite3_exec(pdb,sql,0,0,&zErrMsg);    
+    sqlite3_exec(pdb,sql,0,0,&zErrMsg); 
+    LogPrintf("CSqliteWrapper chequetable createindex done %s \n",zErrMsg);
     return true;
 }
 bool CSqliteWrapper::InsertScriptIndex(const CScript script,int& scriptIndex)
@@ -743,6 +744,7 @@ bool CSqliteWrapper::InsertTxIndex(const uint256 txid,int& txIndex)
     int result;
     sqlite3_stmt  *stat;    
    result=sqlite3_prepare_v2( pdb, insertstatement, -1, &stat, 0 );   
+   LogPrintf("GetInsertSql2 %i\n",result);
    result=sqlite3_bind_blob( stat, 1, (char*)txid.begin(), 32, NULL ); 
    LogPrintf("GetInsertSql4 %i\n",result);
     result=sqlite3_step( stat );
@@ -826,7 +828,7 @@ bool CSqliteWrapper::InsertCheque(int scriptIndex,int txIndex,ushort nOut, uint6
 {
     
     LogPrintf("InsertCheque\n");    
-    char* insertstatement="INSERT INTO chequetable VALUES (?,?,?,?,?)";
+    char* insertstatement="INSERT OR IGNORE INTO chequetable VALUES (?,?,?,?,?);";
     LogPrintf("GetInsertSql %s\n",insertstatement);
     int result;
     sqlite3_stmt  *stat;    
@@ -917,11 +919,11 @@ bool CSqliteWrapper::GetCheques(const vector<CScript>& vScript,vector<CCheque> &
     }while(1);
     return false;     
 }
-bool CSqliteWrapper::EraseCheque(const uint256 txid, const uint32_t nOut)
+bool CSqliteWrapper::EraseCheque(const int txindex, const uint32_t nOut)
 {
     LogPrintf("GetdeleteSql\n");    
     char deletestatement[2000];    
-    sprintf(deletestatement,"DELETE FROM chequetable WHERE txid = x'%s' AND nout = %i;",txid.GetHex().c_str(),nOut);
+    sprintf(deletestatement,"DELETE FROM chequetable WHERE txindex = %i AND nout = %i;",txindex,nOut);
     char* zErrMsg=0;
      LogPrintf("CSqliteWrapper Delete \n");
      sqlite3_exec(pdb,deletestatement,0,0,&zErrMsg);

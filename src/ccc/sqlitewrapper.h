@@ -72,6 +72,6 @@ public:
     bool GetTxidByTxIndex(const int txIndex, uint256& txid) const;
     bool InsertCheque(int scriptIndex,int txIndex,ushort nOut, uint64_t nValue,uint32_t nLockTime);
     bool GetCheques(const vector<CScript>& vScript,vector<CCheque> & vCheques)const;
-    bool EraseCheque(const uint256 txid, const uint32_t nOut);
+    bool EraseCheque(const int txindex, const uint32_t nOut);
 };
 #endif // BITCOIN_LEVELDBWRAPPER_H

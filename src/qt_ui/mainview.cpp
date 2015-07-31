@@ -75,7 +75,8 @@ MainView::MainView(QString languageIn,BitcoinGUI *parent,JsInterface *_js):
         setCurrentWidget(*vWebPages.begin());
 //    for (std::vector<WebPage*>::iterator it=vWebPages.begin();it!=vWebPages.end();it++)
 //        addWidget(*it);
-
+     QObject::connect(jsInterface,  SIGNAL(gotoCustomPage(QUrl,int)),
+                     this,  SLOT(gotoCustomPage(QUrl,int)));
 
 }
 
@@ -83,7 +84,7 @@ MainView::~MainView()
 {
 }
 
-void MainView::gotoWebPage(int nPageID,QUrl url)
+void MainView::gotoWebPage(int nPageID,QUrl url,int nFromPageID)
 {
     LogPrintf("gotowebpage pageid:%i,url:%s \n",nPageID,url.toString().toStdString());
     //for (std::vector<WebPage*>::iterator it=vWebPages.begin();it!=vWebPages.end();it++){
@@ -96,13 +97,17 @@ void MainView::gotoWebPage(int nPageID,QUrl url)
             return;
         }            
     }
-    vWebPages.push_back(new WebPage(language,this,jsInterface,url,nPageID));  
+    vWebPages.push_back(new WebPage(language,this,jsInterface,url,nPageID,nFromPageID));  
     addWidget(*vWebPages.rbegin());
     
     setCurrentWidget(*vWebPages.rbegin());
     //gotoWebPage(nPageID);
     //setCurrentWidget(*vWebPages.rbegin());
     //setCurrentWidget(walletPage);
+}
+void MainView::gotoCustomPage(QUrl url,int nFromPageID)
+{
+    gotoWebPage(255,url,nFromPageID);
 }
 void MainView::loadWebPage(int nPageID)
 {
@@ -115,11 +120,16 @@ void MainView::loadWebPage(int nPageID)
     LogPrintf("gotosettings page url:%s \n",url.toString().toStdString());
     gotoWebPage(nPageID,url);
 }
-void MainView::closeWebPage(int nPageID){
+void MainView::closeWebPage(int nPageID,int nSwitchToPageID){
     for(std::vector<WebPage*>::iterator it=vWebPages.begin();it!=vWebPages.end();it++){
         if((*it)->nPageID==nPageID)
+        {
+            delete *it;
             vWebPages.erase(it);
+        }
     }
+    if (nSwitchToPageID>0&&nSwitchToPageID<=11)
+        gotoWebPage(nSwitchToPageID);
 }
 
 void MainView::showProgress(const QString &title, int nProgress)

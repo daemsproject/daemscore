@@ -1015,7 +1015,7 @@ public:
     bool EncodeUnit(const int cc, const string& content);
     bool Decode(std::vector<std::pair<int, string> >& vDecoded)const;
     bool DecodeDomainInfo(string& strAlias, string& strIntro, CLink& iconLink, std::vector<string>& vTags)const;
-    bool DecodeLink(int& redirectType, string& redirectTo)const;
+    bool DecodeDomainForward(int& redirectType, string& redirectTo)const;
     bool DecodeFileString(std::string& strFile);
     //this fucnction is for TagDB
     bool GetTags(std::vector<std::pair<int, std::string> >& vTagList) const;       
