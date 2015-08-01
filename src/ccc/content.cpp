@@ -39,9 +39,19 @@ cctype GetCcValue(const std::string ccName)
 
 std::string GetCcHex(const cctype cc)
 {
-    std::ostringstream stm;
-    stm << (char) cc;
-    return HexStr(stm.str());
+    int c = (int) cc;
+    std::string rv;
+    static const char hexmap[16] = {'0', '1', '2', '3', '4', '5', '6', '7',
+        '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+    for (int i = 0; i < 8; i++) {
+        uint32_t tmp = c >> 4 * i;
+        if (tmp == 0)
+            break;
+        rv.insert(rv.begin(), hexmap[tmp & 15]);
+}
+    if (rv.size() % 2 == 1)
+        rv.insert(rv.begin(), hexmap[0]);
+    return rv;
 }
 
 bool CContent::IsStandard()const
