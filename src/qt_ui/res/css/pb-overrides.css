@@ -1,9 +1,0 @@
-.maintext{
-    width:90%;height:100px;margin: 15px 0;
-}#fileholder {
-    background-attachment: scroll; background-origin: padding-box;border:5px dashed #ccc; display: block; line-height: 20px; margin: 0 auto; width: 300px;height: 150px;
-}#fileholder:hover{
-    cursor: pointer;
-}#confirmpub:disabled{
-    color: #bbb;
-}

@@ -815,7 +815,7 @@ CPaymentOrder GetUpdateDomainPaymentRequest(const Array arr)
                 throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
         }
     
-    LogPrintf("rpcmist GetUpdateDomainPaymentRequest script %s\n", scriptPubKey.ToString());
+    LogPrintf("rpcmisc GetUpdateDomainPaymentRequest script %s\n", scriptPubKey.ToString());
     pr.vFrom.push_back(scriptPubKey);    
     
     //std::vector<std::pair<int,string> > vcInfo;
@@ -826,45 +826,48 @@ CPaymentOrder GetUpdateDomainPaymentRequest(const Array arr)
     CContent cTransfer;   
     CLink link; 
     Value tmp = find_value(obj, "forward");
-    if (tmp.type() != null_type) {            
-            
-       // CPubKey pub;
+    if (tmp.type() == str_type) {
         if(StringToScriptPubKey(tmp.get_str(),scriptPubKey))
         {
-            //vcForward.push_back(make_pair(CC_LINK_TYPE_SCRIPTPUBKEY,""));                
-            //vcForward.push_back(make_pair(CC_LINK,string(scriptPubKey.begin(),scriptPubKey.end())));
             cForward.EncodeUnit(CC_LINK_TYPE_SCRIPTPUBKEY,"");
             cForward.EncodeUnit(CC_LINK,string(scriptPubKey.begin(),scriptPubKey.end()));
+            tmp = find_value(obj, "forwardsig");
+            if (tmp.type() == str_type) {  
+                bool fInvalid = false;
+                vector<unsigned char> vchSig = DecodeBase64(tmp.get_str().c_str(), &fInvalid);
+            
+                if (!fInvalid)
+                {
+                    string strSig;
+                    strSig.assign((char*)&vchSig[0],vchSig.size());
+                    cForward.EncodeUnit(CC_SIGNATURE,strSig);
+                }
+            }
         }
-
          else if (link.SetString(tmp.get_str()))
         {
             cForward.EncodeUnit(CC_LINK_TYPE_BLOCKCHAIN,"");
-            //vcForward.push_back(make_pair(CC_LINK_TYPE_BLOCKCHAIN,""));          
-//            CDataStream s(0,0);
-//            s<<link;
-//            char strlink[s.size()];
-//            s.read(strlink,s.size());
-            //vcForward.push_back(make_pair(CC_LINK,strlink));
             cForward.EncodeUnit(CC_LINK,link.Serialize());
         }
+         else if(tmp.get_str=="")
+             cForward.EncodeUnit(CC_NULL,"");
     }
     tmp = find_value(obj, "transfer");
-    if (tmp.type() != null_type) {    
+    if (tmp.type() == str_type) {    
         CScript scriptPubKey2;         
         if(StringToScriptPubKey(tmp.get_str(),scriptPubKey2))        
             cTransfer=string(scriptPubKey2.begin(),scriptPubKey2.end());
     }
     tmp = find_value(obj, "alias");
-    if (tmp.type() != null_type&&tmp.get_str().size()<=64)     
+    if (tmp.type() == str_type&&tmp.get_str().size()<=64)     
             cInfo.EncodeUnit(CC_DOMAIN_INFO_ALIAS,tmp.get_str());
             //vcInfo.push_back(make_pair(CC_DOMAIN_INFO_ALIAS,str)); 
     tmp = find_value(obj, "intro");
-    if (tmp.type() != null_type&&tmp.get_str().size()<=128)         
+    if (tmp.type() == str_type&&tmp.get_str().size()<=128)         
         cInfo.EncodeUnit(CC_DOMAIN_INFO_INTRO,tmp.get_str());
             //vcInfo.push_back(make_pair(CC_DOMAIN_INFO_INTRO,str));  
     tmp = find_value(obj, "icon");
-    if (tmp.type() != null_type&&link.SetString(tmp.get_str()))              
+    if (tmp.type() == str_type&&link.SetString(tmp.get_str()))              
     {
             LogPrintf("domain info request link nheight %i,ntx %i,nvout %i\n",link.nHeight,link.nTx,link.nVout);
 //            CDataStream s(0,0);

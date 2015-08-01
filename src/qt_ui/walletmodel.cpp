@@ -921,7 +921,7 @@ QString WalletModel::SignMessage(Array arrData)
             delete pwallet;
         return QString().fromStdString("{\"error\":\"Sign failed\"}");
     }
-    return QString().fromStdString(EncodeBase64(&vchSig[0], vchSig.size()));
+    return QString().fromStdString("{\"signature\":\""+EncodeBase64(&vchSig[0], vchSig.size())+"\"}");
 }
 QString WalletModel::getSMSAlertMessage(const CPaymentOrder& pr)
 {    

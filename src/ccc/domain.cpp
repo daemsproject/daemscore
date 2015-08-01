@@ -148,7 +148,13 @@ bool CDomain::SetContent(const CContent content,const CScript ownerIn,bool& fReg
             LogPrintf("SetContent cc code %i\n",vDecoded[i].first); 
             case CC_DOMAIN_FORWARD_P:     
                 LogPrintf("SetContent forward\n"); 
-                if(CContent(str).DecodeDomainForward(redirectType,redirectTo))
+                if(str.size()==0)
+                {
+                    redirectType=CC_NULL;
+                    redirectTo="";        
+                     fForward=true;
+                }
+                else if(CContent(str).DecodeDomainForward(redirectType,redirectTo))
                     fForward=true;
                 LogPrintf("SetContent forward %i %s\n",redirectType,HexStr(redirectTo.begin(),redirectTo.end()));
                 break;

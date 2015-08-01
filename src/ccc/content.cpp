@@ -571,20 +571,29 @@ bool CContent::DecodeDomainForward(int& redirectType, string& redirectTo)const
     int cc;
     int nLinkType = 0;
     string str;
-    for (unsigned int i = 0; i < vDecoded.size(); i++) {
+    for (unsigned int i = 0; i < vDecoded.size(); i++) 
+    {
         cc = vDecoded[i].first;
-        if (cc >= CC_LINK_TYPESTRING && cc <= CC_LINK_TYPE_DOMAIN) {
+        if (cc >= CC_LINK_TYPESTRING && cc <= CC_LINK_TYPE_DOMAIN) 
+        {
            // LogPrintf("CContent DecodeLink2\n");
             fHasLinkType = true;
             nLinkType = cc;
-        } else if (cc == CC_LINK) {
+        } else if (cc == CC_LINK) 
+        {
           //  LogPrintf("CContent DecodeLink3\n");
             str = vDecoded[i].second;
             if (str.size() > 64)
                 return false;
             fHasLinkContent = true;
         }
-
+        else if(cc==CC_NULL)
+        {
+            nLinkType=cc;
+            str="";
+            fHasLinkType = true;
+            fHasLinkContent = true;
+        }
     }
     if (fHasLinkType&&fHasLinkContent)
     {

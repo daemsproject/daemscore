@@ -1740,8 +1740,8 @@ void UpdateDomainDB(const CTransaction& tx,const CBlock& block,const int nTx,CVa
     if(tx.IsCoinBase())//coinbase is not allowed to register domain
         return;
     for(unsigned int i=0;i<tx.vout.size();i++) {
-        string str=tx.vout[i].strContent.substr(0,1);
-        if(HexStr(str)=="0b")
+        int cc=CContent(tx.vout[i].strContent).GetFirstCc();
+        if(cc==CC_DOMAIN_P)
         {
             std::vector<std::pair<int,std::string> >vContent;
             if(CContent(tx.vout[i].strContent).Decode(vContent))
