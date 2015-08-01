@@ -906,7 +906,7 @@ QString WalletModel::SignMessage(Array arrData)
             return QString().fromStdString("{\"error\":\"wrong password\"}");
         }
     CKey key;
-    if (!pwalletMain->GetKey(id, key))
+    if (!pwallet->GetKey(pub, key))
     {
         if(!fIsWalletMain)
             delete pwallet;
@@ -959,11 +959,11 @@ QString WalletModel::getSignMsgAlertMessage(const string add,const string msg)co
     questionString.append("<br /><br />");
     questionString.append("<span style='font-family: monospace;'>");
     questionString.append(tr("ID:"));
-    questionString.append(add);
+    questionString.append(QString().fromStdString(add));
     questionString.append("</span><br />");
     questionString.append("<span style='font-family: monospace;'>");
     questionString.append(tr("Message:"));
-    questionString.append(msg);
+    questionString.append(QString().fromStdString(msg));
     questionString.append("</span><br />");
     return questionString;
 }
