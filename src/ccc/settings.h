@@ -70,7 +70,7 @@ enum pageid
     SETTINGPAGE_ID=7,
     SERVICEPAGE_ID=8,
     SHOPPAGE_ID=9,
-    TVPAGE_ID=10,
+    TOOLSPAGE_ID=10,
     DOWNLOADERPAGE_ID=11,
     CUSTOMPAGE_ID=255
 };
@@ -84,7 +84,7 @@ static std::map<int,std::string> mapPageNames=boost::assign::map_list_of
 (SETTINGPAGE_ID,"settings")
 (SERVICEPAGE_ID,"service")
 (SHOPPAGE_ID,"shop")
-(TVPAGE_ID,"tv")
+(TOOLSPAGE_ID,"tools")
 (DOWNLOADERPAGE_ID,"downloader")
 ;
 static std::map<int,std::string> mapDefaultServiceDomain=boost::assign::map_list_of
@@ -115,7 +115,7 @@ static std::map<int,std::string> mapDefaultPageDomain=boost::assign::map_list_of
 (SETTINGPAGE_ID,"settings.f")
 (SERVICEPAGE_ID,"servicepage.f")
 (SHOPPAGE_ID,"shop.f")
-(TVPAGE_ID,"tv.f")
+(TOOLSPAGE_ID,"tool.f")
 (DOWNLOADERPAGE_ID,"downloader.f");
 int GetPageIDByName(std::string pageName);
 class CLink;

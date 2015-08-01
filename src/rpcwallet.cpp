@@ -515,9 +515,21 @@ Value signmessage(const Array& params, bool fHelp)
     if(!addr.GetKey(keyID))        
         throw JSONRPCError(RPC_TYPE_ERROR, "Invalid address");
     CKey key;
+//    if (!pwalletMain->HaveKey(keyID))
+//    {
+//        if(!pwalletMain->IsWalletExists(keyID))
+//            throw JSONRPCError(RPC_WALLET_ERROR, "id not in wallet list");
+//        else 
+//        {
+//            CWallet tmpwallet(id);
+//            if (!tmpwallet.GetKey(keyID, key))
+//            throw JSONRPCError(RPC_WALLET_ERROR, "Private key not available");
+//        }
+//        
+//    }
+//    else 
     if (!pwalletMain->GetKey(keyID, key))
         throw JSONRPCError(RPC_WALLET_ERROR, "Private key not available");
-
     CHashWriter ss(SER_GETHASH, 0);    
     ss << strMessage;
 

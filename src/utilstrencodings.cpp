@@ -498,10 +498,9 @@ int atoi(const std::string& str)
     return atoi(str.c_str());
 }
 
-bool EncodeVarInt(std::vector<unsigned char>& sv, int n) 
+bool EncodeVarInt(std::vector<unsigned char>& sv, const uint64_t num) 
 {
-
-
+    uint64_t n = num;
     unsigned char tmp[(sizeof (n)*8 + 6) / 7];
     int len = 0;
     while (true) {
@@ -517,24 +516,21 @@ bool EncodeVarInt(std::vector<unsigned char>& sv, int n)
     return true;
 }
 
-
-std::vector<unsigned char> EncodeVarInt(int n)
+bool DecodeVarInt(const std::vector<unsigned char>& sv, uint64_t& n)
 {
-    std::vector<unsigned char> sv;
-    EncodeVarInt(sv,n);
-    return sv;
-}
-
-int DecodeVarInt(std::vector<unsigned char>& sv)
-{
-    unsigned int n = 0;
-    while(true) {
-        unsigned char chData;
-        chData = sv.at(n);
-        n = (n << 7) | (chData & 0x7F);
+   
+    n = 0;
+    unsigned int p = 0;
+    unsigned char chData = 0xff;
+    while (p < sv.size()) {
+        if(p>9)
+            return false;        
+        chData = sv.at(p++);
+        n = (n << 7) | (chData & 0x7F);        
         if (chData & 0x80)
-            n++;
+            n++;        
         else
-            return n;
+            break;
     }
+    return (chData & 0x80) ? false : true;
 }

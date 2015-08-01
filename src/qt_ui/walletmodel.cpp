@@ -767,7 +767,7 @@ QString WalletModel::SendMessage(Array arrData)
     bool fIsWalletMain;
     CWallet* pwallet;
     //LogPrintf("jsinterface:hadlepaymentrequest:id%s,pwalletmain id:%s size:%i\n",HexStr(id.begin(),id.end()),HexStr(wallet->GetID().begin(),wallet->GetID().end()),wallet->GetID().size());
-    if(pub==wallet->GetID())
+    if(wallet->HaveKey(pub))
     {
         pwallet=wallet;
         fIsWalletMain=true;
@@ -859,6 +859,70 @@ QString WalletModel::SendMessage(Array arrData)
     return QString("{\"success\":\"tx sent\"}");
             
 }
+QString WalletModel::SignMessage(Array arrData)
+{
+    if (arrData.size() <2)
+        throw runtime_error("");
+    string id=arrData[0].get_str();    
+    string msg=arrData[1].get_str();
+    string strError;    
+    CPubKey pub;
+    if(!CBitcoinAddress(id).GetKey(pub))    
+        return QString().fromStdString("{\"error\":\"wrong idlocal\"}");    
+    bool fIsWalletMain=false;
+    CWallet* pwallet;
+    //LogPrintf("jsinterface:hadlepaymentrequest:id%s,pwalletmain id:%s size:%i\n",HexStr(id.begin(),id.end()),HexStr(wallet->GetID().begin(),wallet->GetID().end()),wallet->GetID().size());
+    if(wallet->HaveKey(pub))
+    {
+        pwallet=wallet;
+        fIsWalletMain=true;
+    }
+    else
+        pwallet=new CWallet(pub,false);    
+    int nOP=0;//0::unencrypted,1::encrypted,2::offline
+    SecureString ssInput;
+    if (!pwallet->HavePriv())
+    {
+        if(!fIsWalletMain)
+            delete pwallet;    
+        return QString().fromStdString("{\"error\":\"no privkey for signing\"}");
+    }
+            
+    if (pwallet->IsLocked())
+            nOP=1;
+    
+    QString alert=getSignMsgAlertMessage(id,msg);  
+    QString title=QString(tr("Request Sign Message"));
+    if (!gui->handleUserConfirm(title,alert,nOP,strError,ssInput)){
+        if(!fIsWalletMain)
+            delete pwallet;
+        return QString().fromStdString("{\"error\":\""+strError+"\"}");             
+    } 
+    
+    if(nOP==1)
+        if(!pwallet->SetPassword(ssInput)){
+            if(!fIsWalletMain)
+            delete pwallet;
+            return QString().fromStdString("{\"error\":\"wrong password\"}");
+        }
+    CKey key;
+    if (!pwalletMain->GetKey(id, key))
+    {
+        if(!fIsWalletMain)
+            delete pwallet;
+        return QString().fromStdString("{\"error\":\"Private key not available\"}" );
+    }
+    CHashWriter ss(SER_GETHASH, 0);    
+    ss << msg;
+    vector<unsigned char> vchSig;
+    if (!key.SignCompact(ss.GetHash(), vchSig))
+    {
+        if(!fIsWalletMain)
+            delete pwallet;
+        return QString().fromStdString("{\"error\":\"Sign failed\"}");
+    }
+    return QString().fromStdString(EncodeBase64(&vchSig[0], vchSig.size()));
+}
 QString WalletModel::getSMSAlertMessage(const CPaymentOrder& pr)
 {    
     // Format confirmation message
@@ -886,6 +950,21 @@ QString WalletModel::getSMSAlertMessage(const CPaymentOrder& pr)
         questionString.append(BitcoinUnits::formatHtmlWithUnit(0, txFee));
         questionString.append("</span> ");
         questionString.append(tr("transaction fee"));
+    return questionString;
+}
+QString WalletModel::getSignMsgAlertMessage(const string add,const string msg)const
+{    
+       
+    QString questionString = tr("Are you sure you want to sign message?");
+    questionString.append("<br /><br />");
+    questionString.append("<span style='font-family: monospace;'>");
+    questionString.append(tr("ID:"));
+    questionString.append(add);
+    questionString.append("</span><br />");
+    questionString.append("<span style='font-family: monospace;'>");
+    questionString.append(tr("Message:"));
+    questionString.append(msg);
+    questionString.append("</span><br />");
     return questionString;
 }
 QString WalletModel::RegisterDomain(json_spirit::Array arrData)

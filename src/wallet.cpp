@@ -1776,7 +1776,7 @@ bool SignAndSendTx(CWallet* pwallet,const CWalletTx& tx,const int nSigType, cons
      //LogPrintf("SignAndSendTx:acceptedto mempool\n");
      RelayTransaction(wtxSigned);
      pwallet->addUnconfirmedTx(wtxSigned);
-     LogPrintf("SignAndSendTx:sendtx :%s\n",EncodeHexTx(CTransaction(wtxSigned)));
+     LogPrintf("SignAndSendTx:sendtx :%s\n",wtxSigned.GetHash().GetHex());
      if(fDelete)
         delete pwallet;
     result= ("{\"success\":\"tx sent\"}");

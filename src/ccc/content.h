@@ -18,6 +18,8 @@ using namespace json_spirit;
 using namespace std;
 using std::string;
 
+static const int STANDARD_CONTENT_MAX_CC = 32;
+
 enum stringformat
 {
     STR_FORMAT_BIN = 0,
@@ -961,6 +963,7 @@ std::string GetCcHex(const cctype cc);
 bool IsCcParent(const cctype& cc);
 cctype GetPrimeCC(const cctype cc,unsigned int nDigits=1);
 int GetCcLen(const cctype ccIn);
+bool FilterCc(const cctype cc, const std::string contentStr, Object& ccUnit);
 
 
 class CContent : public std::string
@@ -1007,8 +1010,9 @@ public:
     bool WriteData(const std::string str);
     bool WriteData(const std::string str, int len);
 
-    bool HasCc(const cctype& cc)const;
+    bool HasCc(const cctype& cc,const bool requireStandard = true)const; // if requireStandard = false, this function will be very costly
     bool FirstCc(const cctype& cc)const;
+    bool FirstNCc(std::vector<cctype>& ccv,bool& countOverN,const unsigned int n = STANDARD_CONTENT_MAX_CC)const;
     int GetFirstCc()const;
     bool IsStandard()const;
     bool EncodeP(const int cc, const std::vector<std::pair<int, string> >& vEncoding);

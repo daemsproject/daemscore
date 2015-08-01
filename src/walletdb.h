@@ -106,10 +106,10 @@ public:
     bool GetCurrentWallet(CPubKey& id);
     bool GetCurrentWallet(std::string& strAddress);
     bool IsCurrentWallet(const CPubKey& id);
-    bool GetWalletList(std::vector<std::string>& vIds);    
-    bool IsWalletExists(CPubKey& id);
-    bool GetWalletName(const std::string& strNameIn,std::string& strNameOut);
-    bool GetWalletName(const CPubKey& id,std::string& strName);
+    bool GetWalletList(std::vector<std::string>& vIds)const;    
+    bool IsWalletExists(const CPubKey& id)const;
+    bool GetWalletName(const std::string& strNameIn,std::string& strNameOut)const;
+    bool GetWalletName(const CPubKey& id,std::string& strName)const;
     bool SwitchToWallet(const CPubKey& id,CCryptoKeyStore* keyStore);
     //bool SwitchToWallet(std::string strWalletName);
     //bool ReadKeyStore(CCryptoKeyStore* keyStore);

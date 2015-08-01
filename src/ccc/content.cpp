@@ -19,20 +19,20 @@ using namespace std;
 static const int TRIM_READABLE_LEN = 1000;
 static const int TRIM_BINARY_LEN = 20;
 static const int STR_FORMAT_SUM_MAXSIZE = 512;
+static const int CONTENT_MAXSIZE = 1050000;
 
 std::string GetCcName(const cctype cc)
 {
-    if(mapCC.count(cc))
+    if (mapCC.count(cc))
         return mapCC[cc];
     return "";
 }
 
 cctype GetCcValue(const std::string ccName)
 {
-    for(map<int,std::string>::iterator it=mapCC.begin();it!=mapCC.end();it++)
-    {
-        if (it->second==ccName)
-            return (cctype)it->first;        
+    for (map<int, std::string>::iterator it = mapCC.begin(); it != mapCC.end(); it++) {
+        if (it->second == ccName)
+            return (cctype) it->first;
     }
     return CC_NULL;
 }
@@ -56,6 +56,16 @@ bool CContent::IsStandard()const
     return (pc > end()) ? false : true;
 }
 
+bool FilterCc(const cctype cc, const std::string contentStr, Object& ccUnit)
+{
+    if (cc == CC_LINK) {
+        CLink link;
+        if (link.UnserializeConst(contentStr))
+            ccUnit.push_back(Pair("link", link.ToString()));
+    }
+    return true;
+}
+
 Array CContent::ToJson(stringformat fFormat, bool fRecursive)const
 {
     const_iterator pc = begin();
@@ -72,6 +82,8 @@ Array CContent::ToJson(stringformat fFormat, bool fRecursive)const
         ccUnit.push_back(Pair("encoding", fFormat));
         ccUnit.push_back(Pair("cc_name", ccName));
         ccUnit.push_back(Pair("cc", GetCcHex(cc)));
+        if (!FilterCc(cc, contentStr, ccUnit))
+            return result;
         if (IsCcParent(cc) && fRecursive) {
             if (contentStr.IsStandard())
                 ccUnit.push_back(Pair("content", contentStr.ToJson(fFormat)));
@@ -82,21 +94,21 @@ Array CContent::ToJson(stringformat fFormat, bool fRecursive)const
                 case STR_FORMAT_BIN:
                 case STR_FORMAT_BIN_SUM:
                     if (fFormat == STR_FORMAT_BIN_SUM && contentStr.size() > STR_FORMAT_SUM_MAXSIZE)
-                        ccUnit.push_back(Pair("length", (int)contentStr.size()));
+                        ccUnit.push_back(Pair("length", (int) contentStr.size()));
                     else
                         ccUnit.push_back(Pair("content", contentStr));
                     break;
                 case STR_FORMAT_HEX:
                 case STR_FORMAT_HEX_SUM:
                     if (fFormat == STR_FORMAT_HEX_SUM && contentStr.size() > STR_FORMAT_SUM_MAXSIZE)
-                        ccUnit.push_back(Pair("length", (int)contentStr.size()));
+                        ccUnit.push_back(Pair("length", (int) contentStr.size()));
                     else
                         ccUnit.push_back(Pair("content", HexStr(contentStr)));
                     break;
                 case STR_FORMAT_B64:
                 case STR_FORMAT_B64_SUM:
                     if (fFormat == STR_FORMAT_B64_SUM && contentStr.size() > STR_FORMAT_SUM_MAXSIZE)
-                        ccUnit.push_back(Pair("length", (int)contentStr.size()));
+                        ccUnit.push_back(Pair("length", (int) contentStr.size()));
                     else
                         ccUnit.push_back(Pair("content", EncodeBase64(contentStr)));
                     break;
@@ -158,25 +170,16 @@ std::string CContent::ToHumanString()
     return ccUnit;
 }
 
-bool CContent::HasCc(const cctype& ccIn) const// Very costly !!! Try to use FirstCc()
+bool CContent::HasCc(const cctype& ccIn, const bool requireStandard) const// Very costly for nunstandard conent
 {
-    const_iterator pc = begin();
-    bool r = false;
-    while (pc < end()) {
-        cctype cc;
-        CContent contentStr;
-        if (!GetCcUnit(pc, cc, contentStr))
-            break;
-        if (cc == ccIn)
-            return true;
-        if (IsCcParent(cc)) {
-            r = contentStr.HasCc(ccIn);
+    std::vector<cctype> ccv;
+    bool countOverN = false;
+    if (requireStandard)
+        FirstNCc(ccv, countOverN, STANDARD_CONTENT_MAX_CC);
+    else
+        FirstNCc(ccv, countOverN, CONTENT_MAXSIZE);
+    return std::find(ccv.begin(), ccv.end(), ccIn) != ccv.end();
         }
-    }
-    if (pc > end())
-        return 0;
-    return r;
-}
 
 bool CContent::FirstCc(const cctype& ccIn)const
 {
@@ -192,6 +195,30 @@ bool CContent::FirstCc(const cctype& ccIn)const
         return false;
     return true;
 
+}
+
+bool CContent::FirstNCc(std::vector<cctype>& ccv, bool& countOverN, const unsigned int n)const
+{
+    countOverN = false;
+    const_iterator pc = begin();
+    while (pc < end()) {
+        uint64_t ccn;
+        if (!ReadVarInt(pc, ccn))
+            return false;
+        cctype cc = (cctype) ccn;
+        ccv.push_back(cc);
+        uint64_t len;
+        if (!ReadCompactSize(pc, len))
+            return false;
+        if (!IsCcParent(cc))
+            pc += len;
+        if (ccv.size() > n) {
+            ccv.pop_back();
+            countOverN = true;
+            break;
+        }
+    }
+    return true;
 }
 
 int CContent::GetFirstCc()const
@@ -365,7 +392,7 @@ bool CContent::ReadVarInt(const_iterator& pc, uint64_t& n)const
     unsigned char chData = 0xff;
     int offset = 0;
     while (pc < end()) {
-        if (offset > 3)
+        if (offset > 9)
             return false;
         chData = *pc++;
         n = (n << 7) | (chData & 0x7F);

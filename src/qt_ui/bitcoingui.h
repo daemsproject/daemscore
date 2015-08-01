@@ -104,7 +104,7 @@ private:
     QAction *shopAction;
     QAction *domainNameAction;
     QAction *downloaderAction;
-    //QAction *playerAction;
+    QAction *toolsAction;
     QAction *quitAction;
     
     //QAction *usedSendingAddressesAction;
@@ -225,6 +225,7 @@ private slots:
     void gotoShopPage();
     void gotoDownloaderPage();
     void gotoSettingsPage();
+    void gotoToolsPage();
     /** Show about dialog */    
     void aboutClicked();
     /** Show help message dialog */

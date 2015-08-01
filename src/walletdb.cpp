@@ -304,7 +304,7 @@ bool CWalletDB::GetWalletConfObj(json_spirit::Object& objConf){
     return false;
 }
 
-bool CWalletDB::GetWalletList(std::vector<std::string>& vIds){     
+bool CWalletDB::GetWalletList(std::vector<std::string>& vIds)const{     
     //LogPrintf("CWalletDB::GetWalletList \n");
     vector<std::string> vstrFileNames;
     if(GetFileNames(fpWalletPath, vstrFileNames)<=0)
@@ -328,11 +328,11 @@ bool CWalletDB::GetWalletList(std::vector<std::string>& vIds){
     return (vIds.size()>0);
         
 }   
-bool CWalletDB::IsWalletExists(CPubKey& id){
+bool CWalletDB::IsWalletExists(const CPubKey& id)const{
     std::string strName;
     return GetWalletName(id,strName);
 }
-bool CWalletDB::GetWalletName(const CPubKey& id,std::string& strName){
+bool CWalletDB::GetWalletName(const CPubKey& id,std::string& strName)const{
     std::vector<std::string> vIds;
     if(!GetWalletList(vIds))
         return false;
@@ -348,7 +348,7 @@ bool CWalletDB::GetWalletName(const CPubKey& id,std::string& strName){
     }
     return false;
 }
-bool CWalletDB::GetWalletName(const std::string& strNameIn,std::string& strNameOut){    
+bool CWalletDB::GetWalletName(const std::string& strNameIn,std::string& strNameOut)const{    
     CPubKey pub;
     if(!CBitcoinAddress(strNameIn).GetKey(pub))
         return false;

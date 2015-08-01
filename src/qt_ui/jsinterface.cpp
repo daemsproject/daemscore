@@ -215,6 +215,8 @@ QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
                 return walletModel->BuyProduct(arrData);
             if (command.toStdString()==string("publishpackage"))
                 return walletModel->PublishPackage(arrData);
+            if (command.toStdString()==string("signmessage"))
+                return walletModel->SignMessage(arrData);
             if (command.toStdString()==string("gotocustompage"))
                 return GoToCustomPage(arrData,nPageID);
             

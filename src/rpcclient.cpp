@@ -94,6 +94,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "getlink", 1 },
     { "getcontents", 0 },
     { "getcontents", 1 },
+    { "getfirstncc", 1 },
     { "getcontentbylink", 1 },
     { "getcontentbystring", 1 },
     { "encodecontentunit", 2 },
@@ -109,6 +110,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "getfeerate", 0 },
      { "getextkey", 2 },
     { "getextpubkey", 2 },
+    { "encodevarint", 0 },
      
 };
 

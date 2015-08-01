@@ -99,7 +99,7 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle *networkStyle,QString languageIn,  QWi
     exportAccountAction(0), 
     importAccountAction(0), 
     downloaderAction(0),
-    //playerAction(0),    
+    toolsAction(0),    
     quitAction(0),    
     //usedSendingAddressesAction(0),
     //usedReceivingAddressesAction(0),
@@ -312,11 +312,11 @@ void BitcoinGUI::createActions(const NetworkStyle *networkStyle)
     downloaderAction->setCheckable(true);
     downloaderAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_D)); 
     tabGroup->addAction(downloaderAction);
-//    playerAction = new QAction(QIcon(":/icons/key"), tr("&Player"), this);
-//    playerAction->setStatusTip(tr("shop"));
-//    playerAction->setToolTip(playerAction->statusTip());     
-//    playerAction->setCheckable(true);
-//    tabGroup->addAction(playerAction);
+    toolsAction = new QAction(QIcon(":/icons/key"), tr("&Tools"), this);
+    toolsAction->setStatusTip(tr("Tools"));
+    toolsAction->setToolTip(toolsAction->statusTip());     
+    toolsAction->setCheckable(true);
+    tabGroup->addAction(toolsAction);
 LogPrintf("bitcoingui:createactions 1 \n");
 #ifdef ENABLE_WALLET
     // These showNormalIfMinimized are needed because Send Coins and Receive Coins
@@ -405,7 +405,7 @@ LogPrintf("bitcoingui:createactions 2 \n");
     connect(browserAction, SIGNAL(triggered()), this, SLOT(gotoBrowserPage()));    
     connect(shopAction, SIGNAL(triggered()), this, SLOT(gotoShopPage()));    
     connect(downloaderAction, SIGNAL(triggered()), this, SLOT(gotoDownloaderPage()));    
-    //connect(playerAction, SIGNAL(triggered()), this, SLOT(gotoTVPage()));    
+    connect(toolsAction, SIGNAL(triggered()), this, SLOT(gotoToolsPage()));    
     //connect(aboutQtAction, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
     //connect(optionsAction, SIGNAL(triggered()), this, SLOT(optionsClicked()));
     connect(toggleHideAction, SIGNAL(triggered()), this, SLOT(toggleHidden()));
@@ -487,7 +487,7 @@ void BitcoinGUI::createMenuBar()
     applications->addAction(minerAction);
     applications->addAction(shopAction);
     applications->addAction(downloaderAction);
-    //applications->addAction(playerAction);
+    applications->addAction(toolsAction);
     QMenu *services = appMenuBar->addMenu(tr("&Services"));
     services->addAction(serviceManagerAction);  
     QMenu *settings = appMenuBar->addMenu(tr("&Settings"));
@@ -526,9 +526,8 @@ void BitcoinGUI::createToolBars()
         toolbar->addAction(messengerAction);
         toolbar->addAction(minerAction);  
         toolbar->addAction(shopAction);  
-        toolbar->addAction(downloaderAction);        
-              
-        //toolbar->addAction(playerAction);        
+        toolbar->addAction(downloaderAction);
+               
     }
 }
 
@@ -804,7 +803,7 @@ void BitcoinGUI::changePassphrase()
 //    SETTINGPAGE_ID=7,
 //    SERVICEPAGE_ID=8,
 //    SHOPPAGE_ID=9,
-//    TVPAGE_ID=10,
+//    TOOLSPAGE_ID=10,
 //    DOWNLOADERPAGE_ID=11
 //};
 //static std::map<int,std::string> mapPageNames=boost::assign::map_list_of
@@ -816,7 +815,7 @@ void BitcoinGUI::changePassphrase()
 //(SETTINGPAGE_ID,"settings")
 //(SERVICEPAGE_ID,"service")
 //(SHOPPAGE_ID,"shop")
-//(TVPAGE_ID,"tv")
+//(TOOLSPAGE_ID,"tools")
 //(DOWNLOADERPAGE_ID,"downloader")
 //;
 void BitcoinGUI::gotoWalletPage()
@@ -907,6 +906,17 @@ void BitcoinGUI::gotoSettingsPage()
     dir.cdUp();
     dir.cd(QString().fromStdString("cccpages"));
     QUrl url= QUrl("file://"+dir.path().toUtf8() + "/html/settings_en.html"); 
+    if (mainView) mainView->gotoWebPage(SETTINGPAGE_ID,url);
+    
+}
+void BitcoinGUI::gotoToolsPage()
+{    
+     QDir dir(QDir::currentPath());
+    dir.cdUp();
+    dir.cdUp();
+    dir.cdUp();
+    dir.cd(QString().fromStdString("cccpages"));
+    QUrl url= QUrl("file://"+dir.path().toUtf8() + "/html/tools_en.html"); 
     if (mainView) mainView->gotoWebPage(SETTINGPAGE_ID,url);
     
 }

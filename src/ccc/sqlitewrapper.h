@@ -16,7 +16,7 @@
 #include <sqlite3.h>
 class CDomain;
 class CLink;
-struct CCheque;
+class CCheque;
 class uint256;
 using namespace std;
 class sqlite_error : public std::runtime_error

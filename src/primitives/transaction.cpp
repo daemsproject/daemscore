@@ -11,7 +11,7 @@
 
 std::string COutPoint::ToString() const
 {
-    return strprintf("COutPoint(%s, %u,%d.%06d)", hash.ToString().substr(0,10), n,nValue/COIN);
+    return strprintf("COutPoint(%s, %u,%d.%06d)", hash.ToString().substr(0,10), n,nValue/COIN, nValue % COIN);
 }
 
 CTxIn::CTxIn(COutPoint prevoutIn, CScript scriptSigIn)

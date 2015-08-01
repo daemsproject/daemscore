@@ -254,12 +254,15 @@ extern json_spirit::Value encodecontentunit(const json_spirit::Array& params, bo
 extern json_spirit::Value decodecontentunit(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getlink(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getcontents(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getfirstncc(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getmessages(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getbrowserconf(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getfollowed(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value setfollow(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value setunfollow(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getfilepackageurl(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value encodevarint(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value decodevarint(const json_spirit::Array& params, bool fHelp);
 
 extern json_spirit::Value getdomaininfo(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getdomainsbyowner(const json_spirit::Array& params, bool fHelp);

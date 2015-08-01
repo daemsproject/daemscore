@@ -176,6 +176,7 @@ public:
     bool SwitchToAccount(CPubKey idIn,bool fSetDefault=false);
          
     bool SwitchToAccount(CKey keyIn);
+    bool IsWalletExists(const CPubKey& id)const{return pwalletdb->IsWalletExists(id);}
     void SetNull()
     {
         nWalletVersion = FEATURE_BASE;

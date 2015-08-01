@@ -267,12 +267,6 @@ Value getlink(const Array& params, bool fHelp) // TO DO: Help msg
     return result;
 }
 
-
-
-
-
-
-
 Object _voutToJson(const CTxOut& txout)
 {
     Object out;
@@ -413,6 +407,30 @@ Value getcontentbystring(const Array& params, bool fHelp)
     return r;
 }
 
+Value getfirstncc(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() < 1 || params.size() > 2)
+        throw runtime_error("Wrong number of parameters");
+    CContent content;
+    std::vector<unsigned char> raw = ParseHexV(params[0], "parameter 1");
+    if (!content.SetString(raw))
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "Set content failed");
+    std::vector<cctype> ccv;
+    bool countOverN = false;
+    int n = params.size() == 2 ? params[1].get_int() : STANDARD_CONTENT_MAX_CC;
+    content.FirstNCc(ccv, countOverN, n);
+    Object r;
+    Array cnarr;
+
+    BOOST_FOREACH(const cctype& cc, ccv)
+    {
+        cnarr.push_back(GetCcName(cc));
+    }
+    r.push_back(Pair("cc", cnarr));
+    r.push_back(Pair("countOverN", countOverN));
+    return r;
+}
+
 bool _parse_getcontents_params(const Array& params, int& fbh, int& maxc, int& maxb, int& blkc, Array& withcc, Array& withoutcc, Array& firstcc, int& fContentFormat, unsigned char& cflag, int& mincsize, Array& addrs, bool& fAsc)
 {
     if (params.size() > 3)
@@ -525,31 +543,39 @@ bool _parse_getcontents_params(const Array& params, int& fbh, int& maxc, int& ma
     return true;
 }
 
+// true if have one in firstcc array, and one in withcc array, and none in withoutcc array
+
 bool _check_cc(const CContent& ctt, const Array& withcc, const Array& withoutcc, const Array& firstcc)
 {
     if (withcc.size() == 0 && withoutcc.size() == 0 && firstcc.size() == 0)
         return true;
     CContent cttcopy = ctt;
 
-    bool r = false;
+    bool rf = firstcc.size() == 0 ? true : false;
 
     BOOST_FOREACH(const Value& ccName_v, firstcc)
     {
         cctype cc = GetCcValue(ccName_v.get_str());
         if (cttcopy.FirstCc(cc)) {
-            r = true;
+            rf = true;
             break;
         }
     }
-    if (!r)
+    if(!rf)
         return false;
+
+    bool rw = withcc.size() == 0 ? true : false;
 
     BOOST_FOREACH(const Value& ccName_v, withcc)
     {
         cctype cc = GetCcValue(ccName_v.get_str());
-        if (!cttcopy.HasCc(cc))
-            return false;
+        if (cttcopy.HasCc(cc)) {
+            rw = true;
+            break;
+        }
     }
+    if(!rw)
+            return false;
 
     BOOST_FOREACH(const Value& ccName_v, withoutcc)
     {
@@ -565,7 +591,7 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
 {
     if (fHelp)
         throw runtime_error("Help msg");
-    int fbh;
+    int fbh = chainActive.Height();
     int maxc;
     int maxb;
     int blkc;
@@ -582,8 +608,8 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
     Array r;
     int c = 0;
     int b = 0;
-        int nHeight = fAsc ? fbh : std::min(chainActive.Height(), fbh + blkc);
-    int totalM = fAsc ? chainActive.Height() - fbh + 1 : std::min(blkc, chainActive.Height());
+    int nHeight = fbh;
+    int totalM = fAsc ? chainActive.Height() - fbh + 1 : std::min(blkc, fbh);
         int total = totalM > blkc ? blkc : totalM;
     if (gAddrs.size() == 0) {
         for (int i = 0; i < total; i++) {
@@ -1237,4 +1263,35 @@ json_spirit::Value getfilepackageurl(const json_spirit::Array& params, bool fHel
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Linked to invalid file package");
     return Value(url);
 }
-    
+json_spirit::Value encodevarint(const json_spirit::Array& params, bool fHelp)
+{
+    if (fHelp || params.size() != 1) {
+        string msg = "encodevarint \"int\""
+                + HelpExampleCli("encodevarint", "To Do") +
+                "\nAs a json rpc call\n"
+                + HelpExampleRpc("encodevarint", "To Do");
+        throw runtime_error(msg);
+    }
+    uint64_t n = params[0].get_int64();
+    std::vector<unsigned char> sv;
+    if (EncodeVarInt(sv, n))
+        return HexStr(sv.begin(), sv.end());
+    else
+        return "";
+
+}
+
+json_spirit::Value decodevarint(const json_spirit::Array& params, bool fHelp)
+{
+    if (fHelp || params.size() != 1) {
+        string msg = "decodevarint \"varint hex string\""
+                + HelpExampleCli("decodevarint", "To Do") +
+                "\nAs a json rpc call\n"
+                + HelpExampleRpc("decodevarint", "To Do");
+        throw runtime_error(msg);
+    }
+    std::vector<unsigned char> sv = ParseHexV(params[0], "parameter 1");
+    uint64_t n = 0;
+    DecodeVarInt(sv, n);
+    return n;
+}    
