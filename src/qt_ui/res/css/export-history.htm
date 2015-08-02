@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<!-- saved from url=(0194)https://blockchain.info/export-history?active=1GJpMGeemJsrTbswEZRayy6ZBew9FuECB8|16ezK3W8GZigRN8vyHS8CnrxwDGunnd7yH|1GMAkBdp8pqWPcFhUHeEia1CeSH5A3j1AG&archived=162x31s42wNtBwykCakMbTSC3JMk6Aow3Q -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>导出历史记录</title>
+    <link  rel="stylesheet"  href="bootstrap.min.css"><link  rel="stylesheet"  href="bootstrap-responsive.min.css"><link  rel="stylesheet"  href="overrides.min.css"><script  src="jquery.min.js"  type="text/javascript"></script><script  type="text/javascript"  src="bootstrap.min.js"></script><script  src="shared.min.js"  type="text/javascript"></script><meta  name="viewport"  content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+
+    <script  type="text/javascript"  src="bootstrap-datepicker.js"></script>
+    <script  type="text/javascript"  src="export-history.js"></script>
+<style  type="text/css"> .adv{display: inherit;} .basic{display: none;} </style></head>
+<body  style="margin:0px;padding:0px">
+<div  style="max-width:500px;margin:0 auto;">
+    <div  class="page-header">
+        <small>导出交易历史记录。</small>
+
+        <span  style="float:right"><img  src="spreadsheet_24.png"></span>
+    </div>
+
+    <form  class="no-print"  action="https://blockchain.info/zh-cn/export-history"  method="POST">
+        <input  type="hidden"  name="active"  value="1GMAkBdp8pqWPcFhUHeEia1CeSH5A3j1AG|1GJpMGeemJsrTbswEZRayy6ZBew9FuECB8|16ezK3W8GZigRN8vyHS8CnrxwDGunnd7yH">
+        <input  type="hidden"  name="archived"  value="">
+
+        <input  type="hidden"  name="action"  value="export">
+
+        <h4>Addresses</h4>
+
+        <p  style="margin-left:10px;margin-top:10px">
+            
+                
+                
+                    <select  name="scope">
+                        <option  value="active">Active Only</option>
+                        <option  value="all">Archived &amp; Active</option>
+                    </select>
+                
+            
+        </p>
+
+        <h4  style="margin-top:15px;">Time Period</h4>
+
+        <div  style="margin-top:10px;margin-left:10px;">
+            <div  style="width:50%;float:left;height:80px">
+                <p><b>From:</b></p>
+
+                <div  class="input-append date"  data-date=""  data-date-format="dd/mm/yyyy">
+                    <input  name="start"  style="width:187px;padding-right:0px"  size="16"  type="text"  value="05/09/2014"><span  class="add-on"><i  class="icon-th"></i></span>
+                </div>
+            </div>
+
+            <div  style="width:50%;float:left;height:80px">
+                <p><b>至:</b></p>
+
+                <div  class="input-append date"  data-date=""  data-date-format="dd/mm/yyyy">
+                    <input  name="end"  style="width:187px;padding-right:0px"  type="text"  value="05/10/2014"><span  class="add-on"><i  class="icon-th"></i></span>
+                </div>
+            </div>
+        </div>
+
+        <h4>Format</h4>
+
+        <p  style="margin-left:10px;margin-top:10px">
+            <select  name="format">
+                <option  value="csv">Spreadsheet (csv)</option>
+                <option  value="xls">Spreadsheet (xls)</option>
+            </select>
+        </p>
+
+        <p  align="right">
+            <button  class="btn btn-primary"  id="history-export">Export</button>
+        </p>
+    </form>
+</div>
+
+
+<div  class="datepicker dropdown-menu"><div  class="datepicker-days"  style="display: block;"><table  class=" table-condensed"><thead><tr><th  class="prev">‹</th><th  colspan="5"  class="switch">October 2014</th><th  class="next">›</th></tr><tr><th  class="dow">Su</th><th  class="dow">Mo</th><th  class="dow">Tu</th><th  class="dow">We</th><th  class="dow">Th</th><th  class="dow">Fr</th><th  class="dow">Sa</th></tr></thead><tbody><tr><td  class="day old">28</td><td  class="day old">29</td><td  class="day old">30</td><td  class="day">1</td><td  class="day">2</td><td  class="day">3</td><td  class="day">4</td></tr><tr><td  class="day active">5</td><td  class="day">6</td><td  class="day">7</td><td  class="day">8</td><td  class="day">9</td><td  class="day">10</td><td  class="day">11</td></tr><tr><td  class="day">12</td><td  class="day">13</td><td  class="day">14</td><td  class="day">15</td><td  class="day">16</td><td  class="day">17</td><td  class="day">18</td></tr><tr><td  class="day">19</td><td  class="day">20</td><td  class="day">21</td><td  class="day">22</td><td  class="day">23</td><td  class="day">24</td><td  class="day">25</td></tr><tr><td  class="day">26</td><td  class="day">27</td><td  class="day">28</td><td  class="day">29</td><td  class="day">30</td><td  class="day">31</td><td  class="day new">1</td></tr><tr><td  class="day new">2</td><td  class="day new">3</td><td  class="day new">4</td><td  class="day new">5</td><td  class="day new">6</td><td  class="day new">7</td><td  class="day new">8</td></tr></tbody></table></div><div  class="datepicker-months"  style="display: none;"><table  class="table-condensed"><thead><tr><th  class="prev">‹</th><th  colspan="5"  class="switch">2014</th><th  class="next">›</th></tr></thead><tbody><tr><td  colspan="7"><span  class="month">Jan</span><span  class="month">Feb</span><span  class="month">Mar</span><span  class="month">Apr</span><span  class="month">May</span><span  class="month">Jun</span><span  class="month">Jul</span><span  class="month">Aug</span><span  class="month">Sep</span><span  class="month active">Oct</span><span  class="month">Nov</span><span  class="month">Dec</span></td></tr></tbody></table></div><div  class="datepicker-years"  style="display: none;"><table  class="table-condensed"><thead><tr><th  class="prev">‹</th><th  colspan="5"  class="switch">2010-2019</th><th  class="next">›</th></tr></thead><tbody><tr><td  colspan="7"><span  class="year old">2009</span><span  class="year">2010</span><span  class="year">2011</span><span  class="year">2012</span><span  class="year">2013</span><span  class="year active">2014</span><span  class="year">2015</span><span  class="year">2016</span><span  class="year">2017</span><span  class="year">2018</span><span  class="year">2019</span><span  class="year old">2020</span></td></tr></tbody></table></div></div><div  class="datepicker dropdown-menu"><div  class="datepicker-days"  style="display: block;"><table  class=" table-condensed"><thead><tr><th  class="prev">‹</th><th  colspan="5"  class="switch">October 2014</th><th  class="next">›</th></tr><tr><th  class="dow">Su</th><th  class="dow">Mo</th><th  class="dow">Tu</th><th  class="dow">We</th><th  class="dow">Th</th><th  class="dow">Fr</th><th  class="dow">Sa</th></tr></thead><tbody><tr><td  class="day old">28</td><td  class="day old">29</td><td  class="day old">30</td><td  class="day">1</td><td  class="day">2</td><td  class="day">3</td><td  class="day">4</td></tr><tr><td  class="day active">5</td><td  class="day">6</td><td  class="day">7</td><td  class="day">8</td><td  class="day">9</td><td  class="day">10</td><td  class="day">11</td></tr><tr><td  class="day">12</td><td  class="day">13</td><td  class="day">14</td><td  class="day">15</td><td  class="day">16</td><td  class="day">17</td><td  class="day">18</td></tr><tr><td  class="day">19</td><td  class="day">20</td><td  class="day">21</td><td  class="day">22</td><td  class="day">23</td><td  class="day">24</td><td  class="day">25</td></tr><tr><td  class="day">26</td><td  class="day">27</td><td  class="day">28</td><td  class="day">29</td><td  class="day">30</td><td  class="day">31</td><td  class="day new">1</td></tr><tr><td  class="day new">2</td><td  class="day new">3</td><td  class="day new">4</td><td  class="day new">5</td><td  class="day new">6</td><td  class="day new">7</td><td  class="day new">8</td></tr></tbody></table></div><div  class="datepicker-months"  style="display: none;"><table  class="table-condensed"><thead><tr><th  class="prev">‹</th><th  colspan="5"  class="switch">2014</th><th  class="next">›</th></tr></thead><tbody><tr><td  colspan="7"><span  class="month">Jan</span><span  class="month">Feb</span><span  class="month">Mar</span><span  class="month">Apr</span><span  class="month">May</span><span  class="month">Jun</span><span  class="month">Jul</span><span  class="month">Aug</span><span  class="month">Sep</span><span  class="month active">Oct</span><span  class="month">Nov</span><span  class="month">Dec</span></td></tr></tbody></table></div><div  class="datepicker-years"  style="display: none;"><table  class="table-condensed"><thead><tr><th  class="prev">‹</th><th  colspan="5"  class="switch">2010-2019</th><th  class="next">›</th></tr></thead><tbody><tr><td  colspan="7"><span  class="year old">2009</span><span  class="year">2010</span><span  class="year">2011</span><span  class="year">2012</span><span  class="year">2013</span><span  class="year active">2014</span><span  class="year">2015</span><span  class="year">2016</span><span  class="year">2017</span><span  class="year">2018</span><span  class="year">2019</span><span  class="year old">2020</span></td></tr></tbody></table></div></div></body></html>

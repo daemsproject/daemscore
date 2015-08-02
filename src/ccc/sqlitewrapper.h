@@ -51,8 +51,9 @@ public:
     bool GetDomain(const char* tableName,const char* searchColumn,const char* searchValue,std::vector<CDomain>& vDomain) const;
     bool CreateTables();
     bool _CreateTable(const char* tableName);
-    
-    
+    bool CreateBlockDomainTable();
+    bool Insert(const uint256 blockHash,const CDataStream& sBlockDomains);
+    bool GetBlockDomains(const uint256 blockHash,CDataStream& sBlockDomains);
     
     bool CreateTagIDTable();
     bool CreateTagTable();

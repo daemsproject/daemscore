@@ -84,6 +84,7 @@ public:
      bool _GetDomainByForward(const int nExtension,const CScript scriptPubKey,std::vector<CDomain> &vDomain)const ; 
      bool _GetDomainByOwner(const int nExtension,const CScript scriptPubKey,std::vector<CDomain> &vDomain)const ;
      bool GetDomainByForward(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupportFAI=true)const ;
+     bool GetDomainByForward(const CScript scriptPubKey,CDomain& domain,bool FSupportFAI)const;
      bool GetDomainByOwner(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupportFAI)const ;
      bool GetDomainByName(const string strDomainName,CDomain& domain)const ;
      
@@ -95,7 +96,8 @@ public:
 //     bool GetDomainNamesToExpire(std::vector<CDomain> &vDomain,const int nMax=1000,const uint32_t nExpireIn=3600*24,bool FSupportFAI=true);    
 //     bool GetDomainNamesExpired(std::vector<CDomain> &vDomain,const int nMax=1000,const uint32_t nExpiredFor=3600*24,bool FSupportFAI=true);       
      bool Update(const CScript ownerIn,const string& strDomainContent,const uint64_t lockedValue,const uint32_t nLockTimeIn,const CLink link);
-
+     bool WriteBlockDomains(const uint256 blockHash,const map<CScript,string>& mapBlockDomains);
+    bool GetBlockDomains(const uint256 blockHash,CDataStream& sBlockDomains);
      bool Reverse(const string& strDomainContent);
     //! Do a bulk modification (multiple tam changes).
     //! The passed mapTam can be modified.

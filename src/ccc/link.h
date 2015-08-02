@@ -6,8 +6,12 @@
 #include <vector>
 //
 #include "serialize.h"
+#include "ccc/cc.h"
+#include "uint256.h"
+#include "script/script.h"
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_value.h"
+
 //
 using namespace json_spirit;
 using namespace std;
@@ -25,7 +29,6 @@ enum linkformat
     LINK_FORMAT_HEX = 1,
     LINK_FORMAT_B32 = 2,
 };
-
 class CLink
 {
 public:
@@ -69,15 +72,15 @@ public:
         READWRITE(VARINT(nVout));
     }
     
-    Array ToJson()const;
+    Value ToJson()const;
     bool ToJsonString(std::string& entry)const;
-    std::string ToString(linkformat linkFormat = LINK_FORMAT_DEC)const;
+    std::string ToString(const linkformat linkFormat = LINK_FORMAT_DEC)const;
     void SetEmpty();
     bool IsEmpty() const;
     bool SetInt(const int nHeightIn, const int nTxIn, const int nVoutIn = 0);
     bool SetString(const std::string linkStr);
     bool SetString(const vector<unsigned char>& linkVch);
-    bool SetJson(const Array& linkJson);
+    bool SetJson(const Object& obj,string& strError);
     friend bool operator==(const CLink& a, const CLink& b)
     {
         return (a.nHeight == b.nHeight && a.nTx == b.nTx && a.nVout == b.nVout);
@@ -90,5 +93,105 @@ public:
     {
         return (a.nHeight < b.nHeight || (a.nHeight == b.nHeight && a.nTx < b.nTx)|| (a.nHeight == b.nHeight && a.nTx == b.nTx && a.nVout < b.nVout));
     }
+};
+class CLinkUni
+{
+public:
+    cctype linkType;
+    int nHeight;
+    unsigned short nTx;
+    unsigned short nVout;
+    uint256 txid;
+    string strLink;
+    CScript scriptPubKey;
+    string strLinkName;
+    string strDomainExtension;
+    string strDomain;
+    vector<string> vTags;
+    CLinkUni()
+    {
+        SetEmpty();
+    }
+    
+    CLinkUni(const std::string& linkStr)
+    {
+        SetString(linkStr);
+    }
+    CLinkUni(const vector<unsigned char>& linkVch)
+    {
+        SetString(linkVch);
+    }
+    CLinkUni(const int nHeightIn, const int nTxIn, const int nVoutIn = 0)
+    {
+        linkType=CC_LINK_TYPE_BLOCKCHAIN;
+        nHeight = nHeightIn;
+        nTx = (unsigned short) nTxIn;
+        nVout = (unsigned short) nVoutIn;
+    }
+    CLinkUni(const uint256 txidIn, const int nVoutIn = 0)
+    {
+        linkType=CC_LINK_TYPE_TXIDOUT;  
+        txid=txidIn;
+        nVout = (unsigned short) nVoutIn;
+    }
+    CLinkUni(const CScript scriptPubKeyIn)
+    {
+        linkType=CC_LINK_TYPE_SCRIPTPUBKEY;
+        scriptPubKey=scriptPubKeyIn;
+    }
+    bool SetString(const std::string linkStr);
+    bool SetString(const vector<unsigned char>& linkVch);
+    bool SetStringBlockChain(const std::string linkStr);
+    bool SetStringTxidOut(const std::string linkStr);
+    bool SetStringScriptPubKey(const std::string linkStr);
+    //this function only outputs the content of link ,w/o link type information
+    std::string ToString(const linkformat linkFormat = LINK_FORMAT_DEC)const;
+    std::string ToStringBlockChain(const linkformat linkFormat= LINK_FORMAT_DEC)const;
+    std::string ToStringTxidOut()const;
+    std::string ToStringScriptPubKey()const;
+    bool SetContent(const string& str);
+    string ToContent()const;
+    bool SetJson(const Object& obj,string& strError);
+    Value ToJson(const linkformat linkFormat= LINK_FORMAT_DEC)const;
+    string ToJsonString(const linkformat linkFormat= LINK_FORMAT_DEC)const;
+    
+    ADD_SERIALIZE_METHODS;   
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {    
+        READWRITE(VARINT((int)linkType));
+        switch (linkType)
+        {
+            case CC_LINK_TYPE_BLOCKCHAIN:
+                READWRITE(VARINT(nHeight));
+                READWRITE(VARINT(nTx));
+                READWRITE(VARINT(nVout));
+                break;
+            case CC_LINK_TYPE_TXIDOUT:
+                READWRITE(txid);
+                READWRITE(VARINT(nVout));
+                break;
+            case CC_LINK_TYPE_SCRIPTPUBKEY:
+                READWRITE(scriptPubKey);
+                break;
+//            case CC_LINK_TYPE_DOMAIN:
+//                READWRITE(strDomain);
+//                READWRITE(strDomainExtension);
+//                break;
+            default:
+                READWRITE(strLink);
+        }        
+    }
+    
+    
+    void SetEmpty();
+    bool IsEmpty() const; 
+    
+    friend bool operator==(const CLinkUni& a, const CLinkUni& b);
+    
+    friend bool operator!=(const CLinkUni& a, const CLinkUni& b)
+    {
+        return !(a == b);
+    }    
 };
 #endif // CCC_LINK_H

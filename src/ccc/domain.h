@@ -36,6 +36,7 @@ public:
     CScript redirectID;//maybe null
     int redirectType;
     string redirectTo;
+    vector<unsigned char> forwardsig;
     uint32_t nExpireTime;
     std::string strAlias;
     std::string strIntro;
@@ -52,7 +53,7 @@ public:
     char** GetSqlItems()const;
     bool IsLevel2() const;
     json_spirit::Value ToJson()const;
-    
+    CLink GetLastRedirectLink()const;
     
     ADD_SERIALIZE_METHODS;   
 
@@ -62,6 +63,7 @@ public:
         READWRITE(owner);
         READWRITE(redirectType);
         READWRITE(redirectTo);
+        READWRITE(forwardsig);
         READWRITE(nExpireTime);
         READWRITE(strAlias);
         READWRITE(strIntro);

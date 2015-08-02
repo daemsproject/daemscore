@@ -339,7 +339,24 @@ bool CDomainViewDB::Update(const CScript ownerIn,const string& strDomainContent,
     if (fForward)
     {
         LogPrintf("update domain forward\n"); 
-        
+        if(existingDomain.redirectType==CC_LINK_TYPE_SCRIPTPUBKEY)
+        {
+            string id;
+            
+            existingDomain.redirectID.assign(existingDomain.redirectTo.begin(),existingDomain.redirectTo.end());
+            ScriptPubKeyToString(existingDomain.redirectID,id);
+            string strMessage=existingDomain.strDomain+"->"+id;
+            LogPrintf("update domain forward type:scriptpubkey msg4sig:%s,sig:%s\n",strMessage,HexStr(existingDomain.forwardsig.begin(),existingDomain.forwardsig.end())); 
+            CHashWriter ss(SER_GETHASH, 0);
+            ss << strMessage;
+            CPubKey pubkey;
+            
+            if (!pubkey.RecoverCompact(ss.GetHash(), existingDomain.forwardsig)||CBitcoinAddress(pubkey).ToString()!=id)
+            {
+                LogPrintf("update domain forward verify sig failed,recovered id:%s,original id:%s\n",CBitcoinAddress(pubkey).ToString(),id); 
+                return false;
+            }
+        }
         existingDomain.vDirectHistory.push_back(link);
         while(existingDomain.vDirectHistory.size()>8)
             existingDomain.vDirectHistory.erase(existingDomain.vDirectHistory.begin());
@@ -513,6 +530,21 @@ bool CDomainViewDB::GetDomainByForward(const CScript scriptPubKey,std::vector<CD
     }
     return ret;
 }
+bool CDomainViewDB::GetDomainByForward(const CScript scriptPubKey,CDomain& domain,bool FSupportFAI)const
+{
+    std::vector<CDomain> vDomain;
+    if(!GetDomainByForward(scriptPubKey,vDomain,FSupportFAI))
+        return false;
+    if(vDomain.size()==0)
+        return false;
+    domain=vDomain[0];
+    for(unsigned int i=1;i<vDomain.size();i++)
+    {        
+        if(domain.GetLastRedirectLink()<vDomain[i].GetLastRedirectLink())
+            domain=vDomain[i];
+    }
+    return true;
+}
 bool CDomainViewDB::GetDomainByOwner(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupportFAI)const 
 {
     int nExtension=DOMAIN_10000;
@@ -524,6 +556,18 @@ bool CDomainViewDB::GetDomainByOwner(const CScript scriptPubKey,std::vector<CDom
     }
     return ret;
 }
+bool CDomainViewDB::WriteBlockDomains(const uint256 blockHash,const map<CScript,string>& mapBlockDomains)
+{
+    CDataStream sBlockDomains(SER_DISK, CLIENT_VERSION);
+    sBlockDomains<<mapBlockDomains;
+    return db.Insert(blockHash,sBlockDomains);
+}
+bool  CDomainViewDB::GetBlockDomains(const uint256 blockHash,CDataStream& sBlockDomains)
+{    
+    return db.GetBlockDomains(blockHash, sBlockDomains);
+}
+
+
 CTagViewDB::CTagViewDB( bool fWipe): db(GetDataDir() / "sqlitedb", fWipe){}
 bool CTagViewDB::HasLink(const CLink link)const{
     vector<CLink> vLink;

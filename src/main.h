@@ -299,6 +299,8 @@ void UpdateScript2TxPosDB(const CTransaction& tx,const CDiskTxPos& pos,CValidati
 void UpdateDomainDB(const CTransaction& tx,const CBlock& block,const int nTx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse);
 void UpdateTagDB(const CTransaction& tx,const CBlock& block,const int nTx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse);
 void UpdateScriptCoinDB(const CTransaction& tx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse);
+void GetDomainsInVins(const CTransaction& tx,const CCoinsViewCache& inputs,map<CScript,string>& mapBlockDomains);
+
 /** Context-independent validity checks */
 bool CheckTransaction(const CTransaction& tx, CValidationState& state);
 

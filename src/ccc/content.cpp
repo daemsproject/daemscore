@@ -560,7 +560,7 @@ bool CContent::Decode(std::vector<std::pair<int, string> >& vDecoded)const
     return true;
 }
 
-bool CContent::DecodeDomainForward(int& redirectType, string& redirectTo)const
+bool CContent::DecodeDomainForward(int& redirectType, string& redirectTo,vector<unsigned char>& forwardsig)const
 {
     //LogPrintf("CContent DecodeLink\n");
     std::vector<std::pair<int, string> > vDecoded;
@@ -594,6 +594,8 @@ bool CContent::DecodeDomainForward(int& redirectType, string& redirectTo)const
             fHasLinkType = true;
             fHasLinkContent = true;
         }
+        else if (cc==CC_SIGNATURE)
+            forwardsig.assign(vDecoded[i].second.begin(),vDecoded[i].second.end());
     }
     if (fHasLinkType&&fHasLinkContent)
     {
@@ -705,7 +707,8 @@ bool CContent::GetTags(std::vector<std::pair<int,std::string> >& vTagList) const
             }
             else if(cc!=CC_TAG)
                 ccp=cc;
-        }
+        }         
+             
     }
     if (!fccp&&ccp!=-1)
     {
@@ -717,28 +720,34 @@ bool CContent::_GetTags(std::vector<std::pair<int,std::string> >& vTagList,int c
 {
     if(!IsStandard())
         return false;
-    std::vector<std::pair<int, string> > vDecoded;
-    Decode(vDecoded);
-    //LogPrintf("CContent::_GetTags contentunits: %i \n",vDecoded.size());
-    for(unsigned int i=0; i<vDecoded.size();i++)
-    {
-        int cc=   vDecoded[i].first;      
-        //LogPrintf("CContent::_GetTags cc: %i \n",cc);
-        string str=vDecoded[i].second;            
-        std::vector<std::string> vTag;
-        if (cc == CC_TAG && str.size() > 0 && str.size() <= 32)
-            vTagList.push_back(make_pair(ccp, str));
-        if (cc == CC_TAG_P) {
-            std::vector<std::pair<int, string> > vDecoded2;
-            for (unsigned int i = 0; i < vDecoded.size(); i++) {
-                int cc1 = vDecoded[i].first;
-                string str1 = vDecoded[i].second;
-                if (cc1 == CC_TAG && str1.size() > 0 && str1.size() <= 32)
-                    vTagList.push_back(make_pair(ccp, str1));
-            }
-        }
-    }
-    return vTagList.size() > 0;
+    std::vector<std::string> vTag;
+    if(!GetDataByCC(CC_TAG,vTag,true,true))
+        return false;
+    for(unsigned int i=0;i<vTag.size();i++)
+        vTagList.push_back(make_pair(ccp,vTag[i]));
+//    std::vector<std::pair<int, string> > vDecoded;
+//    Decode(vDecoded);
+//    //LogPrintf("CContent::_GetTags contentunits: %i \n",vDecoded.size());
+//    for(unsigned int i=0; i<vDecoded.size();i++)
+//    {
+//        int cc=   vDecoded[i].first;      
+//        //LogPrintf("CContent::_GetTags cc: %i \n",cc);
+//        string str=vDecoded[i].second;            
+//        std::vector<std::string> vTag;
+//        if (cc == CC_TAG && str.size() > 0 && str.size() <= 32)
+//            vTagList.push_back(make_pair(ccp, str));
+//        else 
+//        else if (cc == CC_TAG_P) {
+//            std::vector<std::pair<int, string> > vDecoded2;
+//            for (unsigned int i = 0; i < vDecoded.size(); i++) {
+//                int cc1 = vDecoded[i].first;
+//                string str1 = vDecoded[i].second;
+//                if (cc1 == CC_TAG && str1.size() > 0 && str1.size() <= 32)
+//                    vTagList.push_back(make_pair(ccp, str1));
+//            }
+//        }
+//    }
+    return true;
 }
 
 bool CContent::GetDataByCC(cctype mainCc,std::vector<string> & vDataString,bool fRecursive, bool fIncludeTypeCC) const
@@ -1015,11 +1024,13 @@ bool CProduct::SetContent(const CContent content)
 {
     LogPrintf("CProduct::SetContent\n");
     std::vector<std::pair<int, string> > vDecoded0;
-    content.Decode(vDecoded0);   
+    if(!content.Decode(vDecoded0))
+        return false;
     if(vDecoded0[0].first!=CC_PRODUCT_P)
         return false;
     std::vector<std::pair<int, string> > vDecoded;
-    CContent(vDecoded0[0].second).Decode(vDecoded);   
+    if(!CContent(vDecoded0[0].second).Decode(vDecoded))
+        return false;
     int cc;
     string str;    
     for(unsigned int i=0;i<vDecoded.size();i++)
@@ -1218,7 +1229,8 @@ bool CPayment::SetContent(const CContent content)
 {
     LogPrintf("CPayment::SetContent\n");
     std::vector<std::pair<int, string> > vDecoded0;
-    content.Decode(vDecoded0);   
+    if(!content.Decode(vDecoded0))
+        return false;
     if(vDecoded0[0].first!=CC_PAYMENT_P)
         return false;
     std::vector<std::pair<int, string> > vDecoded;
@@ -1323,7 +1335,8 @@ bool CPaymentItem::IsValid(){
 bool CPaymentItem::SetContent(const CContent content)
 {
     std::vector<std::pair<int, string> > vDecoded;
-    content.Decode(vDecoded);   
+    if(!content.Decode(vDecoded))
+        return false;
     int cc;
     string str; 
     //find payment type first

@@ -808,6 +808,7 @@ CPaymentOrder GetUpdateDomainPaymentRequest(const Array arr)
 {
     CPaymentOrder pr;
     pr.fIsValid = false;
+    bool fValid=true;
     std::string strError;   
      CScript scriptPubKey;        
         if(!StringToScriptPubKey(arr[0].get_str(),scriptPubKey)){
@@ -827,7 +828,7 @@ CPaymentOrder GetUpdateDomainPaymentRequest(const Array arr)
     CLink link; 
     Value tmp = find_value(obj, "forward");
     if (tmp.type() == str_type) {
-        if(StringToScriptPubKey(tmp.get_str(),scriptPubKey))
+        if(StringToScriptPubKey(tmp.get_str(),scriptPubKey)&&scriptPubKey.size()<=64)
         {
             cForward.EncodeUnit(CC_LINK_TYPE_SCRIPTPUBKEY,"");
             cForward.EncodeUnit(CC_LINK,string(scriptPubKey.begin(),scriptPubKey.end()));
@@ -839,7 +840,7 @@ CPaymentOrder GetUpdateDomainPaymentRequest(const Array arr)
                 if (!fInvalid)
                 {
                     string strSig;
-                    strSig.assign((char*)&vchSig[0],vchSig.size());
+                    strSig.assign(vchSig.begin(),vchSig.end());
                     cForward.EncodeUnit(CC_SIGNATURE,strSig);
                 }
             }
@@ -849,7 +850,7 @@ CPaymentOrder GetUpdateDomainPaymentRequest(const Array arr)
             cForward.EncodeUnit(CC_LINK_TYPE_BLOCKCHAIN,"");
             cForward.EncodeUnit(CC_LINK,link.Serialize());
         }
-         else if(tmp.get_str=="")
+         else if(tmp.get_str()=="")
              cForward.EncodeUnit(CC_NULL,"");
     }
     tmp = find_value(obj, "transfer");
@@ -896,7 +897,7 @@ CPaymentOrder GetUpdateDomainPaymentRequest(const Array arr)
     pr.vout.push_back(CTxOut(0, CScript(), ctt));
     pr.nRequestType=PR_DOMAIN_UPDATE;
     pr.info["domain"]=arr[1].get_str();
-    pr.fIsValid = true;
+    pr.fIsValid = fValid;
     return pr;
 }
 CPaymentOrder GetBuyProductPaymentRequest(const Array arr)

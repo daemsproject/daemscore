@@ -1,0 +1,690 @@
+var CONTENT_TYPE_FEED = 0;
+var CONTENT_TYPE_FOLLOW = 1;
+var CONTENT_TYPE_MINE = 2;
+var CONTENT_FILE_TYPE = {image: ["image/jpeg", "image/png"], video: ["video/mp4"], audio: ["audio/mpeg"]};
+var bufferedFile = {};
+
+var CBrowser = new function () {
+    var CBrowser = this;
+    this.getShortPId = function (fullId) {
+        return fullId.substr(0, 10) + "..." + fullId.substr(fullId.length - 2);
+    };
+    this.getLongPId = function (fullId) {
+        return fullId;
+//        return fullId.substr(0, 25) + "..." + fullId.substr(fullId.length - 2);
+    };
+    this.showFullId = function (div, fullId) {
+        div.find("a.text").html(this.getLongPId(fullId));
+        div.find("li").find("a").css('display', 'inline-block');
+    };
+    this.hideFullId = function (div, fullId) {
+        div.find("a.text").html(this.getShortPId(fullId));
+        div.find("li").find("a").hide();
+    };
+    this.toggleFullId = function (div) {
+        var fullId = div.find("a.text").attr("fullid");
+        if (this.getLongPId(fullId) === div.find("a.text").html())
+            this.hideFullId(div, fullId);
+        else
+            this.showFullId(div, fullId);
+    };
+    this.toggleIdOpt = function (div) {
+        if (div.hasClass('showbtn')) {
+            div.find("li").find("a").hide();
+            div.removeClass('showbtn');
+        } else {
+            div.find("li").find("a").css('display', 'inline-block');
+            div.addClass('showbtn');
+        }
+    };
+    this.getFileContentFrJson = function (json) {
+        try {
+            var ctt = json.content[0];
+            var k;
+            for (k in ctt.content) {
+                if (ctt.content[k].cc_name == "CC_FILE_CONTENT" || ctt.content[k].cc_name == "CC_FILE")
+                    return ctt.content[k].content;
+            }
+        } catch (e) {
+            console.log("getFileContentFrJson error");
+        }
+
+    };
+//    this.getImage = function (clink) {
+//        var cj = (BrowserAPI.getContentByLink(clink));
+//        r = this.getFileContentFrJson(cj);
+//        return this.createImgHtml(clink, r);
+//
+//    };
+    this.getB64DataFromLink = function (clink) {
+        var cj = (BrowserAPI.getContentByLink(clink));
+        r = this.getFileContentFrJson(cj);
+        return r;
+    };
+    this.createImgSrc = function (type, b64) {
+        return   "data:" + type + ";base64," + b64;
+    };
+    this.getFileTypeFrJson = function (ctt) {
+        var isFile = ctt.content[0].cc_name === "CC_FILE_P";
+        if (!isFile)
+            return false;
+        for (var i in ctt.content[0].content) {
+            if (ctt.content[0].content[i].cc_name === "CC_FILE_TYPESTRING")
+                return atob(ctt.content[0].content[i].content);
+        }
+        return null;
+    };
+    this.getTextFrJson = function (ctt) {
+        if (ctt.content[0].cc_name !== "CC_FILE_P")
+            return false;
+        for (var i in ctt.content[0].content) {
+//            console.log(ctt.content[0].content[i].cc_name);
+            if (ctt.content[0].content[i].cc_name === "CC_TEXT") {
+//                console.log(ctt.content[0].content[i].content);
+                var tmp = base64.decode(ctt.content[0].content[i].content);
+                return CUtil.escapeHtml(tmp);
+            }
+        }
+        return null;
+    };
+    this.getLinkFrLinkctt = function (ctt) {
+        if (ctt.content[0].cc_name !== "CC_LINK_P") {
+            if (ctt.content[0].cc_name !== "CC_LINK")
+                return "";
+            else
+                return ctt.content[0].content[i].link;
+        }
+        for (var i in ctt.content[0].content) {
+            if (ctt.content[0].content[i].cc_name === "CC_LINK")
+                return ctt.content[0].content[i].link;
+        }
+        return "";
+
+    };
+    this.decodeRawLink = function (rl) {
+
+
+//        link.unserializeConst(content)
+//        link.ToString();
+    };
+    this.getLinknameFrLinkctt = function (ctt) {
+        if (ctt.content[0].cc_name !== "CC_LINK_P")
+            return "";
+
+        for (var i in ctt.content[0].content) {
+            if (ctt.content[0].content[i].cc_name === "CC_NAME")
+                return base64.decode(ctt.content[0].content[i].content);
+        }
+        return "";
+    };
+    this.createImgHtml = function (ctt) {
+//        console.log(ctt);
+        var imgB64Data = this.getFileContentFrJson(ctt);
+        var type = this.getFileTypeFrJson(ctt);
+        var text = this.getTextFrJson(ctt);
+//        console.log(text);
+        var idiv = $("#image-tpl").clone(true, true);
+        if (text)
+            idiv.find(".text").html(text);
+        idiv.find("img").attr("id", CLink.setString(ctt.clink).toHtmlId());
+        idiv.find("img").attr("type", type);
+        idiv.find("img").attr("src", this.createImgSrc(type, imgB64Data));
+        return idiv.html();
+    };
+    this.createIconHtml = function (imgB64Data, clink, h, w) {
+        if (!w)
+            w = 40;
+        if (!h)
+            h = 40;
+        var html = '<a ><img';
+        if (clink)
+            html += ' id="' + clink + '"';
+        html += ' src="data:image/jpg;base64,' + imgB64Data + '" type="image/jpeg" class="brimg" height="' + h + '" width="' + w + '"/></a>';
+        return html;
+    };
+    this.createVideoHtml = function (clink, vdoB64Data, type) {
+        type = typeof type !== 'undefined' ? type : "video/mp4";
+        var vdiv = $("#video-tpl").clone(true, true);
+        vdiv.find("video").attr("id", CLink.setString(clink).toHtmlId());
+        vdiv.find("source").attr("type", type);
+        vdiv.find("source").attr("src", this.createImgSrc(type, vdoB64Data));
+        return vdiv.html();
+    };
+    this.createAudioHtml = function (clink, adoB64Data, type) {
+        type = typeof type !== 'undefined' ? type : "audio/mpeg";
+        var vdiv = $("#video-tpl").clone(true, true);
+        vdiv.find("video").attr("id", CLink.setString(clink).toHtmlId());
+        vdiv.find("source").attr("type", type);
+        vdiv.find("source").attr("src", this.createImgSrc(type, adoB64Data));
+        return vdiv.html();
+    };
+    this.createLinkHtml = function (ctt) {
+//        console.log(ctt);
+        var link = this.getLinkFrLinkctt(ctt);
+        var linkname = this.getLinknameFrLinkctt(ctt);
+        if (link !== "") {
+            if (linkname !== "")
+                return '<a href="' + link + '">' + linkname + '</a>';
+            else
+                return '<a href="' + link + '">' + link + '</a>';
+        } else
+            return "";
+    };
+    this.toggleCmt = function (div) {
+        var s = div.find("a.shrt").hasClass("short");
+        if (s) {
+            div.find("li.linkspan").html(this.getLinkA(div.find("li.linkspan").attr("clink")));
+            div.find("li").find("a").show();
+            div.find("a.shrt").removeClass("short");
+
+        } else {
+            div.find("li").find("a").hide();
+            div.find("a.shrt").addClass("short");
+        }
+    };
+    this.showFullImg = function (div) {
+        if (div.find("img").length !== 0) {
+            $("#fullImage").html(div.html());
+            $("#fullImage").find("img").removeClass("brimg");
+        }
+    };
+    this.getLinkA = function (l) {
+        var ldiv = $("#linka").clone(true, true);
+        ldiv.find("a").html(l).show();
+        console.log(ldiv.html());
+        return ldiv.html();
+    };
+    this.addContent = function (ctt, fType, fPos) {
+//        console.log(ctt);
+        fPos = typeof fPos !== 'undefined' ? fPos : true;
+        fType = typeof fType !== 'undefined' ? fType : CONTENT_TYPE_FEED;
+        if (ctt.content[0].content === "non-standard")
+            return;
+        var sdiv
+        switch (fType) {
+            case CONTENT_TYPE_FEED:
+                sdiv = $("#standard").clone(true, true);
+                break;
+            case CONTENT_TYPE_FOLLOW:
+            case CONTENT_TYPE_MINE:
+                sdiv = $("#followstd").clone(true, true);
+                break;
+        }
+        sdiv.removeAttr("id");
+        sdiv.find(".id").find(".text").attr("fullid", ctt.poster[0]);
+        sdiv.find(".id").find(".text").html(this.getLongPId(ctt.poster[0]));
+        sdiv.find(".linkspan").attr("clink", ctt.link);
+
+        sdiv = this.fillSdiv(sdiv, ctt);
+        if (sdiv === false)
+            return false;
+        fPos ? $("#mainframe").prepend(sdiv.children()) : $("#mainframe").append(sdiv.children());
+        return true;
+    };
+    this.fillSdiv = function (sdiv, ctt) {
+        if (this.isContentImage(ctt))
+            sdiv.find(".ctt").html(this.createImgHtml(ctt));
+        else if (this.isContentVideo(ctt))
+            sdiv.find(".ctt").html(this.createVideoHtml(ctt.link, this.getFileContentFrJson(ctt)));
+        else if (this.isContentAudio(ctt))
+            sdiv.find(".ctt").html(this.createAudioHtml(ctt.link, this.getFileContentFrJson(ctt)));
+        else if (this.isContentText(ctt))
+            sdiv.find(".ctt").html(this.cttText(CUtil.escapeHtml(base64.decode(ctt.content[0].content[0].content))));
+        else if (this.isContentLink(ctt))
+            sdiv.find(".ctt").html(this.createLinkHtml(ctt));
+        else {
+            console.log("err addcontent -- fillSdiv");
+//            console.log(ctt);
+            return false;
+        }
+        if (this.isContentAttachText(ctt)) {
+
+            sdiv.find(".ctt2").html(CUtil.escapeHtml(base64.decode(ctt.content[1].content[0].content)));
+        }
+        return sdiv;
+    }
+    this.cttText = function (t) {
+        var div = $("#textSpan").find(".text").html(t);
+        return div;
+    }
+    this.isContentImage = function (ctt) {
+        var isFile = ctt.content[0].cc_name === "CC_FILE_P";
+        if (!isFile)
+            return false;
+        for (var i in ctt.content[0].content) {
+            if (ctt.content[0].content[i].cc_name === "CC_FILE_TYPESTRING")
+                return $.inArray(atob(ctt.content[0].content[i].content), CONTENT_FILE_TYPE.image) >= 0;
+        }
+        return false;
+    };
+    this.isContentVideo = function (ctt) {
+        var isFile = ctt.content[0].cc_name === "CC_FILE_P";
+        if (!isFile)
+            return false;
+        for (var i = 0; i < ctt.content[0].content.length; i++) {
+            if (ctt.content[0].content[i].cc_name === "CC_FILE_TYPESTRING")
+                return $.inArray(atob(ctt.content[0].content[i].content), CONTENT_FILE_TYPE.video) >= 0;
+        }
+        return false;
+    };
+    this.isContentAudio = function (ctt) {
+        var isFile = ctt.content[0].cc_name === "CC_FILE_P";
+        if (!isFile)
+            return false;
+        for (var i = 0; i < ctt.content[0].content.length; i++) {
+            if (ctt.content[0].content[i].cc_name === "CC_FILE_TYPESTRING")
+                return $.inArray(atob(ctt.content[0].content[i].content), CONTENT_FILE_TYPE.audio) >= 0;
+        }
+        return false;
+    };
+    this.isContentText = function (ctt) {
+        return (ctt.content[0].cc_name === "CC_TEXT_P" &&
+                ctt.content[0].content[0].cc_name === "CC_TEXT" &&
+                ctt.content[0].content[0].content.length !== 0) || (ctt.content[0].cc_name === "CC_TEXT" && ctt.content[0].content.length !== 0)
+    };
+    this.isContentLink = function (ctt) {
+        return ctt.content[0].cc_name === "CC_LINK_P" || ctt.content[0].cc_name === "CC_LINK";
+    };
+    this.isContentAttachText = function (ctt) {
+        if (typeof ctt.content === 'undefined')
+            return false;
+        if (ctt.content.length > 1) {
+            return ctt.content[1].cc_name === "CC_TEXT_P" &&
+                    ctt.content[1].content[0].cc_name === "CC_TEXT" &&
+                    ctt.content[1].content[0].content.length !== 0;
+        } else
+            return false;
+
+    }
+
+    this.refreshNew = function () {
+        var ctts = this.getNewContents("new");
+//        console.log(ctts);
+        for (k in ctts) {
+            this.addContent(ctts[k], CONTENT_TYPE_FEED, false);
+        }
+    };
+    this.refreshOld = function () {
+        var ctts = this.getOldContents("new");
+        console.log('refreshOld');
+        for (k in ctts) {
+            this.addContent(ctts[k], CONTENT_TYPE_FEED, false);
+        }
+    };
+    this.refreshNewFollowed = function () {
+        var flist = BrowserAPI.getFollowed();
+        if (flist.length == 0) {
+            this.showNotice(TR["You need to follow someone first"]);
+            return;
+        }
+        var ctts = this.getNewContents("fll", flist);
+        for (k in ctts) {
+            this.addContent(ctts[k], CONTENT_TYPE_FOLLOW, false);
+        }
+    };
+    this.refreshNewMypage = function () {
+        var myid = [BrowserAPI.getAccountID()];
+        if (myid.length == 0) {
+            this.showNotice(TR["You need to register ID first"]);
+            return;
+        }
+        var ctts = this.getNewContents("myp", myid);
+        for (k in ctts) {
+            this.addContent(ctts[k], CONTENT_TYPE_MINE, false);
+        }
+    };
+    this.refreshOldFollowed = function () {
+        var flist = BrowserAPI.getFollowed();
+        var ctts = this.getOldContents("fll", flist);
+        for (k in ctts) {
+            this.addContent(ctts[k], CONTENT_TYPE_FOLLOW, false);
+        }
+    };
+    this.refreshOldMypage = function () {
+        var myid = [BrowserAPI.getAccountID()];
+        var ctts = this.getOldContents("myp", myid);
+        for (k in ctts) {
+            this.addContent(ctts[k], CONTENT_TYPE_MINE, false);
+        }
+    };
+    this.getNewContents = function (page, addrs) {
+        return this.getContents(true, page, addrs);
+    };
+    this.getOldContents = function (page, addrs) {
+        return this.getContents(false, page, addrs);
+    };
+    this.getContents = function (fNewOld, page, addrs) {
+        addrs = typeof addrs !== 'undefined' ? addrs : [];
+        fNewOld = typeof fNewOld !== 'undefined' ? fNewOld : true;
+        page = typeof page !== 'undefined' ? page : "new";
+        var rc = 3;
+        var sbh; // start block height
+        var lbh; // last block height
+//        console.log(newDisp);
+        switch (page) {
+            case "new":
+                sbh = fNewOld ? parseInt(BrowserAPI.getBlockCount()) : newDisp[0];
+                lbh = fNewOld ? sbh : newDisp[1];
+                break;
+            case "fll":
+                sbh = fNewOld ? parseInt(BrowserAPI.getBlockCount()) : fllDisp[0];
+                lbh = fNewOld ? sbh : fllDisp[1];
+                break;
+            case "myp":
+                sbh = fNewOld ? parseInt(BrowserAPI.getBlockCount()) : mypDisp[0];
+                lbh = fNewOld ? sbh : mypDisp[1];
+                break;
+        }
+//        console.log(fNewOld + " " + sbh);
+        var cbh = sbh; // current block height
+        var ctts = [];
+        var blkPR = 10;
+        while (ctts.length < rc && cbh > 0) {
+            var tmp = BrowserAPI.getContents(cbh, blkPR, false, addrs);
+            ctts = ctts.concat(tmp);
+            cbh -= blkPR; // To Do
+
+        }
+//        console.log(ctts);
+//        cbh += 10;
+//        console.log(fNewOld + " " + cbh);
+        switch (page) {
+            case "new":
+                var fbh = newDisp.length > 0 ? newDisp[0] : cbh;
+//                console.log(fbh + " " + fNewOld + " " + cbh);
+                newDisp = fNewOld ? [fbh, lbh] : [cbh, lbh];
+                break;
+            case "fll":
+                var fbh = fllDisp.length > 0 ? fllDisp[0] : cbh;
+                fllDisp = fNewOld ? [fbh, lbh] : [cbh, lbh];
+                break;
+            case "myp":
+                var fbh = mypDisp.length > 0 ? mypDisp[0] : cbh;
+                mypDisp = fNewOld ? [fbh, lbh] : [cbh, lbh];
+                break;
+        }
+//        console.log(newDisp);
+//        console.log(fllDisp);
+//        console.log(mypDisp);
+
+        return ctts;
+
+    }
+    this.switchTab = function (tabid) {
+        console.log(tabid);
+        if ($("#" + tabid).parent().hasClass("active"))
+            return;
+        $("#" + tabid).parent().parent().children("li").removeClass("active");
+        $("#" + tabid).parent().addClass("active");
+        $("#mainframe").children(".container").remove();
+        $("#mainframe").children("hr").remove();
+        switch (tabid) {
+            case "br-home-btn":
+                this.newAction();
+                break;
+            case "br-new-btn":
+                this.newAction();
+                break;
+            case "br-followed-btn":
+                this.followedAction();
+                break;
+            case "br-mypage-btn":
+                this.mypageAction();
+                break;
+        }
+//        newDisp = [];
+
+
+    };
+    this.newAction = function () {
+        newDisp = [];
+        this.refreshNew();
+//        this.refreshOld();
+    };
+    this.followedAction = function () {
+        this.refreshNewFollowed();
+    };
+    this.mypageAction = function () {
+        this.refreshNewMypage();
+    };
+    this.showNotice = function (n, s) {
+        s = typeof s !== 'undefined' ? s : 5;
+        $("#notices").html(n).show();
+        $("#notices").delay(s * 1000).hide(0);
+    };
+    this.bottomAction = function () {
+        var tabid = $(".tabbar").children("li.active").children("a").attr("id");
+//        var page = this.findPage();
+        switch (tabid) {
+            case "br-home-btn":
+                this.refreshOld();
+                break;
+            case "br-new-btn":
+                this.refreshOld();
+                break;
+            case "br-followed-btn":
+                this.refreshOldFollowed("fll");
+                break;
+            case "br-mypage-btn":
+                this.refreshOldMypage();
+                break;
+        }
+//        console.log(tabid);
+//        console.log(newDisp);
+    };
+    this.getNewImages = function () {
+        return BrowserAPI.getImages(parseInt(BrowserAPI.getBlockCount()), 1000, false);
+    };
+    this.createSliderImage = function (ctt) {
+        var type = "image/jpeg";
+        var idiv = $("#s-image-tpl").clone(true, true);
+        idiv.find("img").attr("id", CLink.setString(ctt.link).toHtmlId());
+        idiv.find("img").attr("type", type);
+        idiv.find("img").attr("src", this.createImgSrc(type, this.getFileContentFrJson(ctt)));
+        return idiv.html();
+    };
+    this.addSlideImage = function (imgs) {
+//        console.log(imgs);
+//        console.log(sld);
+        for (var i = 0, t; t = imgs[i]; i++) {
+            var h = this.createSliderImage(t);
+//            console.log(h);
+            $("#slider ul").append(h);
+        }
+    };
+};
+
+var CPublisher = new function () {
+    var CPublisher = this;
+    var pendingCtt;
+    this.getLink = function () {
+        return $('#input-link').val();
+    };
+    this.getTags = function () {
+        var r = [];
+        $('.input-tag').each(function () {
+            console.log($(this).val());
+            if ($(this).val() !== "")
+                r.push($(this).val());
+        });
+        return r;
+    };
+    this.handleFiles = function (files) {
+        for (var i = 0, f; f = files[i]; i++) {
+            this.handleFile(f);
+        }
+    };
+    this.handleFile = function (f) {
+        if (f.size > 1000000) {
+            CBrowser.showNotice("The maximum file size is 1MB");
+            return;
+        }
+        if (f.name) {
+            var r = new FileReader();
+            r.readAsDataURL(f);
+            r.onload = (function (f) {
+                return function (e) {
+                    var raw = e.target.result;
+                    var nf = CUtil.decodeDataUrl(raw);
+                    var hash = BrowserAPI.getHash(nf.data);
+                    if (hash === bufferedFile.hash)
+                        return;
+//                    console.log("bufferedFile");
+//                    console.log(bufferedFile);
+                    nf.name = f.name;
+//                    console.log("rctt ");
+//                    console.log(rctt);
+//                    var tt = $("#theText").hasClass("noborder") ? undefined : $("#theText").val();
+//                    console.log(tt);
+//                    var lk = CPublisher.getLink();
+//                    console.log(lk);
+//                    var tg = CPublisher.getTags();
+//                    console.log(tg);
+//                    var ctthex = BrowserAPI.createHexContent(rctt, tt, tg);
+                    var cttH = BrowserAPI.createFileContent(nf);
+//                    console.log(cttH);
+                    var ctt = BrowserAPI.getContentByString(cttH.hex);
+                    ctt.poster = [BrowserAPI.getAccountID()];
+                    ctt.hex = cttH.hex;
+
+//                    console.log('handlefile.ctt');
+//                    console.log(ctt);
+//                    pendingCtt = ctt;
+                    $("#" + bufferedFile.hash).parent().find('hr').remove();
+                    $("#" + bufferedFile.hash).remove();
+                    bufferedFile.ctt = ctt;
+                    bufferedFile.hash = hash;
+
+//                    console.log(bufferedFile);
+                    CPublisher.showPreview(bufferedFile);
+                    $('#pubbtnh').show();
+                    $("#confirmpub").removeAttr('disabled');
+                };
+            })(f);
+        }
+    };
+    this.handleContent = function (ctt) {
+        ctt.link = "";
+//        console.log(ctt);
+        if (!CBrowser.addContent(ctt, CONTENT_TYPE_MINE, true))
+            return false;
+        $("#confirmpub").removeAttr('disabled');
+        var rawtx = BrowserAPI.createTxByContent(ctt);
+        console.log(rawtx);
+    };
+    this.handleDragOver = function (evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+        evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+    };
+    this.handleFileInput = function (elemId) {
+        var elem = document.getElementById(elemId);
+        if (elem && document.createEvent) {
+            var evt = document.createEvent("MouseEvents");
+            evt.initEvent("click", true, false);
+            elem.dispatchEvent(evt);
+        }
+
+        input = document.getElementById('theFile');
+        console.log('length');
+        console.log(input.files.length);
+        if (input.files.length > 1) {
+            alert("Only one file is allowed per time");
+            return;
+        }
+
+        this.handleFiles(input.files);
+    };
+    this.handleFileSelect = function (evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+
+        console.log('length');
+        console.log(evt.dataTransfer.files.length);
+        if (evt.dataTransfer.files.length > 1) {
+            alert("Only one file is allowed per time");
+            return;
+        }
+        CPublisher.handleFiles(evt.dataTransfer.files);
+        return;
+    };
+    this.createTextContent = function (t) {
+        var ctthex = BrowserAPI.createTextContent(t);
+        var ctt = BrowserAPI.getContentByString(ctthex.hex);
+        ctt.poster = [BrowserAPI.getAccountID()];
+        ctt.hex = ctthex.hex;
+        return ctt;
+    };
+    this.createLinkContent = function (l) {
+        var ctthex = BrowserAPI.createLinkContent(l);
+        console.log(ctthex);
+        var ctt = BrowserAPI.getContentByString(ctthex.hex);
+        ctt.poster = [BrowserAPI.getAccountID()];
+        ctt.hex = ctthex.hex;
+        return ctt;
+    };
+    this.addTextToContent = function (ctt, t) {
+        console.log(ctt);
+        var isFile = ctt.content[0].cc_name === "CC_FILE_P";
+        if (!isFile)
+            return ctt;
+        var textCttH = BrowserAPI.createTextContent(t);
+        var textCtt = BrowserAPI.getContentByString(textCttH.hex);
+        console.log(textCtt);
+        var newCtt = ctt;
+        newCtt.content[0].content.push(textCtt.content[0]);
+        newCtt.hex = BrowserAPI.createHexContentByJson(newCtt);
+        console.log(newCtt);
+        console.log(textCtt);
+        return newCtt;
+    };
+    this.addLinkToContent = function (ctt, l) {
+        var isFile = ctt.content[0].cc_name === "CC_FILE_P";
+        var isText = ctt.content[0].cc_name === "CC_TEXT";
+        var isTextP = ctt.content[0].cc_name === "CC_TEXT_P";
+        if (!isFile && !isText && !isTextP)
+            return ctt;
+        var linkCttH = BrowserAPI.createLinkContent(l);
+        var linkCtt = BrowserAPI.getContentByString(linkCttH.hex);
+        var newCtt = ctt;
+        console.log(newCtt);
+        if (isFile || isTextP)
+            newCtt.content[0].content.push(linkCtt.content[0]);
+        else {
+
+        }
+        console.log(linkCtt);
+        newCtt.hex = BrowserAPI.createHexContentByJson(newCtt);
+        console.log(newCtt);
+    };
+    this.addTagField = function () {
+        var tagdiv = $("#pubtag-tpl").clone(true, true);
+        tagdiv.removeAttr("id").removeClass("hide");
+        $(tagdiv).insertBefore($('#pubbtnh'));
+    };
+    this.addLinkField = function () {
+        var linkdiv = $("#publink-tpl").clone(true, true);
+        linkdiv.removeAttr("id").removeClass("hide");
+        $(linkdiv).insertAfter($('#theText'));
+    };
+    this.addValidtilField = function () {
+        var linkdiv = $("#pubvalid-tpl").clone(true, true);
+        linkdiv.removeAttr("id").removeClass("hide");
+        $(linkdiv).insertAfter($('#theText'));
+    };
+    this.showPreview = function (file) {
+        if (file.ctt.content[0].content === "non-standard")
+            return;
+        var sdiv = $("#standard").clone(true, true);
+        sdiv.removeAttr("id");
+        sdiv.find(".container").attr("id", file.hash);
+        sdiv.find(".id").find(".text").attr("fullid", file.ctt.poster[0]);
+        sdiv.find(".id").find(".text").html(CBrowser.getLongPId(file.ctt.poster[0]));
+        sdiv.find(".linkspan").attr("clink", file.ctt.link);
+        sdiv = CBrowser.fillSdiv(sdiv, file.ctt);
+        if (sdiv === false)
+            return false;
+        $("#pubpreview").removeClass("hide").append(sdiv.children());
+        return true;
+    };
+};

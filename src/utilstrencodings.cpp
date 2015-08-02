@@ -534,3 +534,62 @@ bool DecodeVarInt(const std::vector<unsigned char>& sv, uint64_t& n)
     }
     return (chData & 0x80) ? false : true;
 }
+
+bool EncodeVarInt(const uint64_t nIn, string& str)
+{
+    int n = nIn;
+    char tmp[8];
+    int len = 0;
+    while (true) {
+        tmp[len] = (n & 0x7F) | (len ? 0x80 : 0x00);
+        if (n <= 0x7F)
+            break;
+        n = (n >> 7) - 1;
+        len++;
+    }
+    do {
+        std::string tstr;
+        tstr += tmp[len];
+        str.append(tstr, 0, 1);
+    } while (len--);
+    return true;
+}
+
+bool DecodeVarInt(string& str, uint64_t& n)
+{
+    string::iterator pc = str.begin();
+    n = 0;
+    unsigned char chData = 0xff;
+    int offset = 0;
+    while (pc < str.end()) {
+        if (offset > 9)
+            return false;
+        chData = *pc++;
+        n = (n << 7) | (chData & 0x7F);
+        offset++;
+        if (chData & 0x80)
+            n++;
+        else
+            break;
+    }
+    str = str.substr(offset);
+    return (chData & 0x80) ? false : true;
+}
+bool IsValidHttpFormat(const string str)
+{
+//    string pattern = "_^(?:(?:https?|ftp)://)(?:\S+(?::\S*)?@)?(?:(?!10(?:\.\d{1,3}){3})(?!127(?:\.\d{1,3}){3})(?!169\.254(?:\.\d{1,3}){2})(?!192\.168(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\x{00a1}-\x{ffff}0-9]+-?)*[a-z\x{00a1}-\x{ffff}0-9]+)(?:\.(?:[a-z\x{00a1}-\x{ffff}0-9]+-?)*[a-z\x{00a1}-\x{ffff}0-9]+)*(?:\.(?:[a-z\x{00a1}-\x{ffff}]{2,})))(?::\d{2,5})?(?:/[^\s]*)?$_iuS";
+//    Regex reg = new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+//    return reg.IsMatch(str);
+    try
+    {
+       boost::regex re( "_^(?:(?:https?|ftp)://)(?:\\S+(?::\\S*)?@)?(?:(?!10(?:\\.\\d{1,3}){3})(?!127(?:\\.\\d{1,3}){3})(?!169\\.254(?:\\.\\d{1,3}){2})(?!192\\.168(?:\\.\\d{1,3}){2})(?!172\\.(?:1[6-9]|2\\d|3[0-1])(?:\\.\\d{1,3}){2})(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\x{00a1}-\\x{ffff}0-9]+-?)*[a-z\\x{00a1}-\\x{ffff}0-9]+)(?:\\.(?:[a-z\\x{00a1}-\\x{ffff}0-9]+-?)*[a-z\\x{00a1}-\\x{ffff}0-9]+)*(?:\\.(?:[a-z\\x{00a1}-\\x{ffff}]{2,})))(?::\\d{2,5})?(?:/[^\\s]*)?$_iuS");
+
+       if (!boost::regex_match(str, re))
+           return false;
+    }
+    catch (boost::regex_error& e)
+    {   
+       return false;
+    }
+    return true;
+}

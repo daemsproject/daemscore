@@ -38,7 +38,8 @@ bool CFilePackage::SetContent(const CContent contentIn)
 {
     Clear();
     std::vector<std::pair<int, string> > vDecoded;
-    contentIn.Decode(vDecoded);
+    if(!contentIn.Decode(vDecoded))
+        return false;
     LogPrintf("CFilePackage::SetContent decoded size:%i\n",vDecoded.size());
     if(vDecoded.size()>0&&vDecoded[0].first==CC_FILE_PACKAGE_P)
     {

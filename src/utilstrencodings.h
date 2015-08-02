@@ -12,7 +12,8 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
-
+#include <boost/regex.hpp>
+using namespace std;
 #define BEGIN(a)            ((char*)&(a))
 #define END(a)              ((char*)&((&(a))[1]))
 #define UBEGIN(a)           ((unsigned char*)&(a))
@@ -43,6 +44,9 @@ int64_t atoi64(const std::string& str);
 int atoi(const std::string& str);
 bool EncodeVarInt(std::vector<unsigned char>& sv,const uint64_t n);
 bool DecodeVarInt(const std::vector<unsigned char>& sv, uint64_t& n);
+bool EncodeVarInt(const uint64_t nIn, string& str);
+bool DecodeVarInt(string& str, uint64_t& n);
+bool IsValidHttpFormat(const string str);
 /**
  * Convert string to signed 32-bit integer with strict parse error feedback.
  * @returns true if the entire string could be parsed as valid integer,

@@ -11,6 +11,7 @@
 #include "ccc/settings.h"
 #include "ccc/link.h"
 #include "ccc/content.h"
+#include "ccc/domain.h"
 #include "ccc/p2pservice.h"
 #include "checkpoints.h"
 #include "checkqueue.h"
@@ -1850,6 +1851,28 @@ void UpdateScriptCoinDB(const CTransaction& tx,CValidationState &state,const CCo
         
 
 }
+void GetDomainsInVins(const CTransaction& tx,const CCoinsViewCache& inputs,map<CScript,string>& mapBlockDomains)
+{
+    if(tx.IsCoinBase())//coinbase is not allowed to register domain
+        return;
+    BOOST_FOREACH(const CTxIn &txin, tx.vin)
+      { 
+        const COutPoint &prevout = txin.prevout;
+            
+        const CCoins *coins = inputs.AccessCoins(prevout.hash);  
+        if (coins==NULL){
+            LogPrintf("UpdateScriptCoinDB error null coin\n");
+            continue;
+        }  
+        CScript scriptPubKey=coins->vout[prevout.n].scriptPubKey;
+        if(mapBlockDomains.find(scriptPubKey)==mapBlockDomains.end())
+        {               
+           CDomain domain;
+           if(pDomainDBView->GetDomainByForward(scriptPubKey,domain,false))
+               mapBlockDomains[scriptPubKey]=domain.strDomain;
+        }  
+    }
+}
 bool CScriptCheck::operator()() {
     const CScript &scriptSig = ptxTo->vin[nIn].scriptSig;
     if (!VerifyScript(scriptSig, scriptPubKey, nFlags, CachingTransactionSignatureChecker(ptxTo, nIn, cacheStore), &error)) {
@@ -2176,6 +2199,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     std::vector<std::pair<uint256, CDiskTxPos> > vPos;
     vPos.reserve(block.vtx.size());
     blockundo.vtxundo.reserve(block.vtx.size() - 1);
+    map<CScript,string> mapBlockDomains;
     for (unsigned int i = 0; i < block.vtx.size(); i++)
     {
         const CTransaction &tx = block.vtx[i];
@@ -2222,14 +2246,17 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
             UpdateScript2TxPosDB(tx,pos,state,view,false);
             UpdateDomainDB(tx,block,i,state,view,false);
             UpdateTagDB(tx,block,i,state,view,false);
+            GetDomainsInVins(tx,view,mapBlockDomains);
             if(settings.nServiceFlags>>3&1)
-            UpdateScriptCoinDB(tx,state,view,false);
+                UpdateScriptCoinDB(tx,state,view,false);
         }
         UpdateCoins(tx, state, view, i == 0 ? undoDummy : blockundo.vtxundo.back(), pindex->nHeight);        
         //LogPrintf("%s : 22", __func__);
         vPos.push_back(std::make_pair(tx.GetHash(), pos));
         pos.nTxOffset += ::GetSerializeSize(tx, SER_DISK, CLIENT_VERSION);
     }
+    if(!fJustCheck)       
+        pDomainDBView->WriteBlockDomains(block.GetHash(),mapBlockDomains);    
     int64_t nTime1 = GetTimeMicros(); nTimeConnect += nTime1 - nTimeStart;
     LogPrint("bench", "      - Connect %u transactions: %.2fms (%.3fms/tx, %.3fms/txin) [%.2fs]\n", (unsigned)block.vtx.size(), 0.001 * (nTime1 - nTimeStart), 0.001 * (nTime1 - nTimeStart) / block.vtx.size(), nInputs <= 1 ? 0 : 0.001 * (nTime1 - nTimeStart) / (nInputs-1), nTimeConnect * 0.000001);
     if (pindex->pprev != NULL){  
@@ -4042,7 +4069,18 @@ void static ProcessGetData(CNode* pfrom)
                     if (!ReadBlockFromDisk(block, (*mi).second))
                         assert(!"cannot load block from disk");
                     if (inv.type == MSG_BLOCK)
-                        pfrom->PushMessage("block", block);
+                    {
+                        //ccc:add blockdomain information to client peers
+                        if(pfrom->fClient)
+                        {                          
+                            CDataStream sBlockDomains(SER_DISK, CLIENT_VERSION);
+                            pDomainDBView->GetBlockDomains(block.GetHash(),sBlockDomains);   
+                            LogPrintf("getblock blockdomains:%s",HexStr(sBlockDomains));
+                            pfrom->PushMessage("block", block,sBlockDomains);
+                        }
+                        else
+                            pfrom->PushMessage("block", block);
+                    }
                     else // MSG_FILTERED_BLOCK)
                     {
                         LOCK(pfrom->cs_filter);
@@ -4790,7 +4828,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         if (vInv.size() > 0)
             pfrom->PushMessage("inv", vInv);
     }
-    else if (strCommand == "service")
+    else if (strCommand == "service"&&settings.nServiceFlags>>3&1)
     {
         LOCK(cs_main);
         return ProcessP2PServiceRequest(pfrom, vRecv,  nTimeReceived);

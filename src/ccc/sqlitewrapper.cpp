@@ -61,7 +61,7 @@ bool CSqliteWrapper::CreateTables()
     CreateScriptIndexTable();
     CreateTxIndexTable();
     CreateChequeTable();
-    
+    CreateBlockDomainTable();
     return true;
 }
 bool CSqliteWrapper::_CreateTable(const char* tableName)
@@ -119,6 +119,19 @@ bool CSqliteWrapper::_CreateTable(const char* tableName)
     //LogPrintf("CSqliteWrapper _CreateTable success \n");
     return true;
 }
+bool CSqliteWrapper::CreateBlockDomainTable()
+{
+    //LogPrintf("CSqliteWrapper CreateBlockDomainTable %s \n",tableName);
+    char* zErrMsg=0;    
+    char* tableName="blockdomaintable";
+    char sql[2000];
+    const char* createtablestatement="CREATE TABLE IF NOT EXISTS %s( blockheight BLOB(32) PRIMARY KEY AUTOINCREMENT, mapdomains BLOB);";    
+    sprintf(sql,createtablestatement,tableName);
+    LogPrintf("CSqliteWrapper CreateBlockDomainTable statement %s \n",sql);
+    sqlite3_exec(pdb,sql,0,0,&zErrMsg);
+    LogPrintf("CSqliteWrapper CreateBlockDomainTable done %s \n",zErrMsg);
+    return true;
+}
 bool CSqliteWrapper::CreateTagIDTable()
 {
     //LogPrintf("CSqliteWrapper _CreateTable %s \n",tableName);
@@ -174,6 +187,56 @@ bool CSqliteWrapper::Write(const char* sql)
          return false;
      }
      return true;
+}
+bool CSqliteWrapper::Insert(const uint256 blockHash,const CDataStream& sBlockDomains)
+{
+    LogPrintf("InsertCheque\n");    
+    char* insertstatement="INSERT OR IGNORE INTO blockdomaintable VALUES (?,?);";
+    LogPrintf("GetInsertSql %s\n",insertstatement);
+    int result;
+    sqlite3_stmt  *stat;    
+   result=sqlite3_prepare_v2( pdb, insertstatement, -1, &stat, 0 );
+   LogPrintf("GetInsertSql1 %i\n",result);   
+   result=sqlite3_bind_blob( stat, 1, (char*)blockHash.begin(), 32, NULL );   
+   LogPrintf("GetInsertSql2 %i\n",result); 
+   result=sqlite3_bind_blob( stat, 2, (const char*)&sBlockDomains[0], sBlockDomains.size(), NULL );   
+   LogPrintf("GetInsertSql3 %i\n",result);   
+    result=sqlite3_step( stat );
+    LogPrintf("InsertCheque result %i\n",result);
+   sqlite3_finalize( stat );
+   return (result==SQLITE_OK);
+}
+bool CSqliteWrapper::GetBlockDomains(const uint256 blockHash,CDataStream& sBlockDomains)
+{
+    LogPrintf("CSqliteWrapper GetBlockDomains \n");
+    //char* zErrMsg=0;
+    char sql[2000]; 
+    const char* selectstatement="SELECT mapdomains FROM blockdomaintable WHERE blockheight = x'%s';";
+    sprintf(sql,selectstatement,blockHash.GetHex().c_str());
+    
+    LogPrintf("CSqliteWrapper GetBlockDomains sql %s\n",sql); 
+    sqlite3_stmt  *stmt = NULL;
+    int rc;
+    rc = sqlite3_prepare_v2(pdb , sql , strlen(sql) , &stmt , NULL);
+    if(rc != SQLITE_OK)
+    {
+        if(stmt)        
+            sqlite3_finalize(stmt);               
+        return false;
+    }
+    rc = sqlite3_step(stmt);
+        if(rc == SQLITE_ROW)
+        {
+           sBlockDomains.read((char*)sqlite3_column_blob(stmt,0),sqlite3_column_bytes(stmt,0));            
+           sqlite3_finalize(stmt);
+            return true;
+        }
+        else
+        {
+            sqlite3_finalize(stmt);
+            return false;
+        }    
+    return false;     
 }
 bool CSqliteWrapper::Insert(const CDomain& domain)
 {

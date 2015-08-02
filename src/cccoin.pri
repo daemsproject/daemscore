@@ -30,6 +30,7 @@ LIBS += \
   -lboost_chrono\
   -lboost_program_options \
   -lboost_unit_test_framework \
+  -lboost_regex \
   -lssl \
   -lcrypto \
   -lminiupnpc \
