@@ -76,7 +76,7 @@ BITCOIN_CORE_H = \
   amount.h \
   base58.h \
   bloom.h \
-  ccc/.cc.h \
+  ccc/cc.h \
   ccc/content.h \
   ccc/link.h \
   ccc/jsondb.h \

@@ -41,8 +41,9 @@ private:
     sqlite3* pdb;
     void HandleError(const int& status) throw(sqlite_error);
 public:
-    CSqliteWrapper(const boost::filesystem::path& path,bool fWipe = false);
+    CSqliteWrapper(const boost::filesystem::path& path);
     ~CSqliteWrapper();
+    bool ClearTable(const char* tableName);
     bool Write(const char* sql);
     bool Insert(const CDomain& domain);
     bool Update(const CDomain& domain);
@@ -72,7 +73,7 @@ public:
     bool GetTxIndex(const uint256 txid,int& txIndex) const;
     bool GetTxidByTxIndex(const int txIndex, uint256& txid) const;
     bool InsertCheque(int scriptIndex,int txIndex,ushort nOut, uint64_t nValue,uint32_t nLockTime);
-    bool GetCheques(const vector<CScript>& vScript,vector<CCheque> & vCheques)const;
+    bool GetCheques(const vector<CScript>& vScript,vector<CCheque> & vCheques,const int nMaxItems=1000,const int nOffset=0)const;
     bool EraseCheque(const int txindex, const uint32_t nOut);
 };
 #endif // BITCOIN_LEVELDBWRAPPER_H

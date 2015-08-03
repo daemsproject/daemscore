@@ -1102,13 +1102,12 @@ json_spirit::Value getdomaininfo(const json_spirit::Array& params, bool fHelp){
     if (fHelp || params.size() != 1)
         throw runtime_error("Wrong number of parameters");
     if (params[0].type() != array_type)
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter ids, expected array");
-    Array arrDomainNames = params[0].get_array();    
-    std::vector<CScript> vIDs;  
+        throw JSONRPCError( RPC_INVALID_PARAMETER, "Invalid parameter arrDomainNames, expected array");
+    Array arrDomainNames = params[0].get_array();  
     Array arrDomains;
     for (unsigned int i = 0; i < arrDomainNames.size(); i++) {
         if (arrDomainNames[i].type() != str_type)
-            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter id, expected str");        
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter DomainName, expected str");        
         CDomain domain;
         pDomainDBView->GetDomainByName(arrDomainNames[i].get_str(),domain);
         arrDomains.push_back(domain.ToJson());
@@ -1121,8 +1120,7 @@ json_spirit::Value getdomainsbyowner(const json_spirit::Array& params, bool fHel
         throw runtime_error("Wrong number of parameters");
     if (params[0].type() != array_type)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter ids, expected array");
-    Array arrIDs = params[0].get_array();    
-    std::vector<CScript> vIDs;
+    Array arrIDs = params[0].get_array(); 
     std::vector<CDomain> vDomain;
     for (unsigned int i = 0; i < arrIDs.size(); i++) {
         if (arrIDs[i].type() != str_type)
@@ -1144,8 +1142,7 @@ json_spirit::Value getdomainsbyforward(const json_spirit::Array& params, bool fH
         throw runtime_error("Wrong number of parameters");
     if (params[0].type() != array_type)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter ids, expected array");
-    Array arrIDs = params[0].get_array();    
-    std::vector<CScript> vIDs; 
+    Array arrIDs = params[0].get_array(); 
     std::vector<CDomain> vDomain;
     for (unsigned int i = 0; i < arrIDs.size(); i++) {
         if (arrIDs[i].type() != str_type)

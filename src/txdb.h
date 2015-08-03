@@ -76,10 +76,10 @@ public:
 class CDomainViewDB //:public CDomainView
 {
 protected:
-    CSqliteWrapper db;
+    CSqliteWrapper* db;
 public:
     //std::string strtest="db loaded";
-    CDomainViewDB( bool fWipe = false);
+    CDomainViewDB(CSqliteWrapper* dbIn, bool fWipe = false);
      //bool GetForward(const std::string strDomainName,CContent& forward)const ;   
      bool _GetDomainByForward(const int nExtension,const CScript scriptPubKey,std::vector<CDomain> &vDomain)const ; 
      bool _GetDomainByOwner(const int nExtension,const CScript scriptPubKey,std::vector<CDomain> &vDomain)const ;
@@ -103,22 +103,23 @@ public:
     //! The passed mapTam can be modified.
      //bool BatchWrite(const std::vector<CDomain> &vDomain);
      bool Write(const CDomain &domain);
+     bool ClearTables();
     //! As we use CDomainView polymorphically, have a virtual destructor
      ~CDomainViewDB() {}
 };
 class CTagViewDB    
 {
 protected:
-    CSqliteWrapper db;
+    CSqliteWrapper* db;
 public:
     //std::string strtest="db loaded";
-    CTagViewDB( bool fWipe = false);
+    CTagViewDB(CSqliteWrapper* dbIn, bool fWipe = false);
      //bool GetForward(const std::string strDomainName,CContent& forward)const ;   
     bool HasLink(const CLink link)const;
      bool Search(vector<CLink>& vLink,const std::vector<string> &vTag,const int cc=-1,const int nMaxItems=1000,const int nOffset=0)const ;           
      bool Insert(const int cc,const string tag,const CLink link,const int nExpireTime);
      bool ClearExpired();
-    
+    bool ClearTables();
      ~CTagViewDB() {}
 };
 class CCheque
@@ -149,15 +150,15 @@ public:
 class CScriptCoinDB 
 {
 protected:
-    CSqliteWrapper db;
+    CSqliteWrapper* db;
 public:
     
-    CScriptCoinDB( bool fWipe = false);
+    CScriptCoinDB(CSqliteWrapper* dbIn, bool fWipe = false);
     
      bool Search(const vector<CScript>& vScriptPubKey,vector<CCheque> & vCheques)const ;    
      bool Insert(const CCheque cheque);
      bool Erase(const uint256 txid, const uint32_t nOut);
-    
+    bool ClearTables();
     
      ~CScriptCoinDB() {}
 };

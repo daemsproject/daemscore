@@ -550,7 +550,7 @@ CBlockIndex* FindForkInGlobalIndex(const CChain& chain, const CBlockLocator& loc
     }
     return chain.Genesis();
 }
-
+CSqliteWrapper *psqliteDB = NULL;
 CCoinsViewCache *pcoinsTip = NULL;
 CBlockTreeDB *pblocktree = NULL;
 CScript2TxPosDB *pScript2TxPosDB=NULL;
@@ -1801,7 +1801,9 @@ void UpdateTagDB(const CTransaction& tx,const CBlock& block,const int nTx,CValid
 void UpdateScriptCoinDB(const CTransaction& tx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse)
 {   
     uint256 txid=tx.GetHash();
-    if(!tx.IsCoinBase()){        
+    //LogPrintf("UpdateScriptCoinDB txid:%s\n",txid.GetHex());
+    if(!tx.IsCoinBase())
+    {        
       BOOST_FOREACH(const CTxIn &txin, tx.vin)
       {                  
             const COutPoint &prevout = txin.prevout;
@@ -1839,17 +1841,14 @@ void UpdateScriptCoinDB(const CTransaction& tx,CValidationState &state,const CCo
         else
         {
             CCheque cheque;
-                cheque.nLockTime=tx.vout[i].nLockTime;
-                cheque.nOut=i;
-                cheque.nValue=tx.vout[i].nValue;
-                cheque.scriptPubKey=tx.vout[i].scriptPubKey;
-                cheque.txid=txid;                
-                pScriptCoinDBView->Insert(cheque);
-        }    
-        
+            cheque.nLockTime=tx.vout[i].nLockTime;
+            cheque.nOut=i;
+            cheque.nValue=tx.vout[i].nValue;
+            cheque.scriptPubKey=tx.vout[i].scriptPubKey;
+            cheque.txid=txid;                
+            pScriptCoinDBView->Insert(cheque);
+        }
     }
-        
-
 }
 void GetDomainsInVins(const CTransaction& tx,const CCoinsViewCache& inputs,map<CScript,string>& mapBlockDomains)
 {
@@ -1861,7 +1860,7 @@ void GetDomainsInVins(const CTransaction& tx,const CCoinsViewCache& inputs,map<C
             
         const CCoins *coins = inputs.AccessCoins(prevout.hash);  
         if (coins==NULL){
-            LogPrintf("UpdateScriptCoinDB error null coin\n");
+            LogPrintf("GetDomainsInVins error null coin\n");
             continue;
         }  
         CScript scriptPubKey=coins->vout[prevout.n].scriptPubKey;
@@ -2077,7 +2076,7 @@ bool DisconnectBlock(CBlock& block, CValidationState& state, CBlockIndex* pindex
         {
             UpdateScript2TxPosDB(tx,postx,state,view,true);
             if(settings.nServiceFlags>>3&1)
-            UpdateScriptCoinDB(tx,state,view,true);
+                UpdateScriptCoinDB(tx,state,view,true);
         }
         else
             std::cout<<"disconnect block tx pos not found:"<<hash.GetHex()<<"\n";
@@ -2240,13 +2239,14 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
         if (i > 0) {
             blockundo.vtxundo.push_back(CTxUndo());
         }
-        ///LogPrintf("%s : 21", __func__);
+        //LogPrintf("%s height: %i \n", __func__,block.nBlockHeight);
         if(!fJustCheck)
         {
             UpdateScript2TxPosDB(tx,pos,state,view,false);
             UpdateDomainDB(tx,block,i,state,view,false);
             UpdateTagDB(tx,block,i,state,view,false);
             GetDomainsInVins(tx,view,mapBlockDomains);
+            //LogPrintf("%s serviceflages: %i \n", __func__,settings.nServiceFlags);
             if(settings.nServiceFlags>>3&1)
                 UpdateScriptCoinDB(tx,state,view,false);
         }

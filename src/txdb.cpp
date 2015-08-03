@@ -260,7 +260,10 @@ bool CScript2TxPosViewDB::Write(const CScript &scriptPubKey,const std::vector<CD
     return db.Write(scriptPubKey,vTxPos);
 }
 
-CDomainViewDB::CDomainViewDB(bool fWipe) : db(GetDataDir() / "sqlitedb", fWipe) {
+CDomainViewDB::CDomainViewDB(CSqliteWrapper* dbIn,bool fWipe) : db(dbIn)
+{
+    if(fWipe)
+        ClearTables();
 }
 bool CDomainViewDB::Update(const CScript ownerIn,const string& strDomainContent,const uint64_t lockedValue,const uint32_t nLockTimeIn,const CLink link)
 {
@@ -365,10 +368,10 @@ bool CDomainViewDB::Update(const CScript ownerIn,const string& strDomainContent,
     if(fHasRecord)
     {
        //char* sql=existingDomain.GetUpdateSql();
-       //return db.Write(sql);
-        return db.Update(existingDomain);
+       //return db->Write(sql);
+        return db->Update(existingDomain);
     }
-    return db.Insert(existingDomain);
+    return db->Insert(existingDomain);
     
 }
 //TODO reverse: only reverses REG, transfer and enlong.
@@ -404,8 +407,8 @@ bool CDomainViewDB::Reverse(const string& strDomainContent)
 bool CDomainViewDB::Write(const CDomain &domain)
 {
     //char* sql=domain.GetInsertSql();
-    //    return db.Write(sql);
-    return db.Insert(domain);
+    //    return db->Write(sql);
+    return db->Insert(domain);
 }
 bool CDomainViewDB::_GetDomainByForward(const int nExtension,const CScript scriptPubKey,std::vector<CDomain> &vDomain)const 
 {
@@ -425,11 +428,11 @@ bool CDomainViewDB::_GetDomainByForward(const int nExtension,const CScript scrip
     
     
     
-    return db.GetDomain(tableName,searchColumn, searchValue,vDomain);
+    return db->GetDomain(tableName,searchColumn, searchValue,vDomain);
     
     
     
-//    if(db.Get(tableName,searchColumn,searchValue,result,nRow,nColumn))
+//    if(db->Get(tableName,searchColumn,searchValue,result,nRow,nColumn))
 //    {
 //        for(int i=0;i<nRow;i++)
 //        {
@@ -458,11 +461,11 @@ bool CDomainViewDB::_GetDomainByOwner(const int nExtension,const CScript scriptP
     searchValue=str2.c_str();
     
     
-    return db.GetDomain(tableName,searchColumn, searchValue,vDomain);
+    return db->GetDomain(tableName,searchColumn, searchValue,vDomain);
     
     
 //    
-//    if(db.Get(tableName,searchColumn,searchValue,result,nRow,nColumn))
+//    if(db->Get(tableName,searchColumn,searchValue,result,nRow,nColumn))
 //    {
 //        for(int i=0;i<nRow;i++)
 //        {
@@ -491,7 +494,7 @@ bool CDomainViewDB::GetDomainByName(const string strDomainName,CDomain& domain)c
     std::vector<CDomain> vDomain;
     
     
-    if(db.GetDomain(tableName.c_str(),searchColumn.c_str(), searchValue,vDomain)&&vDomain.size()>0)
+    if(db->GetDomain(tableName.c_str(),searchColumn.c_str(), searchValue,vDomain)&&vDomain.size()>0)
     {
         domain=vDomain[0];
         return true;
@@ -500,7 +503,7 @@ bool CDomainViewDB::GetDomainByName(const string strDomainName,CDomain& domain)c
     
 //    
 //    
-//    if(db.Get(tableName,searchColumn,searchValue,result,nRow,nColumn))
+//    if(db->Get(tableName,searchColumn,searchValue,result,nRow,nColumn))
 //    {
 //        if(nRow==0){
 //            return false;
@@ -560,23 +563,33 @@ bool CDomainViewDB::WriteBlockDomains(const uint256 blockHash,const map<CScript,
 {
     CDataStream sBlockDomains(SER_DISK, CLIENT_VERSION);
     sBlockDomains<<mapBlockDomains;
-    return db.Insert(blockHash,sBlockDomains);
+    return db->Insert(blockHash,sBlockDomains);
 }
 bool  CDomainViewDB::GetBlockDomains(const uint256 blockHash,CDataStream& sBlockDomains)
 {    
-    return db.GetBlockDomains(blockHash, sBlockDomains);
+    return db->GetBlockDomains(blockHash, sBlockDomains);
+}
+bool  CDomainViewDB::ClearTables()
+{
+    db->ClearTable("domainf");
+    db->ClearTable("domainfai");
+    db->ClearTable("blockdomaintable");
+    return true;
 }
 
-
-CTagViewDB::CTagViewDB( bool fWipe): db(GetDataDir() / "sqlitedb", fWipe){}
+CTagViewDB::CTagViewDB(CSqliteWrapper* dbIn,bool fWipe) : db(dbIn)
+{
+    if(fWipe)
+        ClearTables();
+}
 bool CTagViewDB::HasLink(const CLink link)const{
     vector<CLink> vLink;
     vector<string> vTag;
-    return (db.GetLinks(vTag,0,link,vLink)&&vLink.size()>0);
+    return (db->GetLinks(vTag,0,link,vLink)&&vLink.size()>0);
 }
 bool CTagViewDB::Search(vector<CLink>& vLink,const std::vector<string> &vTag,const int cc,const int nMaxItems,const int nOffset)const
 {
-    return db.GetLinks(vTag,cc,CLink(),vLink,nMaxItems, nOffset);
+    return db->GetLinks(vTag,cc,CLink(),vLink,nMaxItems, nOffset);
 
 }           
 bool CTagViewDB::Insert(const int cc,const string tag,const CLink link,const int nExpireTime)
@@ -584,32 +597,53 @@ bool CTagViewDB::Insert(const int cc,const string tag,const CLink link,const int
     if(tag.size()>32)
         return false;
     int tagID;
-    db.InsertTagID(tag,tagID);
+    db->InsertTagID(tag,tagID);
         LogPrintf("txdb insert tag %s \n", tag);
-    return db.InsertTag(cc,tagID,link, nExpireTime);
+    return db->InsertTag(cc,tagID,link, nExpireTime);
 }
 bool CTagViewDB::ClearExpired()
 {
-    return db.ClearExpiredTags(GetAdjustedTime());
+    return db->ClearExpiredTags(GetAdjustedTime());
 }
-CScriptCoinDB::CScriptCoinDB( bool fWipe): db(GetDataDir() / "sqlitedb", fWipe){}
+bool  CTagViewDB::ClearTables()
+{    
+   return db->ClearTable("tag");
+    
+}
+CScriptCoinDB::CScriptCoinDB(CSqliteWrapper* dbIn,bool fWipe) : db(dbIn)
+{
+    if(fWipe)
+        ClearTables();
+}
 bool CScriptCoinDB::Insert(const CCheque cheque)
 {
     int scriptPubKeyIndex;
-    db.InsertScriptIndex(cheque.scriptPubKey,scriptPubKeyIndex);
-    LogPrintf("txdb insert scriptPubKeyID %i \n", scriptPubKeyIndex);
+    if (!db->InsertScriptIndex(cheque.scriptPubKey,scriptPubKeyIndex))
+    {
+        LogPrintf("CScriptCoinDB insertscriptindex failed \n");
+    }    
     int txIndex;
-    db.InsertTxIndex(cheque.txid,txIndex);    
-    return db.InsertCheque(scriptPubKeyIndex,txIndex,cheque.nOut, cheque.nValue,cheque.nLockTime);
+    if(!db->InsertTxIndex(cheque.txid,txIndex))
+    {
+        LogPrintf("CScriptCoinDB inserttxindex failed \n");
+    }
+    //LogPrintf("txdb  CScriptCoinDB insert scriptPubKeyID %i,txIndex %i \n", scriptPubKeyIndex,txIndex);
+    return db->InsertCheque(scriptPubKeyIndex,txIndex,cheque.nOut, cheque.nValue,cheque.nLockTime);
 }
 bool CScriptCoinDB::Search(const vector<CScript>& vScriptPubKey,vector<CCheque> & vCheques)const 
 {
-    return db.GetCheques(vScriptPubKey, vCheques);
+    return db->GetCheques(vScriptPubKey, vCheques);
 
 } 
 bool CScriptCoinDB::Erase(const uint256 txid, const uint32_t nOut)
 {
     int txIndex;
-    db.InsertTxIndex(txid,txIndex); 
-    return db.EraseCheque(txIndex,nOut);
+    db->InsertTxIndex(txid,txIndex); 
+    return db->EraseCheque(txIndex,nOut);
+}
+bool  CScriptCoinDB::ClearTables()
+{    
+    db->ClearTable("txindextable");
+    db->ClearTable("chequetable");
+   return true; 
 }

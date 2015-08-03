@@ -40,7 +40,7 @@
 #include <vector>
 
 #include <boost/unordered_map.hpp>
-
+class CSqliteWrapper;
 class CBlockIndex;
 class CBlockTreeDB;
 class CDomainViewDB;
@@ -540,7 +540,7 @@ bool ReconsiderBlock(CValidationState& state, CBlockIndex *pindex);
 
 /** The currently-connected chain of blocks. */
 extern CChain chainActive;
-
+extern CSqliteWrapper *psqliteDB;
 /** Global variable that points to the active CCoinsView (protected by cs_main) */
 extern CCoinsViewCache *pcoinsTip;
 /** Global variable that points to the active CScript2TxPosDB (protected by cs_main) */

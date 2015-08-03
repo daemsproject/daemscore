@@ -195,6 +195,8 @@ void Shutdown()
         pTagDBView = NULL; 
         delete pScriptCoinDBView;
         pScriptCoinDBView =NULL;
+        delete psqliteDB;
+        psqliteDB = NULL;
     }
 #ifdef ENABLE_WALLET
     //if (pwalletMain)
@@ -764,7 +766,8 @@ bool AppInit2(boost::thread_group& threadGroup)
     nMaxDatacarrierBytes = GetArg("-datacarriersize", nMaxDatacarrierBytes);
 
     fAlerts = GetBoolArg("-alerts", DEFAULT_ALERTS);
-
+    
+    
     // ********************************************************* Step 4: application initialization: dir lock, daemonize, pidfile, debug log
 
     // Sanity check
@@ -790,6 +793,7 @@ bool AppInit2(boost::thread_group& threadGroup)
     if (GetBoolArg("-shrinkdebugfile", !fDebug))
         ShrinkDebugFile();
     LogPrintf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    
     LogPrintf("Cccoin version %s (%s)\n", FormatFullVersion(), CLIENT_DATE);
     LogPrintf("Using OpenSSL version %s\n", SSLeay_version(SSLEAY_VERSION));
 #ifdef ENABLE_WALLET
@@ -1041,20 +1045,21 @@ bool AppInit2(boost::thread_group& threadGroup)
                 delete pDomainDBView;
                 delete pTagDBView;
                 delete pScriptCoinDBView;
+                delete psqliteDB;
                 
         
             
-
+                psqliteDB=new CSqliteWrapper(GetDataDir() / "sqlitedb");
                 pblocktree = new CBlockTreeDB(nBlockTreeDBCache, false, fReindex);
                 pcoinsdbview = new CCoinsViewDB(nCoinDBCache, false, fReindex);
                 pcoinscatcher = new CCoinsViewErrorCatcher(pcoinsdbview);
                 pcoinsTip = new CCoinsViewCache(pcoinscatcher);
                 pScript2TxPosDBView = new CScript2TxPosViewDB(nBlockTreeDBCache, false, fReindex);                
                 pScript2TxPosDB=new CScript2TxPosDB(pScript2TxPosDBView);
-                pDomainDBView = new CDomainViewDB(fReindex);   
-                pTagDBView = new CTagViewDB(fReindex); 
-                pScriptCoinDBView = new CScriptCoinDB(fReindex); 
-                
+                pDomainDBView = new CDomainViewDB(psqliteDB,fReindex);   
+                pTagDBView = new CTagViewDB(psqliteDB,fReindex); 
+                pScriptCoinDBView = new CScriptCoinDB(psqliteDB,fReindex); 
+                settings.LoadSettings();
                 if (fReindex)
                     pblocktree->WriteReindexing(true);
 
@@ -1328,7 +1333,7 @@ bool AppInit2(boost::thread_group& threadGroup)
 
     SetRPCWarmupFinished();
     uiInterface.InitMessage(_("Done loading"));
-    settings.LoadSettings();
+    
 #ifdef ENABLE_WALLET
     if (pwalletMain) {
         //pwalletMain->LoadTxs();
