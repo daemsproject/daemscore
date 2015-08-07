@@ -34,6 +34,26 @@ bool CFilePackage::SetLink(const CLink linkIn)
     LogPrintf("CFilePackage::SetLink link: %s content:%s\n",link.ToString(),content);
     return SetContent(content);
 }
+bool CFilePackage::SetLink(const CLinkUni linkIn)
+{
+    if(linkIn.linkType==CC_LINK_TYPE_BLOCKCHAIN)    
+        link=CLink(linkIn.nHeight,linkIn.nTx,linkIn.nVout);
+    else if (linkIn.linkType==CC_LINK_TYPE_TXIDOUT)
+    {
+        if(!TxidOutLink2BlockChainLink(linkIn.txid,linkIn.nVout,link))
+            return true;
+    }
+    else
+        return false;
+    CContent content;    
+    if(!GetContentByLink(linkIn,content))
+    {
+        LogPrintf("CFilePackage::SetLink link: %s content:%s\n",link.ToString(),content);
+        return false;
+    }
+    LogPrintf("CFilePackage::SetLink link: %s content:%s\n",link.ToString(),content);
+    return SetContent(content);
+}
 bool CFilePackage::SetContent(const CContent contentIn)
 {
     Clear();

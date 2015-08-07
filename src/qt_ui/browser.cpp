@@ -6,14 +6,13 @@
 #include "config/bitcoin-config.h"
 #endif
 
-#include "bitcoingui.h"
 
-#include "clientmodel.h"
-#include "walletmodel.h"
+#include "browser.h"
+
 #include "guiconstants.h"
 #include "guiutil.h"
 #include "intro.h"
-#include "networkstyle.h"
+
 //#include "optionsmodel.h"
 #include "splashscreen.h"
 #include "utilitydialog.h"
@@ -36,18 +35,17 @@
 #include <stdint.h>
 
 #include <boost/filesystem/operations.hpp>
-#include <boost/thread.hpp>
 
-#include <QApplication>
+
+
 #include <QDebug>
 #include <QLibraryInfo>
 #include <QLocale>
 #include <QMessageBox>
 #include <QSettings>
-#include <QThread>
-#include <QTimer>
 #include <QTranslator>
-
+#include <QWebSettings>
+#include <QNetworkProxyFactory>
 #if defined(QT_STATICPLUGIN)
 #include <QtPlugin>
 #if QT_VERSION < 0x050000
@@ -159,89 +157,9 @@ void DebugMessageHandler(QtMsgType type, const QMessageLogContext& context, cons
 }
 #endif
 
-/** Class encapsulating Bitcoin Core startup and shutdown.
- * Allows running startup and shutdown in a different thread from the UI thread.
- */
-class BitcoinCore: public QObject
-{
-    Q_OBJECT
-public:
-    explicit BitcoinCore();
 
-public slots:
-    void initialize();
-    void shutdown();
 
-signals:
-    void initializeResult(int retval);
-    void shutdownResult(int retval);
-    void runawayException(const QString &message);
-
-private:
-    boost::thread_group threadGroup;
-
-    /// Pass fatal exception message to UI thread
-    void handleRunawayException(std::exception *e);
-};
-
-/** Main Bitcoin application object */
-class BitcoinApplication: public QApplication
-{
-    Q_OBJECT
-public:
-    explicit BitcoinApplication(int &argc, char **argv);
-    ~BitcoinApplication();
-
-#ifdef ENABLE_WALLET
-    /// Create payment server
-    //void createPaymentServer();
-#endif
-    /// Create options model
-    //void createOptionsModel();
-    /// Create main window
-    void createWindow(const NetworkStyle *networkStyle,QString languange);
-    /// Create splash screen
-    void createSplashScreen(const NetworkStyle *networkStyle);
-
-    /// Request core initialization
-    void requestInitialize();
-    /// Request core shutdown
-    void requestShutdown();
-
-    /// Get process return value
-    int getReturnValue() { return returnValue; }
-
-    /// Get window identifier of QMainWindow (BitcoinGUI)
-    WId getMainWinId() const;
-
-public slots:
-    void initializeResult(int retval);
-    void shutdownResult(int retval);
-    /// Handle runaway exceptions. Shows a message box with the problem and quits the program.
-    void handleRunawayException(const QString &message);
-
-signals:
-    void requestedInitialize();
-    void requestedShutdown();
-    void stopThread();
-    void splashFinished(QWidget *window);
-
-private:
-    QThread *coreThread;
-    //OptionsModel *optionsModel;
-    ClientModel *clientModel;
-    BitcoinGUI *window;
-    QTimer *pollShutdownTimer;
-#ifdef ENABLE_WALLET
-    //PaymentServer* paymentServer;
-    WalletModel *walletModel;
-#endif
-    int returnValue;
-
-    void startThread();
-};
-
-#include "browser.moc"
+//#include "browser.moc"
 
 BitcoinCore::BitcoinCore():
     QObject()
@@ -283,6 +201,7 @@ void BitcoinCore::shutdown()
         threadGroup.interrupt_all();
         threadGroup.join_all();
         Shutdown();
+        LogPrintf("shut down finished \n");
         qDebug() << __func__ << ": Shutdown finished";
         emit shutdownResult(1);
     } catch (std::exception& e) {
@@ -300,7 +219,7 @@ BitcoinApplication::BitcoinApplication(int &argc, char **argv):
     window(0),
     pollShutdownTimer(0),
 #ifdef ENABLE_WALLET
-    //paymentServer(0),
+   
     walletModel(0),
 #endif
     returnValue(0)
@@ -320,20 +239,12 @@ BitcoinApplication::~BitcoinApplication()
 
     delete window;
     window = 0;
-#ifdef ENABLE_WALLET
-    //delete paymentServer;
-    //paymentServer = 0;
-#endif
+
     //delete optionsModel;
     //optionsModel = 0;
 }
 
-#ifdef ENABLE_WALLET
-//void BitcoinApplication::createPaymentServer()
-//{
-//    paymentServer = new PaymentServer(this);
-//}
-#endif
+
 
 //void BitcoinApplication::createOptionsModel()
 //{
@@ -396,7 +307,7 @@ void BitcoinApplication::requestShutdown()
     pollShutdownTimer->stop();
 
 #ifdef ENABLE_WALLET
-    //window->removeAllWallets();
+    
     delete walletModel;
     walletModel = 0;
 #endif
@@ -418,10 +329,8 @@ void BitcoinApplication::initializeResult(int retval)
     returnValue = retval ? 0 : 1;
     if(retval)
     {
-#ifdef ENABLE_WALLET
-        //PaymentServer::LoadRootCAs();
-        //paymentServer->setOptionsModel(optionsModel);
-#endif
+        loadSettings();
+
 
         clientModel = new ClientModel();
         window->setClientModel(clientModel);
@@ -431,12 +340,10 @@ void BitcoinApplication::initializeResult(int retval)
         {
             walletModel = new WalletModel(pwalletMain,window);
         LogPrintf("init result2 \n");
-            window->addWallet(BitcoinGUI::DEFAULT_WALLET,walletModel);
+            window->addWallet(QString(""),walletModel);
+             LogPrintf("init result3 \n");
             window->subscribeToCoreSignalsJs();//, walletModel);
-            //window->setCurrentWallet(BitcoinGUI::DEFAULT_WALLET);
-
-            //connect(walletModel, SIGNAL(coinsSent(CWallet*,SendCoinsRecipient,QByteArray)),
-            //                 paymentServer, SLOT(fetchPaymentACK(CWallet*,const SendCoinsRecipient&,QByteArray)));
+             LogPrintf("init result4 \n");              
         }
 #endif
 
@@ -448,18 +355,17 @@ void BitcoinApplication::initializeResult(int retval)
         else
         {
             window->show();
+             LogPrintf("init result5 \n");
         }
         emit splashFinished(window);
-
+        LogPrintf("init result3 \n");
 #ifdef ENABLE_WALLET
         // Now that initialization/startup is done, process any command-line
         // bitcoin: URIs or payment requests:
-        //connect(paymentServer, SIGNAL(receivedPaymentRequest(SendCoinsRecipient)),
-        //                 window, SLOT(handlePaymentRequest(SendCoinsRecipient)));
+        
         //connect(window, SIGNAL(receivedURI(QString)),
         //                 paymentServer, SLOT(handleURIOrFile(QString)));
-        //connect(paymentServer, SIGNAL(message(QString,QString,unsigned int)),
-        //                 window, SLOT(message(QString,QString,unsigned int)));
+        
         //QTimer::singleShot(100, paymentServer, SLOT(uiReady()));
 #endif
     } else {
@@ -646,4 +552,49 @@ int main(int argc, char *argv[])
     }
     return app.getReturnValue();
 }
+
 #endif // BITCOIN_QT_TEST
+void BitcoinApplication::loadSettings()
+{
+    QSettings settings;
+    settings.beginGroup(QLatin1String("websettings"));
+
+    QWebSettings *defaultSettings = QWebSettings::globalSettings();
+    QString standardFontFamily = defaultSettings->fontFamily(QWebSettings::StandardFont);
+    int standardFontSize = defaultSettings->fontSize(QWebSettings::DefaultFontSize);
+    QFont standardFont = QFont(standardFontFamily, standardFontSize);
+    standardFont = qvariant_cast<QFont>(settings.value(QLatin1String("standardFont"), standardFont));
+    defaultSettings->setFontFamily(QWebSettings::StandardFont, standardFont.family());
+    defaultSettings->setFontSize(QWebSettings::DefaultFontSize, standardFont.pointSize());
+    defaultSettings->setAttribute(QWebSettings::LocalContentCanAccessRemoteUrls,true);
+    defaultSettings->setAttribute(QWebSettings::LocalContentCanAccessFileUrls,true);
+    defaultSettings->setAttribute(QWebSettings::XSSAuditingEnabled,false);
+    
+    
+    QString fixedFontFamily = defaultSettings->fontFamily(QWebSettings::FixedFont);
+    int fixedFontSize = defaultSettings->fontSize(QWebSettings::DefaultFixedFontSize);
+    QFont fixedFont = QFont(fixedFontFamily, fixedFontSize);
+    fixedFont = qvariant_cast<QFont>(settings.value(QLatin1String("fixedFont"), fixedFont));
+    defaultSettings->setFontFamily(QWebSettings::FixedFont, fixedFont.family());
+    defaultSettings->setFontSize(QWebSettings::DefaultFixedFontSize, fixedFont.pointSize());
+
+    defaultSettings->setAttribute(QWebSettings::JavascriptEnabled, settings.value(QLatin1String("enableJavascript"), true).toBool());
+    defaultSettings->setAttribute(QWebSettings::ScrollAnimatorEnabled, settings.value(QLatin1String("enableScrollAnimator"), true).toBool());
+    QNetworkProxyFactory::setUseSystemConfiguration(true);
+    defaultSettings->setAttribute(QWebSettings::PluginsEnabled, true);
+    defaultSettings->setAttribute(QWebSettings::AutoLoadImages, true);
+//#if defined(QTWEB_PLUGINS)
+    defaultSettings->setAttribute(QWebSettings::PluginsEnabled, settings.value(QLatin1String("enablePlugins"), true).toBool());
+//#endif
+
+//#if defined(QTWEB_USERSTYLESHEET)
+    QUrl url = settings.value(QLatin1String("userStyleSheet")).toUrl();
+    defaultSettings->setUserStyleSheetUrl(url);
+//#endif
+
+    settings.endGroup();
+}
+ BitcoinApplication *BitcoinApplication::instance()
+    {
+    return (static_cast<BitcoinApplication *>(QCoreApplication::instance()));
+    }

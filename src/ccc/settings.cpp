@@ -121,6 +121,13 @@ int GetPageIDByName(std::string pageName)
             return it->first;
     return 0;
 }
+string GetPageName(int nPageID)
+{
+    std::map<int,std::string>::iterator it=mapPageNames.find(nPageID);
+    if(it!=mapPageNames.end())
+        return it->second;
+    return "untitled";
+}
 bool CSettings::SaveSettings()
 {
     filesystem::path fpFile=GetDataDir() / "appdata" / "settings.json";

@@ -20,15 +20,18 @@
 #include <QMenu>
 #include <QPoint>
 #include <QSystemTrayIcon>
+#include <QtGui/QIcon>
+
 
 class ClientModel;
 class NetworkStyle;
 class Notificator;
 //class OptionsModel;
 //class RPCConsole;
-//class SendCoinsRecipient;
+
 //class UnitDisplayStatusBarControl;
 class MainView;
+class WebView;
 class WalletModel;
 //class PaymentRequest;
 //class CWalletTx;
@@ -38,13 +41,26 @@ QT_BEGIN_NAMESPACE
 class QAction;
 class QProgressBar;
 class QProgressDialog;
+class QNetworkAccessManager;
+class QLocalServer;
+class QWebFrame;
 QT_END_NAMESPACE
-
 /**
   Bitcoin GUI main class. This class represents the main window of the Bitcoin UI. It communicates with both the client and
   wallet models to give the user an up-to-date view of the current core state.
 */
 typedef std::basic_string<char, std::char_traits<char>, secure_allocator<char> > SecureString;
+
+
+class ToolbarSearch;
+class ChaseWidget;
+class DownloadManager;
+class BookmarksManager;
+class CookieJar;
+class HistoryManager;
+class AutoSaver;
+class BookmarksToolBar;
+
 class BitcoinGUI : public QMainWindow
 {
     Q_OBJECT
@@ -61,6 +77,7 @@ public:
     void setClientModel(ClientModel *clientModel);
     void installWebPages();
     
+    
 #ifdef ENABLE_WALLET
     /** Set the wallet model.
         The wallet model represents a bitcoin wallet, and offers access to the list of transactions, address book and sending
@@ -76,6 +93,27 @@ public:
     QString language;
     bool handleUserConfirm(QString title,QString message,int nOP,string& strError,SecureString& ssInput);
     JsInterface* jsInterface;
+    
+    
+    
+    
+    
+    QIcon icon(const QUrl &url) const;
+    void saveSession();
+    bool canRestoreSession() const;
+    MainView *getMainView() const;
+    WebView *currentTab() const;
+    QIcon defaultIcon() const;
+    static HistoryManager *historyManager();
+    static CookieJar *cookieJar();
+    static DownloadManager *downloadManager();
+    static QNetworkAccessManager *networkAccessManager();
+    static BookmarksManager *bookmarksManager();
+    
+    QSize sizeHint() const;
+    static const char *defaultHome;
+    QByteArray saveState(bool withTabs = true) const;
+    bool restoreState(const QByteArray &state);
 protected:
     void changeEvent(QEvent *e);
     void closeEvent(QCloseEvent *event);
@@ -96,6 +134,12 @@ private:
     QProgressDialog *progressDialog;
 
     QMenuBar *appMenuBar;
+    QToolBar *toolbar;
+    
+    
+    
+    
+    
     QAction *walletAction;
     QAction *browserAction;
     QAction *publisherAction;
@@ -108,9 +152,7 @@ private:
     QAction *quitAction;
     
     //QAction *usedSendingAddressesAction;
-    //QAction *usedReceivingAddressesAction;
-    //QAction *signMessageAction;
-    //QAction *verifyMessageAction;
+    //QAction *usedReceivingAddressesAction;    /
     QAction *aboutAction;
     
     //QAction *optionsAction;
@@ -127,6 +169,7 @@ private:
     //QAction *aboutQtAction;
     //QAction *openRPCConsoleAction;
     //QAction *openAction;
+    QAction *showHideTabBarAction;
     QAction *showHelpMessageAction;
     QAction *settingsAction;
     QAction *serviceManagerAction;
@@ -139,7 +182,44 @@ private:
     /** Keep track of previous number of blocks, to detect progress */
     int prevBlocks;
     int spinnerFrame;
+    
+    
+    
+    
+    mutable QIcon m_defaultIcon;
+    static DownloadManager *s_downloadManager;
+    static QNetworkAccessManager *s_networkAccessManager;
+    static HistoryManager *s_historyManager;
+    static BookmarksManager *s_bookmarksManager;    
+    QByteArray m_lastSession;    
+    
+    
+    QToolBar *m_navigationBar;
+    ToolbarSearch *m_toolbarSearch;
+    QAction *m_historyBack;
+    QMenu *m_historyBackMenu;
+    QAction *m_historyForward;
+    QMenu *m_historyForwardMenu;
+    QAction *m_stop;
+    QAction *m_reload;
+    QAction *m_stopReload;
+    QIcon m_reloadIcon;
+    QIcon m_stopIcon;
+    QMenu *m_windowMenu;
+    ChaseWidget *m_chaseWidget;
+    QAction *m_viewToolbar;
+    
+    
+    BookmarksToolBar *m_bookmarksToolbar;   
+    AutoSaver *m_autoSaver;
+    
+    QAction *m_viewBookmarkBar;
+    QAction *m_viewStatusbar;
+    QAction *m_restoreLastSession;
+    QAction *m_addBookmark;    
 
+    QString m_lastSearch;
+    
     /** Create the main UI actions. */
     void createActions(const NetworkStyle *networkStyle);
     /** Create the menu bar and sub-menus. */
@@ -157,11 +237,23 @@ private:
     /** Connect core signals to GUI client */
     void subscribeToCoreSignals();
     /** Disconnect core signals from GUI client */
-    void unsubscribeFromCoreSignals();    
+    void unsubscribeFromCoreSignals(); 
+    
+    
+    
+    
+   void loadDefaultState();
+    
+    //void setupToolBar();
+    void updateStatusbarActionText(bool visible);
+    void handleFindTextResult(bool found);
+    
 signals:
     /** Signal raised when a URI was entered or dragged to the GUI */
     void receivedURI(const QString &uri);
     void sendMoneyResult(std::string str,bool fSuccess,QString data);
+    
+    
 public slots:
     /** Set number of connections shown in the UI */
     void setNumConnections(int count);
@@ -188,7 +280,16 @@ public slots:
 
     /** Show incoming transaction notification for new transactions. */
     void incomingTransaction(const QString& date, int unit, const CAmount& amount, const QString& type, const QString& address);
+    
+    
+    void loadPage(const QString &url);    
+    void slotHome();
+   void restoreLastSession();
    
+#if defined(Q_OS_OSX)
+    void lastWindowClosed();
+    void quitBrowser();
+#endif
     
 //#endif // ENABLE_WALLET
 
@@ -228,6 +329,7 @@ private slots:
     void gotoToolsPage();
     /** Show about dialog */    
     void aboutClicked();
+    void showHideTabBarClicked();
     /** Show help message dialog */
     void showHelpMessageClicked();
 #ifndef Q_OS_MAC
@@ -245,6 +347,61 @@ private slots:
 
     /** Show progress dialog e.g. for verifychain */
     void showProgress(const QString &title, int nProgress);
+    
+    
+    
+    
+    void openUrl(const QUrl &url);
+    
+    void updateToolbarActionText(bool visible);
+    void slotAboutToShowBackMenu();
+    void slotAboutToShowForwardMenu();
+    
+    void slotShowWindow();
+    void loadUrl(const QUrl &url);
+    void save();
+
+    void slotLoadProgress(int);
+    void slotUpdateStatusbar(const QString &string);
+    void slotUpdateWindowTitle(const QString &title = QString());
+
+    
+    void slotPreferences();
+
+    void slotFileNew();
+    void slotFileOpen();
+    void slotFilePrintPreview();
+    void slotFilePrint();
+    void slotPrivateBrowsing();
+    void slotFileSaveAs();
+    void slotEditFind();
+    void slotEditFindNext();
+    void slotEditFindPrevious();
+    void slotShowBookmarksDialog();
+    void slotAddBookmark();
+    void slotViewZoomIn();
+    void slotViewZoomOut();
+    void slotViewResetZoom();
+    void slotViewToolbar();
+    void slotViewBookmarksBar();
+    void slotViewStatusbar();
+    void slotViewPageSource();
+    void slotViewFullScreen(bool enable);
+
+    void slotWebSearch();
+    void slotToggleInspector(bool enable);
+    void slotAboutApplication();
+    void slotDownloadManager();
+    void slotSelectLineEdit();
+    
+    void slotOpenActionUrl(QAction *action);    
+    void slotSwapFocus();
+
+//#if defined(QWEBPAGE_PRINT)
+    void printRequested(QWebFrame *frame);
+//#endif
+    void geometryChangeRequested(const QRect &geometry);
+    void updateBookmarksToolbarActionText(bool visible);
 };
 
 //class UnitDisplayStatusBarControl : public QLabel

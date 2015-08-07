@@ -33,7 +33,9 @@ public:
     bool fValid;
     CFilePackage(){fValid=false;};
     CFilePackage(const CLink linkIn){SetLink(linkIn);};
+    CFilePackage(const CLinkUni linkIn){SetLink(linkIn);};
     bool SetLink(const CLink linkIn);
+    bool SetLink(const CLinkUni linkIn);
     bool SetContent(const CContent contentIn);
     bool SetJson(const Value json);
     CContent ToContent()const;

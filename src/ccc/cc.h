@@ -29,6 +29,104 @@ enum directionFilter
     INCOMING_ONLY = 1,
     OUTPUT_ONLY = 2,
 };
+enum servicecode
+{
+    SERVICE_FULLNODE=0,
+    SERVICE_NAT=1,
+    SERVICE_STUN=2,
+    SERVICE_FULLNODEPLUS=3,
+    SERVICE_ICQ=4,
+    SERVICE_RELAY=5,
+    SERVICE_SEARCHENGINE=7,
+    SERVICE_MININGPOOL=8,
+    SERVICE_OFFCHAIN_MESSAGE=9,
+    SERVICE_OFFCHAIN_PRIVATE=10,
+    SERVICE_OFFCHAIN_PUBLIC=11,
+    SERVICE_MALL=13,
+    SERVICE_BANK=14,
+    SERVICE_TORRENTFILE=15,
+    SERVICE_EMAIL=16,
+    SERVICE_NOBLOCKCHAINDATA=30,
+    SERVICE_APP=31,
+    
+
+};
+static std::map<int,std::string> mapServiceNames=boost::assign::map_list_of
+(SERVICE_FULLNODE,"full_node_service")
+    (SERVICE_NAT,"NAT_peer")
+    (SERVICE_STUN,"STUN_service")
+    (SERVICE_FULLNODEPLUS,"full_node_plus_service")
+    (SERVICE_ICQ,"ICQ_service")
+    (SERVICE_RELAY,"relay_service")
+    (SERVICE_SEARCHENGINE,"search_engine_service")
+    (SERVICE_MININGPOOL,"mining_pool_service")
+    (SERVICE_OFFCHAIN_MESSAGE,"offchain_message_storage_service")
+    (SERVICE_OFFCHAIN_PRIVATE,"offchain_private_storage_service")
+    (SERVICE_OFFCHAIN_PUBLIC,"offchain_public_storage_service")
+    (SERVICE_MALL,"offchain_mall_service")
+    (SERVICE_BANK,"bank_service")
+    (SERVICE_TORRENTFILE,"torrent_file_service")
+    (SERVICE_EMAIL,"email_service")
+    (SERVICE_NOBLOCKCHAINDATA,"no_block_chain_data")
+    (SERVICE_APP,"app_service");
+enum pageid
+{
+    WALLETPAGE_ID=1,
+    BROWSERPAGE_ID=2,
+    PUBLISHERPAGE_ID=3,
+    MESSENGERPAGE_ID=4,
+    MINERPAGE_ID=5,
+    DOMAINPAGE_ID=6,
+    SETTINGPAGE_ID=7,
+    SERVICEPAGE_ID=8,
+    SHOPPAGE_ID=9,
+    TOOLSPAGE_ID=10,
+    DOWNLOADERPAGE_ID=11,
+    CUSTOMPAGE_ID=255
+};
+static std::map<int,std::string> mapPageNames=boost::assign::map_list_of
+(WALLETPAGE_ID,"wallet")
+(BROWSERPAGE_ID,"browser")
+(PUBLISHERPAGE_ID,"publisher")
+(MESSENGERPAGE_ID,"messenger")
+(MINERPAGE_ID,"miner")
+(DOMAINPAGE_ID,"domain")
+(SETTINGPAGE_ID,"settings")
+(SERVICEPAGE_ID,"service")
+(SHOPPAGE_ID,"shop")
+(TOOLSPAGE_ID,"tools")
+(DOWNLOADERPAGE_ID,"downloader")
+;
+static std::map<int,std::string> mapDefaultServiceDomain=boost::assign::map_list_of
+            (SERVICE_FULLNODE,"")
+    (SERVICE_NAT,"")
+    (SERVICE_STUN,"stun.f")
+    (SERVICE_FULLNODEPLUS,"fullnodeplus.f")
+    (SERVICE_ICQ,"icq.f")
+    (SERVICE_RELAY,"relay.f")
+    (SERVICE_SEARCHENGINE,"search.f")
+    (SERVICE_MININGPOOL,"pool.f")
+    (SERVICE_OFFCHAIN_MESSAGE,"offchainmessage.f")
+    (SERVICE_OFFCHAIN_PRIVATE,"offchainprivate.f")
+    (SERVICE_OFFCHAIN_PUBLIC,"offchain.f")
+    (SERVICE_MALL,"mall.f")
+    (SERVICE_BANK,"bank.f")
+    (SERVICE_TORRENTFILE,"torrent.f")
+    (SERVICE_EMAIL,"email.f")
+    (SERVICE_NOBLOCKCHAINDATA,"")
+    (SERVICE_APP,"app.f");
+
+static std::map<int,std::string> mapDefaultPageDomain=boost::assign::map_list_of
+            (WALLETPAGE_ID,"wallet.f")
+(BROWSERPAGE_ID,"browser.f")
+(PUBLISHERPAGE_ID,"publisher.f")
+(MESSENGERPAGE_ID,"messenger.f")
+(DOMAINPAGE_ID,"domainpage.f")
+(SETTINGPAGE_ID,"settings.f")
+(SERVICEPAGE_ID,"servicepage.f")
+(SHOPPAGE_ID,"shop.f")
+(TOOLSPAGE_ID,"tool.f")
+(DOWNLOADERPAGE_ID,"downloader.f");
 
 /** Content codes */
 enum cctype
@@ -186,20 +284,22 @@ CC_FILE_PACKAGE_P = 0x0709,
 CC_FILE_PACKAGE_MAINFILE = 0x070900,
 // Link
 CC_LINK_TYPESTRING = 0x0900,
-CC_LINK_TYPE_BLOCKCHAIN = 0x0910,
-CC_LINK_TYPE_TXIDOUT = 0x0912,
-CC_LINK_TYPE_COINTO = 0x091e,
-CC_LINK_TYPE_HTTP = 0x0920,
-CC_LINK_TYPE_HTTPS = 0x0922,
-CC_LINK_TYPE_MAILTO = 0x0924,
-CC_LINK_TYPE_FTP = 0x0926,
-CC_LINK_TYPE_FILE = 0x0928,
-CC_LINK_TYPE_CRID = 0x092a,
-CC_LINK_TYPE_ED2K = 0x0930,
-CC_LINK_TYPE_MAGNET = 0x0932,
-CC_LINK_TYPE_SCRIPTPUBKEY = 0x0934,
-CC_LINK_TYPE_DOMAIN = 0x0936,
-CC_LINK_TYPE_UNKNOWN = 0x0938,
+CC_LINK_TYPE_NATIVE = 0x0902,
+CC_LINK_TYPE_BLOCKCHAIN = 0x0904,
+CC_LINK_TYPE_TXIDOUT = 0x0906,
+CC_LINK_TYPE_DOMAIN = 0x0908,
+CC_LINK_TYPE_SCRIPTPUBKEY = 0x0910,
+CC_LINK_TYPE_FILEPACKAGE = 0x0912,
+CC_LINK_TYPE_COINTO = 0x0914,
+CC_LINK_TYPE_HTTP = 0x0916,
+CC_LINK_TYPE_HTTPS = 0x0918,
+CC_LINK_TYPE_MAILTO = 0x0920,
+CC_LINK_TYPE_FTP = 0x0922,
+CC_LINK_TYPE_FILE = 0x0924,
+CC_LINK_TYPE_CRID = 0x0926,
+CC_LINK_TYPE_ED2K = 0x0928,
+CC_LINK_TYPE_MAGNET = 0x0930,
+CC_LINK_TYPE_UNKNOWN = 0x0932,
 // Domain
 CC_DOMAIN_REG = 0x0b00,
 CC_DOMAIN_REG_P = 0x0b01,
@@ -646,8 +746,12 @@ static std::map<int,std::string> mapCC=boost::assign::map_list_of
 (CC_FILE_PACKAGE_MAINFILE,"CC_FILE_PACKAGE_MAINFILE")
 // Link
 (CC_LINK_TYPESTRING,"CC_LINK_TYPESTRING")
+(CC_LINK_TYPE_NATIVE,"CC_LINK_TYPE_NATIVE")
 (CC_LINK_TYPE_BLOCKCHAIN,"CC_LINK_TYPE_BLOCKCHAIN")
 (CC_LINK_TYPE_TXIDOUT,"CC_LINK_TYPE_TXIDOUT")
+(CC_LINK_TYPE_DOMAIN,"CC_LINK_TYPE_DOMAIN")
+(CC_LINK_TYPE_SCRIPTPUBKEY,"CC_LINK_TYPE_SCRIPTPUBKEY")
+(CC_LINK_TYPE_FILEPACKAGE,"CC_LINK_TYPE_FILEPACKAGE")
 (CC_LINK_TYPE_COINTO,"CC_LINK_TYPE_COINTO")
 (CC_LINK_TYPE_HTTP,"CC_LINK_TYPE_HTTP")
 (CC_LINK_TYPE_HTTPS,"CC_LINK_TYPE_HTTPS")
@@ -657,8 +761,6 @@ static std::map<int,std::string> mapCC=boost::assign::map_list_of
 (CC_LINK_TYPE_CRID,"CC_LINK_TYPE_CRID")
 (CC_LINK_TYPE_ED2K,"CC_LINK_TYPE_ED2K")
 (CC_LINK_TYPE_MAGNET,"CC_LINK_TYPE_MAGNET")
-(CC_LINK_TYPE_SCRIPTPUBKEY,"CC_LINK_TYPE_SCRIPTPUBKEY")
-(CC_LINK_TYPE_DOMAIN,"CC_LINK_TYPE_DOMAIN")
 (CC_LINK_TYPE_UNKNOWN,"CC_LINK_TYPE_UNKNOWN")
 // Domain
 (CC_DOMAIN_REG,"CC_DOMAIN_REG")

@@ -2,8 +2,8 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "bitcoingui.h"
-
+#include "browser.h"
+#include "mainview.h"
 #include "bitcoinunits.h"
 #include "clientmodel.h"
 #include "guiconstants.h"
@@ -19,29 +19,39 @@
 #include "userconfirmdialog.h"
 #include "ui_userconfirmdialog.h"
 #include "accountdialog.h"
+#include "webpage.h"
 #include "ccc/settings.h"
-
-#ifdef ENABLE_WALLET
-//#include "mainframe.h"
-#include "mainview.h"
-//#include "wallet.h"
-
-#include "walletmodel.h"
-
-#endif // ENABLE_WALLET
-
-#ifdef Q_OS_MAC
-#include "macdockiconhandler.h"
-#endif
-
-#include "init.h"
-#include "ui_interface.h"
-#include "util.h"
-
-#include <iostream>
-#include <boost/assign.hpp>
+#include "ccc/contentutil.h"
+#include "toolbarsearch.h"
+#include "chasewidget.h"
+#include "bookmarks.h"
+#include "cookiejar.h"
+#include "history.h"
+#include "downloadmanager.h"
+#include "networkaccessmanager.h"
+#include "autosaver.h"
+#include "settings2.h"
+#include "ui_passworddialog.h"
 
 
+#include <QWebHistory>
+#include <QtNetwork/QLocalServer>
+#include <QtNetwork/QLocalSocket>
+#include <QtNetwork/QNetworkProxy>
+#include <QtNetwork/QSslSocket>
+#include <QtCore/QBuffer>
+#include <QtCore/QDir>
+#include <QtCore/QLibraryInfo>
+#include <QtCore/QSettings>
+#include <QtCore/QTextStream>
+#include <QtCore/QTranslator>
+#include <QtCore/QDebug>
+#include <QtGui/QDesktopServices>
+#include <QtGui/QFileOpenEvent>
+#include <QtWidgets/QMessageBox>
+#include <QWebSettings>
+#include <QWebFrame>
+#include <QtCore/QDebug>
 #include <QAction>
 #include <QApplication>
 #include <QDateTime>
@@ -62,6 +72,36 @@
 #include <QToolBar>
 #include <QVBoxLayout>
 #include <QSettings>
+#include <QtWidgets/QFileDialog>
+#include <QtWidgets/QPlainTextEdit>
+#include <QtPrintSupport/QPrintDialog>
+#include <QtPrintSupport/QPrintPreviewDialog>
+#include <QtPrintSupport/QPrinter>
+#include <QtWidgets/QInputDialog>
+
+
+#ifdef ENABLE_WALLET
+//#include "wallet.h"
+
+#include "walletmodel.h"
+
+#endif // ENABLE_WALLET
+
+#ifdef Q_OS_MAC
+#include "macdockiconhandler.h"
+#endif
+
+#include "init.h"
+#include "ui_interface.h"
+#include "util.h"
+
+#include <iostream>
+#include <boost/assign.hpp>
+
+
+
+
+
 #if QT_VERSION < 0x050000
 #include <QTextDocument>
 #include <QUrl>
@@ -70,8 +110,27 @@
 #include <bits/stl_pair.h>
 #endif
 
-const QString BitcoinGUI::DEFAULT_WALLET = "~Default";
+template<typename Arg, typename R, typename C>
+struct InvokeWrapper {
+    R *receiver;
+    void (C::*memberFun)(Arg);
+    void operator()(Arg result) {
+        (receiver->*memberFun)(result);
+    }
+};
 
+template<typename Arg, typename R, typename C>
+InvokeWrapper<Arg, R, C> invoke(R *receiver, void (C::*memberFun)(Arg))
+{
+    InvokeWrapper<Arg, R, C> wrapper = {receiver, memberFun};
+    return wrapper;
+}
+//const QString BitcoinGUI::DEFAULT_WALLET = "~Default";
+DownloadManager *BitcoinGUI::s_downloadManager = 0;
+QNetworkAccessManager *BitcoinGUI::s_networkAccessManager = 0;
+HistoryManager *BitcoinGUI::s_historyManager = 0;
+BookmarksManager *BitcoinGUI::s_bookmarksManager = 0;
+const char *BitcoinGUI::defaultHome = "ccc:browser";
 BitcoinGUI::BitcoinGUI(const NetworkStyle *networkStyle,QString languageIn,  QWidget *parent) :
     QMainWindow(parent),
     language(languageIn),
@@ -84,6 +143,7 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle *networkStyle,QString languageIn,  QWi
     progressBarLabel(0),
     progressBar(0),
     progressDialog(0),
+    toolbar(0),
     appMenuBar(0),
     walletAction(0),
     browserAction(0),
@@ -103,8 +163,7 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle *networkStyle,QString languageIn,  QWi
     quitAction(0),    
     //usedSendingAddressesAction(0),
     //usedReceivingAddressesAction(0),
-    //signMessageAction(0),
-    //verifyMessageAction(0),
+    
     aboutAction(0),    
     //optionsAction(0),
     toggleHideAction(0),
@@ -112,6 +171,7 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle *networkStyle,QString languageIn,  QWi
     //aboutQtAction(0),
     //openRPCConsoleAction(0),
     //openAction(0),
+    showHideTabBarAction(0),
     showHelpMessageAction(0),
     settingsAction(0),
     serviceManagerAction(0),
@@ -120,7 +180,12 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle *networkStyle,QString languageIn,  QWi
     notificator(0),
     //rpcConsole(0),
     prevBlocks(0),
-    spinnerFrame(0)
+    spinnerFrame(0),
+    m_historyBack(0)
+    , m_historyForward(0)
+    , m_stop(0)
+    , m_reload(0)
+    , m_autoSaver(new AutoSaver(this))
 {
     jsInterface=new JsInterface(this);
     GUIUtil::restoreWindowGeometry("nWindow", QSize(850, 550), this);
@@ -132,12 +197,7 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle *networkStyle,QString languageIn,  QWi
 #else
     enableWallet = false;
 #endif // ENABLE_WALLET
-//    if(enableWallet)
-//    {
-//        windowTitle += tr("Wallet");
-//    } else {
-//        windowTitle += tr("Node");
-//    }
+
     windowTitle += " " + networkStyle->getTitleAddText();
 #ifndef Q_OS_MAC
     QApplication::setWindowIcon(networkStyle->getAppIcon());
@@ -152,24 +212,53 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle *networkStyle,QString languageIn,  QWi
     // A replacement API (QtMacUnifiedToolBar) is available in QtMacExtras.
     setUnifiedTitleAndToolBarOnMac(true);
 #endif
-
+#ifndef QT_NO_OPENSSL
+    if (!QSslSocket::supportsSsl()) {
+    QMessageBox::information(0, "CCC Browser",
+                 "This system does not support OpenSSL. SSL websites will not be available.");
+    }
+#endif
+    QSettings settings;
+    settings.beginGroup(QLatin1String("sessions"));
+    m_lastSession = settings.value(QLatin1String("lastSession")).toByteArray();
+    settings.endGroup();
     //rpcConsole = new RPCConsole(enableWallet ? this : 0);
-//#ifdef ENABLE_WALLET
-    //if(enableWallet)
-    //{
-        /** Create wallet frame and make it the central widget */
+
+    setToolButtonStyle(Qt::ToolButtonFollowStyle);
+    setAttribute(Qt::WA_DeleteOnClose, true);
+
     //LogPrintf("bitcoingui: 0 \n");
-        mainView = new MainView(language,this,jsInterface);
-        connect(mainView, SIGNAL(showNormalIfMinimized()), this, SLOT(showNormalIfMinimized()));
-       setCentralWidget(mainView);
-    //} else
-//#endif // ENABLE_WALLET
-//    {
-        /* When compiled without wallet or -disablewallet is provided,
-         * the central widget is the rpc console.
-         */
-        //setCentralWidget(rpcConsole);
-//    }
+    mainView = new MainView(language,this,jsInterface);
+    connect(mainView, SIGNAL(showNormalIfMinimized()), this, SLOT(showNormalIfMinimized()));
+
+    QWidget *centralWidget = new QWidget(this);
+    BookmarksModel *bookmarksModel = BitcoinGUI::bookmarksManager()->bookmarksModel();
+    m_bookmarksToolbar = new BookmarksToolBar(bookmarksModel, this);
+    connect(m_bookmarksToolbar, SIGNAL(openUrl(QUrl)),
+            this, SLOT(loadUrl(QUrl)));
+    connect(m_bookmarksToolbar->toggleViewAction(), SIGNAL(toggled(bool)),
+            this, SLOT(updateBookmarksToolbarActionText(bool)));
+
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->setSpacing(0);
+    layout->setMargin(0);
+    toolbar = addToolBar(tr("Tabs toolbar"));
+#if defined(Q_OS_OSX)
+    layout->addWidget(m_bookmarksToolbar);
+    layout->addWidget(new QWidget); // <- OS X tab widget style bug
+#else
+    
+    
+    addToolBar(m_bookmarksToolbar);
+    addToolBarBreak();
+#endif
+    layout->addWidget(mainView);
+    centralWidget->setLayout(layout);
+    setCentralWidget(centralWidget);       
+     
+    statusBar()->setSizeGripEnabled(true);
+    //setupMenu();
+    //setupToolBar();
 
     // Accept D&D of URIs
     setAcceptDrops(true);
@@ -178,8 +267,10 @@ LogPrintf("bitcoingui: 1 \n");
     // Needs mainView to be initialized
     createActions(networkStyle);
 LogPrintf("bitcoingui: 2 \n");
-    // Create application menu bar
+// Create application menu bar
     createMenuBar();
+
+    
 LogPrintf("bitcoingui: 3 \n");
     // Create the toolbars
     createToolBars();
@@ -249,22 +340,84 @@ LogPrintf("bitcoingui: 10 \n");
     // Subscribe to notifications from core
     subscribeToCoreSignals();
     //LogPrintf("bitcoingui: 13 \n");
+    
+    
+    
+    
+    
+    connect(mainView, SIGNAL(tabsChanged()),
+            m_autoSaver, SLOT(changeOccurred()));
+#if defined(Q_OS_OSX)
+    connect(mainView, SIGNAL(lastTabClosed()),
+            this, SLOT(close()));
+#else
+    connect(mainView, SIGNAL(lastTabClosed()),
+            mainView, SLOT(newTab(true,QUrl("ccc:browser"),2)));
+#endif
+    
+
+    
+    
+    
+    
+   
+
+    
+
+    connect(mainView, SIGNAL(loadPage(QString)),
+        this, SLOT(loadPage(QString)));
+    connect(mainView, SIGNAL(setCurrentTitle(QString)),
+        this, SLOT(slotUpdateWindowTitle(QString)));
+    connect(mainView, SIGNAL(showStatusBarMessage(QString)),
+            statusBar(), SLOT(showMessage(QString)));
+    connect(mainView, SIGNAL(linkHovered(QString)),
+            statusBar(), SLOT(showMessage(QString)));
+    connect(mainView, SIGNAL(loadProgress(int)),
+            this, SLOT(slotLoadProgress(int)));
+    connect(mainView, SIGNAL(tabsChanged()),
+            m_autoSaver, SLOT(changeOccurred()));
+    connect(mainView, SIGNAL(geometryChangeRequested(QRect)),
+            this, SLOT(geometryChangeRequested(QRect)));
+//#if defined(QWEBPAGE_PRINTREQUESTED)
+    connect(mainView, SIGNAL(printRequested(QWebFrame*)),
+            this, SLOT(printRequested(QWebFrame*)));
+//#endif
+    connect(mainView, SIGNAL(menuBarVisibilityChangeRequested(bool)),
+            menuBar(), SLOT(setVisible(bool)));
+    connect(mainView, SIGNAL(statusBarVisibilityChangeRequested(bool)),
+            statusBar(), SLOT(setVisible(bool)));
+    connect(mainView, SIGNAL(toolBarVisibilityChangeRequested(bool)),
+            m_navigationBar, SLOT(setVisible(bool)));
+    connect(mainView, SIGNAL(toolBarVisibilityChangeRequested(bool)),
+            m_bookmarksToolbar, SLOT(setVisible(bool)));
+
+
+    slotUpdateWindowTitle();
+    loadDefaultState();    
+    //mainView->newTab();
+
+    int size = mainView->lineEditStack()->sizeHint().height();
+    m_navigationBar->setIconSize(QSize(size, size));
+    BitcoinGUI::historyManager();
 }
 
 BitcoinGUI::~BitcoinGUI()
 {
     // Unsubscribe from notifications from core
     unsubscribeFromCoreSignals();
-
+    delete s_downloadManager;
+    delete s_networkAccessManager;
+    delete s_bookmarksManager;
     GUIUtil::saveWindowGeometry("nWindow", this);
     if(trayIcon) // Hide tray icon, as deleting will let it linger until quit (on Ubuntu)
         trayIcon->hide();
 #ifdef Q_OS_MAC
     delete appMenuBar;
     MacDockIconHandler::instance()->setMainWindow(NULL);
-    delete jsInterface;
-    jsInteface=NULL;
+    
 #endif
+    delete jsInterface;
+    jsInterface=NULL;
 }
 
 void BitcoinGUI::createActions(const NetworkStyle *networkStyle)
@@ -376,11 +529,6 @@ LogPrintf("bitcoingui:createactions 2 \n");
     exportAccountAction->setStatusTip(tr("Export Account"));
     importAccountAction = new QAction(QIcon(":/icons/key"), tr("&Import Account"), this);
     importAccountAction->setStatusTip(tr("Import Account"));
-    
-    //signMessageAction = new QAction(QIcon(":/icons/edit"), tr("Sign &message..."), this);
-    //signMessageAction->setStatusTip(tr("Sign messages with your Cccoin addresses to prove you own them"));
-    //verifyMessageAction = new QAction(QIcon(":/icons/transaction_0"), tr("&Verify message..."), this);
-    //verifyMessageAction->setStatusTip(tr("Verify messages to ensure they were signed with specified Cccoin addresses"));
 
     //openRPCConsoleAction = new QAction(QIcon(":/icons/debugwindow"), tr("&Debug window"), this);
     //openRPCConsoleAction->setStatusTip(tr("Open debugging and diagnostic console"));
@@ -392,7 +540,9 @@ LogPrintf("bitcoingui:createactions 2 \n");
 
     //openAction = new QAction(QApplication::style()->standardIcon(QStyle::SP_FileIcon), tr("Open &URI..."), this);
     //openAction->setStatusTip(tr("Open a cccoin: URI or payment request"));
-
+//    showHideTabBarAction= new QAction(QApplication::style()->standardIcon(QStyle::SP_MessageBoxInformation), tr("&Show/Hide tab bar"), this);
+//    showHideTabBarAction->setStatusTip(tr("Show/Hide tab bar"));
+//    showHideTabBarAction->setCheckable(true);
     showHelpMessageAction = new QAction(QApplication::style()->standardIcon(QStyle::SP_MessageBoxInformation), tr("&Command-line options"), this);
     showHelpMessageAction->setStatusTip(tr("Show the Cccoin Core help message to get a list with possible Cccoin command-line options"));
     settingsAction = new QAction(QIcon(":/icons/key"), tr("&Settings"), this);
@@ -409,6 +559,7 @@ LogPrintf("bitcoingui:createactions 2 \n");
     //connect(aboutQtAction, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
     //connect(optionsAction, SIGNAL(triggered()), this, SLOT(optionsClicked()));
     connect(toggleHideAction, SIGNAL(triggered()), this, SLOT(toggleHidden()));
+    //connect(showHideTabBarAction, SIGNAL(triggered()), this, SLOT(showHideTabBarClicked()));
     connect(showHelpMessageAction, SIGNAL(triggered()), this, SLOT(showHelpMessageClicked()));
     connect(settingsAction, SIGNAL(triggered()), this, SLOT(gotoSettingsPage()));
     connect(serviceManagerAction, SIGNAL(triggered()), this, SLOT(gotoSettingsPage()));
@@ -430,20 +581,13 @@ LogPrintf("bitcoingui:createactions 2 \n");
           //LogPrintf("bitcoingui:createactions 11 \n");
            connect(domainNameAction, SIGNAL(triggered()), this, SLOT(domainNameClicked()));
            //LogPrintf("bitcoingui:createactions 12 \n");
-            
-            
-        //connect(signMessageAction, SIGNAL(triggered()), this, SLOT(gotoSignMessageTab()));
-        //connect(verifyMessageAction, SIGNAL(triggered()), this, SLOT(gotoVerifyMessageTab()));
-        //connect(usedSendingAddressesAction, SIGNAL(triggered()), walletFrame, SLOT(usedSendingAddresses()));
-        //connect(usedReceivingAddressesAction, SIGNAL(triggered()), walletFrame, SLOT(usedReceivingAddresses()));
-        //connect(openAction, SIGNAL(triggered()), this, SLOT(openClicked()));
-       
     
 #endif // ENABLE_WALLET
 }
 
 void BitcoinGUI::createMenuBar()
 {
+    new QShortcut(QKeySequence(Qt::Key_F6), this, SLOT(slotSwapFocus()));
 #ifdef Q_OS_MAC
     // Create a decoupled menu bar on Mac which stays even if the window is closed
     appMenuBar = new QMenuBar();
@@ -454,20 +598,119 @@ void BitcoinGUI::createMenuBar()
 
     // Configure the menus
     
-    QMenu *file = appMenuBar->addMenu(tr("&File"));  
+    QMenu *fileMenu = appMenuBar->addMenu(tr("&File"));  
         //file->addAction(openAction);
-        //file->addAction(backupWalletAction);
-        //file->addAction(signMessageAction);
-        //file->addAction(verifyMessageAction);
+        //file->addAction(backupWalletAction);        
         //file->addSeparator();
-        //file->addAction(usedSendingAddressesAction);
-        //file->addAction(usedReceivingAddressesAction);
-        //file->addSeparator();
-    file->addAction(quitAction);
-    QMenu *account = appMenuBar->addMenu(tr("&Account"));
+ //   #if defined(QWEBPAGE_PRINT)
+    fileMenu->addAction(tr("P&rint Preview..."), this, SLOT(slotFilePrintPreview()));
+    fileMenu->addAction(tr("&Print..."), this, SLOT(slotFilePrint()), QKeySequence::Print);
+    fileMenu->addSeparator();
+//#endif
+    fileMenu->addAction(tr("&Open File..."), this, SLOT(slotFileOpen()), QKeySequence::Open);
+    fileMenu->addAction(tr("Open &Location..."), this,
+                SLOT(slotSelectLineEdit()), QKeySequence(Qt::ControlModifier + Qt::Key_L));
+    fileMenu->addSeparator();
+    //#if defined(QWEBPAGE_SETNETWORKACCESSMANAGER)
+    fileMenu->addAction(tr("&Save As..."), this,
+                SLOT(slotFileSaveAs()), QKeySequence(QKeySequence::Save));
+    fileMenu->addAction(tr("Download Manager"), this,
+                SLOT(slotDownloadManager()));
+    fileMenu->addSeparator();
+//#endif
     
-        
-        //TODO account actions like create new, view switch, import, export,encrypt, decrypt 
+    fileMenu->addAction(quitAction);
+    
+    QMenu *editMenu = appMenuBar->addMenu(tr("&Edit"));  
+    QAction *m_undo = editMenu->addAction(tr("&Undo"));
+    m_undo->setShortcuts(QKeySequence::Undo);
+    mainView->addWebAction(m_undo, QWebPage::Undo);
+    QAction *m_redo = editMenu->addAction(tr("&Redo"));
+    m_redo->setShortcuts(QKeySequence::Redo);
+    mainView->addWebAction(m_redo, QWebPage::Redo);
+    editMenu->addSeparator();
+    QAction *m_cut = editMenu->addAction(tr("Cu&t"));
+    m_cut->setShortcuts(QKeySequence::Cut);
+    mainView->addWebAction(m_cut, QWebPage::Cut);
+    QAction *m_copy = editMenu->addAction(tr("&Copy"));
+    m_copy->setShortcuts(QKeySequence::Copy);
+    mainView->addWebAction(m_copy, QWebPage::Copy);
+    QAction *m_paste = editMenu->addAction(tr("&Paste"));
+    m_paste->setShortcuts(QKeySequence::Paste);
+    mainView->addWebAction(m_paste, QWebPage::Paste);
+    editMenu->addSeparator();
+    QAction *m_find = editMenu->addAction(tr("&Find"));
+    m_find->setShortcuts(QKeySequence::Find);
+    connect(m_find, SIGNAL(triggered()), this, SLOT(slotEditFind()));
+    new QShortcut(QKeySequence(Qt::Key_Slash), this, SLOT(slotEditFind()));
+    QAction *m_findNext = editMenu->addAction(tr("&Find Next"));
+    m_findNext->setShortcuts(QKeySequence::FindNext);
+    connect(m_findNext, SIGNAL(triggered()), this, SLOT(slotEditFindNext()));
+    QAction *m_findPrevious = editMenu->addAction(tr("&Find Previous"));
+    m_findPrevious->setShortcuts(QKeySequence::FindPrevious);
+    connect(m_findPrevious, SIGNAL(triggered()), this, SLOT(slotEditFindPrevious()));
+    editMenu->addSeparator();
+    
+    
+    QMenu *viewMenu = appMenuBar->addMenu(tr("&View"));  
+    
+    m_viewBookmarkBar = new QAction(this);
+    updateBookmarksToolbarActionText(true);
+    m_viewBookmarkBar->setShortcut(tr("Shift+Ctrl+B"));
+    connect(m_viewBookmarkBar, SIGNAL(triggered()), this, SLOT(slotViewBookmarksBar()));
+    viewMenu->addAction(m_viewBookmarkBar);
+
+    m_viewToolbar = new QAction(this);
+    updateToolbarActionText(true);
+    m_viewToolbar->setShortcut(tr("Ctrl+|"));
+    connect(m_viewToolbar, SIGNAL(triggered()), this, SLOT(slotViewToolbar()));
+    viewMenu->addAction(m_viewToolbar);
+
+    m_viewStatusbar = new QAction(this);
+    updateStatusbarActionText(true);
+    m_viewStatusbar->setShortcut(tr("Ctrl+/"));
+    connect(m_viewStatusbar, SIGNAL(triggered()), this, SLOT(slotViewStatusbar()));
+    viewMenu->addAction(m_viewStatusbar);
+    
+    
+    showHideTabBarAction=toolbar->toggleViewAction();
+    viewMenu->addAction(showHideTabBarAction);
+    viewMenu->addSeparator();
+
+    m_stop = viewMenu->addAction(tr("&Stop"));
+    QList<QKeySequence> shortcuts;
+    shortcuts.append(QKeySequence(Qt::CTRL | Qt::Key_Period));
+    shortcuts.append(Qt::Key_Escape);
+    m_stop->setShortcuts(shortcuts);
+    mainView->addWebAction(m_stop, QWebPage::Stop);
+
+    m_reload = viewMenu->addAction(tr("Reload Page"));
+    m_reload->setShortcuts(QKeySequence::Refresh);
+    mainView->addWebAction(m_reload, QWebPage::Reload);
+
+    viewMenu->addAction(tr("Zoom &In"), this, SLOT(slotViewZoomIn()), QKeySequence(Qt::CTRL | Qt::Key_Equal));
+    viewMenu->addAction(tr("Zoom &Out"), this, SLOT(slotViewZoomOut()), QKeySequence(Qt::CTRL | Qt::Key_Minus));
+    viewMenu->addAction(tr("Reset &Zoom"), this, SLOT(slotViewResetZoom()), QKeySequence(Qt::CTRL | Qt::Key_0));
+
+    viewMenu->addSeparator();
+    viewMenu->addAction(tr("Page S&ource"), this, SLOT(slotViewPageSource()), tr("Ctrl+Alt+U"));
+    QAction *a = viewMenu->addAction(tr("&Full Screen"), this, SLOT(slotViewFullScreen(bool)),  Qt::Key_F11);
+    a->setCheckable(true);
+    viewMenu->addSeparator();
+    viewMenu->addAction(mainView->newTabAction());     
+    viewMenu->addAction(mainView->closeTabAction());
+    viewMenu->addSeparator();    
+
+    
+
+#if defined(QTWEB_PRIVATEBROWSING)
+    QAction *action = viewMenu->addAction(tr("Private &Browsing..."), this, SLOT(slotPrivateBrowsing()));
+    action->setCheckable(true);
+    viewMenu->addSeparator();
+#endif
+    
+    QMenu *account = appMenuBar->addMenu(tr("&Account"));
+        //TODO account actions import, export
         account->addAction(newAccountAction);
         account->addAction(switchAccountAction);
         account->addAction(encryptAccountAction);
@@ -488,17 +731,85 @@ void BitcoinGUI::createMenuBar()
     applications->addAction(shopAction);
     applications->addAction(downloaderAction);
     applications->addAction(toolsAction);
-    QMenu *services = appMenuBar->addMenu(tr("&Services"));
-    services->addAction(serviceManagerAction);  
+    
+    //QMenu *pageMenu = appMenuBar->addMenu(tr("&Pages"));
+     
+    
+    // History
+    HistoryMenu *historyMenu = new HistoryMenu(this);
+    connect(historyMenu, SIGNAL(openUrl(QUrl)),
+            this, SLOT(loadUrl(QUrl)));
+    connect(historyMenu, SIGNAL(hovered(QString)), this,
+            SLOT(slotUpdateStatusbar(QString)));
+    historyMenu->setTitle(tr("&History"));
+    appMenuBar->addMenu(historyMenu);
+    QList<QAction*> historyActions;
+
+    m_historyBack = new QAction(tr("Back"), this);
+    mainView->addWebAction(m_historyBack, QWebPage::Back);
+    m_historyBack->setShortcuts(QKeySequence::Back);
+    m_historyBack->setIconVisibleInMenu(false);
+    historyActions.append(m_historyBack);
+
+    m_historyForward = new QAction(tr("Forward"), this);
+    mainView->addWebAction(m_historyForward, QWebPage::Forward);
+    m_historyForward->setShortcuts(QKeySequence::Forward);
+    m_historyForward->setIconVisibleInMenu(false);
+    historyActions.append(m_historyForward);
+
+    QAction *m_historyHome = new QAction(tr("Home"), this);
+    connect(m_historyHome, SIGNAL(triggered()), this, SLOT(slotHome()));
+    m_historyHome->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_H));
+    historyActions.append(m_historyHome);
+
+//#if defined(QWEBHISTORY_RESTORESESSION)
+    m_restoreLastSession = new QAction(tr("Restore Last Session"), this);
+    connect(m_restoreLastSession, SIGNAL(triggered()), BitcoinApplication::instance(), SLOT(restoreLastSession()));
+    m_restoreLastSession->setEnabled(canRestoreSession());
+    historyActions.append(mainView->recentlyClosedTabsAction());
+    historyActions.append(m_restoreLastSession);
+//#endif
+
+    historyMenu->setInitialActions(historyActions);
+    // Bookmarks
+    BookmarksMenu *bookmarksMenu = new BookmarksMenu(this);
+    connect(bookmarksMenu, SIGNAL(openUrl(QUrl)),
+            this, SLOT(loadUrl(QUrl)));
+    connect(bookmarksMenu, SIGNAL(hovered(QString)),
+            this, SLOT(slotUpdateStatusbar(QString)));
+    bookmarksMenu->setTitle(tr("&Bookmarks"));
+    appMenuBar->addMenu(bookmarksMenu);
+
+    QList<QAction*> bookmarksActions;
+
+    QAction *showAllBookmarksAction = new QAction(tr("Show All Bookmarks"), this);
+    connect(showAllBookmarksAction, SIGNAL(triggered()), this, SLOT(slotShowBookmarksDialog()));
+    m_addBookmark = new QAction(QIcon(QLatin1String(":addbookmark.png")), tr("Add Bookmark..."), this);
+    m_addBookmark->setIconVisibleInMenu(false);
+
+    connect(m_addBookmark, SIGNAL(triggered()), this, SLOT(slotAddBookmark()));
+    m_addBookmark->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
+
+    bookmarksActions.append(showAllBookmarksAction);
+    bookmarksActions.append(m_addBookmark);
+    bookmarksMenu->setInitialActions(bookmarksActions);
+    
+    //settings
     QMenu *settings = appMenuBar->addMenu(tr("&Settings"));
     settings->addAction(settingsAction);
+    settings->addAction(tr("&Preferences"), this, SLOT(slotPreferences()), tr("Ctrl+,"));
+//#if defined(QWEBINSPECTOR)
+    a = viewMenu->addAction(tr("Enable Web &Inspector"), this, SLOT(slotToggleInspector(bool)));
+    a->setCheckable(true);
+//#endif
+    
+    
+    
     
     //services->addAction(icqServiceAction);    
     //services->addAction(miningpoolServiceAction);
         
-        //settings->addSeparator();
-    
-    //settings->addAction(optionsAction);
+        
 
     QMenu *help = appMenuBar->addMenu(tr("&Help"));
     
@@ -509,25 +820,77 @@ void BitcoinGUI::createMenuBar()
     help->addSeparator();
     help->addAction(aboutAction);
     //help->addAction(aboutQtAction);
+       
+    
 }
 
 void BitcoinGUI::createToolBars()
 {
     if(mainView)
     {
-        QToolBar *toolbar = addToolBar(tr("Tabs toolbar"));
-        toolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
         
+        toolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        toolbar->setMaximumHeight(30);
         toolbar->addAction(browserAction);
         browserAction->setEnabled(true);
         browserAction->setChecked(true);
         toolbar->addAction(walletAction);                
-        toolbar->addAction(publisherAction);
+        //toolbar->addAction(publisherAction);
         toolbar->addAction(messengerAction);
         toolbar->addAction(minerAction);  
         toolbar->addAction(shopAction);  
-        toolbar->addAction(downloaderAction);
-               
+        //toolbar->addAction(downloaderAction);
+        
+        
+           LogPrintf("bitcoingui createToolBars: 1 \n");    
+        m_navigationBar = addToolBar(tr("Navigation"));
+        m_navigationBar->setMaximumHeight(30);
+         LogPrintf("bitcoingui createToolBars: 2 \n"); 
+        connect(m_navigationBar->toggleViewAction(), SIGNAL(toggled(bool)),
+            this, SLOT(updateToolbarActionText(bool)));
+         LogPrintf("bitcoingui createToolBars: 3 \n"); 
+        m_historyBack->setIcon(style()->standardIcon(QStyle::SP_ArrowBack, 0, this));
+        m_historyBackMenu = new QMenu(this);
+        m_historyBack->setMenu(m_historyBackMenu);
+         LogPrintf("bitcoingui createToolBars: 4 \n"); 
+        connect(m_historyBackMenu, SIGNAL(aboutToShow()),
+            this, SLOT(slotAboutToShowBackMenu()));
+         LogPrintf("bitcoingui createToolBars: 5 \n"); 
+        connect(m_historyBackMenu, SIGNAL(triggered(QAction*)),
+            this, SLOT(slotOpenActionUrl(QAction*)));
+         LogPrintf("bitcoingui createToolBars: 6 \n"); 
+    m_navigationBar->addAction(m_historyBack);
+
+    m_historyForward->setIcon(style()->standardIcon(QStyle::SP_ArrowForward, 0, this));
+    m_historyForwardMenu = new QMenu(this);
+     LogPrintf("bitcoingui createToolBars: 7 \n"); 
+    connect(m_historyForwardMenu, SIGNAL(aboutToShow()),
+            this, SLOT(slotAboutToShowForwardMenu()));
+     LogPrintf("bitcoingui createToolBars: 8 \n"); 
+    connect(m_historyForwardMenu, SIGNAL(triggered(QAction*)),
+            this, SLOT(slotOpenActionUrl(QAction*)));
+     LogPrintf("bitcoingui createToolBars: 9 \n"); 
+    m_historyForward->setMenu(m_historyForwardMenu);
+    m_navigationBar->addAction(m_historyForward);
+ LogPrintf("bitcoingui createToolBars: 10 \n"); 
+    m_stopReload = new QAction(this);
+    m_reloadIcon = style()->standardIcon(QStyle::SP_BrowserReload);
+    m_stopReload->setIcon(m_reloadIcon);
+ LogPrintf("bitcoingui createToolBars: 11 \n"); 
+    m_navigationBar->addAction(m_stopReload);
+ LogPrintf("bitcoingui createToolBars: 12 \n"); 
+    m_navigationBar->addWidget(mainView->lineEditStack());
+ LogPrintf("bitcoingui createToolBars: 13 \n"); 
+   // m_toolbarSearch = new ToolbarSearch(m_navigationBar);
+     LogPrintf("bitcoingui createToolBars: 14 \n"); 
+   // m_navigationBar->addWidget(m_toolbarSearch);
+     LogPrintf("bitcoingui createToolBars: 15 \n"); 
+    //connect(m_toolbarSearch, SIGNAL(search(QUrl)), SLOT(loadUrl(QUrl)));
+ LogPrintf("bitcoingui createToolBars: 16 \n"); 
+    m_chaseWidget = new ChaseWidget(this);
+     LogPrintf("bitcoingui createToolBars: 17 \n"); 
+    m_navigationBar->addWidget(m_chaseWidget);
+     LogPrintf("bitcoingui createToolBars: 18 \n"); 
     }
 }
 
@@ -585,9 +948,10 @@ bool BitcoinGUI::addWallet(const QString& name, WalletModel *walletModelIn)
         return false;
     
     //LogPrintf("bitcoingui addwallet2 \n");
-    QUrl walletUrl= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/wallet_en.html"); 
-    mainView->gotoWebPage(1,walletUrl);//, walletModel);    
+    //QUrl walletUrl= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/wallet_en.html"); 
+   // mainView->gotoWebPage(1,walletUrl);//, walletModel);    
     //LogPrintf("bitcoingui addwallet3 \n");
+    mainView->newTab(true,QUrl("ccc:browser"),2);
      return true;
 }
 
@@ -705,7 +1069,16 @@ void BitcoinGUI::aboutClicked()
     HelpMessageDialog dlg(this, true);
     dlg.exec();
 }
-
+void BitcoinGUI::showHideTabBarClicked()
+{
+    QAction * act=toolbar->toggleViewAction() ;
+    if(act->isChecked())
+        act->setChecked(false);
+    else
+        act->setChecked(true);
+    //act->setVisible(false);
+    toolbar->setVisible(false);
+}
 void BitcoinGUI::showHelpMessageClicked()
 {
     HelpMessageDialog *help = new HelpMessageDialog(this, false);
@@ -820,127 +1193,63 @@ void BitcoinGUI::changePassphrase()
 //;
 void BitcoinGUI::gotoWalletPage()
 {
-    walletAction->setChecked(true);
-    QDir dir(QDir::currentPath());
-    dir.cdUp();
-    dir.cdUp();
-    dir.cdUp();
-    dir.cd(QString().fromStdString("cccpages"));
-    QUrl url= QUrl("file://"+dir.path().toUtf8() + "/html/wallet_en.html"); 
-    LogPrintf("gotobrowser page url:%s \n",url.toString().toStdString());
-    if (mainView) mainView->gotoWebPage(WALLETPAGE_ID,url);
+
+    loadUrl(QUrl("ccc:wallet"));
 }
 void BitcoinGUI::gotoBrowserPage()
 {
-    QDir dir(QDir::currentPath());
-    dir.cdUp();
-    dir.cdUp();
-    dir.cdUp();
-    dir.cd(QString().fromStdString("cccpages"));
-    QUrl url= QUrl("file://"+dir.path().toUtf8() + "/html/browser_en.html"); 
-    LogPrintf("gotobrowser page url:%s \n",url.toString().toStdString());
-    browserAction->setChecked(true);
-    if (mainView) mainView->gotoWebPage(BROWSERPAGE_ID,url);
+//    QDir dir(QDir::currentPath());
+//    dir.cdUp();
+//    dir.cdUp();
+//    dir.cdUp();
+//    dir.cd(QString().fromStdString("cccpages"));
+//    QUrl url= QUrl("file://"+dir.path().toUtf8() + "/html/browser_en.html"); 
+//    LogPrintf("gotobrowser page url:%s \n",url.toString().toStdString());
+//    browserAction->setChecked(true);
+   // if (mainView) mainView->gotoWebPage(BROWSERPAGE_ID,url);
+    
+        loadUrl(QUrl("ccc:browser"));
+    
 }
 void BitcoinGUI::gotoPublisherPage()
-{
-    
-    //QUrl url=QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/publisher_en.html"); 
-    QDir dir(QDir::currentPath());
-    dir.cdUp();
-    dir.cdUp();
-    dir.cdUp();
-    dir.cd(QString().fromStdString("cccpages"));
-    QUrl url= QUrl("file://"+dir.path().toUtf8() + "/html/publisher_en.html"); 
-    publisherAction->setChecked(true);
-    if (mainView) mainView->gotoWebPage(PUBLISHERPAGE_ID,url);
+{  
+    loadUrl(QUrl("ccc:publisher"));
 }
 void BitcoinGUI::gotoMessengerPage()
 {
-    //QUrl url= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/messenger_en.html"); 
-    QDir dir(QDir::currentPath());
-    dir.cdUp();
-    dir.cdUp();
-    dir.cdUp();
-    dir.cd(QString().fromStdString("cccpages"));
-    QUrl url= QUrl("file://"+dir.path().toUtf8() + "/html/messenger_en.html"); 
-    messengerAction->setChecked(true);
-    if (mainView) mainView->gotoWebPage(MESSENGERPAGE_ID,url);
+   loadUrl(QUrl("ccc:messenger"));
 }
 void BitcoinGUI::gotoMinerPage()
 {
-    minerAction->setChecked(true);
-    //QUrl minerUrl= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/miner_en.html"); 
-    QDir dir(QDir::currentPath());
-    dir.cdUp();
-    dir.cdUp();
-    dir.cdUp();
-    dir.cd(QString().fromStdString("cccpages"));
-    QUrl url= QUrl("file://"+dir.path().toUtf8() + "/html/miner_en.html"); 
-    if (mainView) mainView->gotoWebPage(MINERPAGE_ID,url);
+    loadUrl(QUrl("ccc:miner"));
 }
 void BitcoinGUI::gotoShopPage()
 {
-    shopAction->setChecked(true);
-    //QUrl url= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/shop_en.html"); 
-    QDir dir(QDir::currentPath());
-    dir.cdUp();
-    dir.cdUp();
-    dir.cdUp();
-    dir.cd(QString().fromStdString("cccpages"));
-    QUrl url= QUrl("file://"+dir.path().toUtf8() + "/html/shop_en.html"); 
-    if (mainView) mainView->gotoWebPage(SHOPPAGE_ID,url);
+    loadUrl(QUrl("ccc:shop"));
 }
 void BitcoinGUI::gotoDownloaderPage()
 {
-    downloaderAction->setChecked(true);
+  //  downloaderAction->setChecked(true);
 //    QUrl url= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/downloader_en.html"); 
 //    if (mainView) mainView->gotoWebPage(DOWNLOADERPAGE_ID,url);
-    if (mainView) mainView->loadWebPage(DOWNLOADERPAGE_ID);
+   // if (mainView) mainView->loadWebPage(DOWNLOADERPAGE_ID);
+    loadUrl(QUrl("ccc:downloader"));
 }
 void BitcoinGUI::gotoSettingsPage()
 {    
-     QDir dir(QDir::currentPath());
-    dir.cdUp();
-    dir.cdUp();
-    dir.cdUp();
-    dir.cd(QString().fromStdString("cccpages"));
-    QUrl url= QUrl("file://"+dir.path().toUtf8() + "/html/settings_en.html"); 
-    if (mainView) mainView->gotoWebPage(SETTINGPAGE_ID,url);
+   loadUrl(QUrl("ccc:settings"));
     
 }
 void BitcoinGUI::gotoToolsPage()
 {    
-     QDir dir(QDir::currentPath());
-    dir.cdUp();
-    dir.cdUp();
-    dir.cdUp();
-    dir.cd(QString().fromStdString("cccpages"));
-    QUrl url= QUrl("file://"+dir.path().toUtf8() + "/html/tools_en.html"); 
-    if (mainView) mainView->gotoWebPage(SETTINGPAGE_ID,url);
+    loadUrl(QUrl("ccc:tools"));
     
 }
 void BitcoinGUI::domainNameClicked()
 {
-    QDir dir(QDir::currentPath());
-    dir.cdUp();
-    dir.cdUp();
-    dir.cdUp();
-    dir.cd(QString().fromStdString("cccpages"));
-    QUrl url= QUrl("file://"+dir.path().toUtf8() + "/html/domain_en.html"); 
-   // QUrl url= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/domain_en.html"); 
-    if (mainView) mainView->gotoWebPage(DOMAINPAGE_ID,url);
+    loadUrl(QUrl("ccc:domain"));
 }
 
-//void BitcoinGUI::gotoSignMessageTab(QString addr)
-//{
-//    if (walletFrame) walletFrame->gotoSignMessageTab(addr);
-//}
-//
-//void BitcoinGUI::gotoVerifyMessageTab(QString addr)
-//{
-//    if (walletFrame) walletFrame->gotoVerifyMessageTab(addr);
-//}
 #endif // ENABLE_WALLET
 void BitcoinGUI::installWebPages()
 {
@@ -1155,6 +1464,19 @@ void BitcoinGUI::changeEvent(QEvent *e)
 
 void BitcoinGUI::closeEvent(QCloseEvent *event)
 {
+    if (mainView->count() > 1) {
+        int ret = QMessageBox::warning(this, QString(),
+                           tr("Are you sure you want to close the window?"
+                              "  There are %1 tabs open").arg(mainView->count()),
+                           QMessageBox::Yes | QMessageBox::No,
+                           QMessageBox::No);
+        if (ret == QMessageBox::No) {
+            event->ignore();
+            return;
+        }
+    }
+    //event->accept();
+    //deleteLater();
 #ifndef Q_OS_MAC // Ignored on Mac
     if(clientModel)// && clientModel->getOptionsModel())
     {
@@ -1260,7 +1582,7 @@ void BitcoinGUI::setEncryptionStatus(int status)
 
 void BitcoinGUI::showNormalIfMinimized(bool fToggleHidden)
 {
-    LogPrintf("showNormalIfMinimized called clientmodel %i,isHidden %b,isMinimized:%b \n",clientModel,isHidden(),isMinimized());
+    //LogPrintf("showNormalIfMinimized called clientmodel %i,isHidden %b,isMinimized:%b \n",clientModel,isHidden(),isMinimized());
     if(!clientModel)
         return;
 
@@ -1286,7 +1608,7 @@ void BitcoinGUI::showNormalIfMinimized(bool fToggleHidden)
 
 void BitcoinGUI::toggleHidden()
 {
-    LogPrintf("toggleHidden called \n");
+    //LogPrintf("toggleHidden called \n");
     showNormalIfMinimized(true);
 }
 
@@ -1416,7 +1738,7 @@ void BitcoinGUI::unsubscribeFromCoreSignals()
 //    }
 //}
 bool BitcoinGUI::handleUserConfirm(QString title,QString message,int nOP,string& strError,SecureString& ssInput){
-    LogPrintf("bitcoingui handleUserConfirm received: \n");    
+    //LogPrintf("bitcoingui handleUserConfirm received: \n");    
         UserConfirmDialog dlg(this);
         dlg.setWindowTitle(title);
         dlg.ui->label_message->setText(message);
@@ -1443,4 +1765,633 @@ bool BitcoinGUI::handleUserConfirm(QString title,QString message,int nOP,string&
 void BitcoinGUI::subscribeToCoreSignalsJs()
 {
     jsInterface->subscribeToCoreSignals();
+}
+void BitcoinGUI::updateToolbarActionText(bool visible)
+{
+    m_viewToolbar->setText(!visible ? tr("Show Navigate bar") : tr("Hide Navigate lbar"));
+}
+void BitcoinGUI::slotAboutToShowBackMenu()
+{
+    m_historyBackMenu->clear();
+    if (!currentTab())
+        return;
+    QWebHistory *history = currentTab()->history();
+    int historyCount = history->count();
+    for (int i = history->backItems(historyCount).count() - 1; i >= 0; --i) {
+        QWebHistoryItem item = history->backItems(history->count()).at(i);
+        QAction *action = new QAction(this);
+        action->setData(-1*(historyCount-i-1));
+        QIcon icon = this->icon(item.url());
+        action->setIcon(icon);
+        action->setText(item.title());
+        m_historyBackMenu->addAction(action);
+    }
+}
+
+void BitcoinGUI::slotAboutToShowForwardMenu()
+{
+    m_historyForwardMenu->clear();
+    if (!currentTab())
+        return;
+    QWebHistory *history = currentTab()->history();
+    int historyCount = history->count();
+    for (int i = 0; i < history->forwardItems(history->count()).count(); ++i) {
+        QWebHistoryItem item = history->forwardItems(historyCount).at(i);
+        QAction *action = new QAction(this);
+        action->setData(historyCount-i);
+        QIcon icon = this->icon(item.url());
+        action->setIcon(icon);
+        action->setText(item.title());
+        m_historyForwardMenu->addAction(action);
+    }
+}
+
+void BitcoinGUI::slotShowWindow()
+{
+//    if (QAction *action = qobject_cast<QAction*>(sender())) {
+//        QVariant v = action->data();
+//        if (v.canConvert<int>()) {
+//            int offset = qvariant_cast<int>(v);
+//            QList<BitcoinGUI*> windows = BitcoinApplication::instance()->mainWindows();
+//            windows.at(offset)->activateWindow();
+//            windows.at(offset)->currentTab()->setFocus();
+//        }
+//    }
+    this->activateWindow();
+    this->currentTab()->setFocus();
+}
+void BitcoinGUI::loadUrl(const QUrl &url)
+{
+    LogPrintf("bitcoingui loadUrl: 1\n"); 
+    string strUrlOut;
+    int nPageID;
+    if(!ParseUrl(url.toString().toStdString(),strUrlOut,nPageID))
+        return ;
+    QUrl urlOut(QString().fromStdString(strUrlOut));
+     LogPrintf("bitcoingui loadUrl urlout: %s\n",strUrlOut);
+     mainView->currentLineEdit()->setText(mainView->currentWebView()->url().toString());   
+     for(unsigned i=0;i<mainView->count();i++)
+     {
+         WebView *tab = mainView->getWebView(i);
+         if (tab->url()==url)
+         {
+             mainView->setCurrentWidget(tab);
+            return;
+         }
+     }
+    if (!currentTab() || !urlOut.isValid())
+        return;
+     LogPrintf("bitcoingui loadUrl: 2\n"); 
+     if(currentTab()->nPageID==255&&nPageID==255)
+     {
+        mainView->currentLineEdit()->setText(QString::fromUtf8(url.toEncoded()));
+        LogPrintf("bitcoingui loadUrl: 3\n"); 
+        mainView->loadUrlInCurrentTab(url);
+        LogPrintf("bitcoingui loadUrl: 4\n"); 
+     }
+     else
+     {      
+      WebView* page= mainView->newTab(true,url,nPageID); 
+       //page->nPageID=nPageID;
+        //mainView->loadUrlInCurrentTab(url);        
+       // mainView->currentLineEdit()->setText(QString::fromUtf8(url.toEncoded()));
+       // mainView->gotoWebPage(nPageID,url);
+        LogPrintf("bitcoingui loadUrl: 5\n"); 
+       
+     }
+}
+MainView *BitcoinGUI::getMainView() const
+{
+    return mainView;
+}
+
+WebView *BitcoinGUI::currentTab() const
+{
+    return mainView->currentWebView();
+}
+QIcon BitcoinGUI::defaultIcon() const
+{
+    if (m_defaultIcon.isNull())
+        m_defaultIcon = QIcon(QLatin1String(":defaulticon.png"));
+    return m_defaultIcon;
+}
+DownloadManager *BitcoinGUI::downloadManager()
+{
+    if (!s_downloadManager) {
+        s_downloadManager = new DownloadManager();
+    }
+    return s_downloadManager;
+}
+
+QNetworkAccessManager *BitcoinGUI::networkAccessManager()
+{
+    //LogPrintf("bitcoingui networkAccessManager\n"); 
+//#if defined(QWEBPAGE_SETNETWORKACCESSMANAGER)
+    if (!s_networkAccessManager) {
+        s_networkAccessManager = new NetworkAccessManager();
+        s_networkAccessManager->setCookieJar(new CookieJar);
+    }
+    return s_networkAccessManager;
+//#else
+//    if (!s_networkAccessManager) {
+//        s_networkAccessManager = new QNetworkAccessManager();
+//    }
+//    return s_networkAccessManager;
+//#endif
+}
+HistoryManager *BitcoinGUI::historyManager()
+{
+    if (!s_historyManager)
+        s_historyManager = new HistoryManager();
+    return s_historyManager;
+}
+
+BookmarksManager *BitcoinGUI::bookmarksManager()
+{
+    if (!s_bookmarksManager) {
+        s_bookmarksManager = new BookmarksManager;
+    }
+    return s_bookmarksManager;
+}
+void BitcoinGUI::saveSession()
+{
+#if defined(QTWEB_PRIVATEBROWSING)
+    QWebSettings *globalSettings = QWebSettings::globalSettings();
+    if (globalSettings->testAttribute(QWebSettings::PrivateBrowsingEnabled))
+        return;
+#endif
+
+    //clean();
+
+    QSettings settings;
+    settings.beginGroup(QLatin1String("sessions"));
+
+    QByteArray data;
+    QBuffer buffer(&data);
+    QDataStream stream(&buffer);
+    buffer.open(QIODevice::ReadWrite);
+
+    stream << this->saveState();
+    settings.setValue(QLatin1String("lastSession"), data);
+    settings.endGroup();
+}
+bool BitcoinGUI::canRestoreSession() const
+{
+    return !m_lastSession.isEmpty();
+}
+void BitcoinGUI::restoreLastSession()
+{
+    QBuffer buffer(&m_lastSession);
+    QDataStream stream(&buffer);
+    buffer.open(QIODevice::ReadOnly);
+        QByteArray windowState;
+        stream >> windowState;
+        this->restoreState(windowState);
+}
+void BitcoinGUI::openUrl(const QUrl &url)
+{
+    loadPage(url.toString());
+}
+void BitcoinGUI::loadPage(const QString &page)
+{
+    //QUrl url = QUrl::fromUserInput(page);
+    QUrl url = QUrl(page);
+    loadUrl(url);
+}
+CookieJar *BitcoinGUI::cookieJar()
+{
+//#if defined(QWEBPAGE_SETNETWORKACCESSMANAGER)
+    return (CookieJar*)networkAccessManager()->cookieJar();
+//#else
+//    return 0;
+//#endif
+}
+QIcon BitcoinGUI::icon(const QUrl &url) const
+{
+//#if defined(QTWEB_ICONDATABASE)
+    QIcon icon = QWebSettings::iconForUrl(url);
+    if (!icon.isNull())
+        return icon.pixmap(16, 16);
+//#else
+//    Q_UNUSED(url);
+//#endif
+    return defaultIcon();
+}
+QSize BitcoinGUI::sizeHint() const
+{
+    QRect desktopRect = QApplication::desktop()->screenGeometry();
+    QSize size = desktopRect.size() * qreal(0.9);
+    return size;
+}
+
+static const qint32 BrowserMainWindowMagic = 0xba;
+QByteArray BitcoinGUI::saveState(bool withTabs) const
+{
+    int version = 2;
+    QByteArray data;
+    QDataStream stream(&data, QIODevice::WriteOnly);
+
+    stream << qint32(BrowserMainWindowMagic);
+    stream << qint32(version);
+
+    stream << size();
+    stream << !m_navigationBar->isHidden();
+    stream << !m_bookmarksToolbar->isHidden();
+    stream << !statusBar()->isHidden();
+    if (withTabs)
+        stream << getMainView()->saveState();
+    else
+        stream << QByteArray();
+    return data;
+}
+
+bool BitcoinGUI::restoreState(const QByteArray &state)
+{
+    int version = 2;
+    QByteArray sd = state;
+    QDataStream stream(&sd, QIODevice::ReadOnly);
+    if (stream.atEnd())
+        return false;
+
+    qint32 marker;
+    qint32 v;
+    stream >> marker;
+    stream >> v;
+    if (marker != BrowserMainWindowMagic || v != version)
+        return false;
+
+    QSize size;
+    bool showToolbar;
+    bool showBookmarksBar;
+    bool showStatusbar;
+    QByteArray tabState;
+
+    stream >> size;
+    stream >> showToolbar;
+    stream >> showBookmarksBar;
+    stream >> showStatusbar;
+    stream >> tabState;
+
+    resize(size);
+
+    m_navigationBar->setVisible(showToolbar);
+    updateToolbarActionText(showToolbar);
+
+    m_bookmarksToolbar->setVisible(showBookmarksBar);
+    updateBookmarksToolbarActionText(showBookmarksBar);
+
+    statusBar()->setVisible(showStatusbar);
+    updateStatusbarActionText(showStatusbar);
+
+    if (!getMainView()->restoreState(tabState))
+        return false;
+
+    return true;
+}
+void BitcoinGUI::slotHome()
+{
+    QSettings settings;
+    settings.beginGroup(QLatin1String("MainWindow"));
+    QString home = settings.value(QLatin1String("home"), QLatin1String(defaultHome)).toString();
+    loadPage(home);
+}
+void BitcoinGUI::slotLoadProgress(int progress)
+{
+    //LogPrintf("slot triggered:BitcoinGUI::slotLoadProgress \n");
+    if (progress < 100 && progress > 0) {
+        m_chaseWidget->setAnimated(true);
+        disconnect(m_stopReload, SIGNAL(triggered()), m_reload, SLOT(trigger()));
+        if (m_stopIcon.isNull())
+            m_stopIcon = style()->standardIcon(QStyle::SP_BrowserStop);
+        m_stopReload->setIcon(m_stopIcon);
+        connect(m_stopReload, SIGNAL(triggered()), m_stop, SLOT(trigger()));
+        m_stopReload->setToolTip(tr("Stop loading the current page"));
+    } else {
+        m_chaseWidget->setAnimated(false);
+        disconnect(m_stopReload, SIGNAL(triggered()), m_stop, SLOT(trigger()));
+        m_stopReload->setIcon(m_reloadIcon);
+        connect(m_stopReload, SIGNAL(triggered()), m_reload, SLOT(trigger()));
+        m_stopReload->setToolTip(tr("Reload the current page"));
+    }
+    //LogPrintf("BitcoinGUI::slotLoadProgress done\n");
+}
+void BitcoinGUI::slotUpdateStatusbar(const QString &string)
+{
+    //LogPrintf("slot triggered:BitcoinGUI::slotUpdateStatusbar \n");
+    statusBar()->showMessage(string, 2000);
+}
+void BitcoinGUI::slotUpdateWindowTitle(const QString &title)
+{
+    //LogPrintf("slot triggered:BitcoinGUI::slotUpdateWindowTitle \n");
+    if (title.isEmpty()) {
+        setWindowTitle(tr("CCC Browser"));
+    } else {
+#if defined(Q_OS_OSX)
+        setWindowTitle(title);
+#else
+        setWindowTitle(tr("%1 - ccc Browser", "Page title and Browser name").arg(title));
+#endif
+    }
+}
+void BitcoinGUI::slotPreferences()
+{
+    SettingsDialog *s = new SettingsDialog(this);
+    s->show();
+}
+void BitcoinGUI::slotFileNew()
+{    
+    BitcoinGUI *mw = BitcoinApplication::instance()->getWindow();
+    mw->slotHome();
+}
+
+void BitcoinGUI::slotFileOpen()
+{
+    QString file = QFileDialog::getOpenFileName(this, tr("Open Web Resource"), QString(),
+            tr("Web Resources (*.html *.htm *.svg *.png *.gif *.svgz);;All files (*.*)"));
+
+    if (file.isEmpty())
+        return;
+
+    loadPage(file);
+}
+
+void BitcoinGUI::slotFilePrintPreview()
+{
+//#ifndef QT_NO_PRINTPREVIEWDIALOG
+    if (!currentTab())
+        return;
+    QPrintPreviewDialog *dialog = new QPrintPreviewDialog(this);
+    connect(dialog, SIGNAL(paintRequested(QPrinter*)),
+            currentTab(), SLOT(print(QPrinter*)));
+    dialog->exec();
+//#endif
+}
+
+void BitcoinGUI::slotFilePrint()
+{
+//#if defined(QWEBPAGE_PRINT)
+    if (!currentTab())
+        return;
+    printRequested(currentTab()->page()->mainFrame());
+//#endif
+}
+void BitcoinGUI::slotPrivateBrowsing()
+{
+    //LogPrintf("slot triggered:BitcoinGUI::slotPrivateBrowsing \n");
+#if defined(QTWEB_PRIVATEBROWSING)
+    QWebSettings *settings = QWebSettings::globalSettings();
+    bool pb = settings->testAttribute(QWebSettings::PrivateBrowsingEnabled);
+    if (!pb) {
+        QString title = tr("Are you sure you want to turn on private browsing?");
+        QString text = tr("<b>%1</b><br><br>When private browsing in turned on,"
+            " webpages are not added to the history,"
+            " items are automatically removed from the Downloads window," \
+            " new cookies are not stored, current cookies can't be accessed," \
+            " site icons wont be stored, session wont be saved, " \
+            " and searches are not added to the pop-up menu in the Google search box." \
+            "  Until you close the window, you can still click the Back and Forward buttons" \
+            " to return to the webpages you have opened.").arg(title);
+
+        QMessageBox::StandardButton button = QMessageBox::question(this, QString(), text,
+                               QMessageBox::Ok | QMessageBox::Cancel,
+                               QMessageBox::Ok);
+        if (button == QMessageBox::Ok) {
+            settings->setAttribute(QWebSettings::PrivateBrowsingEnabled, true);
+        }
+    } else {
+        settings->setAttribute(QWebSettings::PrivateBrowsingEnabled, false);            
+            m_lastSearch = QString::null;
+            mainView->clear();
+        }
+    }
+#endif
+}
+void BitcoinGUI::slotFileSaveAs()
+{
+    BitcoinGUI::downloadManager()->download(currentTab()->url(), true);
+}
+void BitcoinGUI::slotEditFind()
+{
+    if (!currentTab())
+        return;
+    bool ok;
+    QString search = QInputDialog::getText(this, tr("Find"),
+                                          tr("Text:"), QLineEdit::Normal,
+                                          m_lastSearch, &ok);
+    if (ok && !search.isEmpty()) {
+        m_lastSearch = search;        
+        handleFindTextResult(currentTab()->findText(m_lastSearch, 0));
+    }
+}
+
+void BitcoinGUI::slotEditFindNext()
+{
+    if (!currentTab() && !m_lastSearch.isEmpty())
+        return;
+    currentTab()->findText(m_lastSearch);
+}
+
+void BitcoinGUI::slotEditFindPrevious()
+{
+    if (!currentTab() && !m_lastSearch.isEmpty())
+        return;
+    currentTab()->findText(m_lastSearch, QWebPage::FindBackward);
+}
+void BitcoinGUI::slotShowBookmarksDialog()
+{
+    BookmarksDialog *dialog = new BookmarksDialog(this);
+    connect(dialog, SIGNAL(openUrl(QUrl)),
+            this, SLOT(loadUrl(QUrl)));
+    dialog->show();
+}
+void BitcoinGUI::slotAddBookmark()
+{
+    WebView *webView = currentTab();
+    QString url = webView->url().toString();
+    QString title = webView->title();
+    AddBookmarkDialog dialog(url, title);
+    dialog.exec();
+}
+void BitcoinGUI::slotViewZoomIn()
+{
+    if (!currentTab())
+        return;
+    currentTab()->setZoomFactor(currentTab()->zoomFactor() + 0.1);
+}
+
+void BitcoinGUI::slotViewZoomOut()
+{
+    if (!currentTab())
+        return;
+    currentTab()->setZoomFactor(currentTab()->zoomFactor() - 0.1);
+}
+
+void BitcoinGUI::slotViewResetZoom()
+{
+    if (!currentTab())
+        return;
+    currentTab()->setZoomFactor(1.0);
+}
+
+void BitcoinGUI::slotViewFullScreen(bool makeFullScreen)
+{
+    if (makeFullScreen) {
+        showFullScreen();
+    } else {
+        if (isMinimized())
+            showMinimized();
+        else if (isMaximized())
+            showMaximized();
+        else showNormal();
+    }
+}
+void BitcoinGUI::slotViewToolbar()
+{
+    if (m_navigationBar->isVisible()) {
+        updateToolbarActionText(false);
+        m_navigationBar->close();
+    } else {
+        updateToolbarActionText(true);
+        m_navigationBar->show();
+    }
+    m_autoSaver->changeOccurred();
+}
+void BitcoinGUI::slotViewBookmarksBar()
+{
+    if (m_bookmarksToolbar->isVisible()) {
+        updateBookmarksToolbarActionText(false);
+        m_bookmarksToolbar->close();
+    } else {
+        updateBookmarksToolbarActionText(true);
+        m_bookmarksToolbar->show();
+    }
+    m_autoSaver->changeOccurred();
+}
+void BitcoinGUI::slotViewStatusbar()
+{
+    if (statusBar()->isVisible()) {
+        updateStatusbarActionText(false);
+        statusBar()->close();
+    } else {
+        updateStatusbarActionText(true);
+        statusBar()->show();
+    }
+    m_autoSaver->changeOccurred();
+}
+void BitcoinGUI::slotViewPageSource()
+{
+    if (!currentTab())
+        return;
+
+    QPlainTextEdit *view = new QPlainTextEdit;
+    view->setWindowTitle(tr("Page Source of %1").arg(currentTab()->title()));
+    view->setMinimumWidth(640);
+    view->setAttribute(Qt::WA_DeleteOnClose);
+    view->show();
+    view->setPlainText(currentTab()->page()->currentFrame()->toHtml());
+    //currentTab()->page()->currentFrame()->toHtml(invoke(view, &QPlainTextEdit::setPlainText));
+}
+void BitcoinGUI::slotWebSearch()
+{
+    m_toolbarSearch->lineEdit()->selectAll();
+    m_toolbarSearch->lineEdit()->setFocus();
+}
+void BitcoinGUI::slotToggleInspector(bool enable)
+{
+//#if defined(QWEBINSPECTOR)
+    QWebSettings::globalSettings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, enable);
+    if (enable) {
+        int result = QMessageBox::question(this, tr("Web Inspector"),
+                                           tr("The web inspector will only work correctly for pages that were loaded after enabling.\n"
+                                           "Do you want to reload all pages?"),
+                                           QMessageBox::Yes | QMessageBox::No);
+        if (result == QMessageBox::Yes) {
+            mainView->reloadAllTabs();
+        }
+    }
+//#else
+//    Q_UNUSED(enable);
+//#endif
+}
+void BitcoinGUI::slotAboutApplication()
+{
+    QMessageBox::about(this, tr("About"), tr(
+        "Version %1"
+        "CCC Browser"
+        ).arg(QCoreApplication::applicationVersion()));
+}
+void BitcoinGUI::slotDownloadManager()
+{
+    BitcoinGUI::downloadManager()->show();
+}
+void BitcoinGUI::slotSelectLineEdit()
+{
+   // LogPrintf("slot triggered:BitcoinGUI::slotSelectLineEdit \n");
+    mainView->currentLineEdit()->selectAll();
+    mainView->currentLineEdit()->setFocus();
+}
+void BitcoinGUI::slotOpenActionUrl(QAction *action)
+{
+   // LogPrintf("slot triggered:BitcoinGUI::slotOpenActionUrl \n");
+    int offset = action->data().toInt();
+    QWebHistory *history = currentTab()->history();
+    if (offset < 0)
+        history->goToItem(history->backItems(-1*offset).first()); // back
+    else if (offset > 0)
+        history->goToItem(history->forwardItems(history->count() - offset + 1).back()); // forward
+}
+void BitcoinGUI::slotSwapFocus()
+{
+    if (currentTab()->hasFocus())
+        mainView->currentLineEdit()->setFocus();
+    else
+        currentTab()->setFocus();
+}
+//#if defined(QWEBPAGE_PRINT)
+void BitcoinGUI::printRequested(QWebFrame *frame)
+{
+#ifndef QT_NO_PRINTDIALOG
+    QPrinter printer;
+    QPrintDialog *dialog = new QPrintDialog(&printer, this);
+    dialog->setWindowTitle(tr("Print Document"));
+    if (dialog->exec() != QDialog::Accepted)
+        return;
+    frame->print(&printer);
+#endif
+}
+//#endif
+void BitcoinGUI::geometryChangeRequested(const QRect &geometry)
+{
+    setGeometry(geometry);
+}
+void BitcoinGUI::updateBookmarksToolbarActionText(bool visible)
+{
+    m_viewBookmarkBar->setText(!visible ? tr("Show Bookmarks bar") : tr("Hide Bookmarks bar"));
+}
+void BitcoinGUI::loadDefaultState()
+{
+    QSettings settings;
+    settings.beginGroup(QLatin1String("BrowserMainWindow"));
+    QByteArray data = settings.value(QLatin1String("defaultState")).toByteArray();
+    restoreState(data);
+    settings.endGroup();
+}
+void BitcoinGUI::updateStatusbarActionText(bool visible)
+{
+    m_viewStatusbar->setText(!visible ? tr("Show Status Bar") : tr("Hide Status Bar"));
+}
+void BitcoinGUI::handleFindTextResult(bool found)
+{
+    if (!found)
+        slotUpdateStatusbar(tr("\"%1\" not found.").arg(m_lastSearch));
+}
+void BitcoinGUI::save()
+{
+    saveSession();
+
+    QSettings settings;
+    settings.beginGroup(QLatin1String("BrowserMainWindow"));
+    QByteArray data = saveState(false);
+    settings.setValue(QLatin1String("defaultState"), data);
+    settings.endGroup();
 }

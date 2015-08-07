@@ -141,13 +141,14 @@ public:
     }
     bool SetString(const std::string linkStr);
     bool SetString(const vector<unsigned char>& linkVch);
+    bool SetStringNative(const std::string linkStr);
     bool SetStringBlockChain(const std::string linkStr);
     bool SetStringTxidOut(const std::string linkStr);
     bool SetStringScriptPubKey(const std::string linkStr);
     //this function only outputs the content of link ,w/o link type information
     std::string ToString(const linkformat linkFormat = LINK_FORMAT_DEC)const;
     std::string ToStringBlockChain(const linkformat linkFormat= LINK_FORMAT_DEC)const;
-    std::string ToStringTxidOut()const;
+    std::string ToStringTxidOut()const;    
     std::string ToStringScriptPubKey()const;
     bool SetContent(const string& str);
     string ToContent()const;

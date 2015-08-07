@@ -11,6 +11,7 @@
 #include <vector>
 using namespace std;
 class CLink;
+class CLinkUni;
 class CContent;
 class CBlock;
 class CTransaction;
@@ -22,17 +23,26 @@ class CPubKey;
 class uint256;
 
 extern bool GetContentByLink(const CLink clink,CContent& content);
+extern bool GetContentByLink(const CLinkUni clink,CContent& content);
 extern bool GetDomainLink (const string strDomain,CLink& link);
 extern bool GetFileFromLinks(const vector<CLink>& vlinks,string& strFile);
 extern bool GetBlockByHeight(const int nHeight, CBlock& blockOut, CBlockIndex*& pblockindex);
 extern bool GetTxFromBlock(const CBlock& block, const int nTx, CTransaction& txOut);
 extern bool GetVoutFromTx(const CTransaction& tx, const int nVout, CTxOut& vout);
 extern bool GetContentFromVout(const CTransaction& tx, const int nVout, CContent& content);
+extern bool ParseUrl(const string urlIn,string& urlOut,int& nPageID);
+extern bool _ParseDomainUrl(const string& strDomain,const string& strDomainExt,string& urlOut,int& nPageID,int nIterations);
+
+bool GetNativeLink(const string urlIn,string& urlOut,int& nPageID);
+bool _ParseContentUrl(const CLinkUni link,const CContent content,string& urlOut,int& nPageID);
+bool GetContentByTxidOut(const uint256 txid,const int nVout,CContent& content);
+
 int GetBlocksToMaturity(const unsigned int nLockTime);
 int GetLockLasting(uint32_t nLockTime);
 
 CScript GetTxInScriptPubKey(const CTxIn& txin);
 bool GetPubKeyFromBlockChain(CScript script,CPubKey& pubKey);
+bool TxidOutLink2BlockChainLink(const uint256 txid,const int nVout,CLink& linkOut);
 /** Get nTx from block*/
 int GetNTx(const uint256 &hashTx);
 int GetNTx(const CTransaction &tx,const CBlock &block);

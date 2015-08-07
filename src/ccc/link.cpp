@@ -1,4 +1,5 @@
 #include "ccc/link.h"
+#include "ccc/cc.h"
 #include <string.h>
 #include <string>
 //#include <boost/algorithm/string.hpp>
@@ -65,32 +66,37 @@ bool CLink::SetString(const std::string linkStr)
     std::size_t posSecondDot = str.find(".", posFirstDot + 1);
     std::string nTxS = (posSecondDot == std::string::npos) ? str.substr(posFirstDot + 1) :
             str.substr(posFirstDot + 1, posSecondDot - posFirstDot - 1);
-    if (nHeightS.substr(0, 1) == URI_HEX_HEADER) {
-        nHeight = HexStringToInt(nHeightS.substr(1));
-        nTx = (unsigned short) HexStringToInt(nTxS);
-        if (posSecondDot == std::string::npos) {
-            nVout = 0;
-        } else {
-            std::string nVoutS = str.substr(posSecondDot + 1);
-            nVout = (unsigned short) HexStringToInt(nVoutS);
-        }
-    } else if (nHeightS.substr(0, 1) == URI_B32_HEADER) {
-        nHeight = DecodeBase32ToInt(nHeightS.substr(1));
-        nTx = (unsigned short) DecodeBase32ToInt(nTxS);
-        if (posSecondDot == std::string::npos) {
-            nVout = 0;
-        } else {
-            std::string nVoutS = str.substr(posSecondDot + 1);
-            nVout = (unsigned short) DecodeBase32ToInt(nVoutS);
-        }
-    } else {
+//    if (nHeightS.substr(0, 1) == URI_HEX_HEADER) {
+//        nHeight = HexStringToInt(nHeightS.substr(1));
+//        nTx = (unsigned short) HexStringToInt(nTxS);
+//        if (posSecondDot == std::string::npos) {
+//            nVout = 0;
+//        } else {
+//            std::string nVoutS = str.substr(posSecondDot + 1);
+//            nVout = (unsigned short) HexStringToInt(nVoutS);
+//        }
+//    } else
+//        if (nHeightS.substr(0, 1) == URI_B32_HEADER) {
+//        nHeight = DecodeBase32ToInt(nHeightS.substr(1));
+//        nTx = (unsigned short) DecodeBase32ToInt(nTxS);
+//        if (posSecondDot == std::string::npos) {
+//            nVout = 0;
+//        } else {
+//            std::string nVoutS = str.substr(posSecondDot + 1);
+//            nVout = (unsigned short) DecodeBase32ToInt(nVoutS);
+//        }
+//    } else 
+    {
         if (!IsStringInteger(nHeightS)) {
-            LogPrintf("%s: Non-standard link (nHeight)", __func__);
+            LogPrintf("%s: Non-standard link (nHeight) \n", __func__);
             return false;
         }
         nHeight = atoi(nHeightS.c_str());
         if (!IsStringInteger(nTxS))
-            return error("%s: Non-standard link (nTx)", __func__);
+        {
+             LogPrintf("%s: Non-standard link (nTx) \n", __func__);
+            return false;
+        }
         nTx = (unsigned short) atoi(nTxS.c_str());
         if (posSecondDot == std::string::npos) {
             nVout = 0;
@@ -100,7 +106,6 @@ bool CLink::SetString(const std::string linkStr)
                 LogPrintf("%s: Non-standard link (nVout)", __func__);
                 return false;
             }
-
             nVout = (unsigned short) atoi(nVoutS.c_str());
         }
     }
@@ -127,7 +132,7 @@ bool CLink::Unserialize(string& str)
     //     nHeight = str[3]<<24|(unsigned char)str[2]<<16|(unsigned char)str[1]<<8|(unsigned char)str[0];
     //    nTx = (unsigned char)str[5]<<8|(unsigned char)str[4];
     //    nVout = (unsigned char)str[7]<<8|(unsigned char)str[6];
-    LogPrintf("CLink::UnSerialize() %s\n", HexStr(str.begin(), str.end()));
+    //LogPrintf("CLink::UnSerialize() %s\n", HexStr(str.begin(), str.end()));
     if (!ReadVarInt(str, nHeight))
         return false;
     int n = 0;
@@ -141,7 +146,7 @@ bool CLink::Unserialize(string& str)
     if (n < 0 || n > 65535)
         return false;
     nVout = (unsigned short) n;
-    LogPrintf("CLink::UnSerialize() %i,%i,%i \n", nHeight, nTx, nVout);
+    //LogPrintf("CLink::UnSerialize() %i,%i,%i \n", nHeight, nTx, nVout);
     return true;
 }
 bool CLink::UnserializeConst(const string& str)
@@ -246,6 +251,8 @@ std::string CLink::ToString(const linkformat linkFormat)const
 bool CLinkUni::SetString(const std::string linkStr)
 {
     strLink=linkStr;
+    if(SetStringNative(linkStr))
+        return true;
     if(SetStringBlockChain(linkStr))
     return true;
     if(SetStringTxidOut(linkStr))
@@ -262,8 +269,13 @@ bool CLinkUni::SetString(const std::string linkStr)
         strDomainExtension=str.substr(strDomain.find("/"));
         return true;
     }
-    if(IsValidHttpFormat(linkStr))   
+    else if(IsValidHttpFormat(linkStr))   
+    {
+        LogPrintf("valid http link \n");
         linkType=CC_LINK_TYPE_HTTP; 
+    }
+    else if(IsValidFileFormat(linkStr))   
+        linkType=CC_LINK_TYPE_FILE; 
     else if(linkStr.find("magnet:")==0)
         linkType=CC_LINK_TYPE_MAGNET; 
     else if(linkStr.find("mailto:")==0)
@@ -273,6 +285,27 @@ bool CLinkUni::SetString(const std::string linkStr)
     else
         linkType=CC_LINK_TYPE_UNKNOWN; 
     return true;    
+}
+bool CLinkUni::SetStringNative(const std::string linkStr)
+{
+    std::size_t posColon = linkStr.find(URI_COLON);
+    std::string str;
+    if (posColon != std::string::npos) 
+    { // full link with colon
+        std::string sn = linkStr.substr(0, posColon);
+        if (sn == URI_SCHEME_NAME) 
+        {//ccc url, to be parsed as app or link.
+            str = linkStr.substr(posColon + 1);
+        
+            for(int i=1;i<=11;i++)            
+                if (str==mapPageNames[i])
+                {
+                    linkType=CC_LINK_TYPE_NATIVE;            
+                    return true;
+                }
+        }
+    }
+        return false;
 }
 bool CLinkUni::SetStringBlockChain(const std::string linkStr)
 {
@@ -324,7 +357,18 @@ bool CLinkUni::SetStringTxidOut(const std::string linkStr)
 }
 bool CLinkUni::SetStringScriptPubKey(const std::string linkStr)
 {
-    if(!StringToScriptPubKey(linkStr,scriptPubKey))
+    std::size_t posColon = linkStr.find(URI_COLON);
+    std::string str;
+    if (posColon != std::string::npos) { // full link with colon
+        std::string sn = linkStr.substr(0, posColon);
+        if (sn != URI_SCHEME_NAME) {
+            LogPrintf("%s: Non-standard link header %s", __func__, sn);
+            return false;
+        }
+        str = linkStr.substr(posColon + 1);
+    } else
+        str = linkStr;
+    if(!StringToScriptPubKey(str,scriptPubKey))
         return false;
 //    if(scriptPubKey.size()>64)
 //        return false;

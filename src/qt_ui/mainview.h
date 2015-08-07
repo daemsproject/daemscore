@@ -7,13 +7,18 @@
 
 #include "amount.h"
 #include <QUrl>
-#include <QStackedWidget>
+#include <QTabWidget>
+#include <QWebPage>
+#include <QtWidgets/QTabBar>
+
+#include <QtWidgets/QShortcut>
 #include "json/json_spirit_value.h"
 
 class BitcoinGUI;
 class ClientModel;
 class JsInterface;
-class WebPage;
+class WebView;
+//sclass HistoryManager;
 //class OverviewPage;
 //class ReceiveCoinsDialog;
 //class SendCoinsDialog;
@@ -24,6 +29,11 @@ class WebPage;
 QT_BEGIN_NAMESPACE
 class QModelIndex;
 class QProgressDialog;
+class QCompleter;
+class QLineEdit;
+class QMenu;
+class QStackedWidget;
+
 QT_END_NAMESPACE
 
 /*
@@ -32,16 +42,100 @@ QT_END_NAMESPACE
   It communicates with both the client and the wallet models to give the user an up-to-date view of the
   current core state.
 */
-class MainView : public QStackedWidget
+
+class TabBar : public QTabBar
 {
     Q_OBJECT
 
+signals:
+    void newTab();
+    void cloneTab(int index);
+    void closeTab(int index);
+    void closeOtherTabs(int index);
+    void reloadTab(int index);
+    void reloadAllTabs();
+    void tabMoveRequested(int fromIndex, int toIndex);
+
+public:
+    TabBar(QWidget *parent = 0);
+
+protected:
+    void mousePressEvent(QMouseEvent* event);
+    void mouseMoveEvent(QMouseEvent* event);
+
+private slots:
+    void selectTabAction();
+    void cloneTab();
+    void closeTab();
+    void closeOtherTabs();
+    void reloadTab();
+    void contextMenuRequested(const QPoint &position);
+
+private:
+    QList<QShortcut*> m_tabShortcuts;
+    friend class MainView;
+
+    QPoint m_dragStartPos;
+    int m_dragCurrentIndex;
+};
+class WebActionMapper : public QObject
+{
+    Q_OBJECT
+
+public:
+    WebActionMapper(QAction *root, QWebPage::WebAction webAction, QObject *parent);
+    QWebPage::WebAction webAction() const;
+    void addChild(QAction *action);
+    void updateCurrent(QWebPage *currentParent);
+
+private slots:
+    void rootTriggered();
+    void childChanged();
+    void rootDestroyed();
+    void currentDestroyed();
+
+private:
+    QWebPage *m_currentParent;
+    QAction *m_root;
+    QWebPage::WebAction m_webAction;
+};
+
+class MainView : public QTabWidget
+{
+    Q_OBJECT
+signals:
+    
+    /** Signal that we want to show the main window */
+    void showNormalIfMinimized();
+    /**  Fired when a message should be reported to the user */
+    void message(const QString &title, const QString &message, unsigned int style);
+    /** Encryption status of wallet changed */
+    //void encryptionStatusChanged(int status);
+    /** Notify that a new transaction appeared */
+    //void incomingTransaction(const QString& date, int unit, const CAmount& amount, const QString& type, const QString& address);
+    void loadPage(const QString &url);
+    void tabsChanged();
+    void lastTabClosed();
+
+    // current tab signals
+    void setCurrentTitle(const QString &url);
+    void showStatusBarMessage(const QString &message);
+    void linkHovered(const QString &link);
+    void loadProgress(int progress);
+    void geometryChangeRequested(const QRect &geometry);
+    void menuBarVisibilityChangeRequested(bool visible);
+    void statusBarVisibilityChangeRequested(bool visible);
+    void toolBarVisibilityChangeRequested(bool visible);
+//#if defined(QWEBPAGE_PRINTREQUESTED)
+    void printRequested(QWebFrame *frame);
+//#endif
+     
 public:
     explicit MainView(QString languageIn,BitcoinGUI *parent,JsInterface *_js=0);
     ~MainView();
     QString language;
     JsInterface *jsInterface;
-    std::vector<WebPage*> vWebPages;
+    std::vector<WebView*> vWebPages;
     //void setBitcoinGUI(BitcoinGUI *gui);
     /** Set the client model.
         The client model represents the part of the core that communicates with the P2P network, and is wallet-agnostic.
@@ -62,43 +156,53 @@ public:
     void loadWebPage(int nPageID);
     bool copyQrcToDisc(std::string to,std::string from);
     std::string qrcFileToString(const std::string fileName);
+    
+    
+    WebView* currentWebView() const;
+    QLineEdit *currentLineEdit() const;
+    QWidget *lineEditStack() const;
+    QAction *nextTabAction() const;
+    QAction *previousTabAction() const;
+    QLineEdit *lineEdit(int index) const;
+    WebView *getWebView(int index) const;
+    void addWebAction(QAction *action, QWebPage::WebAction webAction);
+    
+    QAction *newTabAction() const;
+    QAction *closeTabAction() const;
+    QAction *recentlyClosedTabsAction() const;
+    int webViewIndex(WebView *webView) const;
+    QByteArray saveState() const;
+    bool restoreState(const QByteArray &state);
+    
+protected:
+    void mouseDoubleClickEvent(QMouseEvent *event);
+    void contextMenuEvent(QContextMenuEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);    
+    
 private:
     //ClientModel *clientModel;
     //WalletModel *walletModel;
-    
-    //WalletPage *walletPage;
-//    OverviewPage *overviewPage;
-//    QWidget *transactionsPage;
-//    ReceiveCoinsDialog *receiveCoinsPage;
-//    SendCoinsDialog *sendCoinsPage;
-//
-//    TransactionView *transactionView;
-
     QProgressDialog *progressDialog;
+    
+    QAction *m_recentlyClosedTabsAction;
+    QAction *m_newTabAction;
+    QAction *m_closeTabAction;
+    QAction *m_nextTabAction;
+    QAction *m_previousTabAction;
+
+    QMenu *m_recentlyClosedTabsMenu;
+    static const int m_recentlyClosedTabsSize = 10;
+    QList<QUrl> m_recentlyClosedTabs;
+    QList<WebActionMapper*> m_actions;
+
+    QCompleter *m_lineEditCompleter;
+    QStackedWidget *m_lineEdits;
+    TabBar *m_tabBar;
 
 public slots:
     void gotoCustomPage(QUrl url,int nFromPageID);
-    void closeWebPage(int nPageID,int nSwitchToPageID=0);
-    /** Switch to overview (home) page */
-    //void gotoOverviewPage();
-    /** Switch to history (transactions) page */
-    //void gotoHistoryPage();
-    /** Switch to receive coins page */
-    //void gotoReceiveCoinsPage();
-    /** Switch to send coins page */
-    //void gotoSendCoinsPage(QString addr = "");
-
-    /** Show Sign/Verify Message dialog and switch to sign message tab */
-    //void gotoSignMessageTab(QString addr = "");
-    /** Show Sign/Verify Message dialog and switch to verify message tab */
-    //void gotoVerifyMessageTab(QString addr = "");
-
-    /** Show incoming transaction notification for new transactions.
-
-        The new items are those between start and end inclusive, under the given parent item.
-    */
-    //void processNewTransaction(const QModelIndex& parent, int start, int /*end*/);
-    /** Encrypt the wallet */
+    //void closeWebPage(int nPageID,int nSwitchToPageID=0);
+    
     //void encryptWallet(bool status);
     /** Backup the wallet */
     //void backupWallet();
@@ -117,16 +221,28 @@ public slots:
 
     /** Show progress dialog e.g. for rescan */
     void showProgress(const QString &title, int nProgress);
-
-signals:
-    /** Signal that we want to show the main window */
-    void showNormalIfMinimized();
-    /**  Fired when a message should be reported to the user */
-    void message(const QString &title, const QString &message, unsigned int style);
-    /** Encryption status of wallet changed */
-    //void encryptionStatusChanged(int status);
-    /** Notify that a new transaction appeared */
-    //void incomingTransaction(const QString& date, int unit, const CAmount& amount, const QString& type, const QString& address);
+    void loadUrlInCurrentTab(const QUrl &url);
+    WebView *newTab(bool makeCurrent = true,QUrl url=QUrl(),int nPageID=255);
+    void cloneTab(int index = -1);
+    void closeTab(int index = -1);
+    void closeOtherTabs(int index);
+    void reloadTab(int index = -1);
+    void reloadAllTabs();
+    void nextTab();
+    void previousTab();
+        
+private slots:
+    void moveTab(int fromIndex, int toIndex);
+    void currentChanged(int index);
+    void aboutToShowRecentTabsMenu();
+    void aboutToShowRecentTriggeredAction(QAction *action);
+    void webViewLoadStarted();
+    void webViewIconChanged();
+    void webViewTitleChanged(const QString &title);
+    void webViewUrlChanged(const QUrl &url);
+    void lineEditReturnPressed();
+    void windowCloseRequested();
+    
 };
 
 #endif // BITCOIN_QT_WALLETVIEW_H

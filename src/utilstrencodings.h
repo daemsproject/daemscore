@@ -47,6 +47,7 @@ bool DecodeVarInt(const std::vector<unsigned char>& sv, uint64_t& n);
 bool EncodeVarInt(const uint64_t nIn, string& str);
 bool DecodeVarInt(string& str, uint64_t& n);
 bool IsValidHttpFormat(const string str);
+bool IsValidFileFormat(const string str);
 /**
  * Convert string to signed 32-bit integer with strict parse error feedback.
  * @returns true if the entire string could be parsed as valid integer,
