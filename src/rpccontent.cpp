@@ -780,16 +780,16 @@ Value getmessages(const json_spirit::Array& params, bool fHelp)
 
     }
     std::vector<CTransaction> vMemTx;
-    std::vector<CDiskTxPos> vTxPos;
+    std::vector<CTxPosItem> vTxPos;
     GetDiskTxPoses(vIDsLocal, vTxPos);
     if (fIncludeMempool)
         mempool.GetUnconfirmedTransactions(vIDsLocal, vMemTx);
     //LogPrintf("getmessages mempooltxs:%u \n", vMemTx.size());
     //LogPrintf("getmessages blockchaintxs:%u \n", vTxPos.size());
     if (vIDsForeign.size() > 0) {
-        std::vector<CDiskTxPos> vTxPosForeign;
+        std::vector<CTxPosItem> vTxPosForeign;
         GetDiskTxPoses(vIDsForeign, vTxPosForeign);
-        for (std::vector<CDiskTxPos>::iterator it = vTxPos.begin(); it != vTxPos.end(); it++) {
+        for (std::vector<CTxPosItem>::iterator it = vTxPos.begin(); it != vTxPos.end(); it++) {
             if (find(vTxPosForeign.begin(), vTxPosForeign.end(), *it) == vTxPosForeign.end())
                 vTxPos.erase(it);
         }
@@ -822,13 +822,18 @@ Value getmessages(const json_spirit::Array& params, bool fHelp)
     for (int i = vTxPos.size() - 1; i >= 0; i--) {
         if (nPos >= nOffset + nCount)
             break;
+        if((((vTxPos[i].nFlags&1<<TXITEMFLAG_SENDCONTENT)==0)&&((vTxPos[i].nFlags&1<<TXITEMFLAG_RECEIVECONTENT)==0))||
+                (nDirectionFilter == OUTPUT_ONLY&&((vTxPos[i].nFlags&1<<TXITEMFLAG_SENDCONTENT)==0))||
+                (nDirectionFilter == INCOMING_ONLY&&((vTxPos[i].nFlags&1<<TXITEMFLAG_RECEIVECONTENT)==0)))
+                continue;
         CTransaction tx;
         uint256 hashBlock;
         int nHeight = -1;
         int nTime = GetTime();
         int nTx = -1;
         //LogPrintf("getmessages txpos   file:%i,pos:%u,txpos:%i\n",vTxPos[i].nFile,vTxPos[i].nPos,vTxPos[i].nTxOffset);
-        if (GetTransaction(vTxPos[i], tx, hashBlock)) {
+        if (GetTransaction(vTxPos[i], tx)) {
+            pBlockPosDB->GetByPos(vTxPos[i].nFile,vTxPos[i].nPos,hashBlock,nHeight);
             BlockMap::iterator mi = mapBlockIndex.find(hashBlock);
             if (mi != mapBlockIndex.end()) {
                 const CBlockIndex* pindex = (*mi).second;

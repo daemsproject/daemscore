@@ -184,25 +184,25 @@ int GetNTx(const CTransaction &tx, const CBlock &block)
 }
 bool GetPubKeyFromBlockChain(CScript script,CPubKey& pubKey)
 {
-    std::vector<CScript> vScript;
-    vScript.push_back(script);
-    std::vector<CDiskTxPos> vTxPos;
-     GetDiskTxPoses (vScript,vTxPos);
-     if(vTxPos.size()==0)
-         return false;
-     for(unsigned int i=0;i<vTxPos.size();i++)
-     {
-          CTransaction tx;
-        uint256 hashBlock;                 
-        if(GetTransaction(vTxPos[i], tx, hashBlock)){            
-            CTransaction prevTx;
-            uint256 tmphash;
-            if (!GetTransaction(tx.vin[0].prevout.hash, prevTx, tmphash, true))
-                continue;            
-            if(prevTx.vout[tx.vin[0].prevout.n].scriptPubKey==script)
-              return false;//RecoverPubKey(tx,0,pubKey);                
-        }
-     }
+//    std::vector<CScript> vScript;
+//    vScript.push_back(script);
+//    std::vector<CDiskTxPos> vTxPos;
+//     GetDiskTxPoses (vScript,vTxPos);
+//     if(vTxPos.size()==0)
+//         return false;
+//     for(unsigned int i=0;i<vTxPos.size();i++)
+//     {
+//          CTransaction tx;
+//        uint256 hashBlock;                 
+//        if(GetTransaction(vTxPos[i], tx, hashBlock)){            
+//            CTransaction prevTx;
+//            uint256 tmphash;
+//            if (!GetTransaction(tx.vin[0].prevout.hash, prevTx, tmphash, true))
+//                continue;            
+//            if(prevTx.vout[tx.vin[0].prevout.n].scriptPubKey==script)
+//              return false;//RecoverPubKey(tx,0,pubKey);                
+//        }
+//     }
      return false;
 }
 CScript GetTxInScriptPubKey(const CTxIn& txin)

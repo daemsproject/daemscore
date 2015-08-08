@@ -124,7 +124,23 @@ string CLink::Serialize()const
     LogPrintf("CLink::Serialize() %s", HexStr(str.begin(), str.end()));
     return str;
 }
-
+int64_t CLink::SerializeInt()const
+{
+    int64_t nLink;
+    nLink=nHeight;
+    nLink<<16;
+    nLink|=nTx;
+    nLink<<16;
+    nLink|=nVout;
+    return nLink;
+}
+bool CLink::Unserialize(const int64_t nLink)
+{
+    nVout=nLink&0xffff;
+    nTx=nLink>>16&0xffff;
+    nHeight=nLink>>32;
+    return true;
+}
 bool CLink::Unserialize(string& str)
 {
     //    if(str.size()!=8)

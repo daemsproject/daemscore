@@ -58,8 +58,10 @@ public:
         nVout = (unsigned short) nVoutIn;
     }
     string Serialize()const;
+    int64_t SerializeInt()const;
     bool Unserialize(string& str);
     bool UnserializeConst(const string& str);
+    bool Unserialize(const int64_t nLink);
     bool WriteVarInt(const int nIn, string& str) const;
     bool ReadVarInt(string& str, int& n)const;
     

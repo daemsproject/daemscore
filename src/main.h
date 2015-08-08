@@ -14,7 +14,7 @@
 #include "chain.h"
 #include "chainparams.h"
 #include "coins.h"
-#include "ccc/script2txposdb.h"
+//#include "ccc/script2txposdb.h"
 //#include "ccc/settings.h"
 //#include "ccc/domain.h"
 #include "primitives/block.h"
@@ -46,6 +46,7 @@ class CBlockTreeDB;
 class CDomainViewDB;
 class CTagViewDB;
 class CScriptCoinDB;
+class CScript2TxPosDB;
 class CBloomFilter;
 class CInv;
 class CScriptCheck;
@@ -212,9 +213,10 @@ std::string GetWarnings(std::string strFor);
 bool GetTransaction(const uint256 &hash, CTransaction &tx, uint256 &hashBlock, bool fAllowSlow = false);
 /** Retrieve a transaction by disk position*/
 bool GetTransaction(const CDiskTxPos &postx, CTransaction &txOut, uint256 &hashBlock);
+bool GetTransaction(const CTxPosItem &postx, CTransaction &txOut);
 /**get all transactions related to the id list, with block hash*/
 bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTransaction, uint256> >& vTxs,bool fIncludeUnconfirmed =true,bool fNoContent=false,unsigned int nOffset=0,unsigned int nNumber=1000000);
-bool GetDiskTxPoses (const std::vector<CScript>& vIds,std::vector<CDiskTxPos>& vTxPosAll);
+bool GetDiskTxPoses (const std::vector<CScript>& vIds,std::vector<CTxPosItem>& vTxPosAll);
 
 /** Find the best known block, and make it the tip of the block chain */
 bool ActivateBestChain(CValidationState &state, CBlock *pblock = NULL);
@@ -295,7 +297,7 @@ bool CheckInputs(const CTransaction& tx,const CTransaction& tx4CheckVins, CValid
 /** Apply the effects of this transaction on the UTXO set represented by view */
 void UpdateCoins(const CTransaction& tx, CValidationState &state, CCoinsViewCache &inputs, CTxUndo &txundo, int nHeight);
 /** Apply tx changes to Script2TxPosDB*/
-void UpdateScript2TxPosDB(const CTransaction& tx,const CDiskTxPos& pos,CValidationState &state,const CCoinsViewCache& inputs,bool fErase=false);
+void UpdateScript2TxPosDB(const CTransaction& tx,const CDiskTxPos& pos,const int nHeaderLen,const int nTx,CValidationState &state,const CCoinsViewCache& inputs,bool fErase=false);
 void UpdateDomainDB(const CTransaction& tx,const CBlock& block,const int nTx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse);
 void UpdateTagDB(const CTransaction& tx,const CBlock& block,const int nTx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse);
 void UpdateScriptCoinDB(const CTransaction& tx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse);
@@ -545,6 +547,8 @@ extern CSqliteWrapper *psqliteDB;
 extern CCoinsViewCache *pcoinsTip;
 /** Global variable that points to the active CScript2TxPosDB (protected by cs_main) */
 extern CScript2TxPosDB *pScript2TxPosDB;
+class CBlockPosDB;
+extern CBlockPosDB *pBlockPosDB;
 extern CDomainViewDB *pDomainDBView;
 extern CTagViewDB *pTagDBView;
 extern CScriptCoinDB *pScriptCoinDBView;

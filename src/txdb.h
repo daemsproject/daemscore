@@ -63,15 +63,37 @@ public:
     bool LoadBlockIndexGuts();
 };
 //ccc:CScript2TxPosViewDB, because this map is very big, no memory cache is available
-class CScript2TxPosViewDB :public CScript2TxPosDBView
+//class CScript2TxPosViewDB :public CScript2TxPosDBView
+//{
+//protected:
+//    CLevelDBWrapper db;
+//public:    
+//    CScript2TxPosViewDB(size_t nCacheSize, bool fMemory = false, bool fWipe = false);
+//    bool GetTxPosList(const CScript scriptPubKey,std::vector<CDiskTxPos> &vTxPos);    
+//    bool BatchWrite(const std::map<CScript,std::vector<CDiskTxPos> > &mapScriptTxPosList);  
+//    bool Write(const CScript &scriptPubKey,const std::vector<CDiskTxPos> &vTxPos);
+//};
+class CScript2TxPosDB 
 {
 protected:
-    CLevelDBWrapper db;
+    CSqliteWrapper* db;
 public:    
-    CScript2TxPosViewDB(size_t nCacheSize, bool fMemory = false, bool fWipe = false);
-    bool GetTxPosList(const CScript scriptPubKey,std::vector<CDiskTxPos> &vTxPos);    
-    bool BatchWrite(const std::map<CScript,std::vector<CDiskTxPos> > &mapScriptTxPosList);  
-    bool Write(const CScript &scriptPubKey,const std::vector<CDiskTxPos> &vTxPos);
+    CScript2TxPosDB(CSqliteWrapper* dbIn, bool fWipe = false);
+    bool GetTxPosList(const CScript scriptPubKey,std::vector<CTxPosItem> &vTxPos);    
+    bool BatchWrite(const std::map<CScript,std::vector<CTxPosItem> > &mapScriptTxPosList);  
+    bool Write(const CScript &scriptPubKey,const std::vector<CTxPosItem> &vTxPos);
+    bool AddNewTxs(const std::map<CScript,CTxPosItem> &mapScriptTxPos);
+    bool RemoveTxs(const std::map<CScript,CTxPosItem> &mapScriptTxPos);
+     
+};
+class CBlockPosDB
+{
+protected:
+    CSqliteWrapper* db;
+public:    
+    CBlockPosDB(CSqliteWrapper* dbIn, bool fWipe = false);
+    bool GetByPos(const int nFile,const int nPos,uint256& hashBlock,int& nHeight);
+    bool Write(const int nFile,const int nPos,const uint256 hashBlock,const int nHeight);
 };
 class CDomainViewDB //:public CDomainView
 {
@@ -83,9 +105,9 @@ public:
      //bool GetForward(const std::string strDomainName,CContent& forward)const ;   
      bool _GetDomainByForward(const int nExtension,const CScript scriptPubKey,std::vector<CDomain> &vDomain)const ; 
      bool _GetDomainByOwner(const int nExtension,const CScript scriptPubKey,std::vector<CDomain> &vDomain)const ;
-     bool GetDomainByForward(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupportFAI=true)const ;
-     bool GetDomainByForward(const CScript scriptPubKey,CDomain& domain,bool FSupportFAI)const;
-     bool GetDomainByOwner(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupportFAI)const ;
+     bool GetDomainByForward(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupport100=true)const ;
+     bool GetDomainByForward(const CScript scriptPubKey,CDomain& domain,bool FSupport100)const;
+     bool GetDomainByOwner(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupport100)const ;
      bool GetDomainByName(const string strDomainName,CDomain& domain)const ;
      
     //l bool GetDomainNameByForward(const CScript scriptPubKey,std::vector<string> &vDomainName);    
@@ -107,6 +129,16 @@ public:
     //! As we use CDomainView polymorphically, have a virtual destructor
      ~CDomainViewDB() {}
 };
+struct CContentDBItem
+{
+   int64_t nLink;
+   int64_t pos;
+   CScript sender;
+   int cc;
+   CAmount lockValue;
+   uint32_t lockTime;
+   vector<string>vTags;
+};
 class CTagViewDB    
 {
 protected:
@@ -117,8 +149,9 @@ public:
      //bool GetForward(const std::string strDomainName,CContent& forward)const ;   
     bool HasLink(const CLink link)const;
      bool Search(vector<CLink>& vLink,const std::vector<string> &vTag,const int cc=-1,const int nMaxItems=1000,const int nOffset=0)const ;           
-     bool Insert(const int cc,const string tag,const CLink link,const int nExpireTime);
-     bool ClearExpired();
+     //bool InsertContent(const CContentDBItem);
+     bool Insert(const CContentDBItem item);
+     bool ClearExpired(uint32_t nTime);
     bool ClearTables();
      ~CTagViewDB() {}
 };

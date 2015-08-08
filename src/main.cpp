@@ -31,6 +31,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/thread.hpp>
+#include <bits/stl_pair.h>
+#include <bits/stl_map.h>
 
 using namespace boost;
 using namespace std;
@@ -557,6 +559,7 @@ CScript2TxPosDB *pScript2TxPosDB=NULL;
 CDomainViewDB *pDomainDBView = NULL;
 CTagViewDB *pTagDBView = NULL;
 CScriptCoinDB *pScriptCoinDBView =NULL;
+CBlockPosDB *pBlockPosDB=NULL;
 //////////////////////////////////////////////////////////////////////////////
 //
 // mapOrphanTransactions
@@ -1308,50 +1311,74 @@ bool GetTransaction(const uint256 &hash, CTransaction &txOut, uint256 &hashBlock
 
     return false;
 }
+bool GetTransaction(const CTxPosItem &postx, CTransaction &txOut)
+{
+    LOCK(cs_main);            
+    CAutoFile file(OpenBlockFile(postx, true), SER_DISK, CLIENT_VERSION);
+    if (file.IsNull())
+    {
+        LogPrintf("Getransaction by pos, file not found \n");
+        return error("%s: OpenBlockFile failed", __func__);
+    }
+    //CBlockHeader header;
+    try {
+        //file >> header;
+        //fseek(file.Get(), postx.nTxOffset, SEEK_CUR);
+        file >> txOut;
+    } catch (std::exception &e) {
+        LogPrintf("Getransaction by pos, error: %s\n",e.what());
+        return error("%s : Deserialize or I/O error - %s", __func__, e.what());
+    }
+    CValidationState state;
+   // if(!CheckBlockHeader(header,state)||!CheckTransaction(txOut,state))
+    if(!CheckTransaction(txOut,state))
+    {                    
+        LogPrintf("Getransaction by pos, error: tx invalid file%i txpos %i ntx%i\n",postx.nFile,postx.nPos,postx.nTx);                              
+        return false;
+    }
+    //int nHeight;
+    //pBlockPosDB->GetByPos(postx.nFile,postx.nPos,hashBlock,nHeight);                
+    return true;
+}
 bool GetTransaction(const CDiskTxPos &postx, CTransaction &txOut, uint256 &hashBlock)
 {
-        LOCK(cs_main);            
-                CAutoFile file(OpenBlockFile(postx, true), SER_DISK, CLIENT_VERSION);
-                if (file.IsNull())
-                {
-                    LogPrintf("Getransaction by pos, file not found \n");
-                    return error("%s: OpenBlockFile failed", __func__);
-                }
-                CBlockHeader header;
-                try {
-                    file >> header;
-                    fseek(file.Get(), postx.nTxOffset, SEEK_CUR);
-                    file >> txOut;
-                } catch (std::exception &e) {
-                    LogPrintf("Getransaction by pos, error: %s\n",e.what());
-                    return error("%s : Deserialize or I/O error - %s", __func__, e.what());
-                }
-                CValidationState state;
-                if(!CheckBlockHeader(header,state)||!CheckTransaction(txOut,state))
-                {
-                    //CBlock block;
-                    LogPrintf("Getransaction by pos, error: tx invalid file%i blockpos %i txpos%i\n",postx.nFile,postx.nPos,postx.nTxOffset);
-                    //ReadBlockFromDisk(block,(CDiskBlockPos) postx);
-                   // BOOST_FOREACH(CTransaction& tx,block)
-                    //        LogPrintf();
-                    
-                    return false;
-                }
-                //LogPrintf("Getransaction by pos, tx:%s,block hash:%s,block prev:%s ,blockheight:%i\n",txOut.ToString(),header.GetHash().GetHex(),header.hashPrevBlock.GetHex(),header.nBlockHeight);
-               
-                hashBlock = header.GetHash();                
-                return true;
+    LOCK(cs_main);            
+    CAutoFile file(OpenBlockFile(postx, true), SER_DISK, CLIENT_VERSION);
+    if (file.IsNull())
+    {
+        LogPrintf("Getransaction by pos, file not found \n");
+        return error("%s: OpenBlockFile failed", __func__);
+    }
+    CBlockHeader header;
+    try {
+        file >> header;
+        fseek(file.Get(), postx.nTxOffset, SEEK_CUR);
+        file >> txOut;
+    } catch (std::exception &e) {
+        LogPrintf("Getransaction by pos, error: %s\n",e.what());
+        return error("%s : Deserialize or I/O error - %s", __func__, e.what());
+    }
+    CValidationState state;
+   // if(!CheckBlockHeader(header,state)||!CheckTransaction(txOut,state))
+    if(!CheckTransaction(txOut,state))
+    {                    
+        LogPrintf("Getransaction by pos, error: tx invalid file%i txpos %i nTxOffset%i\n",postx.nFile,postx.nPos,postx.nTxOffset);
+                             
+        return false;
+    }
+         hashBlock=header.GetHash();    
+    return true;
 }
 //get transactions by addresses, returns the transaction and block hash
 bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTransaction, uint256> >& vTxs,bool fIncludeUnconfirmed,
     bool fNoContent,unsigned int nOffset,unsigned int nNumber){
-    unsigned int nTx=0;
+    unsigned int nTxCount=0;
     if (fIncludeUnconfirmed){
         std::vector<CTransaction> vutx;    
         mempool.GetUnconfirmedTransactions(vIds, vutx); 
         //LogPrintf("main:gettx, mempoolsize:%u \n",vutx.size());
         for (std::vector<CTransaction>::iterator it3 = vutx.begin();it3 != vutx.end(); it3++){
-            if (nTx>=nOffset&&nTx<nOffset+nNumber){
+            if (nTxCount>=nOffset&&nTxCount<nOffset+nNumber){
                 if (fNoContent){
                     CTransaction newTx;
                     it3->ClearContent(newTx);                
@@ -1359,10 +1386,10 @@ bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTr
                 }
                 vTxs.push_back(make_pair(*it3,uint256(0)));
             }
-            nTx++;
+            nTxCount++;
         }
     }   
-    std::vector<CDiskTxPos> vTxPosAll;
+    std::vector<CTxPosItem> vTxPosAll;
    GetDiskTxPoses (vIds,vTxPosAll);            
     
     //LogPrintf("main:gettx: vtxposall size%u",vTxPosAll.size());
@@ -1371,25 +1398,23 @@ bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTr
     bool fChanged=true;
     while(vTxPosAll.size()>1&&fChanged){
         fChanged=false;
-        for (std::vector<CDiskTxPos>::iterator it = vTxPosAll.begin();it <--vTxPosAll.end(); it++) {
-            std::vector<CDiskTxPos>::iterator it2=it;            
+        for (std::vector<CTxPosItem>::iterator it = vTxPosAll.begin();it <--vTxPosAll.end(); it++) {
+            std::vector<CTxPosItem>::iterator it2=it;            
             it2++;
-            if(it2->nFile>it->nFile||((it2->nFile==it->nFile)&&(it2->nPos>it->nPos))
-                    ||((it2->nFile==it->nFile)&&(it2->nPos==it->nPos)&&(it2->nTxOffset>it->nTxOffset))){
-                CDiskTxPos tmp=*it;
+            if(*it2>*it){
+                CTxPosItem tmp=*it;
                 *it=*it2;
                 *it2=tmp;
                 fChanged=true;
                 //speed up rolling
-                std::vector<CDiskTxPos>::iterator it3=it;
+                std::vector<CTxPosItem>::iterator it3=it;
                 bool fChanged2=true;
                 while(fChanged2&&(it3!=vTxPosAll.begin())){
                     fChanged2=false;
-                    std::vector<CDiskTxPos>::iterator it4=it3;                    
+                    std::vector<CTxPosItem>::iterator it4=it3;                    
                     it4--;
-                    if((it3->nFile>it4->nFile)||((it3->nFile==it4->nFile)&&(it3->nPos>it4->nPos))
-                    ||((it3->nFile==it4->nFile)&&(it3->nPos==it4->nPos)&&(it3->nTxOffset>it4->nTxOffset))){
-                        CDiskTxPos tmp=*it4;
+                    if(*it3>*it4){
+                        CTxPosItem tmp=*it4;
                         *it4=*it3;
                         *it3=tmp;
                         fChanged2=true;                                            
@@ -1400,14 +1425,16 @@ bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTr
         }
     }
     //LogPrintf("main:gettx: vtxposall sizeafter sort%u",vTxPosAll.size());
-        for (std::vector<CDiskTxPos>::iterator it2 = vTxPosAll.begin();it2 != vTxPosAll.end(); it2++) {
+        for (std::vector<CTxPosItem>::iterator it2 = vTxPosAll.begin();it2 != vTxPosAll.end(); it2++) {
             CTransaction txOut;
             uint256 hashBlock;
             //LogPrintf("main:gettx:cdisktxpos after sort file:%i,pos:%u,txpos:%i\n",it2->nFile,it2->nPos,it2->nTxOffset);
-            if (nTx>=nOffset&&nTx<nOffset+nNumber)
+            if (nTxCount>=nOffset&&nTxCount<nOffset+nNumber)
             {
-                if(GetTransaction(*it2, txOut, hashBlock))
+                if(GetTransaction(*it2, txOut))
                 {
+                    int nHeight=0;
+                    pBlockPosDB->GetByPos(it2->nFile,it2->nPos,hashBlock,nHeight);
                     //LogPrintf("main:gettxhashBlock %s\n",hashBlock.ToString());
                     if (fNoContent)
                     {
@@ -1417,13 +1444,13 @@ bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTr
                     }                
                     else
                         vTxs.push_back(make_pair(txOut,hashBlock));
-                    nTx++;
+                    nTxCount++;
                 }
                 else
                 {
                     LogPrintf("transaction not found, remove it from Script2TxPosDB \n");
                     //remove this bad tx from tam
-                    std::map<CScript,CDiskTxPos> mappScript2TxPos;
+                    std::map<CScript,CTxPosItem> mappScript2TxPos;
                     BOOST_FOREACH(const CScript &id, vIds)
                         mappScript2TxPos[id]=*it2;
                     pScript2TxPosDB->RemoveTxs(mappScript2TxPos);                   
@@ -1433,30 +1460,22 @@ bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTr
         }
     return true;
 }
-bool GetDiskTxPoses (const std::vector<CScript>& vIds,std::vector<CDiskTxPos>& vTxPosAll)
-{
-     
-    for (std::vector<CScript>::const_iterator it = vIds.begin();it != vIds.end(); it++) {
-        std::vector<CDiskTxPos> vTxPos;
-        pScript2TxPosDB->GetTxPosList(*it,vTxPos);
-        //LogPrintf("main:gettx: vtxpos size%u",vTxPos.size());
-
-        for (std::vector<CDiskTxPos>::iterator it2 = vTxPos.begin();it2 != vTxPos.end(); it2++) {
-            bool found=false;
-        
-            for (std::vector<CDiskTxPos>::iterator it3 = vTxPosAll.begin();it3 != vTxPosAll.end(); it3++) {
-                if ((it2->nFile==it3->nFile)&&(it2->nPos==it3->nPos)&&(it2->nTxOffset==it3->nTxOffset)) {
-                  found=true;
-                    break;
-                }
+bool GetDiskTxPoses (const std::vector<CScript>& vIds,std::vector<CTxPosItem>& vTxPosAll)
+{    
+    std::vector<CTxPosItem> vTxPos;    
+    for (std::vector<CScript>::const_iterator it = vIds.begin();it != vIds.end(); it++) 
+        pScript2TxPosDB->GetTxPosList(*it,vTxPos);    
+    for (std::vector<CTxPosItem>::iterator it2 = vTxPos.begin();it2 != vTxPos.end(); it2++) 
+    {
+        bool found=false;        
+        for (std::vector<CTxPosItem>::iterator it3 = vTxPosAll.begin();it3 != vTxPosAll.end(); it3++) {
+            if (it2==it3) {
+              found=true;
+                break;
             }
-            //if(find(vTxPosAll.begin(),vTxPosAll.end(),*it2)==vTxPosAll.end()){
-                //LogPrintf("main:gettx:cdisktxpos file:%i,pos:%u,txpos:%i\n",it2->nFile,it2->nPos,it2->nTxOffset);
-                
-            //}
-            if(!found)
-                vTxPosAll.push_back(*it2);
-        }
+        }            
+        if(!found)
+            vTxPosAll.push_back(*it2);
     }
     return true;
 }
@@ -1704,31 +1723,71 @@ void UpdateCoins(const CTransaction& tx, CValidationState &state, CCoinsViewCach
     // add outputs
     inputs.ModifyCoins(tx.GetHash())->FromTx(tx, nHeight);
 }
-void UpdateScript2TxPosDB(const CTransaction& tx,const CDiskTxPos& pos,CValidationState &state,const CCoinsViewCache& inputs,bool fErase){
-    std::map<CScript,CDiskTxPos> mapScript2TxPos; 
-   
-    if(!tx.IsCoinBase()){        
-      BOOST_FOREACH(const CTxIn &txin, tx.vin) {                  
-            const COutPoint &prevout = txin.prevout;
-            
+void UpdateScript2TxPosDB(const CTransaction& tx,const CDiskTxPos& pos,const int nHeaderLen,const int nTx,CValidationState &state,const CCoinsViewCache& inputs,bool fErase){
+    std::map<CScript,CTxPosItem> mapScript2TxPos; 
+    CTxPosItem posItem;
+    posItem.nFile=pos.nFile;
+    posItem.nPos=pos.nPos+nHeaderLen+pos.nTxOffset;
+    posItem.nTx=nTx;
+    map<CScript,CTxPosItem> mapSender;
+    if(!tx.IsCoinBase()){      
+        posItem.nFlags=1<<TXITEMFLAG_SENDER;
+        BOOST_FOREACH(const CTxIn &txin, tx.vin) {          
+            const COutPoint &prevout = txin.prevout;            
             const CCoins *coins = inputs.AccessCoins(prevout.hash);  
             if (coins==NULL){
                 LogPrintf("UpdateScript2TxPosDB error null coin\n");
                 continue;
-            }           
-            
-            mapScript2TxPos[coins->vout[prevout.n].scriptPubKey]=pos;
-            
-            
-      }
+            }
+            mapSender[coins->vout[prevout.n].scriptPubKey]=posItem;                     
+        }
+        if(mapSender.size()>1)
+        {
+            posItem.nFlags|=1<<TXITEMFLAG_MULTIPLESENDER;
+            for(map<CScript,CTxPosItem>::iterator it=mapSender.begin();it!=mapSender.end();it++)
+                it->second.nFlags |=1<<TXITEMFLAG_MULTIPLESENDER;
+        }
     }
-    BOOST_FOREACH(const CTxOut &txout, tx.vout) {
+    else    
+        posItem.nFlags|=1<<TXITEMFLAG_COINBASE;
+    posItem.nFlags&=~1<<TXITEMFLAG_SENDER;
+    posItem.nFlags |=1<<TXITEMFLAG_RECEIVER;
+    map<CScript,CTxPosItem> mapReceiver;
+    //bool fHasLockTime=false;
+    BOOST_FOREACH(const CTxOut &txout, tx.vout) {        
+        if(txout.strContent.size()>0)
+            mapSender.begin()->second.nFlags |=1<<TXITEMFLAG_SENDCONTENT;
         //if address is empty don't record it
         if (txout.scriptPubKey.size()==0)
-            continue;        
-        
-        mapScript2TxPos[txout.scriptPubKey]=pos;
+            continue;
+        if(mapSender.find(txout.scriptPubKey)!=mapSender.end())
+        {
+            
+            mapSender[txout.scriptPubKey].nFlags |=1<<TXITEMFLAG_RECEIVER;
+            if(txout.nValue>0)
+            {
+                mapSender[txout.scriptPubKey].nFlags |=1<<TXITEMFLAG_RECEIVEMONEY;
+                if(txout.nLockTime>0)
+                    mapSender[txout.scriptPubKey].nFlags |=1<<TXITEMFLAG_HASLOCKTIME;
+            }
+        }
+        else
+        {
+            if(mapReceiver.find(txout.scriptPubKey)==mapSender.end())
+                mapReceiver[txout.scriptPubKey]=posItem;
+            if(txout.strContent.size()>0)
+                mapReceiver[txout.scriptPubKey].nFlags|=1<<TXITEMFLAG_RECEIVECONTENT;
+            if(txout.nValue>0)
+            {
+                mapReceiver[txout.scriptPubKey].nFlags |=1<<TXITEMFLAG_RECEIVEMONEY;
+                if(txout.nLockTime>0)
+                    mapReceiver[txout.scriptPubKey].nFlags |=1<<TXITEMFLAG_HASLOCKTIME;
+            }
+        }
     }
+    mapScript2TxPos.insert(mapSender.begin(),mapSender.end());
+    mapScript2TxPos.insert(mapReceiver.begin(),mapReceiver.end());
+     //mapScript2TxPos[coins->vout[prevout.n].scriptPubKey]=posItem;
     bool ret;
     if (fErase)
         ret = pScript2TxPosDB->RemoveTxs(mapScript2TxPos);
@@ -2013,8 +2072,10 @@ bool DisconnectBlock(CBlock& block, CValidationState& state, CBlockIndex* pindex
 
     if (blockUndo.vtxundo.size() + 1 != block.vtx.size())
         return error("DisconnectBlock() : block and undo data inconsistent");
-
+    int nHeaderLen=pindex->GetBlockHeader().GetSerializeSize(SER_DISK, CLIENT_VERSION);
+    nHeaderLen+=GetSizeOfCompactSize(nHeaderLen);
     // undo transactions in reverse order
+    //psqliteDB->BeginBatch();
     for (int i = block.vtx.size() - 1; i >= 0; i--) {
         const CTransaction &tx = block.vtx[i];
         uint256 hash = tx.GetHash();
@@ -2074,14 +2135,14 @@ bool DisconnectBlock(CBlock& block, CValidationState& state, CBlockIndex* pindex
          CDiskTxPos postx;
         if (pblocktree->ReadTxIndex(hash, postx))
         {
-            UpdateScript2TxPosDB(tx,postx,state,view,true);
-            if(settings.nServiceFlags>>3&1)
+            UpdateScript2TxPosDB(tx,postx,nHeaderLen,i,state,view,true);
+            //if(settings.nServiceFlags>>3&1)
                 UpdateScriptCoinDB(tx,state,view,true);
         }
         else
             std::cout<<"disconnect block tx pos not found:"<<hash.GetHex()<<"\n";
     }
-
+    //psqliteDB->EndBatch();
     // move best block pointer to prevout block
     //LogPrintf("disconnectblock set best block %s \n",pindex->pprev->GetBlockHash().GetHex());
     view.SetBestBlock(pindex->pprev->GetBlockHash());
@@ -2195,10 +2256,13 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     int nInputs = 0;
     unsigned int nSigOps = 0;
     CDiskTxPos pos(pindex->GetBlockPos(), GetSizeOfCompactSize(block.vtx.size()));
+    int nHeaderLen=pindex->GetBlockHeader().GetSerializeSize(SER_DISK, CLIENT_VERSION);
+    nHeaderLen+=GetSizeOfCompactSize(nHeaderLen);
     std::vector<std::pair<uint256, CDiskTxPos> > vPos;
     vPos.reserve(block.vtx.size());
     blockundo.vtxundo.reserve(block.vtx.size() - 1);
     map<CScript,string> mapBlockDomains;
+    //psqliteDB->BeginBatch();
     for (unsigned int i = 0; i < block.vtx.size(); i++)
     {
         const CTransaction &tx = block.vtx[i];
@@ -2242,12 +2306,12 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
         //LogPrintf("%s height: %i \n", __func__,block.nBlockHeight);
         if(!fJustCheck)
         {
-            UpdateScript2TxPosDB(tx,pos,state,view,false);
+            UpdateScript2TxPosDB(tx,pos,nHeaderLen,i,state,view,false);
             UpdateDomainDB(tx,block,i,state,view,false);
             UpdateTagDB(tx,block,i,state,view,false);
             GetDomainsInVins(tx,view,mapBlockDomains);
             //LogPrintf("%s serviceflages: %i \n", __func__,settings.nServiceFlags);
-            if(settings.nServiceFlags>>3&1)
+            //if(settings.nServiceFlags>>3&1)
                 UpdateScriptCoinDB(tx,state,view,false);
         }
         UpdateCoins(tx, state, view, i == 0 ? undoDummy : blockundo.vtxundo.back(), pindex->nHeight);        
@@ -2255,8 +2319,12 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
         vPos.push_back(std::make_pair(tx.GetHash(), pos));
         pos.nTxOffset += ::GetSerializeSize(tx, SER_DISK, CLIENT_VERSION);
     }
-    if(!fJustCheck)       
-        pDomainDBView->WriteBlockDomains(block.GetHash(),mapBlockDomains);    
+    if(!fJustCheck)      
+    {
+        pBlockPosDB->Write(pos.nFile,pos.nPos,block.GetHash(),pindex->nHeight);
+        pDomainDBView->WriteBlockDomains(block.GetHash(),mapBlockDomains); 
+    }
+    //psqliteDB->EndBatch();
     int64_t nTime1 = GetTimeMicros(); nTimeConnect += nTime1 - nTimeStart;
     LogPrint("bench", "      - Connect %u transactions: %.2fms (%.3fms/tx, %.3fms/txin) [%.2fs]\n", (unsigned)block.vtx.size(), 0.001 * (nTime1 - nTimeStart), 0.001 * (nTime1 - nTimeStart) / block.vtx.size(), nInputs <= 1 ? 0 : 0.001 * (nTime1 - nTimeStart) / (nInputs-1), nTimeConnect * 0.000001);
     if (pindex->pprev != NULL){  

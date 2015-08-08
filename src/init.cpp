@@ -134,7 +134,7 @@ public:
 
 static CCoinsViewDB *pcoinsdbview = NULL;
 static CCoinsViewErrorCatcher *pcoinscatcher = NULL;
-static CScript2TxPosViewDB *pScript2TxPosDBView = NULL;
+//static CScript2TxPosViewDB *pScript2TxPosDBView = NULL;
 //static CDomainViewDB *pDomainDBView = NULL;
 
 
@@ -185,8 +185,8 @@ void Shutdown()
         pcoinsdbview = NULL;
         delete pblocktree;
         pblocktree = NULL;
-        delete pScript2TxPosDBView;
-        pScript2TxPosDBView = NULL; 
+        //delete pScript2TxPosDBView;
+        //pScript2TxPosDBView = NULL; 
         delete pScript2TxPosDB;
         pScript2TxPosDB=NULL;
         delete pDomainDBView;
@@ -195,6 +195,8 @@ void Shutdown()
         pTagDBView = NULL; 
         delete pScriptCoinDBView;
         pScriptCoinDBView =NULL;
+        delete pBlockPosDB;
+        pBlockPosDB=NULL;
         delete psqliteDB;
         psqliteDB = NULL;
     }
@@ -1040,8 +1042,9 @@ bool AppInit2(boost::thread_group& threadGroup)
                 delete pcoinsdbview;
                 delete pcoinscatcher;
                 delete pblocktree;
-                delete pScript2TxPosDBView;
+                //delete pScript2TxPosDBView;
                 delete pScript2TxPosDB;
+                delete pBlockPosDB;
                 delete pDomainDBView;
                 delete pTagDBView;
                 delete pScriptCoinDBView;
@@ -1054,8 +1057,9 @@ bool AppInit2(boost::thread_group& threadGroup)
                 pcoinsdbview = new CCoinsViewDB(nCoinDBCache, false, fReindex);
                 pcoinscatcher = new CCoinsViewErrorCatcher(pcoinsdbview);
                 pcoinsTip = new CCoinsViewCache(pcoinscatcher);
-                pScript2TxPosDBView = new CScript2TxPosViewDB(nBlockTreeDBCache, false, fReindex);                
-                pScript2TxPosDB=new CScript2TxPosDB(pScript2TxPosDBView);
+                //pScript2TxPosDBView = new CScript2TxPosViewDB(nBlockTreeDBCache, false, fReindex);                
+                pScript2TxPosDB=new CScript2TxPosDB(psqliteDB,fReindex);
+                pBlockPosDB=new CBlockPosDB(psqliteDB,fReindex);
                 pDomainDBView = new CDomainViewDB(psqliteDB,fReindex);   
                 pTagDBView = new CTagViewDB(psqliteDB,fReindex); 
                 pScriptCoinDBView = new CScriptCoinDB(psqliteDB,fReindex); 

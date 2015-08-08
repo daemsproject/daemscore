@@ -235,36 +235,120 @@ bool CBlockTreeDB::LoadBlockIndexGuts()
 
     return true;
 }
-CScript2TxPosViewDB::CScript2TxPosViewDB(size_t nCacheSize, bool fMemory, bool fWipe) : db(GetDataDir() / "script2txposdb", nCacheSize, fMemory, fWipe) {
-}
 
-bool CScript2TxPosViewDB::GetTxPosList(const CScript scriptPubKey,std::vector<CDiskTxPos> &vTxPos)  {     
-    return db.Read(scriptPubKey, vTxPos);
+CBlockPosDB::CBlockPosDB(CSqliteWrapper* dbIn,bool fWipe) : db(dbIn)
+{
+    if(fWipe)    
+        db->ClearTable("table_blockpos");        
 }
-bool CScript2TxPosViewDB::BatchWrite(const std::map<CScript, std::vector<CDiskTxPos> > &mapScriptTxPosList) {
+bool CBlockPosDB::Write(const int nFile,const int nPos,const uint256 hashBlock,const int nHeight)
+{
+    int nPosDB=(int64_t)nFile<<32|nPos;    
+    return db->WriteBlockPos(nPosDB,hashBlock,nHeight);
+    //return db->Insert("table_blockpos","blockheight",SQLITEDATATYPE_INT,nHeight,"blockhash",SQLITEDATATYPE_BLOB,vch,"pos",SQLITEDATATYPE_INT64,nPosDB,true);
     
-    CLevelDBBatch batch;
-    size_t count = 0;
-    //size_t changed = 1;
-    for (std::map<CScript, std::vector<CDiskTxPos> >::const_iterator it = mapScriptTxPosList.begin(); it != mapScriptTxPosList.end();it++) {
-        
-            batch.Write(it->first, it->second);
-           
-        count++;       
+}
+bool CBlockPosDB::GetByPos(const int nFile,const int nPos,uint256& hashBlock,int& nHeight)
+{
+    int nPosDB=(int64_t)nFile<<32|nPos;
+    return db->GetBlockPosItem(nPosDB,hashBlock,nHeight);    
+}
+CScript2TxPosDB::CScript2TxPosDB(CSqliteWrapper* dbIn,bool fWipe) : db(dbIn)
+{
+    if(fWipe)    
+        db->ClearTable("table_script2txpos");        
+}
+bool CScript2TxPosDB::GetTxPosList(const CScript scriptPubKey,std::vector<CTxPosItem> &vTxPos)  {   
+    string strVtxPos;
+    string strScriptPubKey(scriptPubKey.begin(),scriptPubKey.end());
+    
+    if(!db->Select141("table_script2txpos","script",strScriptPubKey.c_str(),"vtxpos",SQLITEDATATYPE_BLOB, strVtxPos))
+    {
+        std::vector<CTxPosItem> vTxPos1;
+        Write(scriptPubKey,vTxPos1);
+        return false;  
+    }
+    try {
+            CDataStream ssValue(strVtxPos.data(), strVtxPos.data() + strVtxPos.size(), SER_DISK, CLIENT_VERSION);
+            ssValue >> vTxPos;
+        } catch (const std::exception&) {
+            return false;
+        }
+    return true;
+}
+bool CScript2TxPosDB::BatchWrite(const std::map<CScript, std::vector<CTxPosItem> > &mapScriptTxPosList) {
+    
+    vector<pair<string,string> > vList;
+    for (std::map<CScript, std::vector<CTxPosItem> >::const_iterator it = mapScriptTxPosList.begin(); it != mapScriptTxPosList.end();it++) {
+        string strScriptPubKey(it->first.begin(),it->first.end());
+        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
+        ssKey.reserve(ssKey.GetSerializeSize(it->second));
+        ssKey << it->second;     
+        string strVTxPos;
+        strVTxPos.assign(ssKey.begin(),ssKey.end());
+        vList.push_back(make_pair(strScriptPubKey,strVTxPos));
     }    
-    LogPrint("coindb", "Committing %u changed addresses to tam database...\n", (unsigned int)count);
-    return db.WriteBatch(batch);
+    
+    return db->InsertBatch("table_script2txpos","script",SQLITEDATATYPE_BLOB,"vtxpos",SQLITEDATATYPE_BLOB,vList,true);
 }
 
-bool CScript2TxPosViewDB::Write(const CScript &scriptPubKey,const std::vector<CDiskTxPos> &vTxPos) {     
-    return db.Write(scriptPubKey,vTxPos);
+bool CScript2TxPosDB::Write(const CScript &scriptPubKey,const std::vector<CTxPosItem> &vTxPos) {  
+    string strScriptPubKey(scriptPubKey.begin(),scriptPubKey.end());
+    CDataStream ssKey(SER_DISK, CLIENT_VERSION);
+    ssKey.reserve(ssKey.GetSerializeSize(vTxPos));
+    ssKey << vTxPos;     
+    string strVTxPos;
+    strVTxPos.assign(ssKey.begin(),ssKey.end());
+        //string strVTxPos="x'"+HexStr(ssKey.begin(),ssKey.end())+"'";    
+    return db->Insert("table_script2txpos","script",SQLITEDATATYPE_BLOB,strScriptPubKey,"vtxpos",SQLITEDATATYPE_BLOB,strVTxPos,true);
 }
-
+bool CScript2TxPosDB::AddNewTxs(const  std::map<CScript,CTxPosItem> &mapScriptTxPos){
+    
+    std::map<CScript, std::vector<CTxPosItem> >  mapScriptTxPosList;
+   
+    std::vector<CTxPosItem> vTxPos;
+    
+    for (std::map<CScript,CTxPosItem>::const_iterator it=mapScriptTxPos.begin(); it!=mapScriptTxPos.end(); it++){
+        //Script scriptPubKey=it->first;     
+        vTxPos.clear();
+        GetTxPosList(it->first,vTxPos);        
+     
+        bool found=false;
+        for(unsigned int i=0;i<vTxPos.size();i++)        
+        {
+          if (vTxPos[i]==it->second) {
+              found=true;
+              break;
+          }
+        }
+        if(!found)
+        {
+          vTxPos.push_back(it->second);            
+          mapScriptTxPosList.insert(make_pair(it->first,vTxPos));
+        }
+    }    
+    return BatchWrite(mapScriptTxPosList);           
+}
+bool CScript2TxPosDB::RemoveTxs(const std::map<CScript,CTxPosItem> &mapScriptTxPos){
+    std::map<CScript, std::vector<CTxPosItem> >  mapScriptTxPosList;
+    std::vector<CTxPosItem> vTxPos;
+    
+    for (std::map<CScript,CTxPosItem>::const_iterator it=mapScriptTxPos.begin(); it!=mapScriptTxPos.end(); it++){          
+        GetTxPosList(it->first,vTxPos);        
+        std::vector<CTxPosItem>::iterator it2=find(vTxPos.begin(),vTxPos.end(),it->second);
+        if (it2!=vTxPos.end()){             
+                vTxPos.erase(it2);            
+                mapScriptTxPosList.insert(make_pair(it->first,vTxPos));  
+        }        
+    }
+    return BatchWrite(mapScriptTxPosList);           
+}
 CDomainViewDB::CDomainViewDB(CSqliteWrapper* dbIn,bool fWipe) : db(dbIn)
 {
     if(fWipe)
         ClearTables();
 }
+
 bool CDomainViewDB::Update(const CScript ownerIn,const string& strDomainContent,const uint64_t lockedValue,const uint32_t nLockTimeIn,const CLink link)
 {
     LogPrintf("txdb CDomainViewDB Update %s %s\n", HexStr(strDomainContent.begin(),strDomainContent.end()),link.ToString());
@@ -416,7 +500,7 @@ bool CDomainViewDB::_GetDomainByForward(const int nExtension,const CScript scrip
         return false;
     char* searchColumn="redirrectto";
     const char* searchValue;//NOte: for varchar, need to add'' arround value
-    const char* tableName=(nExtension==DOMAIN_10000?"domainf":"domainfai");
+    const char* tableName=(nExtension==DOMAIN_10000?"domain10000":"domain100");
 //    char** result;
 //    int nRow;
 //    int nColumn;
@@ -450,7 +534,7 @@ bool CDomainViewDB::_GetDomainByOwner(const int nExtension,const CScript scriptP
         return false;
     char* searchColumn="owner";
     const char* searchValue;//NOte: for varchar, need to add'' arround value
-    const char* tableName=(nExtension==DOMAIN_10000?"domainf":"domainfai");
+    const char* tableName=(nExtension==DOMAIN_10000?"domain10000":"domain100");
 //    char** result;
 //    int nRow;
 //    int nColumn;
@@ -484,7 +568,7 @@ bool CDomainViewDB::GetDomainByName(const string strDomainName,CDomain& domain)c
     const char* searchValue;//NOte: for varchar, need to add'' arround value
     
     //const char* tableName=(GetDomainGroup(strDomainName)==DOMAIN_10000?"domainf":"domainfai");
-    string tableName=(GetDomainGroup(strDomainName)==DOMAIN_10000?"domainf":"domainfai");
+    string tableName=(GetDomainGroup(strDomainName)==DOMAIN_10000?"domain10000":"domain100");
 //    char** result;
 //    int nRow;
 //    int nColumn;    
@@ -516,12 +600,12 @@ bool CDomainViewDB::GetDomainByName(const string strDomainName,CDomain& domain)c
 //    else
 //        return false;
 }
-bool CDomainViewDB::GetDomainByForward(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupportFAI)const 
+bool CDomainViewDB::GetDomainByForward(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupport100)const 
 {
     std::vector<CDomain> vDomain1;
     int nExtension=DOMAIN_10000;
     bool ret=_GetDomainByForward(nExtension,scriptPubKey, vDomain1);
-    if(FSupportFAI)
+    if(FSupport100)
     {
         nExtension=DOMAIN_100;
         ret&=_GetDomainByForward(nExtension,scriptPubKey, vDomain1);
@@ -533,10 +617,10 @@ bool CDomainViewDB::GetDomainByForward(const CScript scriptPubKey,std::vector<CD
     }
     return ret;
 }
-bool CDomainViewDB::GetDomainByForward(const CScript scriptPubKey,CDomain& domain,bool FSupportFAI)const
+bool CDomainViewDB::GetDomainByForward(const CScript scriptPubKey,CDomain& domain,bool FSupport100)const
 {
     std::vector<CDomain> vDomain;
-    if(!GetDomainByForward(scriptPubKey,vDomain,FSupportFAI))
+    if(!GetDomainByForward(scriptPubKey,vDomain,FSupport100))
         return false;
     if(vDomain.size()==0)
         return false;
@@ -548,11 +632,11 @@ bool CDomainViewDB::GetDomainByForward(const CScript scriptPubKey,CDomain& domai
     }
     return true;
 }
-bool CDomainViewDB::GetDomainByOwner(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupportFAI)const 
+bool CDomainViewDB::GetDomainByOwner(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupport100)const 
 {
     int nExtension=DOMAIN_10000;
     bool ret=_GetDomainByOwner(nExtension,scriptPubKey, vDomain);
-    if(FSupportFAI)
+    if(FSupport100)
     {
         nExtension=DOMAIN_100;
         ret&=_GetDomainByOwner(nExtension,scriptPubKey, vDomain);
@@ -571,8 +655,8 @@ bool  CDomainViewDB::GetBlockDomains(const uint256 blockHash,CDataStream& sBlock
 }
 bool  CDomainViewDB::ClearTables()
 {
-    db->ClearTable("domainf");
-    db->ClearTable("domainfai");
+    db->ClearTable("domain10000");
+    db->ClearTable("domain100");
     db->ClearTable("blockdomaintable");
     return true;
 }
@@ -592,22 +676,29 @@ bool CTagViewDB::Search(vector<CLink>& vLink,const std::vector<string> &vTag,con
     return db->GetLinks(vTag,cc,CLink(),vLink,nMaxItems, nOffset);
 
 }           
-bool CTagViewDB::Insert(const int cc,const string tag,const CLink link,const int nExpireTime)
+bool CTagViewDB::Insert(const CContentDBItem item)
 {
-    if(tag.size()>32)
-        return false;
-    int tagID;
-    db->InsertTagID(tag,tagID);
+    int scriptIndex;
+    db->GetScriptIndex(item.sender,scriptIndex);
+    db->InsertContent(item.nLink,item.pos,scriptIndex,item.cc,item.lockValue,item.lockTime);
+    for(unsigned int i=0;i>item.vTags.size();i++)
+    {
+        if(item.vTags[i].size()>32)
+         continue;
+        int tagID;
+        db->InsertTagID(item.vTags[i],tagID);
         LogPrintf("txdb insert tag %s \n", tag);
-    return db->InsertTag(cc,tagID,link, nExpireTime);
+        db->InsertTag(item.nLink,tagID);
+    }
+    return true;
 }
-bool CTagViewDB::ClearExpired()
+bool CTagViewDB::ClearExpired(uint32_t nTime)
 {
-    return db->ClearExpiredTags(GetAdjustedTime());
+    return db->ClearExpiredTags(nTime);
 }
 bool  CTagViewDB::ClearTables()
 {    
-   return db->ClearTable("tag");
+   return db->ClearTable("tag")&&db->ClearTable("table_content");
     
 }
 CScriptCoinDB::CScriptCoinDB(CSqliteWrapper* dbIn,bool fWipe) : db(dbIn)

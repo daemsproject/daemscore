@@ -33,20 +33,20 @@ public:
     
 };
 
-class CScript2TxPosDB : public CScript2TxPosDBView
-{
-protected:
-    CScript2TxPosDBView *base;
-public:    
-    CScript2TxPosDB(CScript2TxPosDBView *viewIn);     
-    bool GetTxPosList(const CScript &scriptPubKey,std::vector<CDiskTxPos> &vTxPos);   
-    
-    bool BatchWrite(const std::map<CScript, std::vector<CDiskTxPos> > &mapScriptTxPosList);
-    bool Write(const CScript &scriptPubKey,const std::vector<CDiskTxPos> &vTxPos);
-    bool AddNewTxs(const std::map<CScript,CDiskTxPos> &mapScriptTxPos);
-    bool RemoveTxs(const std::map<CScript,CDiskTxPos> &mapScriptTxPos);
-         
-};
+//class CScript2TxPosDB : public CScript2TxPosDBView
+//{
+//protected:
+//    CScript2TxPosDBView *base;
+//public:    
+//    CScript2TxPosDB(CScript2TxPosDBView *viewIn);     
+//    bool GetTxPosList(const CScript &scriptPubKey,std::vector<CDiskTxPos> &vTxPos);   
+//    
+//    bool BatchWrite(const std::map<CScript, std::vector<CDiskTxPos> > &mapScriptTxPosList);
+//    bool Write(const CScript &scriptPubKey,const std::vector<CDiskTxPos> &vTxPos);
+//    bool AddNewTxs(const std::map<CScript,CDiskTxPos> &mapScriptTxPos);
+//    bool RemoveTxs(const std::map<CScript,CDiskTxPos> &mapScriptTxPos);
+//         
+//};
 
 
 

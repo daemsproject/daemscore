@@ -74,6 +74,49 @@ struct CDiskTxPos : public CDiskBlockPos
         nTxOffset = 0;
     }
 };
+enum dbTxItemFlags
+{
+    TXITEMFLAG_SENDER,
+    TXITEMFLAG_RECEIVER,
+    TXITEMFLAG_SENDCONTENT,
+    TXITEMFLAG_RECEIVECONTENT,
+    TXITEMFLAG_RECEIVEMONEY,
+    TXITEMFLAG_HASLOCKTIME,
+    TXITEMFLAG_MULTIPLESENDER,
+    TXITEMFLAG_COINBASE
+};
+struct CTxPosItem: public CDiskBlockPos
+{
+    unsigned int nTx; 
+    uint8_t nFlags;
+
+    ADD_SERIALIZE_METHODS;
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
+        READWRITE(*(CDiskBlockPos*)this);
+        READWRITE(VARINT(nTx));
+        READWRITE(nFlags);
+    }
+
+    CTxPosItem(const int nFileIn,const unsigned int nPosIn, unsigned int nTxIn,uint8_t nFlagsIn) : CDiskBlockPos(nFileIn, nPosIn), nTx(nTxIn),nFlags(nFlagsIn) {
+    }
+
+    CTxPosItem() {
+        SetNull();
+    }
+    friend bool operator==(const CTxPosItem &a, const CTxPosItem &b) {
+        return (a.nFile == b.nFile && a.nPos == b.nPos);
+    }
+    friend bool operator>(const CTxPosItem &a, const CTxPosItem &b) {
+        return (a.nFile > b.nFile ||(a.nFile==b.nFile&& a.nPos > b.nPos));
+    }
+    void SetNull() {
+        CDiskBlockPos::SetNull();
+        nTx = 0;
+        nFlags=0;
+    }
+};
 enum BlockStatus {
     //! Unused.
     BLOCK_VALID_UNKNOWN      =    0,
