@@ -128,9 +128,9 @@ int64_t CLink::SerializeInt()const
 {
     int64_t nLink;
     nLink=nHeight;
-    nLink<<16;
+    nLink<<=16;
     nLink|=nTx;
-    nLink<<16;
+    nLink<<=16;
     nLink|=nVout;
     return nLink;
 }

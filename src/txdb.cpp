@@ -498,9 +498,9 @@ bool CDomainViewDB::_GetDomainByForward(const int nExtension,const CScript scrip
 {
     if(scriptPubKey.size()==0)
         return false;
-    char* searchColumn="redirrectto";
+    string searchColumn="redirrectto";
     const char* searchValue;//NOte: for varchar, need to add'' arround value
-    const char* tableName=(nExtension==DOMAIN_10000?"domain10000":"domain100");
+    const string tableName=(nExtension==DOMAIN_10000?"domain10000":"domain100");
 //    char** result;
 //    int nRow;
 //    int nColumn;
@@ -512,7 +512,7 @@ bool CDomainViewDB::_GetDomainByForward(const int nExtension,const CScript scrip
     
     
     
-    return db->GetDomain(tableName,searchColumn, searchValue,vDomain);
+    return db->GetDomain(tableName.c_str(),searchColumn.c_str(), searchValue,vDomain);
     
     
     
@@ -532,9 +532,9 @@ bool CDomainViewDB::_GetDomainByOwner(const int nExtension,const CScript scriptP
 {
     if(scriptPubKey.size()==0)
         return false;
-    char* searchColumn="owner";
+    string searchColumn="owner";
     const char* searchValue;//NOte: for varchar, need to add'' arround value
-    const char* tableName=(nExtension==DOMAIN_10000?"domain10000":"domain100");
+    const string tableName=(nExtension==DOMAIN_10000?"domain10000":"domain100");
 //    char** result;
 //    int nRow;
 //    int nColumn;
@@ -545,7 +545,7 @@ bool CDomainViewDB::_GetDomainByOwner(const int nExtension,const CScript scriptP
     searchValue=str2.c_str();
     
     
-    return db->GetDomain(tableName,searchColumn, searchValue,vDomain);
+    return db->GetDomain(tableName.c_str(),searchColumn.c_str(), searchValue,vDomain);
     
     
 //    
@@ -679,16 +679,17 @@ bool CTagViewDB::Search(vector<CLink>& vLink,const std::vector<string> &vTag,con
 bool CTagViewDB::Insert(const CContentDBItem item)
 {
     int scriptIndex;
-    db->GetScriptIndex(item.sender,scriptIndex);
-    db->InsertContent(item.nLink,item.pos,scriptIndex,item.cc,item.lockValue,item.lockTime);
+    db->GetScriptIndex(item.sender,scriptIndex); 
+    int64_t nLink=item.link.SerializeInt();
+    db->InsertContent(nLink,item.pos,scriptIndex,item.cc,item.lockValue,item.lockTime);
     for(unsigned int i=0;i>item.vTags.size();i++)
     {
         if(item.vTags[i].size()>32)
          continue;
         int tagID;
         db->InsertTagID(item.vTags[i],tagID);
-        LogPrintf("txdb insert tag %s \n", tag);
-        db->InsertTag(item.nLink,tagID);
+        LogPrintf("txdb insert tag %s \n", item.vTags[i]);
+        db->InsertTag(nLink,tagID);
     }
     return true;
 }
@@ -709,17 +710,17 @@ CScriptCoinDB::CScriptCoinDB(CSqliteWrapper* dbIn,bool fWipe) : db(dbIn)
 bool CScriptCoinDB::Insert(const CCheque cheque)
 {
     int scriptPubKeyIndex;
-    if (!db->InsertScriptIndex(cheque.scriptPubKey,scriptPubKeyIndex))
+    if (!db->GetScriptIndex(cheque.scriptPubKey,scriptPubKeyIndex))
     {
         LogPrintf("CScriptCoinDB insertscriptindex failed \n");
     }    
-    int txIndex;
-    if(!db->InsertTxIndex(cheque.txid,txIndex))
-    {
-        LogPrintf("CScriptCoinDB inserttxindex failed \n");
-    }
+//    int txIndex=0;
+//    if(!db->InsertTxIndex(cheque.txid,txIndex))
+//    {
+//        LogPrintf("CScriptCoinDB inserttxindex failed \n");
+//    }
     //LogPrintf("txdb  CScriptCoinDB insert scriptPubKeyID %i,txIndex %i \n", scriptPubKeyIndex,txIndex);
-    return db->InsertCheque(scriptPubKeyIndex,txIndex,cheque.nOut, cheque.nValue,cheque.nLockTime);
+    return db->InsertCheque(scriptPubKeyIndex,(cheque.txIndex<<16)+cheque.nOut, cheque.nValue,cheque.nLockTime);
 }
 bool CScriptCoinDB::Search(const vector<CScript>& vScriptPubKey,vector<CCheque> & vCheques)const 
 {
@@ -728,9 +729,10 @@ bool CScriptCoinDB::Search(const vector<CScript>& vScriptPubKey,vector<CCheque> 
 } 
 bool CScriptCoinDB::Erase(const uint256 txid, const uint32_t nOut)
 {
-    int txIndex;
+    int txIndex=0;
     db->InsertTxIndex(txid,txIndex); 
-    return db->EraseCheque(txIndex,nOut);
+    
+    return db->EraseCheque((txIndex<<16)+nOut);
 }
 bool  CScriptCoinDB::ClearTables()
 {    

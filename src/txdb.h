@@ -9,7 +9,7 @@
 #include "leveldbwrapper.h"
 #include "ccc/sqlitewrapper.h"
 #include "main.h"
-
+#include "ccc/link.h"
 #include <map>
 #include <string>
 #include <utility>
@@ -131,13 +131,24 @@ public:
 };
 struct CContentDBItem
 {
-   int64_t nLink;
+   CLink link;
    int64_t pos;
    CScript sender;
    int cc;
    CAmount lockValue;
    uint32_t lockTime;
    vector<string>vTags;
+   CContentDBItem(CLink linkIn,int64_t posIn,CScript senderIn,int ccIn,
+   CAmount lockValueIn,  uint32_t lockTimeIn,vector<string>vTagsIn)
+   {
+       link=linkIn;
+       pos=posIn;
+       sender=senderIn;
+       cc=ccIn;
+       lockValue=lockValueIn;
+       lockTime=lockTimeIn;
+       vTags=vTagsIn;
+   }   
 };
 class CTagViewDB    
 {
@@ -160,6 +171,7 @@ class CCheque
 public:
     CScript scriptPubKey;
     uint256 txid; 
+    int64_t txIndex;
     ushort nOut;
     CAmount nValue;
     uint32_t nLockTime;
@@ -168,6 +180,7 @@ public:
        nOut=0;
         nValue=0;
         nLockTime=0;
+        txIndex=0;
     }
     ADD_SERIALIZE_METHODS;   
 
@@ -175,6 +188,7 @@ public:
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {        
         READWRITE(scriptPubKey);
         READWRITE(txid);
+        READWRITE(txIndex);
         READWRITE(VARINT(nOut));
         READWRITE(VARINT(nValue));
         READWRITE(VARINT(nLockTime));

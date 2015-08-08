@@ -230,6 +230,7 @@ public:
     CAmount GetValueIn() const;
     CAmount GetFee() const;
     double GetFeeRate() const;
+    int GetOutPos(int nOut)const;
     void ClearContent(CTransaction& newTx) const;
     // Compute priority, given priority of inputs and (optionally) tx size
     double ComputePriority(double dPriorityInputs, unsigned int nTxSize=0) const;

@@ -33,6 +33,7 @@
 #include <boost/thread.hpp>
 #include <bits/stl_pair.h>
 #include <bits/stl_map.h>
+#include <bits/stl_vector.h>
 
 using namespace boost;
 using namespace std;
@@ -1821,43 +1822,52 @@ void UpdateDomainDB(const CTransaction& tx,const CBlock& block,const int nTx,CVa
         }
     }
 }
-void UpdateTagDB(const CTransaction& tx,const CBlock& block,const int nTx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse)
+void UpdateTagDB(const CTransaction& tx,const CBlock& block,const CDiskTxPos& pos,const int nHeaderLen,const int nTx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse)
 {
     if(tx.IsCoinBase())//coinbase is not allowed to register domain
         return;
-   
-    int nTags=(int)(tx.GetValueOut()/COIN);    
+    
+        
     //LogPrintf("main:updatetagdb ntags %i \n",nTags);
     for(unsigned int i=0;i<tx.vout.size();i++) {  
-        if (nTags<=0) 
-            return ;
+        const CTxOut& out=tx.vout[i];
+        if (out.nValue<1000000||out.strContent.size()==0) 
+            continue ;
          uint32_t nExpireTime=LockTimeToTime(tx.vout[i].nLockTime);
     //LogPrintf("main:updatetagdb expiretime %i,now %i \n",nExpireTime,GetAdjustedTime());
         if(nExpireTime==0||nExpireTime<GetAdjustedTime())
             continue;
-        CContent str=tx.vout[i].strContent;
+        CContent str=out.strContent;
         //LogPrintf("main:updatetagdb str isstandard: %b \n",str.IsStandard());
         if(!str.IsStandard())
             continue;
-        std::vector<std::pair<int,std::string> >vTagList;
-        CLink link(block.nBlockHeight,nTx,i);
-        if(pTagDBView->HasLink(link))
-            continue;
+        std::vector<std::pair<int,std::string> >vTagList;              
         if(str.GetTags(vTagList))
-        {              
+        {    
+            CLink link(block.nBlockHeight,nTx,i);  
+            if(pTagDBView->HasLink(link))
+            continue;
+            int txSize=tx.GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION);
+            int64_t nOutPos=(((int64_t)pos.nFile)<<32)+pos.nPos+nHeaderLen+pos.nTxOffset+txSize+GetSizeOfCompactSize(txSize)+tx.GetOutPos(i);            
+            const COutPoint &prevout = tx.vin[0].prevout;            
+            const CCoins *coins = inputs.AccessCoins(prevout.hash);  
+            if (coins==NULL){
+                LogPrintf("UpdateTagDB error null coin\n");
+                return;
+            }
+            CScript sender=coins->vout[prevout.n].scriptPubKey;
             //LogPrintf("main:updatetagdb tags: %i \n",vTagList.size());
-            for(unsigned int j=0;j<vTagList.size();j++)
-            {
-                                         
-                pTagDBView->Insert(vTagList[j].first,vTagList[j].second,link,nExpireTime);
-                nTags--;
-                if (nTags<=0) 
-                    return ;
-            }                
+            
+            //vTagList.resize();    
+            vector<string>vTags;
+            for(int64_t i=0;i<min((int64_t)10,(int64_t)min((int64_t)(out.nValue/1000000),(int64_t)vTagList.size()));i++)
+                vTags.push_back(vTagList[i].second);
+            CContentDBItem item(link,nOutPos,sender,str.GetFirstCc(),out.nValue,out.nLockTime,vTags);
+            pTagDBView->Insert(item);
         }        
     }
 }
-void UpdateScriptCoinDB(const CTransaction& tx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse)
+void UpdateScriptCoinDB(const CTransaction& tx,const CBlock& block,const int nTx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse)
 {   
     uint256 txid=tx.GetHash();
     //LogPrintf("UpdateScriptCoinDB txid:%s\n",txid.GetHex());
@@ -1880,7 +1890,7 @@ void UpdateScriptCoinDB(const CTransaction& tx,CValidationState &state,const CCo
                 cheque.nValue=prevout.nValue;
                 cheque.scriptPubKey=coins->vout[prevout.n].scriptPubKey;
                 cheque.txid=txid;
-                
+                cheque.txIndex=((int64_t)block.nBlockHeight<<16)+nTx;
                 pScriptCoinDBView->Insert(cheque);
             }
             else
@@ -2308,7 +2318,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
         {
             UpdateScript2TxPosDB(tx,pos,nHeaderLen,i,state,view,false);
             UpdateDomainDB(tx,block,i,state,view,false);
-            UpdateTagDB(tx,block,i,state,view,false);
+            UpdateTagDB(tx,block,pos,nHeaderLen,i,state,view,false);
             GetDomainsInVins(tx,view,mapBlockDomains);
             //LogPrintf("%s serviceflages: %i \n", __func__,settings.nServiceFlags);
             //if(settings.nServiceFlags>>3&1)

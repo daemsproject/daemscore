@@ -1114,7 +1114,7 @@ bool CSqliteWrapper::EraseCheque(const int64_t txindex)
 {
     //LogPrintf("EraseCheque\n");    
     char deletestatement[2000];    
-    sprintf(deletestatement,"DELETE FROM chequetable WHERE txindex = %i;",txindex);
+    sprintf(deletestatement,"DELETE FROM chequetable WHERE txindex = %Ld ;",txindex);
     char* zErrMsg=0;
     // LogPrintf("CSqliteWrapper Delete \n");
      sqlite3_exec(pdb,deletestatement,0,0,&zErrMsg);
