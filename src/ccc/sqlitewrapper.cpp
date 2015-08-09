@@ -742,8 +742,12 @@ bool CSqliteWrapper::InsertContents(const vector<CContentDBItem>& vContents,cons
        LogPrintf("GetInsertSql2 %i\n",result);   
        result=sqlite3_bind_int64(stat,2, vContents[i].pos);  
        LogPrintf("GetInsertSql3 %i\n",result); 
-       
-       result=sqlite3_bind_int(stat,3, mapScriptIndex[vContents[i].sender]);  
+       if(mapScriptIndex.find(vContents[i].sender)==mapScriptIndex.end())
+       {
+           LogPrintf("script not found %s\n",vContents[i].sender.ToString()); 
+           return false;
+       }
+       result=sqlite3_bind_int(stat,3, mapScriptIndex.find(vContents[i].sender)->second);  
        LogPrintf("GetInsertSql3 %i\n",result); 
        result=sqlite3_bind_int(stat,4, vContents[i].cc);  
        LogPrintf("GetInsertSql3 %i\n",result); 
@@ -1064,7 +1068,7 @@ bool CSqliteWrapper::InsertTxIndice(const map<uint256, int64_t>& mapTxIndex)
     sqlite3_stmt  *stat;    
    result=sqlite3_prepare_v2( pdb, insertstatement.c_str(), -1, &stat, 0 );   
   // LogPrintf("GetInsertSql2 %i\n",result);
-   for(map<uint256, int64_t>::iterator it=mapTxIndex.begin();it!=mapTxIndex.end();it++)
+   for(map<uint256, int64_t>::const_iterator it=mapTxIndex.begin();it!=mapTxIndex.end();it++)
    {
        result=sqlite3_bind_int64( stat, 1, it->second);   
        std::vector<unsigned char> vch=ParseHex(it->first.GetHex());
@@ -1189,7 +1193,8 @@ bool CSqliteWrapper::BatchInsertCheque(vector<CCheque>& vCheque,const map<CScrip
    result=sqlite3_prepare_v2( pdb, insertstatement.c_str(), -1, &stat, 0 );
    for(unsigned int i=0;i<vCheque.size();i++)
    {
-       int scriptIndex=mapScriptIndex[vCheque[i].scriptPubKey];
+       assert(mapScriptIndex.find(vCheque[i].scriptPubKey)!=mapScriptIndex.end());
+       int scriptIndex=mapScriptIndex.find(vCheque[i].scriptPubKey)->second;
        int64_t link=(vCheque[i].txIndex<<16)+vCheque[i].nOut;
        //LogPrintf("GetInsertSql1 %i\n",result);   
        result=sqlite3_bind_int(stat,1, link);   
@@ -1284,7 +1289,7 @@ bool CSqliteWrapper::EraseCheque(const int64_t txindex)
 {
     //LogPrintf("EraseCheque\n");    
     char deletestatement[2000];    
-    sprintf(deletestatement,"DELETE FROM chequetable WHERE txindex = %Ld ;",txindex);
+    sprintf(deletestatement,"DELETE FROM chequetable WHERE txindex = %I64d ;",txindex);
     char* zErrMsg=0;
     // LogPrintf("CSqliteWrapper Delete \n");
      sqlite3_exec(pdb,deletestatement,0,0,&zErrMsg);
@@ -1303,12 +1308,12 @@ bool CSqliteWrapper::BatchEraseCheque(vector<int64_t> vChequeErase)
     char strList[100000];
     if(vChequeErase.size()==0)
         return false;
-    sprintf(strList,"%Ld",vChequeErase[0]);
+    sprintf(strList,"%I64d",vChequeErase[0]);
     for(unsigned int i=1;i<vChequeErase.size();i++)
     {
-        sprintf(strList,"%s,%Ld",strList,vChequeErase[i]);
+        sprintf(strList,"%s,%I64d",strList,vChequeErase[i]);
     }
-    sprintf(deletestatement,"DELETE FROM chequetable WHERE txindex IN(%s) %Ld ;",strList);
+    sprintf(deletestatement,"DELETE FROM chequetable WHERE txindex IN(%s) %I64d ;",strList);
     char* zErrMsg=0;
     // LogPrintf("CSqliteWrapper Delete \n");
      sqlite3_exec(pdb,deletestatement,0,0,&zErrMsg);

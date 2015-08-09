@@ -296,13 +296,14 @@ bool CheckInputs(const CTransaction& tx,const CTransaction& tx4CheckVins, CValid
 
 /** Apply the effects of this transaction on the UTXO set represented by view */
 void UpdateCoins(const CTransaction& tx, CValidationState &state, CCoinsViewCache &inputs, CTxUndo &txundo, int nHeight);
-void GetTxPrevouts(const CTransaction&tx,const CCoinsViewCache& inputs,vector<vector<CScript> >& vPrevouts);
+void GetTxPrevouts(const CTransaction&tx,const CCoinsViewCache& inputs,vector<vector<pair<CScript,uint32_t> > >& vPrevouts);
+
 /** Apply tx changes to Script2TxPosDB*/
-void UpdateScript2TxPosDB(const CTransaction& tx,const CDiskTxPos& pos,const int nHeaderLen,const int nTx,CValidationState &state,const CCoinsViewCache& inputs,bool fErase=false);
-void UpdateDomainDB(const CTransaction& tx,const CBlock& block,const int nTx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse);
-void UpdateTagDB(const CTransaction& tx,const CBlock& block,const CDiskTxPos& pos,const int nHeaderLen,const int nTx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse);
-void UpdateScriptCoinDB(const CTransaction& tx,const CBlock& block,const int nTx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse);
-void GetDomainsInVins(const CTransaction& tx,const CCoinsViewCache& inputs,map<CScript,string>& mapBlockDomains);
+//void UpdateScript2TxPosDB(const CTransaction& tx,const CDiskTxPos& pos,const int nHeaderLen,const int nTx,CValidationState &state,const CCoinsViewCache& inputs,bool fErase=false);
+//void UpdateDomainDB(const CTransaction& tx,const CBlock& block,const int nTx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse);
+//void UpdateTagDB(const CTransaction& tx,const CBlock& block,const CDiskTxPos& pos,const int nHeaderLen,const int nTx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse);
+//void UpdateScriptCoinDB(const CTransaction& tx,const CBlock& block,const int nTx,CValidationState &state,const CCoinsViewCache& inputs,bool fReverse);
+//void GetDomainsInVins(const CTransaction& tx,const CCoinsViewCache& inputs,map<CScript,string>& mapBlockDomains);
 
 /** Context-independent validity checks */
 bool CheckTransaction(const CTransaction& tx, CValidationState& state);

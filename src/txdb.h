@@ -82,8 +82,8 @@ public:
     bool GetTxPosList(const CScript scriptPubKey,std::vector<CTxPosItem> &vTxPos);    
     bool BatchWrite(const std::map<CScript,std::vector<CTxPosItem> > &mapScriptTxPosList);  
     bool Write(const CScript &scriptPubKey,const std::vector<CTxPosItem> &vTxPos);
-    bool AddNewTxs(const std::map<CScript,CTxPosItem> &mapScriptTxPos);
-    bool RemoveTxs(const std::map<CScript,CTxPosItem> &mapScriptTxPos);
+    bool AddNewTxs(const std::map<CScript,vector<CTxPosItem> >&mapScriptTxPos);
+    bool RemoveTxs(const std::map<CScript,vector<CTxPosItem> >&mapScriptTxPos);
      
 };
 class CBlockPosDB
@@ -117,7 +117,7 @@ public:
 //     bool GetDomainByOwner(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupportFAI=true);    
 //     bool GetDomainNamesToExpire(std::vector<CDomain> &vDomain,const int nMax=1000,const uint32_t nExpireIn=3600*24,bool FSupportFAI=true);    
 //     bool GetDomainNamesExpired(std::vector<CDomain> &vDomain,const int nMax=1000,const uint32_t nExpiredFor=3600*24,bool FSupportFAI=true);       
-     bool CDomainViewDB::GetUpdateDomain(const CScript ownerIn,const string& strDomainContent,const uint64_t lockedValue,const uint32_t nLockTimeIn,const CLink link,CDomain& domain);
+     bool GetUpdateDomain(const CScript ownerIn,const string& strDomainContent,const uint64_t lockedValue,const uint32_t nLockTimeIn,const CLink link,CDomain& domainOut);
      bool WriteBlockDomains(const uint256 blockHash,const map<CScript,string>& mapBlockDomains);
     bool GetBlockDomains(const uint256 blockHash,CDataStream& sBlockDomains);
      bool Reverse(const string& strDomainContent);
@@ -130,27 +130,7 @@ public:
     //! As we use CDomainView polymorphically, have a virtual destructor
      ~CDomainViewDB() {}
 };
-struct CContentDBItem
-{
-   CLink link;
-   int64_t pos;
-   CScript sender;
-   int cc;
-   CAmount lockValue;
-   uint32_t lockTime;
-   vector<string>vTags;
-   CContentDBItem(CLink linkIn,int64_t posIn,CScript senderIn,int ccIn,
-   CAmount lockValueIn,  uint32_t lockTimeIn,vector<string>vTagsIn)
-   {
-       link=linkIn;
-       pos=posIn;
-       sender=senderIn;
-       cc=ccIn;
-       lockValue=lockValueIn;
-       lockTime=lockTimeIn;
-       vTags=vTagsIn;
-   }   
-};
+
 class CTagViewDB    
 {
 protected:
@@ -169,34 +149,7 @@ public:
     bool ClearTables();
      ~CTagViewDB() {}
 };
-class CCheque
-{
-public:
-    CScript scriptPubKey;
-    uint256 txid; 
-    int64_t txIndex;
-    ushort nOut;
-    CAmount nValue;
-    uint32_t nLockTime;
-    CCheque(){
-        txid=uint256(0);
-       nOut=0;
-        nValue=0;
-        nLockTime=0;
-        txIndex=0;
-    }
-    ADD_SERIALIZE_METHODS;   
 
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {        
-        READWRITE(scriptPubKey);
-        READWRITE(txid);
-        READWRITE(txIndex);
-        READWRITE(VARINT(nOut));
-        READWRITE(VARINT(nValue));
-        READWRITE(VARINT(nLockTime));
-    }
-};
 class CScriptCoinDB 
 {
 protected:
@@ -215,12 +168,17 @@ public:
      ~CScriptCoinDB() {}
 };
 void UpdateSqliteDB(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >& vPos,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,bool fErase);
-void GetBlockScript2TxPosList(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >& vPos,const vector<vector<CScript> >& vPrevouts,map<CScript,vector<CTxPosItem> > mapScript2TxPos,bool fErase);
+void GetBlockScript2TxPosList(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >& vPos,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,map<CScript,vector<CTxPosItem> > mapScript2TxPos,bool fErase);
 void MergeScript2TxPosList(map<CScript,vector<CTxPosItem> >& parent,const map<CScript,CTxPosItem>& child);
-void GetBlockContentAndTagList(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >& vPos,const vector<vector<CScript> >& vPrevouts,vector<string>& vTags,vector<CContentDBItem>& vContents);
+void GetBlockContentAndTagList(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >& vPos,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,vector<string>& vTags,vector<CContentDBItem>& vContents);
 void FindBlockTagIDAndNewTags(const vector<string>& vTags,map<string,int>& mapTags,vector<string>& vTagNew);
 void PrePareBlockTxIndex(const CBlock& block,map<uint256,uint64_t>& mapTxIndex);
-void GetBlockSenderDomains(const CBlock& block,const vector<vector<CScript> >& vPrevouts,map<CScript,string>& mapBlockDomains);
-void GetBlockChequeUpdates(const CBlock& block,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,vector<CCheque> vChequeAdd,vector<pair<uint256,uint32_t> >vChequeErase,bool fReverse);
+void GetBlockDomainUpdateList(const CBlock& block,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,vector<CDomain>& vDomains,bool fReverse);
+
+void GetBlockScriptIndice(const map<CScript,vector<CTxPosItem> >& mapScript2TxPos,map<CScript,int>& mapScriptIndex);
+
+void GetBlockDomainTags(const vector<CDomain>& vDomains,vector<string>& vTags);
+void GetBlockSenderDomains(const CBlock& block,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,map<CScript,string>& mapBlockDomains);
+void GetBlockChequeUpdates(const CBlock& block,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,vector<CCheque> vChequeAdd,vector<int64_t>& vChequeErase,bool fReverse);
 
 #endif // BITCOIN_TXDB_H

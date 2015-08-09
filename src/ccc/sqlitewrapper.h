@@ -9,6 +9,7 @@
 #include "serialize.h"
 #include "streams.h"
 #include "util.h"
+#include "ccc/link.h"
 #include "version.h"
 //#include "script/script.h"
 #include "utilstrencodings.h"
@@ -16,8 +17,6 @@
 #include <boost/filesystem/path.hpp>
 #include <sqlite3.h>
 class CDomain;
-class CLink;
-class CCheque;
 class uint256;
 
 using namespace std;
@@ -45,7 +44,55 @@ class CSqliteDBBatch
 {
     
 };
+struct CContentDBItem
+{
+   CLink link;
+   int64_t pos;
+   CScript sender;
+   int cc;
+   CAmount lockValue;
+   uint32_t lockTime;
+   vector<string>vTags;
+   CContentDBItem(CLink linkIn,int64_t posIn,CScript senderIn,int ccIn,
+   CAmount lockValueIn,  uint32_t lockTimeIn,vector<string>vTagsIn)
+   {
+       link=linkIn;
+       pos=posIn;
+       sender=senderIn;
+       cc=ccIn;
+       lockValue=lockValueIn;
+       lockTime=lockTimeIn;
+       vTags=vTagsIn;
+   }   
+};
+class CCheque
+{
+public:
+    CScript scriptPubKey;
+    uint256 txid; 
+    int64_t txIndex;
+    ushort nOut;
+    CAmount nValue;
+    uint32_t nLockTime;
+    CCheque(){
+        txid=uint256(0);
+       nOut=0;
+        nValue=0;
+        nLockTime=0;
+        txIndex=0;
+    }
+    ADD_SERIALIZE_METHODS;   
 
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {        
+        READWRITE(scriptPubKey);
+        READWRITE(txid);
+        READWRITE(txIndex);
+        READWRITE(VARINT(nOut));
+        READWRITE(VARINT(nValue));
+        READWRITE(VARINT(nLockTime));
+    }
+};
 class CSqliteWrapper
 {
 private:
@@ -274,7 +321,7 @@ public:
     bool InsertContent(const int64_t nLink,const int64_t pos,const int sender, const int cc, const int64_t lockValue,const uint32_t lockTime);
     bool InsertContents(const vector<CContentDBItem>& vContents,const map<CScript,int> mapScriptIndex);
 
-    bool InsertTag(const int64_t nLink,const int tagID);
+    bool InsertTag(const char* tableName,const int64_t tagID,const int64_t nLink);
     bool InsertTags(const char* tableName,const int64_t nLink,const vector<int64_t>& vTagID);
     bool GetLinks(const vector<string> vTag,const int cc,const CLink link,std::vector<CLink>& vLink,const int nMaxItems=1000,const int nOffset=0) const;
     bool InsertTagID(const string tag,int& tagID);

@@ -1451,10 +1451,18 @@ bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTr
                 {
                     LogPrintf("transaction not found, remove it from Script2TxPosDB \n");
                     //remove this bad tx from tam
-                    std::map<CScript,CTxPosItem> mappScript2TxPos;
+                    std::map<CScript,vector<CTxPosItem> > mapScript2TxPos;
                     BOOST_FOREACH(const CScript &id, vIds)
-                        mappScript2TxPos[id]=*it2;
-                    pScript2TxPosDB->RemoveTxs(mappScript2TxPos);                   
+                    {
+                        std::map<CScript,vector<CTxPosItem> >::iterator it=mapScript2TxPos.find(id);
+                        if(it==mapScript2TxPos.end())
+                        {
+                            vector<CTxPosItem> v;
+                            v.push_back(*it2);
+                            mapScript2TxPos[id]=v;
+                        }   
+                    }                        
+                    pScript2TxPosDB->RemoveTxs(mapScript2TxPos);                   
                 }
             }
             
@@ -1726,7 +1734,7 @@ void UpdateCoins(const CTransaction& tx, CValidationState &state, CCoinsViewCach
 }
 void GetTxPrevouts(const CTransaction&tx,const CCoinsViewCache& inputs,vector<vector<pair<CScript,uint32_t> > >& vPrevouts)
 {
-    vector<CScript,uint32_t> vPrevout1Tx;
+    vector<pair<CScript,uint32_t> > vPrevout1Tx;
     if(!tx.IsCoinBase())
     {
         BOOST_FOREACH(const CTxIn &txin, tx.vin) {          
@@ -1734,11 +1742,11 @@ void GetTxPrevouts(const CTransaction&tx,const CCoinsViewCache& inputs,vector<ve
             const CCoins *coins = inputs.AccessCoins(prevout.hash);  
             if (coins==NULL){
                 LogPrintf("GetTxPrevouts error null coin %s\n",tx.GetHash().GetHex());
-                vPrevout1Tx.push_back(make_pair(CCheque(),0));                
+                vPrevout1Tx.push_back(make_pair(CScript(),0));                
             }
             else
             {               
-                vPrevout1Tx.push_back(make_pair(coins->vout[prevout.n].scriptPubKey,coins->vout[prevout.n].nLockTime);         
+                vPrevout1Tx.push_back(make_pair(coins->vout[prevout.n].scriptPubKey,coins->vout[prevout.n].nLockTime));         
             }
                        
         }
@@ -1891,10 +1899,12 @@ bool DisconnectBlock(CBlock& block, CValidationState& state, CBlockIndex* pindex
 
     if (blockUndo.vtxundo.size() + 1 != block.vtx.size())
         return error("DisconnectBlock() : block and undo data inconsistent");
-    int nHeaderLen=pindex->GetBlockHeader().GetSerializeSize(SER_DISK, CLIENT_VERSION);
-    nHeaderLen+=GetSizeOfCompactSize(nHeaderLen);
+    //int nHeaderLen=pindex->GetBlockHeader().GetSerializeSize(SER_DISK, CLIENT_VERSION);
+    //nHeaderLen+=GetSizeOfCompactSize(nHeaderLen);
     // undo transactions in reverse order
     //psqliteDB->BeginBatch();
+    vector<vector<pair<CScript,uint32_t> > > vPrevouts; 
+    std::vector<std::pair<uint256, CDiskTxPos> > vPos;
     for (int i = block.vtx.size() - 1; i >= 0; i--) {
         const CTransaction &tx = block.vtx[i];
         uint256 hash = tx.GetHash();
@@ -1952,16 +1962,18 @@ bool DisconnectBlock(CBlock& block, CValidationState& state, CBlockIndex* pindex
         }
         // undo UpdateScript2TxPosDB
          CDiskTxPos postx;
+         GetTxPrevouts(tx,view,vPrevouts);
         if (pblocktree->ReadTxIndex(hash, postx))
-        {
-            UpdateScript2TxPosDB(tx,postx,nHeaderLen,i,state,view,true);
+        {            
+            //UpdateScript2TxPosDB(tx,postx,nHeaderLen,i,state,view,true);
             //if(settings.nServiceFlags>>3&1)
-                UpdateScriptCoinDB(tx,block,i,state,view,true);
+            //    UpdateScriptCoinDB(tx,block,i,state,view,true);
         }
         else
             std::cout<<"disconnect block tx pos not found:"<<hash.GetHex()<<"\n";
+         vPos.push_back(make_pair(hash,postx));
     }
-    //psqliteDB->EndBatch();
+    UpdateSqliteDB(block,vPos,vPrevouts,true);    
     // move best block pointer to prevout block
     //LogPrintf("disconnectblock set best block %s \n",pindex->pprev->GetBlockHash().GetHex());
     view.SetBestBlock(pindex->pprev->GetBlockHash());
