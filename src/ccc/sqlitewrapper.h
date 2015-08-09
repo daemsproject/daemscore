@@ -108,7 +108,7 @@ public:
    return (result==SQLITE_OK||result==101);
     }
     template <typename V1,typename V2>
-    bool InsertBatch(const char* tableName,const char* columnName1,const int format1,const char* columnName2,const int format2,const vector<pair<V1,V2> >& vValue,const bool fReplace)
+    bool InsertBatch(const char* tableName,const char* columnName1,const int format1,const char* columnName2,const int format2,const vector<pair<V1,V2> >& vValue,const bool fReplace=true)
     {
         {
     LogPrintf("InsertBatch2\n");  
@@ -154,6 +154,33 @@ public:
    sqlite3_finalize( stat );
    return (result==SQLITE_OK||result==101);
 }
+    }
+    template <typename V1>
+    bool InsertBatch(const char* tableName,const char* columnName1,const int format1,const vector<V1>& vValue,const bool fReplace=true)
+    {
+        
+        LogPrintf("InsertBatch1\n");  
+        char sql[2000]; 
+        const string insertstatement="INSERT OR %s INTO %s(%s) VALUES (?)";    
+         sprintf(sql,insertstatement.c_str(),fReplace?"REPLACE":"IGNORE",tableName,columnName1);
+        int result;
+        sqlite3_stmt  *stat;    
+       result=sqlite3_prepare_v2( pdb, sql, -1, &stat, 0 );
+       LogPrintf("GetInsertSql1 %i\n",result);   
+       for(unsigned int i=0;i<vValue.size();i++)
+       {
+           if(!BindValue(stat,1,format1,vValue[i]))
+           return false;
+            LogPrintf("GetInsertSql2 %i\n",result); 
+            result=sqlite3_step( stat );
+            if(result!=0&&result!=101)
+                LogPrintf("Insert2 failed result %i\n",result);
+            sqlite3_clear_bindings(stat);
+            sqlite3_reset(stat);
+       }
+       sqlite3_finalize( stat );
+       return (result==SQLITE_OK||result==101);
+    
     }
     template <typename V1,typename V2,typename V3>
     bool Insert(const char* tableName,
@@ -225,13 +252,16 @@ public:
     return false;     
 }
     bool Write(const char* sql);
-    bool Insert(const CDomain& domain);
+    bool GetRowID(const char* tableName,const char* columnName,const char* columnValue,uint64_t& rowID);
+
+    bool Insert(const CDomain& domain,int ownerID);
     bool Update(const CDomain& domain);
     bool Delete(const CDomain& domain);
     bool Get(const char* tableName,const char* searchColumn,const char* searchValue,char**& result,int& nRow,int& nColumn) const;
     bool GetDomain(const char* tableName,const char* searchColumn,const char* searchValue,std::vector<CDomain>& vDomain) const;
 
-    bool _CreateTable(const char* tableName);
+    bool CreateDomainTable(const char* tableName);
+    bool CreateDomainTagTable(const char* tableName);
     bool CreateScript2TxPosTable();
     bool CreateBlockPosTable();
     bool CreateBlockDomainTable();
@@ -242,7 +272,10 @@ public:
     bool CreateTagIDTable();
     bool CreateTagTable();
     bool InsertContent(const int64_t nLink,const int64_t pos,const int sender, const int cc, const int64_t lockValue,const uint32_t lockTime);
+    bool InsertContents(const vector<CContentDBItem>& vContents,const map<CScript,int> mapScriptIndex);
+
     bool InsertTag(const int64_t nLink,const int tagID);
+    bool InsertTags(const char* tableName,const int64_t nLink,const vector<int64_t>& vTagID);
     bool GetLinks(const vector<string> vTag,const int cc,const CLink link,std::vector<CLink>& vLink,const int nMaxItems=1000,const int nOffset=0) const;
     bool InsertTagID(const string tag,int& tagID);
     bool GetTagID(const string tag,int& tagID) const;
@@ -254,12 +287,15 @@ public:
     //bool InsertScriptIndex(const CScript script,int& scriptIndex);
     bool GetScriptIndex(const CScript script,int& scriptIndex) const;
     bool InsertTxIndex(const uint256 txid,const int64_t& txIndex);
+    bool InsertTxIndice(const map<uint256, int64_t>& mapTxIndex);
     bool GetTxIndex(const uint256 txid,int64_t& txIndex) const;
     bool GetTxidByTxIndex(const int64_t txIndex, uint256& txid) const;
     bool InsertCheque(int scriptIndex,int64_t nLink, int64_t nValue,uint32_t nLockTime);
+    bool BatchInsertCheque(vector<CCheque>& vCheque,const map<CScript,int>& mapScriptIndex);
     bool GetCheques(const vector<CScript>& vScript,vector<CCheque> & vCheques,const int nMaxItems=1000,const int nOffset=0)const;
     bool EraseCheque(const int64_t txindex);
-    
+    bool BatchEraseCheque(vector<int64_t> vChequeErase);
+            
     bool GetBlockPosItem(const int nPosDB,uint256& hashBlock,int& nHeight);
     bool WriteBlockPos(const int64_t nPosDB,const uint256& hashBlock,const int& nHeight);
 };

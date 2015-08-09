@@ -187,15 +187,15 @@ void Shutdown()
         pblocktree = NULL;
         //delete pScript2TxPosDBView;
         //pScript2TxPosDBView = NULL; 
-        delete pScript2TxPosDB;
+        //delete pScript2TxPosDB;
         pScript2TxPosDB=NULL;
-        delete pDomainDBView;
+        //delete pDomainDBView;
         pDomainDBView = NULL;    
-        delete pTagDBView;
+        //delete pTagDBView;
         pTagDBView = NULL; 
-        delete pScriptCoinDBView;
+        //delete pScriptCoinDBView;
         pScriptCoinDBView =NULL;
-        delete pBlockPosDB;
+        //delete pBlockPosDB;
         pBlockPosDB=NULL;
         delete psqliteDB;
         psqliteDB = NULL;
@@ -1043,11 +1043,11 @@ bool AppInit2(boost::thread_group& threadGroup)
                 delete pcoinscatcher;
                 delete pblocktree;
                 //delete pScript2TxPosDBView;
-                delete pScript2TxPosDB;
-                delete pBlockPosDB;
-                delete pDomainDBView;
-                delete pTagDBView;
-                delete pScriptCoinDBView;
+//                delete pScript2TxPosDB;
+//                delete pBlockPosDB;
+//                delete pDomainDBView;
+//                delete pTagDBView;
+//                delete pScriptCoinDBView;
                 delete psqliteDB;
                 
         

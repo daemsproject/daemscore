@@ -302,44 +302,56 @@ bool CScript2TxPosDB::Write(const CScript &scriptPubKey,const std::vector<CTxPos
         //string strVTxPos="x'"+HexStr(ssKey.begin(),ssKey.end())+"'";    
     return db->Insert("table_script2txpos","script",SQLITEDATATYPE_BLOB,strScriptPubKey,"vtxpos",SQLITEDATATYPE_BLOB,strVTxPos,true);
 }
-bool CScript2TxPosDB::AddNewTxs(const  std::map<CScript,CTxPosItem> &mapScriptTxPos){
+bool CScript2TxPosDB::AddNewTxs(const  std::map<CScript,vector<CTxPosItem> >&mapScriptTxPos){
     
     std::map<CScript, std::vector<CTxPosItem> >  mapScriptTxPosList;
    
     std::vector<CTxPosItem> vTxPos;
     
-    for (std::map<CScript,CTxPosItem>::const_iterator it=mapScriptTxPos.begin(); it!=mapScriptTxPos.end(); it++){
+    for (std::map<CScript,vector<CTxPosItem> >::const_iterator it=mapScriptTxPos.begin(); it!=mapScriptTxPos.end(); it++){
         //Script scriptPubKey=it->first;     
         vTxPos.clear();
-        GetTxPosList(it->first,vTxPos);        
-     
-        bool found=false;
-        for(unsigned int i=0;i<vTxPos.size();i++)        
+        GetTxPosList(it->first,vTxPos);   
+        bool fChanged=false;
+        for(unsigned int ii=0;ii<it->second.size();ii++)
         {
-          if (vTxPos[i]==it->second) {
-              found=true;
-              break;
-          }
+            bool found=false;
+            for(unsigned int i=0;i<vTxPos.size();i++)        
+            {
+              if (vTxPos[i]==it->second[ii]) {
+                  found=true;                  
+                  break;
+              }
+            }
+            if(!found)     
+            {
+              vTxPos.push_back(it->second[ii]);
+              fChanged=true;
+            }
         }
-        if(!found)
-        {
-          vTxPos.push_back(it->second);            
-          mapScriptTxPosList.insert(make_pair(it->first,vTxPos));
-        }
+        if(fChanged)
+            mapScriptTxPosList.insert(make_pair(it->first,vTxPos));
     }    
     return BatchWrite(mapScriptTxPosList);           
 }
-bool CScript2TxPosDB::RemoveTxs(const std::map<CScript,CTxPosItem> &mapScriptTxPos){
+bool CScript2TxPosDB::RemoveTxs(const std::map<CScript,vector<CTxPosItem> >&mapScriptTxPos){
     std::map<CScript, std::vector<CTxPosItem> >  mapScriptTxPosList;
-    std::vector<CTxPosItem> vTxPos;
-    
-    for (std::map<CScript,CTxPosItem>::const_iterator it=mapScriptTxPos.begin(); it!=mapScriptTxPos.end(); it++){          
-        GetTxPosList(it->first,vTxPos);        
-        std::vector<CTxPosItem>::iterator it2=find(vTxPos.begin(),vTxPos.end(),it->second);
-        if (it2!=vTxPos.end()){             
-                vTxPos.erase(it2);            
-                mapScriptTxPosList.insert(make_pair(it->first,vTxPos));  
-        }        
+    std::vector<CTxPosItem> vTxPos;    
+    for (std::map<CScript,vector<CTxPosItem> >::const_iterator it=mapScriptTxPos.begin(); it!=mapScriptTxPos.end(); it++){          
+        vTxPos.clear();
+        GetTxPosList(it->first,vTxPos); 
+        bool fChanged=false;
+        for(unsigned int ii=0;ii<it->second.size();ii++)
+        {
+            std::vector<CTxPosItem>::iterator it2=find(vTxPos.begin(),vTxPos.end(),it->second[ii]);
+            if (it2!=vTxPos.end())      
+            {
+                    vTxPos.erase(it2);            
+                    fChanged=true;
+            }   
+        }
+        if(fChanged)
+            mapScriptTxPosList.insert(make_pair(it->first,vTxPos));  
     }
     return BatchWrite(mapScriptTxPosList);           
 }
@@ -349,7 +361,7 @@ CDomainViewDB::CDomainViewDB(CSqliteWrapper* dbIn,bool fWipe) : db(dbIn)
         ClearTables();
 }
 
-bool CDomainViewDB::Update(const CScript ownerIn,const string& strDomainContent,const uint64_t lockedValue,const uint32_t nLockTimeIn,const CLink link)
+bool CDomainViewDB::GetUpdateDomain(const CScript ownerIn,const string& strDomainContent,const uint64_t lockedValue,const uint32_t nLockTimeIn,const CLink link,CDomain& domain)
 {
     LogPrintf("txdb CDomainViewDB Update %s %s\n", HexStr(strDomainContent.begin(),strDomainContent.end()),link.ToString());
     CDomain domain;
@@ -448,14 +460,14 @@ bool CDomainViewDB::Update(const CScript ownerIn,const string& strDomainContent,
         while(existingDomain.vDirectHistory.size()>8)
             existingDomain.vDirectHistory.erase(existingDomain.vDirectHistory.begin());
     }
-    LogPrintf("update domain to write\n"); 
-    if(fHasRecord)
-    {
-       //char* sql=existingDomain.GetUpdateSql();
-       //return db->Write(sql);
-        return db->Update(existingDomain);
-    }
-    return db->Insert(existingDomain);
+//    LogPrintf("update domain to write\n"); 
+//    if(fHasRecord)
+//    {
+//       //char* sql=existingDomain.GetUpdateSql();
+//       //return db->Write(sql);
+//        return db->Update(existingDomain);
+//    }
+//    return db->Insert(existingDomain);
     
 }
 //TODO reverse: only reverses REG, transfer and enlong.
@@ -492,7 +504,29 @@ bool CDomainViewDB::Write(const CDomain &domain)
 {
     //char* sql=domain.GetInsertSql();
     //    return db->Write(sql);
-    return db->Insert(domain);
+    int ownerID;
+    if(!db->GetScriptIndex(domain.owner,ownerID))
+    {
+        LogPrintf("GetScriptIndex failed %s \n",domain.owner);
+        return false;
+    }
+    return db->Insert(domain,ownerID);
+}
+bool CDomainViewDB::WriteTags(const CDomain &domain,const map<string,int>& mapTags)
+{
+    uint64_t domainID;
+    const char* tableName=(domain.nDomainGroup==DOMAIN_10000?"domain10000":"domain100");
+    if(!db->GetRowID(tableName,"domainname",domain.strDomain.c_str(),domainID))
+    {
+        LogPrintf("GetDomainID failed %s \n",domain.strDomain);
+        return false;
+    }
+    vector<int> vTagIDs;
+    for(unsigned int i=0;i<domain.vTags.size();i++)
+    {
+        vTagIDs.push_back(mapTags[domain.vTags[i]]);
+    }
+    return db->InsertTags(tableName,domainID,vTagIDs);
 }
 bool CDomainViewDB::_GetDomainByForward(const int nExtension,const CScript scriptPubKey,std::vector<CDomain> &vDomain)const 
 {
@@ -689,9 +723,27 @@ bool CTagViewDB::Insert(const CContentDBItem item)
         int tagID;
         db->InsertTagID(item.vTags[i],tagID);
         LogPrintf("txdb insert tag %s \n", item.vTags[i]);
-        db->InsertTag(nLink,tagID);
+        db->InsertTag("tag",(int64_t)tagID,nLink);
     }
     return true;
+}
+bool CTagViewDB::InsertTags(const vector<string>vTags) {    
+    return db->InsertBatch("tagid","tag",SQLITEDATATYPE_BLOB,vTags,true);
+}
+bool CTagViewDB::InsertContentTags(const vector<CContentDBItem>& vContents,const map<string,int> mapTags)
+{    
+    bool result;
+    const char* tableName="tag";
+    for(unsigned int ii=0;ii<vContents.size();ii++)
+    {
+        vector<int> vTagIDs;
+        for(unsigned int i=0;i<vContents[ii].vTags.size();i++)
+        {
+            vTagIDs.push_back(mapTags[vContents[ii].vTags[i]]);
+        }    
+         result&=db->InsertTags(tableName,vContents[ii].link.SerializeInt(),vTagIDs);
+    }
+    return result;
 }
 bool CTagViewDB::ClearExpired(uint32_t nTime)
 {
@@ -739,4 +791,350 @@ bool  CScriptCoinDB::ClearTables()
     db->ClearTable("txindextable");
     db->ClearTable("chequetable");
    return true; 
+}
+void UpdateSqliteDB(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >& vPos,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,bool fErase)
+{
+    map<CScript,vector<CTxPosItem> > mapScript2TxPos;
+    map<CScript,int> mapScriptIndex;
+    //vector<CScript> vScriptNew;
+    vector<string> vTags;
+    map<string,int> mapTags;
+    vector<string> vTagNew;
+    vector<CContentDBItem>vContents;
+    map<CScript,string> mapBlockDomains;
+    map<uint256,uint64_t>mapTxIndex;
+    vector<CDomain>vDomains;
+    vector<CCheque> vChequeAdd;
+    vector<int64_t> vChequeErase;
+    //step2:get script2txpos list,content list,taglist,domain tags
+    PrePareBlockTxIndex(block,mapTxIndex);
+    GetBlockScript2TxPosList(block,vPos,vPrevouts,mapScript2TxPos,fErase);
+    GetBlockContentAndTagList(block,vPos,vPrevouts,vTags,vContents);
+    GetBlockDomainUpdateList(block,vPrevouts,vDomains,fErase);
+    GetBlockDomainTags(vDomains,vTags);
+    FindBlockTagIDAndNewTags(vTags,mapTags,vTagNew);
+    
+        //step3:flush script2txpos list,taglist,txindex
+    psqliteDB->BeginBatch();
+    if(fErase)
+    {
+        pScript2TxPosDB->RemoveTxs(mapScript2TxPos);
+    }
+    else
+    {
+        pScript2TxPosDB->AddNewTxs(mapScript2TxPos);
+    }
+    pTagDBView->InsertTags(vTagNew);
+    psqliteDB->InsertTxIndice(mapTxIndex);
+    psqliteDB->EndBatch();
+    //step4 get script index,tagindex
+    GetBlockScriptIndice(mapScript2TxPos,mapScriptIndex);
+    vector<string> vTagTmp;
+    FindBlockTagIDAndNewTags(vTagNew,mapTags,vTagTmp);
+    //step5 get domains4block,cheques
+    GetBlockSenderDomains(block,vPrevouts,vDomains);
+    GetBlockChequeUpdates(block,vPrevouts,vChequeAdd,vChequeErase,fErase);
+    //step6 flush domains4block,domains,cheques,contents,content tags, domain tags
+    psqliteDB->BeginBatch();    
+    pBlockPosDB->Write(vPos[0].second.nFile,vPos[0].second.nPos,block.GetHash(),block.nBlockHeight);
+    pDomainDBView->WriteBlockDomains(block.GetHash(),mapBlockDomains); 
+    psqliteDB->BatchInsertCheque(vChequeAdd,mapScriptIndex);
+    psqliteDB->BatchEraseCheque(vChequeErase);
+    for(unsigned int i=0;i<vDomains.size();i++)
+    {
+        pDomainDBView->Write(vDomains[i]);
+        pDomainDBView->WriteTags(vDomains[i], mapTags);
+    }     
+    psqliteDB->InsertContents(vContents,mapScriptIndex);
+    CTagViewDB->InserContentTags(vContents,mapTags);
+    psqliteDB->EndBatch();
+}
+void GetBlockScript2TxPosList(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >& vPos,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,map<CScript,vector<CTxPosItem> >& mapScript2TxPos,bool fErase)
+{
+    int nHeaderLen=89;
+    for (unsigned int i = 0; i < block.vtx.size(); i++)
+    {
+        const CTransaction &tx = block.vtx[i];
+        CTxPosItem posItem;
+        posItem.nFile=vPos[i].second.nFile;
+        posItem.nPos=vPos[i].second.nPos+nHeaderLen+vPos[i].second.nTxOffset;
+        posItem.nTx=i;
+        map<CScript,CTxPosItem> mapSender;
+        if(!tx.IsCoinBase()){      
+            posItem.nFlags=1<<TXITEMFLAG_SENDER;
+            for(unsigned int j=0;j<tx.vin.size();j++) 
+                mapSender[vPrevouts[i][j].first()]=posItem;                     
+            
+            if(mapSender.size()>1)
+            {
+                posItem.nFlags|=1<<TXITEMFLAG_MULTIPLESENDER;
+                for(map<CScript,CTxPosItem>::iterator it=mapSender.begin();it!=mapSender.end();it++)
+                    it->second.nFlags |=1<<TXITEMFLAG_MULTIPLESENDER;
+            }
+        }
+        else    
+            posItem.nFlags|=1<<TXITEMFLAG_COINBASE;
+        posItem.nFlags&=~1<<TXITEMFLAG_SENDER;
+        posItem.nFlags |=1<<TXITEMFLAG_RECEIVER;
+        map<CScript,CTxPosItem> mapReceiver;
+        //bool fHasLockTime=false;
+        BOOST_FOREACH(const CTxOut &txout, tx.vout) {        
+            if(txout.strContent.size()>0)
+                mapSender.begin()->second.nFlags |=1<<TXITEMFLAG_SENDCONTENT;
+            //if address is empty don't record it
+            if (txout.scriptPubKey.size()==0)
+                continue;
+            if(mapSender.find(txout.scriptPubKey)!=mapSender.end())
+            {                
+                mapSender[txout.scriptPubKey].nFlags |=1<<TXITEMFLAG_RECEIVER;
+                if(txout.strContent.size()>0)
+                    mapSender[txout.scriptPubKey].nFlags |=1<<TXITEMFLAG_RECEIVECONTENT;
+                if(txout.nValue>0)
+                {
+                    mapSender[txout.scriptPubKey].nFlags |=1<<TXITEMFLAG_RECEIVEMONEY;
+                    if(txout.nLockTime>0)
+                        mapSender[txout.scriptPubKey].nFlags |=1<<TXITEMFLAG_HASLOCKTIME;
+                }
+            }
+            else
+            {
+                if(mapReceiver.find(txout.scriptPubKey)==mapReceiver.end())
+                    mapReceiver[txout.scriptPubKey]=posItem;
+                if(txout.strContent.size()>0)
+                    mapReceiver[txout.scriptPubKey].nFlags|=1<<TXITEMFLAG_RECEIVECONTENT;
+                if(txout.nValue>0)
+                {
+                    mapReceiver[txout.scriptPubKey].nFlags |=1<<TXITEMFLAG_RECEIVEMONEY;
+                    if(txout.nLockTime>0)
+                        mapReceiver[txout.scriptPubKey].nFlags |=1<<TXITEMFLAG_HASLOCKTIME;
+                }
+            }
+        }
+        MergeScript2TxPosList(mapScript2TxPos,mapSender);
+        MergeScript2TxPosList(mapScript2TxPos,mapReceiver);        
+    }
+     //mapScript2TxPos[coins->vout[prevout.n].scriptPubKey]=posItem;
+//    bool ret;
+//    if (fErase)
+//        ret = pScript2TxPosDB->RemoveTxs(mapScript2TxPos);
+//    else
+//        ret = pScript2TxPosDB->AddNewTxs(mapScript2TxPos);    
+//    assert(ret);    
+}
+void MergeScript2TxPosList(map<CScript,vector<CTxPosItem> >& parent,const map<CScript,CTxPosItem>& child)
+{
+    for(map<CScript,CTxPosItem>::iterator it=child.begin();it!=child.end();it++)
+    {
+        map<CScript,vector<CTxPosItem> >::iterator itparent=parent.find(it->first());
+        if(itparent!=parent.end())
+        {
+            bool found=false;
+            for(unsigned int i=0;i<itparent->second.size();i++)        
+            {
+              if (itparent->second[i]==it->second) {
+                  found=true;
+                  break;
+              }
+            }
+            if(!found)            
+              itparent->second.push_back(it->second); 
+        }
+        else
+        {
+            vector<CTxPosItem> v;
+            v.push_back(it->second);
+            parent[it->first]=v;
+        }
+    }
+}
+void GetBlockContentAndTagList(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >& vPos,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,vector<string>& vTags,vector<CContentDBItem>& vContents)
+{
+    int nHeaderLen=89;
+    for (unsigned int ii = 0; ii < block.vtx.size(); ii++)
+    {
+        const CTransaction &tx = block.vtx[ii];
+        //LogPrintf("main:updatetagdb ntags %i \n",nTags);
+        for(unsigned int i=0;i<tx.vout.size();i++) {  
+            const CTxOut& out=tx.vout[i];
+            if (out.nValue<1000000||out.strContent.size()==0) 
+                continue ;
+            uint32_t nExpireTime=LockTimeToTime(tx.vout[i].nLockTime);
+            //LogPrintf("main:updatetagdb expiretime %i,now %i \n",nExpireTime,GetAdjustedTime());
+            if(nExpireTime==0||nExpireTime<chainActive.Tip()->nTime+3600*24)
+                continue;
+            CContent str=out.strContent;
+                //LogPrintf("main:updatetagdb str isstandard: %b \n",str.IsStandard());
+            if(!str.IsStandard())
+                continue;
+            std::vector<std::pair<int,std::string> >vTagList;              
+            str.GetTags(vTagList);           
+            CLink link(block.nBlockHeight,ii,i);  
+//            if(pTagDBView->HasLink(link))
+//            continue;
+            int txSize=tx.GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION);
+            int64_t nOutPos=(((int64_t)vPos[ii]->second.nFile)<<32)+vPos[ii]->second.nPos+nHeaderLen+vPos[ii]->second.nTxOffset+txSize+GetSizeOfCompactSize(txSize)+tx.GetOutPos(i);                        
+            CScript sender=vPrevouts[ii][i].first();                
+            vector<string>vTagsTx;
+            for(int64_t i=0;i<min((int64_t)10,(int64_t)min((int64_t)(out.nValue/1000000),(int64_t)vTagList.size()));i++)
+            {
+                vTagsTx.push_back(vTagList[i].second);
+                if(find(vTags.begin(),vTags.end(),vTagList[i].second)==vTags.end())
+                    vTags.push_back(vTagList[i].second);
+            }
+            CContentDBItem item(link,nOutPos,sender,str.GetFirstCc(),out.nValue,out.nLockTime,vTagsTx);
+            vContents.push_back(item);
+        }
+    }
+}
+void FindBlockTagIDAndNewTags(const vector<string>& vTags,map<string,int>& mapTags,vector<string>& vTagNew)
+{
+    int tagID;
+    for(unsigned int i=0;i<vTags.size();i++)
+    {
+        if(psqliteDB->GetTagID(vTags[i],tagID))
+        {
+            mapTags[vTags[i]]=tagID;
+        }
+        else
+            vTagNew.push_back(vTags[i]);                    
+    }
+}
+void PrePareBlockTxIndex(const CBlock& block,map<uint256,uint64_t>& mapTxIndex)
+{
+    for (unsigned int i = 0; i < block.vtx.size(); i++)
+    {
+        const CTransaction &tx = block.vtx[i];
+        uint256 txid=tx.GetHash();
+        int64_t txIndex=block.nBlockHeight;
+        txIndex<<=16;
+        txIndex|=i;
+        mapTxIndex[txid]=txIndex;
+    }
+}
+void GetBlockDomainUpdateList(const CBlock& block,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,vector<CDomain>& vDomains,bool fReverse)
+{
+    for (unsigned int ii = 0; ii < block.vtx.size(); ii++)
+    {
+        const CTransaction &tx = block.vtx[ii];
+        if(tx.IsCoinBase())//coinbase is not allowed to register domain
+            return;
+        for(unsigned int i=0;i<tx.vout.size();i++) {
+            int cc=CContent(tx.vout[i].strContent).GetFirstCc();            
+            if(cc==CC_DOMAIN_P)
+            {
+                std::vector<std::pair<int,std::string> >vContent; 
+                if(CContent(tx.vout[i].strContent).Decode(vContent))
+                {
+                    if(fReverse)
+                    {                    
+                    //bool ret=pDomainDBView->Reverse(coins->vout[prevout.n].scriptPubKey,vContent[0].second);
+                    }
+                    else
+                    {
+                        CLink link(block.nBlockHeight,ii,i);
+                        CDomain domain;
+                        if(pDomainDBView->GetUpdateDomain(vPrevouts[ii][i].first(),vContent[0].second,(uint64_t)tx.vout[i].nValue,IsFrozen(tx,i,block.nBlockHeight,block.nTime)?tx.vout[i].nLockTime:0,link,domain))
+                            vDomains.push_back(domain);                        
+                    }     
+                }
+            }
+        }
+    }
+}
+GetBlockScriptIndice(const map<CScript,vector<CTxPosItem> >& mapScript2TxPos,map<CScript,int>& mapScriptIndex)
+{
+    for(map<CScript,vector<CTxPosItem> >::iterator it=mapScript2TxPos.begin();it!=mapScript2TxPos.end();it++)
+    {
+        int scriptIndex;
+        if(psqliteDB->GetScriptIndex(it->first(),scriptIndex))
+            mapScriptIndex[it->first()]=scriptIndex;        
+    }
+}
+GetBlockDomainTags(const vector<CDomain>& vDomains,vector<string>& vTags)
+{
+    for(unsigned int i=0;i<vDomains.size();i++)    
+        for(unsigned int j=0;j<vDomains[i].vTags.size();j++)
+            if(find(vTags.begin(),vTags.end(),vDomains[i].vTags[j]==vTags.end()))
+                vTags.push_back(vDomains[i].vTags[j]);   
+}
+void GetBlockSenderDomains(const CBlock& block,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,map<CScript,string>& mapBlockDomains)
+{
+    for (unsigned int ii = 0; ii < block.vtx.size(); ii++)
+    {
+        const CTransaction &tx = block.vtx[ii];    
+        if(tx.IsCoinBase())//coinbase is not allowed to register domain
+            return;
+        for(unsigned int i=0;i<tx.vin.size();i++) 
+        {
+            CScript scriptPubKey=vPrevouts[ii][i].first();
+            if(mapBlockDomains.find(scriptPubKey)==mapBlockDomains.end())
+            {               
+               CDomain domain;
+               if(pDomainDBView->GetDomainByForward(scriptPubKey,domain,false))
+                   mapBlockDomains[scriptPubKey]=domain.strDomain;
+            }  
+        }
+    }
+}
+void GetBlockChequeUpdates(const CBlock& block,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,vector<CCheque>& vChequeAdd,vector<int64_t>& vChequeErase,bool fReverse)
+{   
+    for (unsigned int ii = 0; ii < block.vtx.size(); ii++)
+    {
+        const CTransaction &tx = block.vtx[ii];  
+        uint256 txid=tx.GetHash();
+        //LogPrintf("UpdateScriptCoinDB txid:%s\n",txid.GetHex());
+        if(!tx.IsCoinBase())
+        {        
+            for(unsigned int i=0;i<tx.vin.size();i++) 
+            {              
+                const COutPoint &prevout = tx.vin[i].prevout;   
+                if(fReverse)
+                {
+                    CCheque cheque;
+                    cheque.nLockTime=vPrevouts[ii][i].second();
+                    cheque.nOut=prevout.n;
+                    cheque.nValue=tx.vin[i].nValue;
+                    cheque.scriptPubKey=vPrevouts[ii][i].first();
+                    cheque.txid=prevout.hash;
+                    psqliteDB->GetTxIndex(cheque.txid,cheque.txIndex);
+                    vChequeAdd.push_back(cheque);
+                    //pScriptCoinDBView->Insert(cheque);
+                }
+                else
+                {
+                    uint64_t link;
+                    int txIndex;
+                    psqliteDB->GetTxIndex(prevout.hash,txIndex);
+                    link=txIndex;
+                    link<<=16;
+                    link|=prevout.n;                    
+                    vChequeErase.push_back(link);
+                    //pScriptCoinDBView->Erase(prevout.hash,prevout.n);
+                }
+            }
+        }
+        for(unsigned int i=0;i<tx.vout.size();i++) {
+            //if address is empty don't record it
+            if (tx.vout[i].scriptPubKey.size()==0||tx.vout[i].nValue==0)
+                continue;        
+            if(fReverse)
+            {
+                uint64_t link=((int64_t)block.nBlockHeight<<32)+(ii<<16)+i;
+                vChequeErase.push_back(link);
+                //pScriptCoinDBView->Erase(txid,i);
+            }
+            else
+            {
+                CCheque cheque;
+                cheque.nLockTime=tx.vout[i].nLockTime;
+                cheque.nOut=i;
+                cheque.nValue=tx.vout[i].nValue;
+                cheque.scriptPubKey=tx.vout[i].scriptPubKey;
+                cheque.txid=txid;   
+                cheque.txIndex=   ((int64_t)block.nBlockHeight<<16)+ii;  
+                vChequeAdd.push_back(cheque);
+                //pScriptCoinDBView->Insert(cheque);
+            }
+        }
+    }
 }

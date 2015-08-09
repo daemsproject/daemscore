@@ -22,6 +22,7 @@
 #include <bits/stl_pair.h>
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_value.h"
+#include "ccc/sqlitewrapper.h"
 
 using namespace std;
 using namespace boost;
@@ -1535,6 +1536,21 @@ Value listtransactions(const Array& params, bool fHelp)
     result.push_back(Pair("currentblockheight",chainActive.Height()));
     if (pwallet!=pwalletMain)
         delete pwallet;
+    //test
+//    clock_t cStartClock;
+//    cStartClock = clock();
+//    int index;
+//    for(int i=0;i<10000;i++)
+//        psqliteDB->GetScriptIndex(CScript(),index);
+//    LogPrintf("searched %d records in %4.2f seconds\n", 10000, (clock() - cStartClock) / (double)CLOCKS_PER_SEC);
+//    cStartClock = clock();  
+//    //psqliteDB->EndBatch();
+//    psqliteDB->BeginBatch();
+//    for(int i=100000;i<110000;i++)
+//        psqliteDB->InsertTxIndex(uint256(i),i);
+//    psqliteDB->EndBatch();
+//    LogPrintf("Imported %d records in %4.2f seconds\n", n, (clock() - cStartClock) / (double)CLOCKS_PER_SEC);
+
     return result;
 }
 
@@ -2301,5 +2317,5 @@ Value getsimplesig(const json_spirit::Array& params, bool fHelp)
 }
 json_spirit::Value publishpackage(const json_spirit::Array& params, bool fHelp)
 {
-    
+    return Value();
 }
