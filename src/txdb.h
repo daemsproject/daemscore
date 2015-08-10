@@ -80,7 +80,8 @@ protected:
 public:    
     CScript2TxPosDB(CSqliteWrapper* dbIn, bool fWipe = false);
     bool GetTxPosList(const CScript scriptPubKey,std::vector<CTxPosItem> &vTxPos);    
-    bool BatchWrite(const std::map<CScript,std::vector<CTxPosItem> > &mapScriptTxPosList);  
+    bool BatchInsert(const std::map<CScript, std::vector<CTxPosItem> > &mapScriptTxPosList) ;
+    bool BatchUpdate(const std::map<CScript, std::vector<CTxPosItem> > &mapScriptTxPosList) ;
     bool Write(const CScript &scriptPubKey,const std::vector<CTxPosItem> &vTxPos);
     bool AddNewTxs(const std::map<CScript,vector<CTxPosItem> >&mapScriptTxPos);
     bool RemoveTxs(const std::map<CScript,vector<CTxPosItem> >&mapScriptTxPos);
@@ -117,15 +118,16 @@ public:
 //     bool GetDomainByOwner(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupportFAI=true);    
 //     bool GetDomainNamesToExpire(std::vector<CDomain> &vDomain,const int nMax=1000,const uint32_t nExpireIn=3600*24,bool FSupportFAI=true);    
 //     bool GetDomainNamesExpired(std::vector<CDomain> &vDomain,const int nMax=1000,const uint32_t nExpiredFor=3600*24,bool FSupportFAI=true);       
-     bool GetUpdateDomain(const CScript ownerIn,const string& strDomainContent,const uint64_t lockedValue,const uint32_t nLockTimeIn,const CLink link,CDomain& domainOut);
+     bool GetUpdateDomain(const CScript ownerIn,const string& strDomainContent,const uint64_t lockedValue,const uint32_t nLockTimeIn,const CLink link,CDomain& domainOut,bool&fHasRecord);
      bool WriteBlockDomains(const uint256 blockHash,const map<CScript,string>& mapBlockDomains);
     bool GetBlockDomains(const uint256 blockHash,CDataStream& sBlockDomains);
      bool Reverse(const string& strDomainContent);
     //! Do a bulk modification (multiple tam changes).
     //! The passed mapTam can be modified.
      //bool BatchWrite(const std::vector<CDomain> &vDomain);
-     bool Write(const CDomain &domain);
-     bool WriteTags(const CDomain &domain,const map<string,int>& mapTags);
+     bool Write(const CDomain &domain,const bool fExists);
+     bool WriteTags(const CDomain &domain,const map<string,int64_t>& mapTags);
+     bool ClearExpired(const uint32_t time);
      bool ClearTables();
     //! As we use CDomainView polymorphically, have a virtual destructor
      ~CDomainViewDB() {}
@@ -142,9 +144,9 @@ public:
     bool HasLink(const CLink link)const;
      bool Search(vector<CLink>& vLink,const std::vector<string> &vTag,const int cc=-1,const int nMaxItems=1000,const int nOffset=0)const ;           
      //bool InsertContent(const CContentDBItem);
-     bool Insert(const CContentDBItem item);
-     bool InsertTags(const vector<string>vTags);
-     bool InsertContentTags(const vector<CContentDBItem>& vContents,const map<string,int> mapTags);
+     bool Insert(const CContentDBItem& item);
+     bool InsertTags(const vector<string>& vTags);
+     bool InsertContentTags(const vector<CContentDBItem>& vContents,const map<string,int64_t>& mapTags);
      bool ClearExpired(uint32_t nTime);
     bool ClearTables();
      ~CTagViewDB() {}
@@ -167,18 +169,18 @@ public:
     
      ~CScriptCoinDB() {}
 };
-void UpdateSqliteDB(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >& vPos,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,bool fErase);
-void GetBlockScript2TxPosList(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >& vPos,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,map<CScript,vector<CTxPosItem> > mapScript2TxPos,bool fErase);
+bool UpdateSqliteDB(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >& vPos,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,bool fErase);
+void GetBlockScript2TxPosList(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >& vPos,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,map<CScript,vector<CTxPosItem> >& mapScript2TxPos,bool fErase);
 void MergeScript2TxPosList(map<CScript,vector<CTxPosItem> >& parent,const map<CScript,CTxPosItem>& child);
 void GetBlockContentAndTagList(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >& vPos,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,vector<string>& vTags,vector<CContentDBItem>& vContents);
-void FindBlockTagIDAndNewTags(const vector<string>& vTags,map<string,int>& mapTags,vector<string>& vTagNew);
-void PrePareBlockTxIndex(const CBlock& block,map<uint256,uint64_t>& mapTxIndex);
-void GetBlockDomainUpdateList(const CBlock& block,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,vector<CDomain>& vDomains,bool fReverse);
+void FindBlockTagIDAndNewTags(const vector<string>& vTags,map<string,int64_t>& mapTags,vector<string>& vTagNew);
+void PrePareBlockTxIndex(const CBlock& block,map<uint256,int64_t>& mapTxIndex);
+void GetBlockDomainUpdateList(const CBlock& block,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,vector<pair<CDomain,bool> >& vDomains,bool fReverse);
 
-void GetBlockScriptIndice(const map<CScript,vector<CTxPosItem> >& mapScript2TxPos,map<CScript,int>& mapScriptIndex);
+void GetBlockScriptIndice(const map<CScript,vector<CTxPosItem> >& mapScript2TxPos,map<CScript,int64_t>& mapScriptIndex);
 
-void GetBlockDomainTags(const vector<CDomain>& vDomains,vector<string>& vTags);
+void GetBlockDomainTags(const vector<pair<CDomain,bool> >& vDomains,vector<string>& vTags);
 void GetBlockSenderDomains(const CBlock& block,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,map<CScript,string>& mapBlockDomains);
-void GetBlockChequeUpdates(const CBlock& block,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,vector<CCheque> vChequeAdd,vector<int64_t>& vChequeErase,bool fReverse);
+void GetBlockChequeUpdates(const CBlock& block,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,vector<CCheque>& vChequeAdd,vector<int64_t>& vChequeErase,bool fReverse);
 
 #endif // BITCOIN_TXDB_H

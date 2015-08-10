@@ -1059,10 +1059,15 @@ bool AppInit2(boost::thread_group& threadGroup)
                 pcoinsTip = new CCoinsViewCache(pcoinscatcher);
                 //pScript2TxPosDBView = new CScript2TxPosViewDB(nBlockTreeDBCache, false, fReindex);                
                 pScript2TxPosDB=new CScript2TxPosDB(psqliteDB,fReindex);
+                LogPrintf("init:create dbs 1.\n");
                 pBlockPosDB=new CBlockPosDB(psqliteDB,fReindex);
+                LogPrintf("init:create dbs 2.\n");
                 pDomainDBView = new CDomainViewDB(psqliteDB,fReindex);   
+                LogPrintf("init:create dbs 3.\n");
                 pTagDBView = new CTagViewDB(psqliteDB,fReindex); 
+                LogPrintf("init:create dbs 4.\n");
                 pScriptCoinDBView = new CScriptCoinDB(psqliteDB,fReindex); 
+                LogPrintf("init:create dbs 5.\n");
                 settings.LoadSettings();
                 if (fReindex)
                     pblocktree->WriteReindexing(true);

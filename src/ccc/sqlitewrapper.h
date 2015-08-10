@@ -105,6 +105,17 @@ public:
     ~CSqliteWrapper();
     bool CreateTables();
     bool ClearTable(const char* tableName);
+    bool CreateDomainTable(const char* tableName);
+    bool CreateDomainTagTable(const char* tableName);
+    bool CreateScript2TxPosTable();
+    bool CreateBlockPosTable();
+    bool CreateBlockDomainTable();
+    bool CreateContentTable();
+    bool CreateTagIDTable();
+    bool CreateTagTable();
+    bool CreateTxIndexTable();
+    bool CreateChequeTable();
+    
     bool BeginBatch();
     bool EndBatch();
     template <typename V>
@@ -121,7 +132,7 @@ public:
 //                    break;  
             case SQLITEDATATYPE_TEXT:
                     result=sqlite3_bind_text(stat,n, value.c_str(),value.size(),NULL);
-                    break;
+                    break;            
             case SQLITEDATATYPE_BLOB:
                 result=sqlite3_bind_blob( stat, n, (const char*)&value[0], value.size(), NULL );
                 break;                 
@@ -140,6 +151,7 @@ public:
     char sql[2000]; 
     const char* insertstatement="INSERT OR %s INTO %s(%s,%s) VALUES (?,?);";    
      sprintf(sql,insertstatement,fReplace?"REPLACE":"IGNORE",tableName,columnName1,columnName2);
+     LogPrintf("Insert sql %s\n",sql);  
     int result;
     sqlite3_stmt  *stat;    
    result=sqlite3_prepare_v2( pdb, sql, -1, &stat, 0 );
@@ -257,93 +269,53 @@ public:
    return (result==SQLITE_OK||result==101);
 }
     }
-    template <typename K>
-    bool Select141(const char* tableName,const char* searchByColumn,const char* searchByValue,const char* searchForColumn,int searchResultFormat,K& searchResult) const
-{
-    //LogPrintf("CSqliteWrapper GetTagID \n");
-    //char* zErrMsg=0;
-    char sql[2000]; 
-    const char* selectstatement="SELECT %s FROM %s WHERE %s = %s;";    
-     sprintf(sql,selectstatement,searchForColumn,tableName,searchByColumn,searchByValue);
-    //LogPrintf("CSqliteWrapper GetTagID sql %s\n",sql); 
-    sqlite3_stmt  *stmt = NULL;
-    int rc;
-    rc = sqlite3_prepare_v2(pdb , sql , strlen(sql) , &stmt , NULL);
-    if(rc != SQLITE_OK)
-    {
-        if(stmt)        
-            sqlite3_finalize(stmt);               
-        return false;
-    }
-    rc = sqlite3_step(stmt);
-        if(rc == SQLITE_ROW)
-        {
-            switch (searchResultFormat)
-            {
-                case SQLITEDATATYPE_BLOB:
-                    searchResult=string((char*)sqlite3_column_blob(stmt,0),(char*)sqlite3_column_blob(stmt,0)+sqlite3_column_bytes(stmt,0));                    
-                    break;
-                default:
-                    return false;
-              
-            }
-                     
-           sqlite3_finalize(stmt);
-            return true;
-        }
-        else
-        {
-            sqlite3_finalize(stmt);
-            return false;
-        }    
-    return false;     
-}
-    bool Write(const char* sql);
-    bool GetRowID(const char* tableName,const char* columnName,const char* columnValue,uint64_t& rowID);
+    bool BatchUpdate(const char* tableName,const char* indexColumnName,const int format1,const char* changedColumnName,const int format2,const vector<pair<string,string> >& vValue);
 
-    bool Insert(const CDomain& domain,int ownerID);
-    bool Update(const CDomain& domain);
+    bool SearchStr(const char* tableName,const char* searchByColumn,const char* searchByValue,const char* searchForColumn,int searchResultFormat,string& searchResult) const;
+    bool SearchStrsIn(const char* tableName,const char* searchByColumn,const char* searchByValue,const char* searchForColumn,int searchResultFormat,vector<string>& searchResult) const;
+    bool SearchInts(const char* tableName,const char* searchByColumn,const char* searchByValue,const char* searchForColumn,vector<int64_t>& searchResult,const char* chOperator="=") const;
+    bool SearchInt(const char* tableName,const char* columnName,const char* columnValue,const char* resultColumnName,int64_t& result)const;
+    bool Delete(const char* tableName,const char* searchColumn,const char* searchValue,const char* chOperator);
+
+    bool Write(const char* sql);
+    // bool DeleteBy1Col(const char* tableName,const char* columnName, const char* comlumnValue);
+    bool Insert(const CDomain& domain,const int64_t ownerID);
+    bool Update(const CDomain& domain,const int64_t ownerID);
     bool Delete(const CDomain& domain);
     bool Get(const char* tableName,const char* searchColumn,const char* searchValue,char**& result,int& nRow,int& nColumn) const;
-    bool GetDomain(const char* tableName,const char* searchColumn,const char* searchValue,std::vector<CDomain>& vDomain) const;
+    bool GetDomain(const char* tableName,const char* searchColumn,const char* searchValue,std::vector<CDomain>& vDomain,bool fGetTags=true) const;
+    //bool GetExpiredDomainIDs(const char* tableName,vector<int64_t>& vDomainIDs,const uint32_t time);
 
-    bool CreateDomainTable(const char* tableName);
-    bool CreateDomainTagTable(const char* tableName);
-    bool CreateScript2TxPosTable();
-    bool CreateBlockPosTable();
-    bool CreateBlockDomainTable();
-    bool CreateContentTable();
+
     bool Insert(const uint256 blockHash,const CDataStream& sBlockDomains);
     bool GetBlockDomains(const uint256 blockHash,CDataStream& sBlockDomains);
     
-    bool CreateTagIDTable();
-    bool CreateTagTable();
-    bool InsertContent(const int64_t nLink,const int64_t pos,const int sender, const int cc, const int64_t lockValue,const uint32_t lockTime);
-    bool InsertContents(const vector<CContentDBItem>& vContents,const map<CScript,int> mapScriptIndex);
+
+    bool InsertContent(const int64_t nLink,const int64_t pos,const int64_t sender, const int cc, const int64_t lockValue,const uint32_t lockTime);
+    bool InsertContents(const vector<CContentDBItem>& vContents,const map<CScript,int64_t>& mapScriptIndex);
 
     bool InsertTag(const char* tableName,const int64_t tagID,const int64_t nLink);
     bool InsertTags(const char* tableName,const int64_t nLink,const vector<int64_t>& vTagID);
-    bool GetLinks(const vector<string> vTag,const int cc,const CLink link,std::vector<CLink>& vLink,const int nMaxItems=1000,const int nOffset=0) const;
-    bool InsertTagID(const string tag,int& tagID);
-    bool GetTagID(const string tag,int& tagID) const;
-    bool ClearExpiredTags(const unsigned int nTime);
+    bool GetLinks(const vector<string>& vTag,const int cc,const CLink link,std::vector<CLink>& vLink,const int nMaxItems=1000,const int nOffset=0) const;
+    bool InsertTagID(const string tag,int64_t& tagID);
+    bool GetTagID(const string tag,int64_t& tagID) const;
+    //bool ClearExpiredTags(const unsigned int nTime);
     
     //bool CreateScriptIndexTable();
-    bool CreateTxIndexTable();
-    bool CreateChequeTable();
+
     //bool InsertScriptIndex(const CScript script,int& scriptIndex);
-    bool GetScriptIndex(const CScript script,int& scriptIndex) const;
+    bool GetScriptIndex(const CScript script,int64_t& scriptIndex) const;
     bool InsertTxIndex(const uint256 txid,const int64_t& txIndex);
     bool InsertTxIndice(const map<uint256, int64_t>& mapTxIndex);
     bool GetTxIndex(const uint256 txid,int64_t& txIndex) const;
     bool GetTxidByTxIndex(const int64_t txIndex, uint256& txid) const;
-    bool InsertCheque(int scriptIndex,int64_t nLink, int64_t nValue,uint32_t nLockTime);
-    bool BatchInsertCheque(vector<CCheque>& vCheque,const map<CScript,int>& mapScriptIndex);
+    bool InsertCheque(int64_t scriptIndex,int64_t nLink, int64_t nValue,uint32_t nLockTime);
+    bool BatchInsertCheque(vector<CCheque>& vCheque,const map<CScript,int64_t>& mapScriptIndex);
     bool GetCheques(const vector<CScript>& vScript,vector<CCheque> & vCheques,const int nMaxItems=1000,const int nOffset=0)const;
-    bool EraseCheque(const int64_t txindex);
-    bool BatchEraseCheque(vector<int64_t> vChequeErase);
+    //bool EraseCheque(const int64_t txindex);
+    //bool BatchEraseCheque(vector<int64_t> vChequeErase);
             
-    bool GetBlockPosItem(const int nPosDB,uint256& hashBlock,int& nHeight);
+    bool GetBlockPosItem(const int64_t nPosDB,uint256& hashBlock,int& nHeight);
     bool WriteBlockPos(const int64_t nPosDB,const uint256& hashBlock,const int& nHeight);
 };
 

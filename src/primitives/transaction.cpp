@@ -156,7 +156,7 @@ int CTransaction::GetOutPos(int nOut)const
     for(int i=0;i<nOut-1;i++)
     {
         int outSize=vout[i].GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION);
-        pos+=GetSizeOfCompactSize(outSize);
+        //pos+=GetSizeOfCompactSize(outSize);
         pos+=outSize;
         LogPrintf("CTransaction::GetOutPos pos:%i \n",pos);
     }    

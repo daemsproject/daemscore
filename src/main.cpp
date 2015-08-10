@@ -1337,6 +1337,7 @@ bool GetTransaction(const CTxPosItem &postx, CTransaction &txOut)
         LogPrintf("Getransaction by pos, error: tx invalid file%i txpos %i ntx%i\n",postx.nFile,postx.nPos,postx.nTx);                              
         return false;
     }
+    LogPrintf("Getransaction by pos %s\n",txOut.ToString());
     //int nHeight;
     //pBlockPosDB->GetByPos(postx.nFile,postx.nPos,hashBlock,nHeight);                
     return true;
@@ -1393,7 +1394,7 @@ bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTr
     std::vector<CTxPosItem> vTxPosAll;
    GetDiskTxPoses (vIds,vTxPosAll);            
     
-    //LogPrintf("main:gettx: vtxposall size%u",vTxPosAll.size());
+    LogPrintf("main:gettx: vtxposall size%u",vTxPosAll.size());
     //sorting
 
     bool fChanged=true;
@@ -1425,7 +1426,7 @@ bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTr
             }
         }
     }
-    //LogPrintf("main:gettx: vtxposall sizeafter sort%u",vTxPosAll.size());
+    LogPrintf("main:gettx: vtxposall sizeafter sort%u \n",vTxPosAll.size());
         for (std::vector<CTxPosItem>::iterator it2 = vTxPosAll.begin();it2 != vTxPosAll.end(); it2++) {
             CTransaction txOut;
             uint256 hashBlock;
@@ -1732,8 +1733,9 @@ void UpdateCoins(const CTransaction& tx, CValidationState &state, CCoinsViewCach
     // add outputs
     inputs.ModifyCoins(tx.GetHash())->FromTx(tx, nHeight);
 }
-void GetTxPrevouts(const CTransaction&tx,const CCoinsViewCache& inputs,vector<vector<pair<CScript,uint32_t> > >& vPrevouts)
+void GetTxPrevouts(const CTransaction&tx,const CCoinsViewCache& inputs,vector<vector<pair<CScript,uint32_t> > >& vPrevouts,bool fReverse)
 {
+    LogPrintf("GetTxPrevouts txid:%s \n",tx.GetHash().GetHex());
     vector<pair<CScript,uint32_t> > vPrevout1Tx;
     if(!tx.IsCoinBase())
     {
@@ -1751,7 +1753,10 @@ void GetTxPrevouts(const CTransaction&tx,const CCoinsViewCache& inputs,vector<ve
                        
         }
     }
-    vPrevouts.push_back(vPrevout1Tx);
+    if(fReverse)
+        vPrevouts.insert(vPrevouts.begin(),vPrevout1Tx);
+    else
+        vPrevouts.push_back(vPrevout1Tx);
 }
 
 
@@ -1962,7 +1967,7 @@ bool DisconnectBlock(CBlock& block, CValidationState& state, CBlockIndex* pindex
         }
         // undo UpdateScript2TxPosDB
          CDiskTxPos postx;
-         GetTxPrevouts(tx,view,vPrevouts);
+         GetTxPrevouts(tx,view,vPrevouts,true);
         if (pblocktree->ReadTxIndex(hash, postx))
         {            
             //UpdateScript2TxPosDB(tx,postx,nHeaderLen,i,state,view,true);
@@ -1971,9 +1976,10 @@ bool DisconnectBlock(CBlock& block, CValidationState& state, CBlockIndex* pindex
         }
         else
             std::cout<<"disconnect block tx pos not found:"<<hash.GetHex()<<"\n";
-         vPos.push_back(make_pair(hash,postx));
+         vPos.insert(vPos.begin(),make_pair(hash,postx));
     }
-    UpdateSqliteDB(block,vPos,vPrevouts,true);    
+    bool f=UpdateSqliteDB(block,vPos,vPrevouts,true);    
+    LogPrintf("disconnect block:UpdateSqliteDB done %b\n",f);
     // move best block pointer to prevout block
     //LogPrintf("disconnectblock set best block %s \n",pindex->pprev->GetBlockHash().GetHex());
     view.SetBestBlock(pindex->pprev->GetBlockHash());
@@ -2157,7 +2163,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     {
         //step2:get script2txpos list
         //step3:flush script2txpos list
-        UpdateSqliteDB(block,vPos,vPrevouts,false);
+        bool f=UpdateSqliteDB(block,vPos,vPrevouts,false);
 //        UpdateScript2TxPosDB(tx,pos,nHeaderLen,i,state,view,false);
 //        GetDomainsInVins(tx,view,mapBlockDomains);
 //            UpdateDomainDB(tx,block,i,state,view,false);
@@ -2165,8 +2171,10 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 //        pBlockPosDB->Write(pos.nFile,pos.nPos,block.GetHash(),pindex->nHeight);
 //        pDomainDBView->WriteBlockDomains(block.GetHash(),mapBlockDomains); 
 //        UpdateScriptCoinDB(tx,block,i,state,view,false);
+        LogPrintf("connect block:UpdateSqliteDB done %b\n",f);
         
     }
+    LogPrintf("connect block:UpdateSqliteDB done 2\n");
     //psqliteDB->EndBatch();
     int64_t nTime1 = GetTimeMicros(); nTimeConnect += nTime1 - nTimeStart;
     LogPrint("bench", "      - Connect %u transactions: %.2fms (%.3fms/tx, %.3fms/txin) [%.2fs]\n", (unsigned)block.vtx.size(), 0.001 * (nTime1 - nTimeStart), 0.001 * (nTime1 - nTimeStart) / block.vtx.size(), nInputs <= 1 ? 0 : 0.001 * (nTime1 - nTimeStart) / (nInputs-1), nTimeConnect * 0.000001);
@@ -2233,7 +2241,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     
     int64_t nTime4 = GetTimeMicros(); nTimeCallbacks += nTime4 - nTime3;
     LogPrint("bench", "    - Callbacks: %.2fms [%.2fs]\n", 0.001 * (nTime4 - nTime3), nTimeCallbacks * 0.000001);
-
+    LogPrintf("connect block: done \n");
     return true;
 }
 
