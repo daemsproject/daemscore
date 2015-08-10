@@ -152,21 +152,25 @@ bool GetFileFromLinks(const vector<CLink>& vlinks,string& strFile)
 }
 int GetNTx(const uint256 &hashTx) 
 {
-    CTransaction tx;
-    uint256 hashBlock = 0;
-    if (!GetTransaction(hashTx, tx, hashBlock, true))
-    {
-        error("No information available about transaction");
-        return -1;
-    }
-    CBlock block;
-    CBlockIndex* pblockindex = mapBlockIndex[hashBlock];
-    if (pblockindex==NULL||!ReadBlockFromDisk(block, pblockindex))
-    {
-        error("Can't read block from disk");
-        return -1;
-    }
-    return GetNTx(tx, block);
+    int64_t txIndex;
+    psqliteDB->GetTxIndex(hashTx,txIndex);
+    //LogPrintf("getntx,tx:%s,height:%i,ntx:%i \n",hashTx.GetHex(),txIndex>>16,txIndex&0xffff);
+    return txIndex&0xffff;
+//    CTransaction tx;
+//    uint256 hashBlock = 0;
+//    if (!GetTransaction(hashTx, tx, hashBlock, true))
+//    {
+//        error("No information available about transaction");
+//        return -1;
+//    }
+//    CBlock block;
+//    CBlockIndex* pblockindex = mapBlockIndex[hashBlock];
+//    if (pblockindex==NULL||!ReadBlockFromDisk(block, pblockindex))
+//    {
+//        error("Can't read block from disk");
+//        return -1;
+//    }
+//    return GetNTx(tx, block);
 }
 
 

@@ -1742,6 +1742,7 @@ bool BitcoinGUI::handleUserConfirm(QString title,QString message,int nOP,string&
         UserConfirmDialog dlg(this);
         dlg.setWindowTitle(title);
         dlg.ui->label_message->setText(message);
+        dlg.ui->label_message->setWordWrap(true);
         if (nOP!=1){
             dlg.ui->label_7->hide();
             dlg.ui->passwordEdit->hide();

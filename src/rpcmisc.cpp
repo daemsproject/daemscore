@@ -550,14 +550,14 @@ CPaymentOrder MessageRequestToPaymentRequest(const std::string idLocal,const std
     //valtmp=find_value(obj, "vins");
 }
 
-CPaymentOrder GetPublisherPaymentRequest(const std::string idLocal, const std::string idTarget, const CContent& ctt)
+CPaymentOrder GetPublisherPaymentRequest(const std::string idLocal, const std::string idTarget, const CContent& ctt, const double feeRate, const CAmount deposit, const uint32_t nLockTime ) // locktime is only used for the content vout, change vout will not be locked
 {
     CPaymentOrder pr;
     pr.fIsValid = false;
     std::string strError;
     CScript scriptPubKey;
     if (!StringToScriptPubKey(idLocal, scriptPubKey)) {
-        strError = "id is not valid fromat";
+        strError = "id is not valid format";
         throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
     }
     LogPrintf("rpcmist MessageRequestToPaymentRequest script %s\n", scriptPubKey.ToString());
@@ -575,9 +575,11 @@ CPaymentOrder GetPublisherPaymentRequest(const std::string idLocal, const std::s
         }
     }
     LogPrintf("rpcmist MessageRequestToPaymentRequest vout scriptpubkey:%s\n", scriptPubKey.ToString());
-    CAmount amount = 0;
-    pr.vout.push_back(CTxOut(amount, scriptPubKey, ctt));
+    CAmount amount = deposit > 0 ? deposit : 0;
+    pr.vout.push_back(CTxOut(amount, scriptPubKey, ctt, nLockTime));
     pr.fIsValid = true;
+    pr.dFeeRate = feeRate;
+    pr.nRequestType = PR_PUBLISH;
     return pr;
 }
 

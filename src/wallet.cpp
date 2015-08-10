@@ -781,12 +781,12 @@ bool CWallet::AddToWallet(const CWalletTx& wtxIn, bool fFromLoadWallet)
                 wtx.hashBlock = wtxIn.hashBlock;
                 fUpdated = true;
             }
-            if (wtxIn.nIndex != -1 && (wtxIn.vMerkleBranch != wtx.vMerkleBranch || wtxIn.nIndex != wtx.nIndex))
-            {
-                wtx.vMerkleBranch = wtxIn.vMerkleBranch;
-                wtx.nIndex = wtxIn.nIndex;
-                fUpdated = true;
-            }
+//            if (wtxIn.nIndex != -1 && (wtxIn.vMerkleBranch != wtx.vMerkleBranch || wtxIn.nIndex != wtx.nIndex))
+//            {
+//                wtx.vMerkleBranch = wtxIn.vMerkleBranch;
+//                wtx.nIndex = wtxIn.nIndex;
+//                fUpdated = true;
+//            }
             if (wtxIn.fFromMe && wtxIn.fFromMe != wtx.fFromMe)
             {
                 wtx.fFromMe = wtxIn.fFromMe;
@@ -841,8 +841,8 @@ bool CWallet::AddToWalletIfInvolvingMe(const CTransaction& tx, const CBlock* pbl
             CWalletTx wtx(this,tx);
             
             // Get merkle branch if transaction was found in a block
-            if (pblock)
-                wtx.SetMerkleBranch(*pblock);
+            //if (pblock)
+            //    wtx.SetMerkleBranch(*pblock);
             
             return AddToWallet(wtx);
             
@@ -1303,10 +1303,9 @@ std::map<uint256, CWalletTx> CWallet::GetWalletTxs(std::vector<CPubKey> vIds)con
         wtx.nOrderPos=nOrderPos;
         nOrderPos++;
         wtx.hashBlock=it->second;
-        wtx.SetMerkleBranch();
+        //wtx.SetMerkleBranch();
         if(wtx.GetDepthInMainChain()>=0)
-        {
-                    
+        {                    
             mapWalletTx.insert(make_pair(it->first.GetHash(),wtx));        
         }
     }
@@ -2454,12 +2453,12 @@ int CMerkleTx::GetDepthInMainChainINTERNAL(const CBlockIndex* &pindexRet) const
 //    if (nIndex==-1)
 //        SetMerkleBranch();
     // Make sure the merkle branch connects to this block
-    if (!fMerkleVerified)
-    {
-        if (CBlock::CheckMerkleBranch(GetHash(), vMerkleBranch, nIndex) != pindex->hashMerkleRoot)
-            return 0;
-        fMerkleVerified = true;
-    }
+//    if (!fMerkleVerified)
+//    {
+//        if (CBlock::CheckMerkleBranch(GetHash(), vMerkleBranch, nIndex) != pindex->hashMerkleRoot)
+//            return 0;
+//        fMerkleVerified = true;
+//    }
 
     pindexRet = pindex;
     return chainActive.Height() - pindex->nHeight + 1;
@@ -2504,7 +2503,7 @@ int CMerkleTx::GetBlocksToMaturity(int nPos) const
             return max(0, (int)((int)vout[nPos].nLockTime+1 - (int)chainActive.Height()));  
         else{
             int lockBlocks;
-            lockBlocks=(int)(((int64_t)vout[nPos].nLockTime-GetAdjustedTime())/Params().TargetSpacing());
+            lockBlocks=(int)(((int64_t)vout[nPos].nLockTime-min(GetAdjustedTime()-1800,(int64_t)chainActive.Tip()->nTime))/Params().TargetSpacing());
             return max(0, lockBlocks);
         }
     }

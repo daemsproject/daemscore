@@ -168,10 +168,11 @@ unsigned int CScript::GetSigOpCount(bool fAccurate) const
     unsigned int n = 0;
     const_iterator pc = begin();
     opcodetype lastOpcode = OP_INVALIDOPCODE;
+    vector<unsigned char> vch1;
     while (pc < end())
     {
         opcodetype opcode;
-        if (!GetOp(pc, opcode))
+        if (!GetOp(pc, opcode, vch1))
             break;
         if (opcode == OP_CHECKSIG || opcode == OP_CHECKSIGVERIFY)
             n++;
@@ -180,7 +181,7 @@ unsigned int CScript::GetSigOpCount(bool fAccurate) const
             if (fAccurate && lastOpcode >= OP_1 && lastOpcode <= OP_16)
                 n += DecodeOP_N(lastOpcode);
             else
-                n += 20;
+                n += CScriptNum(vch1, false).getint();
         }
         lastOpcode = opcode;
     }

@@ -23,6 +23,8 @@
 #include <boost/assign/list_of.hpp>
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_value.h"
+#include "ccc/link.h"
+#include "ccc/content.h"
 
 using namespace boost;
 using namespace boost::assign;
@@ -60,14 +62,18 @@ Value getmaturetime(const Array& params, bool fHelp)
     int64_t time = 0;
     int64_t blocks = 0;
 
-    if (params.size() > 0) {
+    if (params.size() > 0)
+    {
 
-        int64_t nLockTime = (uint32_t)params[0].get_int64();
-        if (nLockTime != 0) {
-            if (nLockTime < LOCKTIME_THRESHOLD) {
+        int64_t nLockTime = (uint32_t) params[0].get_int64();
+        if (nLockTime != 0)
+        {
+            if (nLockTime < LOCKTIME_THRESHOLD)
+            {
                 blocks = max(0, (int) ((int) nLockTime + 1 - (int) chainActive.Height()));
                 time = blocks * Params().TargetSpacing();
-            } else {
+            } else
+            {
                 time = (int) max((int64_t) 0, nLockTime - GetAdjustedTime());
                 blocks = (int) (time / Params().TargetSpacing());
             }
@@ -226,4 +232,15 @@ Value gethash(const Array& params, bool fHelp) // TO DO: Help msg
        result= hash.GetHex();
     
     return Value(result);
+}
+
+Value getlinktype(const Array& params, bool fHelp) // TO DO: Help msg
+{
+    if (fHelp || params.size() > 1)
+        throw runtime_error("");
+    Object result;
+    CLinkUni clinkuni;
+    clinkuni.SetString(params[0].get_str());
+    result.push_back(Pair("linktype", GetCcName(clinkuni.linkType)));
+    return result;
 }

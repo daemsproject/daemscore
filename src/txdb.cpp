@@ -13,6 +13,7 @@
 #include <stdint.h>
 
 #include <boost/thread.hpp>
+#include <bits/stl_vector.h>
 
 using namespace std;
 
@@ -264,16 +265,18 @@ bool CScript2TxPosDB::GetTxPosList(const CScript scriptPubKey,std::vector<CTxPos
     
     if(!db->SearchStr("table_script2txpos","script",strScriptPubKey.c_str(),"vtxpos",SQLITEDATATYPE_BLOB, strVtxPos))
     {
-        LogPrintf("CScript2TxPosDB::GetTxPosList script %s,vtxpos not found \n",scriptPubKey.ToString());
-        std::vector<CTxPosItem> vTxPos1;
+        //LogPrintf("CScript2TxPosDB::GetTxPosList script %s,vtxpos not found \n",scriptPubKey.ToString());
+        //std::vector<CTxPosItem> vTxPos1;
         //Write(scriptPubKey,vTxPos1);
         return false;  
     }
-     LogPrintf("CScript2TxPosDB::GetTxPosList script %s,vtxpos %s \n",strScriptPubKey,strVtxPos.size());
+     //LogPrintf("CScript2TxPosDB::GetTxPosList script %s,vtxpos %s \n",strScriptPubKey,strVtxPos.size());
     try 
     {
+        std::vector<CTxPosItem> vTxPos1;
         CDataStream ssValue(strVtxPos.data(), strVtxPos.data() + strVtxPos.size(), SER_DISK, CLIENT_VERSION);
-        ssValue >> vTxPos;
+        ssValue >> vTxPos1;
+        vTxPos.insert(vTxPos.end(),vTxPos1.begin(),vTxPos1.end());
     } catch (const std::exception&) {
         LogPrintf("CScript2TxPosDB::GetTxPosList unserialize error %s\n",HexStr(strVtxPos.begin(),strVtxPos.end()));
         return false;
@@ -880,10 +883,10 @@ bool UpdateSqliteDB(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >
     vector<CCheque> vChequeAdd;
     vector<int64_t> vChequeErase;
     //step2:get script2txpos list,content list,taglist,domain tags
-    LogPrintf("UpdateSqliteDB1 \n");
+    //LogPrintf("UpdateSqliteDB1 \n");
     if(!fErase)
     {
-        LogPrintf("UpdateSqliteDB2 \n");
+        //LogPrintf("UpdateSqliteDB2 \n");
         GetBlockDomainTags(vDomains,vTags);
         LogPrintf("UpdateSqliteDB3 \n");
         GetBlockDomainUpdateList(block,vPrevouts,vDomains,fErase);
@@ -895,21 +898,21 @@ bool UpdateSqliteDB(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >
     }
     LogPrintf("UpdateSqliteDB7 \n");
     PrePareBlockTxIndex(block,mapTxIndex);
-    LogPrintf("UpdateSqliteDB8 \n");
+    //LogPrintf("UpdateSqliteDB8 \n");
     GetBlockScript2TxPosList(block,vPos,vPrevouts,mapScript2TxPos,fErase);
     LogPrintf("UpdateSqliteDB9 \n");
         //step3:flush script2txpos list,taglist,txindex
     psqliteDB->BeginBatch();
-    LogPrintf("UpdateSqliteDB10 \n");
+    //LogPrintf("UpdateSqliteDB10 \n");
     if(fErase)
     {
-        LogPrintf("UpdateSqliteDB11 \n");
+        //LogPrintf("UpdateSqliteDB11 \n");
         pScript2TxPosDB->RemoveTxs(mapScript2TxPos);
-        LogPrintf("UpdateSqliteDB12 \n");
+       // LogPrintf("UpdateSqliteDB12 \n");
     }
     else
     {
-        LogPrintf("UpdateSqliteDB13 \n");
+        //LogPrintf("UpdateSqliteDB13 \n");
         pScript2TxPosDB->AddNewTxs(mapScript2TxPos);
         LogPrintf("UpdateSqliteDB14 \n");
         pTagDBView->InsertTags(vTagNew);
@@ -917,9 +920,9 @@ bool UpdateSqliteDB(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >
          psqliteDB->InsertTxIndice(mapTxIndex);
          LogPrintf("UpdateSqliteDB16 \n");
     } 
-    LogPrintf("UpdateSqliteDB17 \n");
+    //LogPrintf("UpdateSqliteDB17 \n");
     psqliteDB->EndBatch();
-    LogPrintf("UpdateSqliteDB18 \n");
+    //LogPrintf("UpdateSqliteDB18 \n");
     //step4 get script index,tagindex
     if(!fErase)
     {
@@ -949,7 +952,7 @@ bool UpdateSqliteDB(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >
     LogPrintf("UpdateSqliteDB28 \n");
     if(!fErase)
     {
-        LogPrintf("UpdateSqliteDB29 \n");
+        //LogPrintf("UpdateSqliteDB29 \n");
         pBlockPosDB->Write(vPos[0].second.nFile,vPos[0].second.nPos,block.GetHash(),block.nBlockHeight);
         LogPrintf("UpdateSqliteDB30 \n");
         pDomainDBView->WriteBlockDomains(block.GetHash(),mapBlockDomains);
@@ -987,28 +990,28 @@ bool UpdateSqliteDB(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >
     LogPrintf("UpdateSqliteDB40 \n");
     if(block.nBlockHeight%120==0)
         pDomainDBView->ClearExpired(GetAdjustedTime());
-    LogPrintf("UpdateSqliteDB41 \n");
+    //LogPrintf("UpdateSqliteDB41 \n");
     psqliteDB->EndBatch();
-    LogPrintf("UpdateSqliteDB42 \n");
+    //LogPrintf("UpdateSqliteDB42 \n");
     return true;
 }
 void GetBlockScript2TxPosList(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >& vPos,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,map<CScript,vector<CTxPosItem> >& mapScript2TxPos,bool fErase)
 {
-    LogPrintf("GetBlockScript2TxPosList1 blockheight:%i\n",block.nBlockHeight);
+    //LogPrintf("GetBlockScript2TxPosList1 blockheight:%i\n",block.nBlockHeight);
     int nHeaderLen=88;
     for (unsigned int i = 0; i < block.vtx.size(); i++)
     {
-        LogPrintf("GetBlockScript2TxPosList2 ntx:%i\n",i);
+       // LogPrintf("GetBlockScript2TxPosList2 ntx:%i\n",i);
         const CTransaction &tx = block.vtx[i];
         CTxPosItem posItem;
         posItem.nFile=vPos[i].second.nFile;
         posItem.nPos=vPos[i].second.nPos+nHeaderLen+vPos[i].second.nTxOffset;
         posItem.nTx=i;
-        LogPrintf("GetBlockScript2TxPosList3 vprevouts size %i,vin size %i\n",vPrevouts[i].size(),tx.vin.size());
+        //LogPrintf("GetBlockScript2TxPosList3 vprevouts size %i,vin size %i\n",vPrevouts[i].size(),tx.vin.size());
         map<CScript,CTxPosItem> mapSender;
         
         if(!tx.IsCoinBase()){      
-            LogPrintf("GetBlockScript2TxPosList4 \n");
+            //LogPrintf("GetBlockScript2TxPosList4 \n");
             posItem.nFlags=1<<TXITEMFLAG_SENDER;
             for(unsigned int j=0;j<tx.vin.size();j++) 
                 mapSender[vPrevouts[i][j].first]=posItem;                     
@@ -1019,7 +1022,7 @@ void GetBlockScript2TxPosList(const CBlock& block,const vector<pair<uint256, CDi
                 for(map<CScript,CTxPosItem>::iterator it=mapSender.begin();it!=mapSender.end();it++)
                     it->second.nFlags |=1<<TXITEMFLAG_MULTIPLESENDER;
             }
-            LogPrintf("GetBlockScript2TxPosList5 \n");
+            //LogPrintf("GetBlockScript2TxPosList5 \n");
         }
         else    
             posItem.nFlags|=1<<TXITEMFLAG_COINBASE;
@@ -1027,7 +1030,7 @@ void GetBlockScript2TxPosList(const CBlock& block,const vector<pair<uint256, CDi
         posItem.nFlags |=1<<TXITEMFLAG_RECEIVER;
         map<CScript,CTxPosItem> mapReceiver;
         //bool fHasLockTime=false;
-        LogPrintf("GetBlockScript2TxPosList6 \n");
+        //LogPrintf("GetBlockScript2TxPosList6 \n");
         BOOST_FOREACH(const CTxOut &txout, tx.vout) {        
             if(txout.strContent.size()>0&&!tx.IsCoinBase())
                 mapSender.begin()->second.nFlags |=1<<TXITEMFLAG_SENDCONTENT;
@@ -1060,7 +1063,7 @@ void GetBlockScript2TxPosList(const CBlock& block,const vector<pair<uint256, CDi
                 }
             }
         }
-        LogPrintf("GetBlockScript2TxPosList7 \n");
+        //LogPrintf("GetBlockScript2TxPosList7 \n");
         MergeScript2TxPosList(mapScript2TxPos,mapSender);
         MergeScript2TxPosList(mapScript2TxPos,mapReceiver);        
     }
@@ -1132,7 +1135,7 @@ void GetBlockContentAndTagList(const CBlock& block,const vector<pair<uint256, CD
                 if(find(vTags.begin(),vTags.end(),vTagList[i].second)==vTags.end())
                     vTags.push_back(vTagList[i].second);
             }
-            CContentDBItem item(link,nOutPos,sender,str.GetFirstCc(),out.nValue,out.nLockTime,vTagsTx);
+            CContentDBItem item(link,nOutPos,sender,str.GetFirstCc(),out.nValue,nExpireTime,vTagsTx);
             vContents.push_back(item);
         }
     }
@@ -1156,7 +1159,9 @@ void PrePareBlockTxIndex(const CBlock& block,map<uint256,int64_t>& mapTxIndex)
     {
         const CTransaction &tx = block.vtx[i];
         uint256 txid=tx.GetHash();
-        int64_t txIndex=block.nBlockHeight;
+        int64_t txIndex=block.GetBlockHeader().nBlockHeight;
+        ///if(chainActive.Tip()->GetBlockHash()==block.hashPrevBlock)
+       //     txIndex=chainActive.Tip()->nBlockHeight+1;        
         txIndex<<=16;
         txIndex|=i;
         mapTxIndex[txid]=txIndex;

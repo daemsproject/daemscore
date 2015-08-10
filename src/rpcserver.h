@@ -252,20 +252,22 @@ extern json_spirit::Value getcontentbylink(const json_spirit::Array& params, boo
 extern json_spirit::Value getcontentbystring(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value encodecontentunit(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value decodecontentunit(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value getlink(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getlinkbytxidout(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getlinktype(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getcontents(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getfirstncc(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getmessages(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value getbrowserconf(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value getfollowed(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value setfollow(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value setunfollow(const json_spirit::Array& params, bool fHelp);
+//extern json_spirit::Value getbrowserconf(const json_spirit::Array& params, bool fHelp);
+//extern json_spirit::Value getfollowed(const json_spirit::Array& params, bool fHelp);
+//extern json_spirit::Value setfollow(const json_spirit::Array& params, bool fHelp);
+//extern json_spirit::Value setunfollow(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getfilepackageurl(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value encodevarint(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value decodevarint(const json_spirit::Array& params, bool fHelp);
 
 extern json_spirit::Value getdomaininfo(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getdomainsbyowner(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getdomainbyforward(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getdomainsbyforward(const json_spirit::Array& params, bool fHelp);
 
 extern json_spirit::Value searchproducts(const json_spirit::Array& params, bool fHelp);
@@ -303,7 +305,7 @@ extern bool GetVoutFromTx(const CTransaction& tx, const int nVout, CTxOut& vout)
 extern bool GetContentFromVout(const CTransaction& tx, const int nVout, CContent& content);
 extern json_spirit::Object _voutToJson(const CTxOut& txout);
 extern json_spirit::Object _output_content(const CContent& cttIn, const int& cformat, const unsigned char& cttf, const CLink& clinkIn, const std::vector<CBitcoinAddress>& posters, const CAmount nValue, const CScript& scriptPubKey);
-extern std::vector<CBitcoinAddress> _get_posters(CTransaction tx);
+extern json_spirit::Array _get_posters(const CTransaction&tx);
 extern bool _parse_getcontents_params(const json_spirit::Array& params, int& fbh, int& maxc, int& maxb, int& blkc, json_spirit::Array& withcc, json_spirit::Array& withoutcc, json_spirit::Array& firstcc, int& fContentFormat, unsigned char& cflag, int& mincsize, json_spirit::Array& addrs, bool& fAsc);
 extern bool _check_cc(const CContent& ctt, const json_spirit::Array& withcc, const json_spirit::Array& withoutcc, const json_spirit::Array& firstcc);
 
@@ -318,7 +320,7 @@ class CWalletTx;
 class CWallet;
 extern CPaymentOrder ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJson,int nType=0);
 extern CPaymentOrder MessageRequestToPaymentRequest(const std::string idLocal,const  std::string idForeign,const CContent msg);
-extern CPaymentOrder GetPublisherPaymentRequest(const std::string idLocal,const  std::string idForeign,const CContent& ctt);
+extern CPaymentOrder GetPublisherPaymentRequest(const std::string idLocal,const  std::string idForeign,const CContent& ctt, const double feeRate = 1000.0, const CAmount deposit = 0, const uint32_t nLockTime = 0);
 extern CPaymentOrder GetRegisterDomainPaymentRequest(const std::string id, const std::string domain, const uint32_t nLockTime);
 extern CPaymentOrder GetUpdateDomainPaymentRequest(const Array arr);
 extern CPaymentOrder GetRenewPaymentRequest(const Array arr);

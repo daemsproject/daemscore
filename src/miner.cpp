@@ -208,7 +208,8 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn,const int nHeightIn
                     }
                     const CCoins* coins = view.AccessCoins(txin.prevout.hash);
                     assert(coins);
-
+                     if ((int64_t)coins->vout[txin.prevout.n].nLockTime >= ((int64_t)coins->vout[txin.prevout.n].nLockTime < LOCKTIME_THRESHOLD ? (int64_t)nHeight :  std::min((int64_t)pindexPrev->nTime,std::max((int64_t)pindexPrev->GetMedianTimePast()+1, (int64_t)GetAdjustedTime()))))
+                         fMissingInputs = true;
                     CAmount nValueIn = coins->vout[txin.prevout.n].nValue;
                     nTotalIn += nValueIn;
 
@@ -264,7 +265,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn,const int nHeightIn
                 // policy here, but we still have to ensure that the block we
                 // create only contains transactions that are valid in new blocks.
                 CValidationState state;
-                if (!CheckInputs(tx, tx,state, view, true, MANDATORY_SCRIPT_VERIFY_FLAGS, true))
+                if (!CheckInputs(tx, tx,state, view, true,true, MANDATORY_SCRIPT_VERIFY_FLAGS, true))
                     continue;
                 CTxUndo txundo;
                 UpdateCoins(tx, state, view, txundo, nHeight);

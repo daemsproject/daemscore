@@ -44,12 +44,17 @@ void ScriptPubKeyToJSON(const CScript& scriptPubKey, Object& out, bool fIncludeH
     if (fIncludeHex)
         out.push_back(Pair("hex", HexStr(scriptPubKey.begin(), scriptPubKey.end())));
 
-    if (!ExtractDestinations(scriptPubKey, type, addresses, wRequired)) {
+    if (!ExtractDestinations(scriptPubKey, type, addresses, wRequired))
+    {
         out.push_back(Pair("type", GetTxnOutputType(type)));
         return;
     }
+    if (type == TX_MULTISIG)
+        out.push_back(Pair("reqSigWeight", (uint64_t) wRequired));
 
-    out.push_back(Pair("reqSigWeight", (uint64_t)wRequired));
+    else
+        out.push_back(Pair("reqSigs", (uint64_t) wRequired));
+    out.push_back(Pair("sigOpCount", (uint64_t) scriptPubKey.GetSigOpCount(true)));
     out.push_back(Pair("type", GetTxnOutputType(type)));
 
     Array a;

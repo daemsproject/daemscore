@@ -406,7 +406,7 @@ bool CSqliteWrapper::SearchStr(const char* tableName,const char* searchByColumn,
                 break;
             case SQLITEDATATYPE_BLOB:
                 searchResult=string((char*)sqlite3_column_blob(stmt,0),(char*)sqlite3_column_blob(stmt,0)+sqlite3_column_bytes(stmt,0));                    
-                LogPrintf("CSqliteWrapper SearchStr %s result %s\n",tableName,searchResult);
+                //LogPrintf("CSqliteWrapper SearchStr %s result %s\n",tableName,searchResult);
                 break;
             default:
                 return false;              
@@ -416,7 +416,8 @@ bool CSqliteWrapper::SearchStr(const char* tableName,const char* searchByColumn,
     }
     else
     {
-        LogPrintf("CSqliteWrapper SearchStr %s error %i\n",tableName,rc);
+        if(rc!=101)
+            LogPrintf("CSqliteWrapper SearchStr  %s error %i\n",sql,rc);
         sqlite3_finalize(stmt);
         return false;
     }    
@@ -1594,7 +1595,7 @@ bool CSqliteWrapper::GetBlockPosItem(const int64_t nPosDB,uint256& hashBlock,int
     {
         string strHash=string((char*)sqlite3_column_blob(stmt,0),(char*)sqlite3_column_blob(stmt,0)+sqlite3_column_bytes(stmt,0));                    
         hashBlock.SetHex(HexStr(strHash.begin(),strHash.end()));
-        LogPrintf("GetBlockPosItem:hash:%s \n",hashBlock.GetHex());
+        //LogPrintf("GetBlockPosItem:hash:%s \n",hashBlock.GetHex());
         nHeight=   sqlite3_column_int(stmt,  1);     
         sqlite3_finalize(stmt);
         return true;
@@ -1605,17 +1606,17 @@ bool CSqliteWrapper::GetBlockPosItem(const int64_t nPosDB,uint256& hashBlock,int
 }
 bool CSqliteWrapper::WriteBlockPos(const int64_t nPosDB,const uint256& hashBlock,const int& nHeight)
 {
-    LogPrintf("WriteBlockPos\n");  
+    //LogPrintf("WriteBlockPos\n");  
     //char sql[2000]; 
     const string insertstatement="INSERT OR REPLACE INTO table_blockpos VALUES (?,?,?);";
     int result;
     sqlite3_stmt  *stat;    
    result=sqlite3_prepare_v2( pdb, insertstatement.c_str(), -1, &stat, 0 );
-   LogPrintf("WriteBlockPos %i\n",result);   
+   //LogPrintf("WriteBlockPos %i\n",result);   
     result=sqlite3_bind_int( stat, 1, nHeight);    
-    LogPrintf("WriteBlockPos %i\n",result);   
+    //LogPrintf("WriteBlockPos %i\n",result);   
     std::vector<unsigned char> vch=ParseHex(hashBlock.GetHex());
-    LogPrintf("WriteBlockPos %i\n",result);   
+    //LogPrintf("WriteBlockPos %i\n",result);   
     result=sqlite3_bind_blob( stat, 2, &vch[0], 32, NULL );
     result=sqlite3_bind_int64( stat, 3, nPosDB);    
     result=sqlite3_step( stat );

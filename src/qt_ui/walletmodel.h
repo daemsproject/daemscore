@@ -100,6 +100,7 @@ public:
     QString DoPayment(const CPaymentOrder& pr);
     QString EncryptMessages(json_spirit::Array params);
     //bool handlePaymentRequest(CWalletTx tx,int nOP,string strError,SecureString& ssInput);  
+    QString getPublishContentMessage(const CWalletTx& tx,const CPaymentOrder& pr);  
     QString getPaymentAlertMessage(const CWalletTx& tx);
     QString getEncryptMessegeAlert(const std::vector<std::string>& vstrIDsForeign,const bool fEncrypt);
     QString getDomainRegisterAlertMessage(const CWalletTx& tx,const CPaymentOrder& pr);

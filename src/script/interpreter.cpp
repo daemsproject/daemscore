@@ -848,7 +848,8 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                     bool fSuccess = true;
                     int wSigned = 0;
                     std::vector<vector<unsigned char> > vchPubKeyRet;
-                        for (int i = 0; i< nKeysCount; i++) 
+                    std::vector<vector<unsigned char> > vchRecoveredPubKeyRet;
+                    for (int i = 0; i < nKeysCount; i++)
                         {
                             valtype& vchPubKey = stacktop(-ikey);
                             vchPubKeyRet.push_back(vchPubKey);
@@ -859,30 +860,37 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                         valtype& vchSig = stacktop(-isig);
                         
                         std::vector<unsigned char> vchRecoveredPubKey;
-                        if(!checker.RecoverPubKey(vchSig, vchRecoveredPubKey, scriptCode))
+                        if (!checker.RecoverPubKey(vchSig, vchRecoveredPubKey, scriptCode)) // invalid signature
                             return false;
+                        if (std::find(vchRecoveredPubKeyRet.begin(), vchRecoveredPubKeyRet.end(), vchRecoveredPubKey) != vchRecoveredPubKeyRet.end()) // duplicated pubkey is not allowed
+                            return false;
+                        vchRecoveredPubKeyRet.push_back(vchRecoveredPubKey);
                         isig++;
                         bool fOk = false;
                         int rphIndex = 0;
                         
                         BOOST_FOREACH(vector<unsigned char>& vchPubKey, vchPubKeyRet)
                         {
-                                if (vchPubKey == vchRecoveredPubKey) {
+                            if (vchPubKey == vchRecoveredPubKey)
+                            {
                                     fOk = true;
                                     break;
                                 }
                                 rphIndex++;
                         }
-                        if(fOk){
-                            wSigned += CScriptNum(stacktop(-ikeyS -rphIndex*2 + 1), fRequireMinimal).getint();
+                        if (fOk)
+                        {
+                            wSigned += CScriptNum(stacktop(-ikeyS - rphIndex * 2 + 1), fRequireMinimal).getint();
                             nSigsCount--;
-                        }else{
+                        } else
+                        {
+                            fSuccess = false;
                             break;
                         }
                         
                         
                     }
-                    if(wSigned < wRequired)
+                    if (wSigned < wRequired)
                         fSuccess = false;
                     // Clean up stack of actual arguments
                     while (i-- > 0)
@@ -1045,12 +1053,7 @@ uint256 SignatureHash(const CScript& scriptCode, const CTransaction& txTo, unsig
 bool TransactionSignatureChecker::VerifySignature(const std::vector<unsigned char>& vchSig, const CPubKey& pubkey, const uint256& sighash) const
 {
     CPubKey rPubKey;
-    std::vector<unsigned char> vchSigCompact;
-    vchSigCompact = vchSig;
-    vchSigCompact.resize(65);
-    if(!rPubKey.RecoverCompact(sighash,vchSigCompact))
-        
-    //LogPrintf("interpreter.cpp:TransactionSignatureChecker::VerifySignature recoverpubkey fail\n"); 
+    if(!rPubKey.RecoverCompact(sighash,vchSig))
         return false;
     if(rPubKey == pubkey)
     return true;

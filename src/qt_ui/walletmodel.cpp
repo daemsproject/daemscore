@@ -29,6 +29,7 @@
 #include <boost/thread.hpp>
 #include <stdint.h>
 //#include "key.h"
+#include "timedata.h"
 #include <QDebug>
 #include <QSet>
 #include <QTimer>
@@ -418,7 +419,7 @@ QString WalletModel::DoPayment(const CPaymentOrder& pr)
     switch (pr.nRequestType)
     {
         case PR_PUBLISH:
-            alert = getPaymentAlertMessage(tx);
+            alert = getPublishContentMessage(tx,pr);
             title = QString(tr("Publish Content"));
             break;
         case PR_DOMAIN_REGISTER:
@@ -455,8 +456,92 @@ QString WalletModel::HandlePaymentRequest2(const Array arrData)
 {
     std::vector<unsigned char> raw = ParseHexV(arrData[2], "parameter 3");
     CContent ctt(raw);
-    CPaymentOrder pr = GetPublisherPaymentRequest(arrData[0].get_str(), arrData[1].get_str(), ctt);
+    CPaymentOrder pr;
+    if (arrData.size() == 3)
+        pr = GetPublisherPaymentRequest(arrData[0].get_str(), arrData[1].get_str(), ctt);
+
+    else if (arrData.size() == 4 || arrData.size() == 5)
+        pr = GetPublisherPaymentRequest(arrData[0].get_str(), arrData[1].get_str(), ctt, arrData[3].get_real());
+    else if (arrData.size() == 6)
+    {
+        if (arrData[3].get_real() < 1000.0)
+            pr = GetPublisherPaymentRequest(arrData[0].get_str(), arrData[1].get_str(), ctt, 1000.0, arrData[4].get_int(), arrData[5].get_int());
+        else
+            pr = GetPublisherPaymentRequest(arrData[0].get_str(), arrData[1].get_str(), ctt, arrData[3].get_real(), arrData[4].get_int(), arrData[5].get_int());
+    }
     return DoPayment(pr);    
+}
+
+QString WalletModel::getPublishContentMessage(const CWalletTx& tx, const CPaymentOrder& pr)
+{
+    // Format confirmation message
+    QStringList formatted;
+    string fradd;
+    ScriptPubKeyToString(pr.vFrom[0], fradd);
+
+    foreach(const CTxOut &rcp, tx.vout)
+    {
+
+        QString content = QString().fromStdString(CContent(rcp.strContent).ToHumanString());
+        if (content.size() > 300)
+            content = content.left(300) + "...";
+        if (content.size() > 0)
+        {
+            formatted.append(tr("Content :%1").arg(content));
+        }
+
+        // generate bold amount string
+        QString amount = "<b>" + BitcoinUnits::formatHtmlWithUnit(0, rcp.nValue) + "</b>";
+        // generate monospace address string
+        string add;
+        ScriptPubKeyToString(rcp.scriptPubKey, add);
+        if (add == fradd)
+        {
+            if (rcp.nLockTime > 0)
+            {
+                if (rcp.nLockTime < LOCKTIME_THRESHOLD)
+                    formatted.append("<br /><span style='color:#aa0000;'>" + tr("Locked %1 for %2 blocks").arg(amount, QString::number(rcp.nLockTime)) + "</span>");
+                else
+                {
+                    int days = std::ceil((rcp.nLockTime - GetAdjustedTime()) / (3600 * 24));
+                    formatted.append("<br /><span style='color:#aa0000;'>" + tr("Locked %1 for %2 days").arg(amount, QString::number(days)) + "</span>");
+                }
+            } else
+                continue;
+        } else
+        {
+            QString address = "<span style='font-family: monospace;'>" + QString().fromStdString(add) + "</span>";
+            if (rcp.nValue > 0 || add.size() > 0)
+            {
+                QString recipientElement;
+                recipientElement = tr("%1 to %2").arg(amount, address);
+                formatted.append(recipientElement);
+            }
+        }
+    }
+    CAmount txFee = tx.GetFee();
+    QString questionString = tr("Are you sure to publish?");
+    questionString.append("<br /><br />");
+    questionString.append(formatted.join("<br />"));
+    // append fee string if a fee is required
+    questionString.append("<hr /><span style='color:#aa0000;'>");
+    questionString.append(BitcoinUnits::formatHtmlWithUnit(0, txFee));
+    questionString.append("</span> ");
+    questionString.append(tr("added as transaction fee"));
+
+    // append transaction size
+    questionString.append(" (" + QString::number((double) (tx.CTransaction::GetSerializeSize(SER_NETWORK, CTransaction::CURRENT_VERSION) + tx.vin.size()*67) / 1000) + " kB)");
+
+
+    // add total amount in all subdivision units
+//    questionString.append("<hr />");
+//    CAmount totalAmount = tx.GetValueOut() + txFee;
+//
+//
+//    questionString.append(tr("Total Amount %1")
+//            .arg(BitcoinUnits::formatHtmlWithUnit(0, totalAmount)));
+    //questionString.arg();
+    return questionString;
 }
 
 QString WalletModel::getPaymentAlertMessage(const CWalletTx& tx)

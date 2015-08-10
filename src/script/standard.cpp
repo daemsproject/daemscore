@@ -109,12 +109,21 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, vector<vector<unsi
             if (!script2.GetOp(pc2, opcode2, vch2))
                 break;
             // Template matching opcodes:
-            if (opcode2 == OP_PUBKEYS) {
-                bool finvalid=false;
-                while (true) {
+            if (opcode2 == OP_PUBKEYS)
+            {
+                bool finvalid = false;
+                vector<vector<unsigned char> > vPubKeysRet;
+                while (true)
+                {
                     if (vch1.size() > 8 && vch1.size() <= 65) 
             {
                         vSolutionsRet.push_back(vch1);
+                        if (std::find(vPubKeysRet.begin(), vPubKeysRet.end(), vch1) != vPubKeysRet.end())
+                        {
+                            finvalid = true;
+                            break;
+                        }
+                        vPubKeysRet.push_back(vch1);
                         if (!script1.GetOp(pc1, opcode1, vch1)) 
                 {
                             finvalid = true;

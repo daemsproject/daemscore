@@ -111,6 +111,9 @@ static const CRPCConvertParam vRPCConvertParams[] =
      { "getextkey", 2 },
     { "getextpubkey", 2 },
     { "encodevarint", 0 },
+    { "getdomaininfo", 0 },
+    { "getdomainsbyowner", 0 },
+    { "getdomainsbyforward", 0 },
      
 };
 

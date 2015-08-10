@@ -1201,7 +1201,7 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
         // Check against previous transactions
         // This is done last to help prevent CPU exhaustion denial-of-service attacks.
 
-        if (!CheckInputs(tx,tx4CheckVins, state, view, true, STANDARD_SCRIPT_VERIFY_FLAGS, true))
+        if (!CheckInputs(tx,tx4CheckVins, state, view, false,true, STANDARD_SCRIPT_VERIFY_FLAGS, true))
         {
             return error("AcceptToMemoryPool: : ConnectInputs failed %s", hash.ToString());
         }
@@ -1215,7 +1215,7 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
         // There is a similar check in CreateNewBlock() to prevent creating
         // invalid blocks, however allowing such transactions into the mempool
         // can be exploited as a DoS attack.
-        if (!CheckInputs(tx,tx4CheckVins, state, view, true, MANDATORY_SCRIPT_VERIFY_FLAGS, true))
+        if (!CheckInputs(tx,tx4CheckVins, state, view, false,true, MANDATORY_SCRIPT_VERIFY_FLAGS, true))
         {
             return error("AcceptToMemoryPool: : BUG! PLEASE REPORT THIS! ConnectInputs failed against MANDATORY but not STANDARD flags %s", hash.ToString());
         }
@@ -1337,7 +1337,7 @@ bool GetTransaction(const CTxPosItem &postx, CTransaction &txOut)
         LogPrintf("Getransaction by pos, error: tx invalid file%i txpos %i ntx%i\n",postx.nFile,postx.nPos,postx.nTx);                              
         return false;
     }
-    LogPrintf("Getransaction by pos %s\n",txOut.ToString());
+    //LogPrintf("Getransaction by pos %s\n",txOut.ToString());
     //int nHeight;
     //pBlockPosDB->GetByPos(postx.nFile,postx.nPos,hashBlock,nHeight);                
     return true;
@@ -1438,13 +1438,13 @@ bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTr
                     int nHeight=0;
                     pBlockPosDB->GetByPos(it2->nFile,it2->nPos,hashBlock,nHeight);
                     //LogPrintf("main:gettxhashBlock %s\n",hashBlock.ToString());
-                    if (fNoContent)
-                    {
-                        CTransaction newTx;
-                        txOut.ClearContent(newTx);                
-                        vTxs.push_back(make_pair(newTx,hashBlock));
-                    }                
-                    else
+//                    if (fNoContent)
+//                    {
+//                        CTransaction newTx;
+//                        txOut.ClearContent(newTx);                
+//                        vTxs.push_back(make_pair(newTx,hashBlock));
+//                    }                
+//                    else
                         vTxs.push_back(make_pair(txOut,hashBlock));
                     nTxCount++;
                 }
@@ -1771,7 +1771,7 @@ bool CScriptCheck::operator()() {
     return true;
 }
 
-bool CheckInputs(const CTransaction& tx,const CTransaction& tx4CheckVins,CValidationState &state, const CCoinsViewCache &inputs, bool fScriptChecks, unsigned int flags, bool cacheStore, std::vector<CScriptCheck> *pvChecks)
+bool CheckInputs(const CTransaction& tx,const CTransaction& tx4CheckVins,CValidationState &state, const CCoinsViewCache &inputs, bool fLockTimeByBlock, bool fScriptChecks, unsigned int flags, bool cacheStore, std::vector<CScriptCheck> *pvChecks)
 {
     if (!tx.IsCoinBase())
     {
@@ -1807,7 +1807,7 @@ bool CheckInputs(const CTransaction& tx,const CTransaction& tx4CheckVins,CValida
             }
             // check that it's matured
             //if (coins->IsCoinBase()) {
-            if (IsFrozen(*coins,prevout.n)){
+            if (IsFrozen(*coins,prevout.n,0,fLockTimeByBlock?0:GetAdjustedTime())){
                 //if (nSpendHeight - coins->nHeight < COINBASE_MATURITY)
                     return state.Invalid(
                         error("CheckInputs() : tried to spend frozen coins at depth %d", nSpendHeight - coins->nHeight),
@@ -1978,8 +1978,8 @@ bool DisconnectBlock(CBlock& block, CValidationState& state, CBlockIndex* pindex
             std::cout<<"disconnect block tx pos not found:"<<hash.GetHex()<<"\n";
          vPos.insert(vPos.begin(),make_pair(hash,postx));
     }
-    bool f=UpdateSqliteDB(block,vPos,vPrevouts,true);    
-    LogPrintf("disconnect block:UpdateSqliteDB done %b\n",f);
+    UpdateSqliteDB(block,vPos,vPrevouts,true);    
+    //LogPrintf("disconnect block:UpdateSqliteDB done %b\n",f);
     // move best block pointer to prevout block
     //LogPrintf("disconnectblock set best block %s \n",pindex->pprev->GetBlockHash().GetHex());
     view.SetBestBlock(pindex->pprev->GetBlockHash());
@@ -2129,7 +2129,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
             nFees += view.GetValueIn(tx)-tx.GetValueOut();
             
             std::vector<CScriptCheck> vChecks;
-            if (!CheckInputs(tx,tx, state, view, fScriptChecks, flags, false, nScriptCheckThreads ? &vChecks : NULL))
+            if (!CheckInputs(tx,tx, state, view, true,fScriptChecks, flags, false, nScriptCheckThreads ? &vChecks : NULL))
                 return false;
             
             control.Add(vChecks);
@@ -2163,7 +2163,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     {
         //step2:get script2txpos list
         //step3:flush script2txpos list
-        bool f=UpdateSqliteDB(block,vPos,vPrevouts,false);
+        UpdateSqliteDB(block,vPos,vPrevouts,false);
 //        UpdateScript2TxPosDB(tx,pos,nHeaderLen,i,state,view,false);
 //        GetDomainsInVins(tx,view,mapBlockDomains);
 //            UpdateDomainDB(tx,block,i,state,view,false);
@@ -2171,10 +2171,10 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 //        pBlockPosDB->Write(pos.nFile,pos.nPos,block.GetHash(),pindex->nHeight);
 //        pDomainDBView->WriteBlockDomains(block.GetHash(),mapBlockDomains); 
 //        UpdateScriptCoinDB(tx,block,i,state,view,false);
-        LogPrintf("connect block:UpdateSqliteDB done %b\n",f);
+        //LogPrintf("connect block:UpdateSqliteDB done %b\n",f);
         
     }
-    LogPrintf("connect block:UpdateSqliteDB done 2\n");
+    //LogPrintf("connect block:UpdateSqliteDB done 2\n");
     //psqliteDB->EndBatch();
     int64_t nTime1 = GetTimeMicros(); nTimeConnect += nTime1 - nTimeStart;
     LogPrint("bench", "      - Connect %u transactions: %.2fms (%.3fms/tx, %.3fms/txin) [%.2fs]\n", (unsigned)block.vtx.size(), 0.001 * (nTime1 - nTimeStart), 0.001 * (nTime1 - nTimeStart) / block.vtx.size(), nInputs <= 1 ? 0 : 0.001 * (nTime1 - nTimeStart) / (nInputs-1), nTimeConnect * 0.000001);
