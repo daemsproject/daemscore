@@ -194,8 +194,8 @@ extern json_spirit::Value addmultisigaddress(const json_spirit::Array& params, b
 extern json_spirit::Value createmultisig(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value createcontent(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value decodecontent(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value listreceivedbyaddress(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value listreceivedbyaccount(const json_spirit::Array& params, bool fHelp);
+//extern json_spirit::Value listreceivedbyaddress(const json_spirit::Array& params, bool fHelp);
+//extern json_spirit::Value listreceivedbyaccount(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value listtransactions(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value listaddressgroupings(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value listaccounts(const json_spirit::Array& params, bool fHelp);
@@ -221,8 +221,9 @@ extern json_spirit::Value publishpackage(const json_spirit::Array& params, bool 
 
 extern json_spirit::Value getrawtransaction(const json_spirit::Array& params, bool fHelp); // in rcprawtransaction.cpp
 extern json_spirit::Value listunspent(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value lockunspent(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value listlockunspent(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value listunspent2(const json_spirit::Array& params, bool fHelp);
+//extern json_spirit::Value lockunspent(const json_spirit::Array& params, bool fHelp);
+//extern json_spirit::Value listlockunspent(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value createrawtransaction(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value decoderawtransaction(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value decodescript(const json_spirit::Array& params, bool fHelp);
@@ -255,6 +256,7 @@ extern json_spirit::Value decodecontentunit(const json_spirit::Array& params, bo
 extern json_spirit::Value getlinkbytxidout(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getlinktype(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getcontents(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getpromotedcontents(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getfirstncc(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getmessages(const json_spirit::Array& params, bool fHelp);
 //extern json_spirit::Value getbrowserconf(const json_spirit::Array& params, bool fHelp);

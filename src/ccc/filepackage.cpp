@@ -349,7 +349,7 @@ bool CFilePackage::CheckLinks()
             LogPrintf("CFilePackage::CheckLinks :  link height:%i,ntx:%i,nvout:%i \n",it->second[0].nHeight,it->second[0].nTx,it->second[0].nVout);
             if(!GetContentByLink(it->second[0],content))
                     return false;
-            LogPrintf("CFilePackage::CheckLinks :  link content %s \n",content);
+            LogPrintf("CFilePackage::CheckLinks :  link content %s \n",content.substr(0,100));
             vector<string> vFiles;
             if(!content.GetDataByCC(CC_FILE,vFiles,true,false))
                     return false;            

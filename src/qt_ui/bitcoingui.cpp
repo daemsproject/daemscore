@@ -1477,17 +1477,19 @@ void BitcoinGUI::closeEvent(QCloseEvent *event)
     }
     //event->accept();
     //deleteLater();
-#ifndef Q_OS_MAC // Ignored on Mac
-    if(clientModel)// && clientModel->getOptionsModel())
-    {
-        //if(!clientModel->getOptionsModel()->getMinimizeToTray() &&
-        //   !clientModel->getOptionsModel()->getMinimizeOnClose())
-        {
-            QApplication::quit();
-        }
-    }
-#endif
-    QMainWindow::closeEvent(event);
+//#ifndef Q_OS_MAC // Ignored on Mac
+//    if(clientModel)// && clientModel->getOptionsModel())
+//    {
+//        //if(!clientModel->getOptionsModel()->getMinimizeToTray() &&
+//        //   !clientModel->getOptionsModel()->getMinimizeOnClose())
+//        {
+//            QApplication::quit();
+//        }
+//    }
+//#endif
+    //QMainWindow::closeEvent(event);
+    StartShutdown();
+    event->ignore();
 }
 
 #ifdef ENABLE_WALLET

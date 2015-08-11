@@ -46,5 +46,11 @@ bool TxidOutLink2BlockChainLink(const uint256 txid,const int nVout,CLink& linkOu
 /** Get nTx from block*/
 int GetNTx(const uint256 &hashTx);
 int GetNTx(const CTransaction &tx,const CBlock &block);
+extern bool GetBalance(const vector<CScript>& vScriptPubKeys,CAmount& balance_available,CAmount& balance_unconfirmed,CAmount& balance_locked);
+class COutPoint;
+class CCheque;
+bool IsSpentInMempool(const COutPoint op);
+void GetUnspentCheques(const vector<CScript>& vScriptPubKeys,vector<CCheque>& vCheques,bool fSpendableOnly=true,int nMaxResults=1000,int nOffset=0);
+void GetMempoolCheques(const vector<CScript>& vScriptPubKeys,vector<CCheque>& vCheques);
 #endif	/* CCCOIN_CONTENTUTIL_H */
 

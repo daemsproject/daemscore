@@ -110,13 +110,10 @@ public:
      bool GetDomainByForward(const CScript scriptPubKey,CDomain& domain,bool FSupport100)const;
      bool GetDomainByOwner(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupport100)const ;
      bool GetDomainByName(const string strDomainName,CDomain& domain)const ;
-     
-    //l bool GetDomainNameByForward(const CScript scriptPubKey,std::vector<string> &vDomainName);    
-//      bool GetDomainByName(const std::string strDomainName,CDomain &domain);    
-//     bool GetDomainByTags(const std::vector<std::string> vTag,std::vector<CDomain> &vDomain,bool FSupportFAI=true);    
-//     bool GetDomainByAlias(const std::string strAlias,std::vector<CDomain> &vDomain,bool FSupportFAI=true);    
-//     bool GetDomainByOwner(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupportFAI=true);    
-//     bool GetDomainNamesToExpire(std::vector<CDomain> &vDomain,const int nMax=1000,const uint32_t nExpireIn=3600*24,bool FSupportFAI=true);    
+
+     bool GetDomainByTags(const std::vector<std::string>& vTag,std::vector<CDomain> &vDomain,const bool FSupport100=true,const int nMax=1000)const;    
+     bool GetDomainsByAlias(const std::string strAlias,std::vector<CDomain> &vDomain,const bool FSupport100=true,const int nMax=1000)const;    
+     bool GetDomainNamesToExpire(std::vector<string> &vDomainNames,const uint32_t nExpireIn=3600*24,bool FSupport100=true,const int nMax=1000)const;    
 //     bool GetDomainNamesExpired(std::vector<CDomain> &vDomain,const int nMax=1000,const uint32_t nExpiredFor=3600*24,bool FSupportFAI=true);       
      bool GetUpdateDomain(const CScript ownerIn,const string& strDomainContent,const uint64_t lockedValue,const uint32_t nLockTimeIn,const CLink link,CDomain& domainOut,bool&fHasRecord);
      bool WriteBlockDomains(const uint256 blockHash,const map<CScript,string>& mapBlockDomains);
@@ -160,9 +157,9 @@ public:
     
     CScriptCoinDB(CSqliteWrapper* dbIn, bool fWipe = false);
     
-     bool Search(const vector<CScript>& vScriptPubKey,vector<CCheque> & vCheques)const ;    
+     bool Search(const vector<CScript>& vScriptPubKey,vector<CCheque> & vCheques,int nMaxResults=1000,int nOffset=0)const ;    
      bool Insert(const CCheque cheque);
-     //bool BatchInsert(vector<CCheque> vCheque);
+      //bool BatchInsert(vector<CCheque> vCheque);
      //bool BatchErase(vector<pair<uint256,uint32_t> >vChequeErase);
      bool Erase(const uint256 txid, const uint32_t nOut);
     bool ClearTables();
@@ -182,5 +179,6 @@ void GetBlockScriptIndice(const map<CScript,vector<CTxPosItem> >& mapScript2TxPo
 void GetBlockDomainTags(const vector<pair<CDomain,bool> >& vDomains,vector<string>& vTags);
 void GetBlockSenderDomains(const CBlock& block,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,map<CScript,string>& mapBlockDomains);
 void GetBlockChequeUpdates(const CBlock& block,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,vector<CCheque>& vChequeAdd,vector<int64_t>& vChequeErase,bool fReverse);
+bool SearchPromotedContents(const vector<CScript>& vSenders,const vector<int>& vCCs,const vector<string>& vTags,vector<CContentDBItem>& vContents,const int nMaxResults,const int nOffset);
 
 #endif // BITCOIN_TXDB_H

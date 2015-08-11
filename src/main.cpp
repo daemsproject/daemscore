@@ -1735,7 +1735,7 @@ void UpdateCoins(const CTransaction& tx, CValidationState &state, CCoinsViewCach
 }
 void GetTxPrevouts(const CTransaction&tx,const CCoinsViewCache& inputs,vector<vector<pair<CScript,uint32_t> > >& vPrevouts,bool fReverse)
 {
-    LogPrintf("GetTxPrevouts txid:%s \n",tx.GetHash().GetHex());
+   // LogPrintf("GetTxPrevouts txid:%s \n",tx.GetHash().GetHex());
     vector<pair<CScript,uint32_t> > vPrevout1Tx;
     if(!tx.IsCoinBase())
     {
@@ -2174,8 +2174,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
         //LogPrintf("connect block:UpdateSqliteDB done %b\n",f);
         
     }
-    //LogPrintf("connect block:UpdateSqliteDB done 2\n");
-    //psqliteDB->EndBatch();
+    LogPrintf("connect block:UpdateSqliteDB done \n");    
     int64_t nTime1 = GetTimeMicros(); nTimeConnect += nTime1 - nTimeStart;
     LogPrint("bench", "      - Connect %u transactions: %.2fms (%.3fms/tx, %.3fms/txin) [%.2fs]\n", (unsigned)block.vtx.size(), 0.001 * (nTime1 - nTimeStart), 0.001 * (nTime1 - nTimeStart) / block.vtx.size(), nInputs <= 1 ? 0 : 0.001 * (nTime1 - nTimeStart) / (nInputs-1), nTimeConnect * 0.000001);
     if (pindex->pprev != NULL){  

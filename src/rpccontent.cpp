@@ -768,7 +768,10 @@ std::string _test()
     std::string str;
     return str;
 }
-
+json_spirit::Value getpromotedcontents(const json_spirit::Array& params, bool fHelp)
+{
+    
+}
 Value devtest(const Array& params, bool fHelp)
 {
     return _test();

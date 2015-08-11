@@ -154,7 +154,7 @@ int GetNTx(const uint256 &hashTx)
 {
     int64_t txIndex;
     psqliteDB->GetTxIndex(hashTx,txIndex);
-    //LogPrintf("getntx,tx:%s,height:%i,ntx:%i \n",hashTx.GetHex(),txIndex>>16,txIndex&0xffff);
+    LogPrintf("getntx,tx:%s,height:%i,ntx:%i \n",hashTx.GetHex(),txIndex>>16,txIndex&0xffff);
     return txIndex&0xffff;
 //    CTransaction tx;
 //    uint256 hashBlock = 0;
@@ -318,9 +318,9 @@ bool GetNativeLink(const string urlIn,string& urlOut,int& nPageID)
 
             // final code
             nPageID=i;
-            //string strPath;
-            //GetFilePackageMain(mapPageNames[nPageID],strPath,true);
-            //urlOut=strPath;
+            string strPath;
+            if(GetFilePackageMain(mapPageNames[nPageID],strPath,true))
+                urlOut=strPath;
             LogPrintf("ParseUrl  urlIn:%s urlout:%s,pageid:%i\n",urlIn,urlOut,nPageID);
             return true;
         }
@@ -406,29 +406,93 @@ bool GetContentByTxidOut(const uint256 txid,const int nVout,CContent& content)
     uint256 blockhash;
     if (!GetTransaction(txid, tx,blockhash,true))
         return false;    
-    LogPrintf("GetContentByLink3 \n");
+    LogPrintf("GetContentByTxidOut \n");
     if (!GetContentFromVout(tx, nVout, content))
         return false;
-    LogPrintf("GetContentByLink 4\n");
+    LogPrintf("GetContentByTxidOut 2\n");
     return true;
 }
 bool TxidOutLink2BlockChainLink(const uint256 txid,const int nVout,CLink& linkOut)
 {
-    CTransaction tx;    
-    uint256 hashBlock = 0;
-    if (!GetTransaction(txid, tx, hashBlock, true))
-    {
+    int64_t txIndex;
+    if(!psqliteDB->GetTxIndex(txid,txIndex))
         return false;
-    }
-    CBlock block;
-    CBlockIndex* pblockindex = mapBlockIndex[hashBlock];
-    
-    if (pblockindex==NULL||!ReadBlockFromDisk(block, pblockindex))
-    {
-        return false;
-    }
-    linkOut.nHeight=pblockindex->nHeight;
-    linkOut.nTx= GetNTx(tx, block);
+      linkOut.nHeight=txIndex>>16;
+      linkOut.nTx=txIndex&0xffff;
+//    CTransaction tx;    
+//    uint256 hashBlock = 0;
+//    if (!GetTransaction(txid, tx, hashBlock, true))
+//    {
+//        return false;
+//    }
+//    CBlock block;
+//    CBlockIndex* pblockindex = mapBlockIndex[hashBlock];
+//    
+//    if (pblockindex==NULL||!ReadBlockFromDisk(block, pblockindex))
+//    {
+//        return false;
+//    }
+//    linkOut.nHeight=pblockindex->nHeight;
+//    linkOut.nTx= GetNTx(tx, block);
     linkOut.nVout=nVout;
     return true;
+}
+bool GetBalance(const vector<CScript>& vScriptPubKeys,CAmount& balance_available,CAmount& balance_unconfirmed,CAmount& balance_locked)
+{
+    vector<CCheque> vCheques;
+    GetUnspentCheques(vScriptPubKeys,vCheques,false,10000000);
+    for(unsigned int i=0;i<vCheques.size();i++)
+    {
+        if(vCheques[i].txIndex<0)
+            balance_unconfirmed+=vCheques[i].nValue;
+        else if(GetBlocksToMaturity(vCheques[i].nLockTime)>0)
+            balance_locked+=vCheques[i].nValue;
+        else
+            balance_available+=vCheques[i].nValue;
+    }
+    return true;
+}
+void GetUnspentCheques(const vector<CScript>& vScriptPubKeys,vector<CCheque>& vCheques,bool fSpendableOnly,int nMaxResults,int nOffset)
+{
+    if(!fSpendableOnly)
+        GetMempoolCheques(vScriptPubKeys,vCheques);
+    vector<CCheque> vCheques1;
+    pScriptCoinDBView->Search(vScriptPubKeys,vCheques1,nMaxResults,nOffset);   
+    for(unsigned int i=0;i<vCheques1.size();i++)
+    {
+        if(!IsSpentInMempool(COutPoint(vCheques1[i].txid,vCheques1[i].nOut,vCheques1[i].nValue))
+                &&(!fSpendableOnly||GetBlocksToMaturity(vCheques1[i].nLockTime)<=0))
+            vCheques.push_back(vCheques1[i]);
+    }
+}
+void GetMempoolCheques(const vector<CScript>& vScriptPubKeys,vector<CCheque>& vCheques)
+{
+    std::vector<CTransaction> vutx; 
+    mempool.GetUnconfirmedTransactions(vScriptPubKeys, vutx); 
+    for(unsigned int i=0;i<vutx.size();i++)
+    {
+        for(unsigned int ii=0;ii<vutx[i].vout.size();ii++)
+        if(find(vScriptPubKeys.begin(),vScriptPubKeys.end(),vutx[i].vout[ii].scriptPubKey)!=vScriptPubKeys.end()
+                &&!IsSpentInMempool(COutPoint(vutx[i].GetHash(),ii,vutx[i].vout[ii].nValue)))
+        {
+            CCheque cheque;
+            cheque.nLockTime=vutx[i].vout[ii].nLockTime;
+            cheque.nValue=vutx[i].vout[ii].nValue;
+            cheque.nOut=ii;
+            cheque.scriptPubKey=vutx[i].vout[ii].scriptPubKey;
+            cheque.txid=vutx[i].GetHash();
+            cheque.txIndex=-1<<16;
+            vCheques.push_back(cheque);
+        }
+    }
+}
+bool IsSpentInMempool(const COutPoint op)
+{
+    return(mempool.mapNextTx.find(op)!=mempool.mapNextTx.end());
+}
+bool GetPromotedContents(const vector<CScript>& vSenders,const vector<string>& vCCs,const vector<string>& vTags,vector<CContentDBItem>& vContents,const int nMaxResults,const int nOffset)
+{
+    
+    psqliteDB->GetContents(const vector<CScript>& vSenders,const vector<string>& vCCs,const vector<string>& vTags,vector<CContentDBItem>& vContents,const int nMaxResults,const int nOffset)
+
 }

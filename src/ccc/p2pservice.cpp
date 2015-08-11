@@ -181,7 +181,7 @@ bool ProcessP2PServiceRequest(CNode* pfrom,CDataStream& vRecv, int64_t nTimeRece
             vector<CScript> vScriptPubKey;
             vScriptPubKey.push_back(id);
             vector<CCheque> vCheques;
-            pScriptCoinDBView->Search(vScriptPubKey,vCheques);
+            GetUnspentCheques(vScriptPubKey,vCheques,false,1000);
            CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
             ss<<(int)SC_FULLNODEPLUS_S_UNSPENTTXOUT;
             ss<<msgID;

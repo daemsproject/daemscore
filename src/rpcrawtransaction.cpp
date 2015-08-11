@@ -10,6 +10,7 @@
 #include "keystore.h"
 #include "main.h"
 #include "ccc/contentutil.h"
+#include "ccc/sqlitewrapper.h"
 #include "net.h"
 #include "rpcserver.h"
 #include "ccc/content.h"
@@ -386,7 +387,67 @@ Value listunspent(const Array& params, bool fHelp)
     return results;
 }
 #endif
-
+json_spirit::Value listunspent2(const json_spirit::Array& params, bool fHelp)
+{
+    if (fHelp || params.size() < 1)
+        throw runtime_error("list unspent2,array ids,bool fSpendableonly,nMaxItems,nOffset");        
+    
+    bool fSpendableonly =false;
+    if(params.size()>1)
+    {
+        fSpendableonly=params[1].get_bool();
+    }
+    int nMaxItems=1000000;
+    int nOffset=0;
+    if(params.size()>2)
+    {
+        nMaxItems=params[2].get_int();
+    }
+    if(params.size()>3)
+    {
+        nOffset=params[3].get_int();
+    }
+    Array arrIDs=params[0].get_array();   
+    vector<CScript> vScriptPubKeys;
+    for(unsigned int i=0;i<arrIDs.size();i++)
+    {
+        CScript script;
+        if(!StringToScriptPubKey(arrIDs[i].get_str(),script))
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Cccoin address");
+        vScriptPubKeys.push_back(script);
+    }
+    vector<CCheque>vCheques;
+    GetUnspentCheques(vScriptPubKeys,vCheques,fSpendableonly,nMaxItems,nOffset);        
+    Array results;
+    for(unsigned int i=0;i<vCheques.size();i++)
+    {
+        const CScript& pk = vCheques[i].scriptPubKey;   
+        Object entry;
+        entry.push_back(Pair("txid", vCheques[i].txid.GetHex()));
+        entry.push_back(Pair("vout", vCheques[i].nOut));
+        CTxDestination address;
+        if (ExtractDestination(vCheques[i].scriptPubKey, address)) {
+            entry.push_back(Pair("address", CBitcoinAddress(address).ToString()));            
+        }
+        entry.push_back(Pair("scriptPubKey", HexStr(pk.begin(), pk.end())));
+        if (pk.IsPayToScriptHash()) {
+            CTxDestination address;
+            if (ExtractDestination(pk, address)) {
+                const CScriptID& hash = boost::get<const CScriptID&>(address);
+                CScript redeemScript;
+                if (pwalletMain&&pwalletMain->GetCScript(hash, redeemScript))
+                    entry.push_back(Pair("redeemScript", HexStr(redeemScript.begin(), redeemScript.end())));
+            }
+        }
+        entry.push_back(Pair("amount", ValueFromAmount(vCheques[i].nValue)));
+        entry.push_back(Pair("satoshi", vCheques[i].nValue));
+        entry.push_back(Pair("blockheight", vCheques[i].txIndex>>16));
+        entry.push_back(Pair("ntx", vCheques[i].txIndex&0xffff));
+        entry.push_back(Pair("locktime",(int64_t)vCheques[i].nLockTime));
+        results.push_back(entry);
+    }
+    return results;
+}
 Value createrawtransaction(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 2)

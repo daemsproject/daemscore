@@ -53,6 +53,7 @@ struct CContentDBItem
    CAmount lockValue;
    uint32_t lockTime;
    vector<string>vTags;
+   string strContent;
    CContentDBItem(CLink linkIn,int64_t posIn,CScript senderIn,int ccIn,
    CAmount lockValueIn,  uint32_t lockTimeIn,vector<string>vTagsIn)
    {
@@ -79,14 +80,14 @@ public:
        nOut=0;
         nValue=0;
         nLockTime=0;
-        txIndex=0;
+        txIndex=-1<<16;
     }
     ADD_SERIALIZE_METHODS;   
 
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {        
         READWRITE(scriptPubKey);
-        READWRITE(txid);
+        READWRITE(txid);       
         READWRITE(txIndex);
         READWRITE(VARINT(nOut));
         READWRITE(VARINT(nValue));
@@ -272,7 +273,8 @@ public:
     bool BatchUpdate(const char* tableName,const char* indexColumnName,const int format1,const char* changedColumnName,const int format2,const vector<pair<string,string> >& vValue);
 
     bool SearchStr(const char* tableName,const char* searchByColumn,const char* searchByValue,const char* searchForColumn,int searchResultFormat,string& searchResult) const;
-    bool SearchStrsIn(const char* tableName,const char* searchByColumn,const char* searchByValue,const char* searchForColumn,int searchResultFormat,vector<string>& searchResult) const;
+    //bool SearchStrsIn(const char* tableName,const char* searchByColumn,const char* searchByValue,const char* searchForColumn,int searchResultFormat,vector<string>& searchResult,int nMax=1000) const;
+    bool SearchStrs(const char* tableName,const char* searchByColumn,const char* searchByValue,const char* searchForColumn,int searchResultFormat,vector<string>& searchResult,const char* chOperator="=",int nMax=1000) const;
     bool SearchInts(const char* tableName,const char* searchByColumn,const char* searchByValue,const char* searchForColumn,vector<int64_t>& searchResult,const char* chOperator="=") const;
     bool SearchInt(const char* tableName,const char* columnName,const char* columnValue,const char* resultColumnName,int64_t& result)const;
     bool Delete(const char* tableName,const char* searchColumn,const char* searchValue,const char* chOperator);
@@ -283,7 +285,7 @@ public:
     bool Update(const CDomain& domain,const int64_t ownerID);
     bool Delete(const CDomain& domain);
     bool Get(const char* tableName,const char* searchColumn,const char* searchValue,char**& result,int& nRow,int& nColumn) const;
-    bool GetDomain(const char* tableName,const char* searchColumn,const char* searchValue,std::vector<CDomain>& vDomain,bool fGetTags=true) const;
+    bool GetDomain(const char* tableName,const char* searchColumn,const char* searchOperator,const char* searchValue,std::vector<CDomain>& vDomain,bool fGetTags=true) const;
     //bool GetExpiredDomainIDs(const char* tableName,vector<int64_t>& vDomainIDs,const uint32_t time);
 
 
@@ -293,6 +295,7 @@ public:
 
     bool InsertContent(const int64_t nLink,const int64_t pos,const int64_t sender, const int cc, const int64_t lockValue,const uint32_t lockTime);
     bool InsertContents(const vector<CContentDBItem>& vContents,const map<CScript,int64_t>& mapScriptIndex);
+    bool SearchContents(const vector<int64_t>& vSenders,const vector<int>& vCCs,const vector<int64_t>& vTagIDs,vector<CContentDBItem>& vContents,const int nMaxResult=30,const int nOffset=0);
 
     bool InsertTag(const char* tableName,const int64_t tagID,const int64_t nLink);
     bool InsertTags(const char* tableName,const int64_t nLink,const vector<int64_t>& vTagID);

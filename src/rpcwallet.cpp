@@ -15,6 +15,8 @@
 #include "utilmoneystr.h"
 #include "wallet.h"
 #include "walletdb.h"
+//#include "txdb.h"
+#include "ccc/contentutil.h"
 #include "utilstrencodings.h"
 #include <stdint.h>
 
@@ -699,9 +701,7 @@ Value getbalance(const Array& params, bool fHelp)
             "The server total may be different to the balance in the default \"\" account.\n"
             "\nArguments:\n"
             "1. \"account\"      (string, optional) The selected account, or \"*\" for entire wallet. It may be the default account using \"\".\n"
-            "2. minconf          (numeric, optional, default=1) Only include transactions confirmed at least this many times.\n"
-            "3. includeWatchonly (bool, optional, default=false) Also include balance in watchonly addresses (see 'importaddress')\n"
-            "\nResult:\n"
+                "\nResult:\n"
             "amount              (numeric) The total amount in ltc received for this account.\n"
             "\nExamples:\n"
             "\nThe total amount in the server across all accounts\n"
@@ -716,85 +716,60 @@ Value getbalance(const Array& params, bool fHelp)
             + HelpExampleRpc("getbalance", "\"tabby\", 6")
         );
 
-//    if (params.size() == 0)
-//        return  ValueFromAmount(pwalletMain->GetBalance());
-//
-//    int nMinDepth = 1;
-//    if (params.size() > 1)
-//        nMinDepth = params[1].get_int();
-//    isminefilter filter = ISMINE_SPENDABLE;
-//    if(params.size() > 2)
-//        if(params[2].get_bool())
-//            filter = filter | ISMINE_WATCH_ONLY;
-    
 
-//    if (params[0].get_str() == "*") {
-//        // Calculate total balance a different way from GetBalance()
-//        // (GetBalance() sums up all unspent TxOuts)
-//        // getbalance and getbalance '*' 0 should return the same number
-//        pwalletMain->LoadTxs();
-//        CAmount nBalance = 0;
-//        for (map<uint256, CWalletTx>::iterator it = pwalletMain->mapWallet.begin(); it != pwalletMain->mapWallet.end(); ++it)
-//        {
-//            const CWalletTx& wtx = (*it).second;
-//            if (!wtx.IsTrusted() )
-//                continue;
-//
-//            CAmount allFee;
-//            string strSentAccount;
-//            list<COutputEntry> listReceived;
-//            list<COutputEntry> listSent;
-//            wtx.GetAmounts(listReceived, listSent, allFee, strSentAccount, filter);
-//            if (wtx.GetDepthInMainChain() >= nMinDepth)
-//            {
-//                BOOST_FOREACH(const COutputEntry& r, listReceived)
-//                if(!r.IsFrozen)
-//                    nBalance += r.amount;
-//            }
-//            BOOST_FOREACH(const COutputEntry& s, listSent)
-//                nBalance -= s.amount;
-//            nBalance -= allFee;
-//        }
-//        return  ValueFromAmount(nBalance);
-//    }
-//
-//    CPubKey id = AccountFromValue(params[0]);
-//
-//    CAmount nBalance = GetAccountBalance(id, nMinDepth, filter);
-//
-//    return ValueFromAmount(nBalance);
-     CWallet* pwallet;
-     
+    // CWallet* pwallet;
+    bool fIsWalletID=false; 
     string strAccount="*";
     if (params.size() > 0){    
         Array arrIDs=params[0].get_array();   
         //TODO getbalances for multiple addresses
          strAccount= arrIDs[0].get_str();
         if (strAccount==""){
-            pwallet=pwalletMain;
+            fIsWalletID=true; 
+            //pwallet=pwalletMain;
             //pwalletMain->LoadTxs();
         }
         else{
             CPubKey id;
             id=AccountFromValue(arrIDs[0]);
             if(id==pwalletMain->GetID())
-                pwallet=pwalletMain;
+                fIsWalletID=true; 
             else
             {
                 LogPrintf("rpcwallet gebalance new pwallet id:%s \n",HexStr(id.begin(),id.end()));
-                pwallet=new CWallet(id);
+               // pwallet=new CWallet(id);
             }
         }
             
     }
     else
-        pwallet=pwalletMain;
-      
+        fIsWalletID=true; 
     Object balance;
-    CAmount balance_available=pwallet->GetBalance(false);
-    CAmount balance_unconfirmed=pwallet->GetUnconfirmedBalance(false);
-    CAmount balance_locked=pwallet->GetImmatureBalance(false);
-    CAmount balance_total=balance_available+balance_unconfirmed+balance_locked;
+    CAmount balance_available;
+    CAmount balance_unconfirmed;
+    CAmount balance_locked;
+    CAmount balance_total;
+    if(fIsWalletID)  
+    {
+        balance_available=pwalletMain->GetBalance(false);
+        balance_unconfirmed=pwalletMain->GetUnconfirmedBalance(false);
+        balance_locked=pwalletMain->GetImmatureBalance(false);
+        
+    }
+    else
+    {
+        Array arrIDs=params[0].get_array();   
+        vector<CScript> vScriptPubKeys;
+        for(unsigned int i=0;i<arrIDs.size();i++)
+        {
+            CScript script;
+            if(!StringToScriptPubKey(arrIDs[i].get_str(),script))
+                throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Cccoin address");
+            vScriptPubKeys.push_back(script);
+        }
+        GetBalance(vScriptPubKeys,balance_available,balance_unconfirmed,balance_locked);        
+    }
+    balance_total=balance_available+balance_unconfirmed+balance_locked;
     balance.push_back(Pair("balance_available",ValueFromAmount(balance_available)));
     balance.push_back(Pair("balance_unconfirmed",ValueFromAmount(balance_unconfirmed)));
     balance.push_back(Pair("balance_locked",ValueFromAmount(balance_locked)));
@@ -802,11 +777,13 @@ Value getbalance(const Array& params, bool fHelp)
     Object result;    
     result.push_back(Pair("balance",balance));
     result.push_back(Pair("currentblockheight",chainActive.Height()));
-     if (pwallet!=pwalletMain)
-        delete pwallet;
+    // if (pwallet!=pwalletMain)
+    //    delete pwallet;
     return result;
 }
 
+
+    
 Value getunconfirmedbalance(const Array &params, bool fHelp)
 {
     if (fHelp || params.size() > 0)
@@ -1085,188 +1062,188 @@ struct tallyitem
     }
 };
 
-Value ListReceived(const Array& params, bool fByAccounts)
-{
-    // Minimum confirmations
-    int nMinDepth = 1;
-    if (params.size() > 0)
-        nMinDepth = params[0].get_int();
-
-    // Whether to include empty accounts
-    bool fIncludeEmpty = false;
-    if (params.size() > 1)
-        fIncludeEmpty = params[1].get_bool();
-
-    isminefilter filter = ISMINE_SPENDABLE;
-    if(params.size() > 2)
-        if(params[2].get_bool())
-            filter = filter | ISMINE_WATCH_ONLY;
-
-    // Tally
-    map<CBitcoinAddress, tallyitem> mapTally;
-    pwalletMain->LoadTxs();
-    for (map<uint256, CWalletTx>::iterator it = pwalletMain->mapWallet.begin(); it != pwalletMain->mapWallet.end(); ++it)
-    {
-        const CWalletTx& wtx = (*it).second;
-
-        if (wtx.IsCoinBase() || !IsFinalTx(wtx))
-            continue;
-
-        int nDepth = wtx.GetDepthInMainChain();
-        if (nDepth < nMinDepth)
-            continue;
-
-        BOOST_FOREACH(const CTxOut& txout, wtx.vout)
-        {
-            CTxDestination address;
-            if (!ExtractDestination(txout.scriptPubKey, address))
-                continue;
-
-            isminefilter mine = IsMine(*pwalletMain, address);
-            if(!(mine & filter))
-                continue;
-
-            tallyitem& item = mapTally[address];
-            item.nAmount += txout.nValue;
-            item.nConf = min(item.nConf, nDepth);
-            item.txids.push_back(wtx.GetHash());
-            if (mine & ISMINE_WATCH_ONLY)
-                item.fIsWatchonly = true;
-        }
-    }
-
-    // Reply
-    Array ret;
-    map<string, tallyitem> mapAccountTally;
-    BOOST_FOREACH(const PAIRTYPE(CBitcoinAddress, CAddressBookData)& item, pwalletMain->mapAddressBook)
-    {
-        const CBitcoinAddress& address = item.first;
-        const string& strAccount = item.second.name;
-        map<CBitcoinAddress, tallyitem>::iterator it = mapTally.find(address);
-        if (it == mapTally.end() && !fIncludeEmpty)
-            continue;
-
-        CAmount nAmount = 0;
-        int nConf = std::numeric_limits<int>::max();
-        bool fIsWatchonly = false;
-        if (it != mapTally.end())
-        {
-            nAmount = (*it).second.nAmount;
-            nConf = (*it).second.nConf;
-            fIsWatchonly = (*it).second.fIsWatchonly;
-        }
-
-        if (fByAccounts)
-        {
-            tallyitem& item = mapAccountTally[strAccount];
-            item.nAmount += nAmount;
-            item.nConf = min(item.nConf, nConf);
-            item.fIsWatchonly = fIsWatchonly;
-        }
-        else
-        {
-            Object obj;
-            if(fIsWatchonly)
-                obj.push_back(Pair("involvesWatchonly", true));
-            obj.push_back(Pair("address",       address.ToString()));
-            obj.push_back(Pair("account",       strAccount));
-            obj.push_back(Pair("amount",        ValueFromAmount(nAmount)));
-            obj.push_back(Pair("confirmations", (nConf == std::numeric_limits<int>::max() ? 0 : nConf)));
-            Array transactions;
-            if (it != mapTally.end())
-            {
-                BOOST_FOREACH(const uint256& item, (*it).second.txids)
-                {
-                    transactions.push_back(item.GetHex());
-                }
-            }
-            obj.push_back(Pair("txids", transactions));
-            ret.push_back(obj);
-        }
-    }
-
-    if (fByAccounts)
-    {
-        for (map<string, tallyitem>::iterator it = mapAccountTally.begin(); it != mapAccountTally.end(); ++it)
-        {
-            CAmount nAmount = (*it).second.nAmount;
-            int nConf = (*it).second.nConf;
-            Object obj;
-            if((*it).second.fIsWatchonly)
-                obj.push_back(Pair("involvesWatchonly", true));
-            obj.push_back(Pair("account",       (*it).first));
-            obj.push_back(Pair("amount",        ValueFromAmount(nAmount)));
-            obj.push_back(Pair("confirmations", (nConf == std::numeric_limits<int>::max() ? 0 : nConf)));
-            ret.push_back(obj);
-        }
-    }
-
-    return ret;
-}
-
-Value listreceivedbyaddress(const Array& params, bool fHelp)
-{
-    if (fHelp || params.size() > 3)
-        throw runtime_error(
-            "listreceivedbyaddress ( minconf includeempty includeWatchonly)\n"
-            "\nList balances by receiving address.\n"
-            "\nArguments:\n"
-            "1. minconf       (numeric, optional, default=1) The minimum number of confirmations before payments are included.\n"
-            "2. includeempty  (numeric, optional, default=false) Whether to include addresses that haven't received any payments.\n"
-            "3. includeWatchonly (bool, optional, default=false) Whether to include watchonly addresses (see 'importaddress').\n"
-
-            "\nResult:\n"
-            "[\n"
-            "  {\n"
-            "    \"involvesWatchonly\" : \"true\",    (bool) Only returned if imported addresses were involved in transaction\n"
-            "    \"address\" : \"receivingaddress\",  (string) The receiving address\n"
-            "    \"account\" : \"accountname\",       (string) The account of the receiving address. The default account is \"\".\n"
-            "    \"amount\" : x.xxx,                  (numeric) The total amount in ltc received by the address\n"
-            "    \"confirmations\" : n                (numeric) The number of confirmations of the most recent transaction included\n"
-            "  }\n"
-            "  ,...\n"
-            "]\n"
-
-            "\nExamples:\n"
-            + HelpExampleCli("listreceivedbyaddress", "")
-            + HelpExampleCli("listreceivedbyaddress", "6 true")
-            + HelpExampleRpc("listreceivedbyaddress", "6, true, true")
-        );
-    
-    return ListReceived(params, false);
-}
-
-Value listreceivedbyaccount(const Array& params, bool fHelp)
-{
-    if (fHelp || params.size() > 3)
-        throw runtime_error(
-            "listreceivedbyaccount ( minconf includeempty includeWatchonly)\n"
-            "\nList balances by account.\n"
-            "\nArguments:\n"
-            "1. minconf      (numeric, optional, default=1) The minimum number of confirmations before payments are included.\n"
-            "2. includeempty (boolean, optional, default=false) Whether to include accounts that haven't received any payments.\n"
-            "3. includeWatchonly (bool, optional, default=false) Whether to include watchonly addresses (see 'importaddress').\n"
-
-            "\nResult:\n"
-            "[\n"
-            "  {\n"
-            "    \"involvesWatchonly\" : \"true\",    (bool) Only returned if imported addresses were involved in transaction\n"
-            "    \"account\" : \"accountname\",  (string) The account name of the receiving account\n"
-            "    \"amount\" : x.xxx,             (numeric) The total amount received by addresses with this account\n"
-            "    \"confirmations\" : n           (numeric) The number of confirmations of the most recent transaction included\n"
-            "  }\n"
-            "  ,...\n"
-            "]\n"
-
-            "\nExamples:\n"
-            + HelpExampleCli("listreceivedbyaccount", "")
-            + HelpExampleCli("listreceivedbyaccount", "6 true")
-            + HelpExampleRpc("listreceivedbyaccount", "6, true, true")
-        );
-
-    return ListReceived(params, true);
-}
-
+//Value ListReceived(const Array& params, bool fByAccounts)
+//{
+//    // Minimum confirmations
+//    int nMinDepth = 1;
+//    if (params.size() > 0)
+//        nMinDepth = params[0].get_int();
+//
+//    // Whether to include empty accounts
+//    bool fIncludeEmpty = false;
+//    if (params.size() > 1)
+//        fIncludeEmpty = params[1].get_bool();
+//
+//    isminefilter filter = ISMINE_SPENDABLE;
+//    if(params.size() > 2)
+//        if(params[2].get_bool())
+//            filter = filter | ISMINE_WATCH_ONLY;
+//
+//    // Tally
+//    map<CBitcoinAddress, tallyitem> mapTally;
+//    pwalletMain->LoadTxs();
+//    for (map<uint256, CWalletTx>::iterator it = pwalletMain->mapWallet.begin(); it != pwalletMain->mapWallet.end(); ++it)
+//    {
+//        const CWalletTx& wtx = (*it).second;
+//
+//        if (wtx.IsCoinBase() || !IsFinalTx(wtx))
+//            continue;
+//
+//        int nDepth = wtx.GetDepthInMainChain();
+//        if (nDepth < nMinDepth)
+//            continue;
+//
+//        BOOST_FOREACH(const CTxOut& txout, wtx.vout)
+//        {
+//            CTxDestination address;
+//            if (!ExtractDestination(txout.scriptPubKey, address))
+//                continue;
+//
+//            isminefilter mine = IsMine(*pwalletMain, address);
+//            if(!(mine & filter))
+//                continue;
+//
+//            tallyitem& item = mapTally[address];
+//            item.nAmount += txout.nValue;
+//            item.nConf = min(item.nConf, nDepth);
+//            item.txids.push_back(wtx.GetHash());
+//            if (mine & ISMINE_WATCH_ONLY)
+//                item.fIsWatchonly = true;
+//        }
+//    }
+//
+//    // Reply
+//    Array ret;
+//    map<string, tallyitem> mapAccountTally;
+//    BOOST_FOREACH(const PAIRTYPE(CBitcoinAddress, CAddressBookData)& item, pwalletMain->mapAddressBook)
+//    {
+//        const CBitcoinAddress& address = item.first;
+//        const string& strAccount = item.second.name;
+//        map<CBitcoinAddress, tallyitem>::iterator it = mapTally.find(address);
+//        if (it == mapTally.end() && !fIncludeEmpty)
+//            continue;
+//
+//        CAmount nAmount = 0;
+//        int nConf = std::numeric_limits<int>::max();
+//        bool fIsWatchonly = false;
+//        if (it != mapTally.end())
+//        {
+//            nAmount = (*it).second.nAmount;
+//            nConf = (*it).second.nConf;
+//            fIsWatchonly = (*it).second.fIsWatchonly;
+//        }
+//
+//        if (fByAccounts)
+//        {
+//            tallyitem& item = mapAccountTally[strAccount];
+//            item.nAmount += nAmount;
+//            item.nConf = min(item.nConf, nConf);
+//            item.fIsWatchonly = fIsWatchonly;
+//        }
+//        else
+//        {
+//            Object obj;
+//            if(fIsWatchonly)
+//                obj.push_back(Pair("involvesWatchonly", true));
+//            obj.push_back(Pair("address",       address.ToString()));
+//            obj.push_back(Pair("account",       strAccount));
+//            obj.push_back(Pair("amount",        ValueFromAmount(nAmount)));
+//            obj.push_back(Pair("confirmations", (nConf == std::numeric_limits<int>::max() ? 0 : nConf)));
+//            Array transactions;
+//            if (it != mapTally.end())
+//            {
+//                BOOST_FOREACH(const uint256& item, (*it).second.txids)
+//                {
+//                    transactions.push_back(item.GetHex());
+//                }
+//            }
+//            obj.push_back(Pair("txids", transactions));
+//            ret.push_back(obj);
+//        }
+//    }
+//
+//    if (fByAccounts)
+//    {
+//        for (map<string, tallyitem>::iterator it = mapAccountTally.begin(); it != mapAccountTally.end(); ++it)
+//        {
+//            CAmount nAmount = (*it).second.nAmount;
+//            int nConf = (*it).second.nConf;
+//            Object obj;
+//            if((*it).second.fIsWatchonly)
+//                obj.push_back(Pair("involvesWatchonly", true));
+//            obj.push_back(Pair("account",       (*it).first));
+//            obj.push_back(Pair("amount",        ValueFromAmount(nAmount)));
+//            obj.push_back(Pair("confirmations", (nConf == std::numeric_limits<int>::max() ? 0 : nConf)));
+//            ret.push_back(obj);
+//        }
+//    }
+//
+//    return ret;
+//}
+//
+//Value listreceivedbyaddress(const Array& params, bool fHelp)
+//{
+//    if (fHelp || params.size() > 3)
+//        throw runtime_error(
+//            "listreceivedbyaddress ( minconf includeempty includeWatchonly)\n"
+//            "\nList balances by receiving address.\n"
+//            "\nArguments:\n"
+//            "1. minconf       (numeric, optional, default=1) The minimum number of confirmations before payments are included.\n"
+//            "2. includeempty  (numeric, optional, default=false) Whether to include addresses that haven't received any payments.\n"
+//            "3. includeWatchonly (bool, optional, default=false) Whether to include watchonly addresses (see 'importaddress').\n"
+//
+//            "\nResult:\n"
+//            "[\n"
+//            "  {\n"
+//            "    \"involvesWatchonly\" : \"true\",    (bool) Only returned if imported addresses were involved in transaction\n"
+//            "    \"address\" : \"receivingaddress\",  (string) The receiving address\n"
+//            "    \"account\" : \"accountname\",       (string) The account of the receiving address. The default account is \"\".\n"
+//            "    \"amount\" : x.xxx,                  (numeric) The total amount in ltc received by the address\n"
+//            "    \"confirmations\" : n                (numeric) The number of confirmations of the most recent transaction included\n"
+//            "  }\n"
+//            "  ,...\n"
+//            "]\n"
+//
+//            "\nExamples:\n"
+//            + HelpExampleCli("listreceivedbyaddress", "")
+//            + HelpExampleCli("listreceivedbyaddress", "6 true")
+//            + HelpExampleRpc("listreceivedbyaddress", "6, true, true")
+//        );
+//    
+//    return ListReceived(params, false);
+//}
+//
+//Value listreceivedbyaccount(const Array& params, bool fHelp)
+//{
+//    if (fHelp || params.size() > 3)
+//        throw runtime_error(
+//            "listreceivedbyaccount ( minconf includeempty includeWatchonly)\n"
+//            "\nList balances by account.\n"
+//            "\nArguments:\n"
+//            "1. minconf      (numeric, optional, default=1) The minimum number of confirmations before payments are included.\n"
+//            "2. includeempty (boolean, optional, default=false) Whether to include accounts that haven't received any payments.\n"
+//            "3. includeWatchonly (bool, optional, default=false) Whether to include watchonly addresses (see 'importaddress').\n"
+//
+//            "\nResult:\n"
+//            "[\n"
+//            "  {\n"
+//            "    \"involvesWatchonly\" : \"true\",    (bool) Only returned if imported addresses were involved in transaction\n"
+//            "    \"account\" : \"accountname\",  (string) The account name of the receiving account\n"
+//            "    \"amount\" : x.xxx,             (numeric) The total amount received by addresses with this account\n"
+//            "    \"confirmations\" : n           (numeric) The number of confirmations of the most recent transaction included\n"
+//            "  }\n"
+//            "  ,...\n"
+//            "]\n"
+//
+//            "\nExamples:\n"
+//            + HelpExampleCli("listreceivedbyaccount", "")
+//            + HelpExampleCli("listreceivedbyaccount", "6 true")
+//            + HelpExampleRpc("listreceivedbyaccount", "6, true, true")
+//        );
+//
+//    return ListReceived(params, true);
+//}
+//
 static void MaybePushAddress(Object & entry, const CTxDestination &dest)
 {
     CBitcoinAddress addr;
@@ -2034,128 +2011,128 @@ Value encryptwallet(const Array& params, bool fHelp)
     return "wallet encrypted; Cccoin server stopping, restart to run with encrypted wallet. The keypool has been flushed, you need to make a new backup.";
 }
 
-Value lockunspent(const Array& params, bool fHelp)
-{
-    if (fHelp || params.size() < 1 || params.size() > 2)
-        throw runtime_error(
-            "lockunspent unlock [{\"txid\":\"txid\",\"vout\":n},...]\n"
-            "\nUpdates list of temporarily unspendable outputs.\n"
-            "Temporarily lock (unlock=false) or unlock (unlock=true) specified transaction outputs.\n"
-            "A locked transaction output will not be chosen by automatic coin selection, when spending cccoins.\n"
-            "Locks are stored in memory only. Nodes start with zero locked outputs, and the locked output list\n"
-            "is always cleared (by virtue of process exit) when a node stops or fails.\n"
-            "Also see the listunspent call\n"
-            "\nArguments:\n"
-            "1. unlock            (boolean, required) Whether to unlock (true) or lock (false) the specified transactions\n"
-            "2. \"transactions\"  (string, required) A json array of objects. Each object the txid (string) vout (numeric)\n"
-            "     [           (json array of json objects)\n"
-            "       {\n"
-            "         \"txid\":\"id\",    (string) The transaction id\n"
-            "         \"vout\": n         (numeric) The output number\n"
-            "       }\n"
-            "       ,...\n"
-            "     ]\n"
-
-            "\nResult:\n"
-            "true|false    (boolean) Whether the command was successful or not\n"
-
-            "\nExamples:\n"
-            "\nList the unspent transactions\n"
-            + HelpExampleCli("listunspent", "") +
-            "\nLock an unspent transaction\n"
-            + HelpExampleCli("lockunspent", "false \"[{\\\"txid\\\":\\\"cdf21f8cfaee3544ada266ff2da8554e8374fcd7efc6a0444f7ac75d7948884e\\\",\\\"vout\\\":1}]\"") +
-            "\nList the locked transactions\n"
-            + HelpExampleCli("listlockunspent", "") +
-            "\nUnlock the transaction again\n"
-            + HelpExampleCli("lockunspent", "true \"[{\\\"txid\\\":\\\"cdf21f8cfaee3544ada266ff2da8554e8374fcd7efc6a0444f7ac75d7948884e\\\",\\\"vout\\\":1}]\"") +
-            "\nAs a json rpc call\n"
-            + HelpExampleRpc("lockunspent", "false, \"[{\\\"txid\\\":\\\"cdf21f8cfaee3544ada266ff2da8554e8374fcd7efc6a0444f7ac75d7948884e\\\",\\\"vout\\\":1}]\"")
-        );
-
-    if (params.size() == 1)
-        RPCTypeCheck(params, list_of(bool_type));
-    else
-        RPCTypeCheck(params, list_of(bool_type)(array_type));
-
-    bool fUnlock = params[0].get_bool();
-
-    if (params.size() == 1) {
-        if (fUnlock)
-            pwalletMain->UnlockAllCoins();
-        return true;
-    }
-
-    Array outputs = params[1].get_array();
-    BOOST_FOREACH(Value& output, outputs)
-    {
-        if (output.type() != obj_type)
-            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, expected object");
-        const Object& o = output.get_obj();
-
-        RPCTypeCheck(o, map_list_of("txid", str_type)("vout", int_type));
-
-        string txid = find_value(o, "txid").get_str();
-        if (!IsHex(txid))
-            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, expected hex txid");
-
-        int nOutput = find_value(o, "vout").get_int();
-        if (nOutput < 0)
-            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, vout must be positive");
-
-        COutPoint outpt(uint256(txid), nOutput,0);
-
-        if (fUnlock)
-            pwalletMain->UnlockCoin(outpt);
-        else
-            pwalletMain->LockCoin(outpt);
-    }
-
-    return true;
-}
-
-Value listlockunspent(const Array& params, bool fHelp)
-{
-    if (fHelp || params.size() > 0)
-        throw runtime_error(
-            "listlockunspent\n"
-            "\nReturns list of temporarily unspendable outputs.\n"
-            "See the lockunspent call to lock and unlock transactions for spending.\n"
-            "\nResult:\n"
-            "[\n"
-            "  {\n"
-            "    \"txid\" : \"transactionid\",     (string) The transaction id locked\n"
-            "    \"vout\" : n                      (numeric) The vout value\n"
-            "  }\n"
-            "  ,...\n"
-            "]\n"
-            "\nExamples:\n"
-            "\nList the unspent transactions\n"
-            + HelpExampleCli("listunspent", "") +
-            "\nLock an unspent transaction\n"
-            + HelpExampleCli("lockunspent", "false \"[{\\\"txid\\\":\\\"cdf21f8cfaee3544ada266ff2da8554e8374fcd7efc6a0444f7ac75d7948884e\\\",\\\"vout\\\":1}]\"") +
-            "\nList the locked transactions\n"
-            + HelpExampleCli("listlockunspent", "") +
-            "\nUnlock the transaction again\n"
-            + HelpExampleCli("lockunspent", "true \"[{\\\"txid\\\":\\\"cdf21f8cfaee3544ada266ff2da8554e8374fcd7efc6a0444f7ac75d7948884e\\\",\\\"vout\\\":1}]\"") +
-            "\nAs a json rpc call\n"
-            + HelpExampleRpc("listlockunspent", "")
-        );
-
-    vector<COutPoint> vOutpts;
-    pwalletMain->ListLockedCoins(vOutpts);
-
-    Array ret;
-
-    BOOST_FOREACH(COutPoint &outpt, vOutpts) {
-        Object o;
-
-        o.push_back(Pair("txid", outpt.hash.GetHex()));
-        o.push_back(Pair("vout", (int)outpt.n));
-        ret.push_back(o);
-    }
-
-    return ret;
-}
+//Value lockunspent(const Array& params, bool fHelp)
+//{
+//    if (fHelp || params.size() < 1 || params.size() > 2)
+//        throw runtime_error(
+//            "lockunspent unlock [{\"txid\":\"txid\",\"vout\":n},...]\n"
+//            "\nUpdates list of temporarily unspendable outputs.\n"
+//            "Temporarily lock (unlock=false) or unlock (unlock=true) specified transaction outputs.\n"
+//            "A locked transaction output will not be chosen by automatic coin selection, when spending cccoins.\n"
+//            "Locks are stored in memory only. Nodes start with zero locked outputs, and the locked output list\n"
+//            "is always cleared (by virtue of process exit) when a node stops or fails.\n"
+//            "Also see the listunspent call\n"
+//            "\nArguments:\n"
+//            "1. unlock            (boolean, required) Whether to unlock (true) or lock (false) the specified transactions\n"
+//            "2. \"transactions\"  (string, required) A json array of objects. Each object the txid (string) vout (numeric)\n"
+//            "     [           (json array of json objects)\n"
+//            "       {\n"
+//            "         \"txid\":\"id\",    (string) The transaction id\n"
+//            "         \"vout\": n         (numeric) The output number\n"
+//            "       }\n"
+//            "       ,...\n"
+//            "     ]\n"
+//
+//            "\nResult:\n"
+//            "true|false    (boolean) Whether the command was successful or not\n"
+//
+//            "\nExamples:\n"
+//            "\nList the unspent transactions\n"
+//            + HelpExampleCli("listunspent", "") +
+//            "\nLock an unspent transaction\n"
+//            + HelpExampleCli("lockunspent", "false \"[{\\\"txid\\\":\\\"cdf21f8cfaee3544ada266ff2da8554e8374fcd7efc6a0444f7ac75d7948884e\\\",\\\"vout\\\":1}]\"") +
+//            "\nList the locked transactions\n"
+//            + HelpExampleCli("listlockunspent", "") +
+//            "\nUnlock the transaction again\n"
+//            + HelpExampleCli("lockunspent", "true \"[{\\\"txid\\\":\\\"cdf21f8cfaee3544ada266ff2da8554e8374fcd7efc6a0444f7ac75d7948884e\\\",\\\"vout\\\":1}]\"") +
+//            "\nAs a json rpc call\n"
+//            + HelpExampleRpc("lockunspent", "false, \"[{\\\"txid\\\":\\\"cdf21f8cfaee3544ada266ff2da8554e8374fcd7efc6a0444f7ac75d7948884e\\\",\\\"vout\\\":1}]\"")
+//        );
+//
+//    if (params.size() == 1)
+//        RPCTypeCheck(params, list_of(bool_type));
+//    else
+//        RPCTypeCheck(params, list_of(bool_type)(array_type));
+//
+//    bool fUnlock = params[0].get_bool();
+//
+//    if (params.size() == 1) {
+//        if (fUnlock)
+//            pwalletMain->UnlockAllCoins();
+//        return true;
+//    }
+//
+//    Array outputs = params[1].get_array();
+//    BOOST_FOREACH(Value& output, outputs)
+//    {
+//        if (output.type() != obj_type)
+//            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, expected object");
+//        const Object& o = output.get_obj();
+//
+//        RPCTypeCheck(o, map_list_of("txid", str_type)("vout", int_type));
+//
+//        string txid = find_value(o, "txid").get_str();
+//        if (!IsHex(txid))
+//            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, expected hex txid");
+//
+//        int nOutput = find_value(o, "vout").get_int();
+//        if (nOutput < 0)
+//            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, vout must be positive");
+//
+//        COutPoint outpt(uint256(txid), nOutput,0);
+//
+//        if (fUnlock)
+//            pwalletMain->UnlockCoin(outpt);
+//        else
+//            pwalletMain->LockCoin(outpt);
+//    }
+//
+//    return true;
+//}
+//
+//Value listlockunspent(const Array& params, bool fHelp)
+//{
+//    if (fHelp || params.size() > 0)
+//        throw runtime_error(
+//            "listlockunspent\n"
+//            "\nReturns list of temporarily unspendable outputs.\n"
+//            "See the lockunspent call to lock and unlock transactions for spending.\n"
+//            "\nResult:\n"
+//            "[\n"
+//            "  {\n"
+//            "    \"txid\" : \"transactionid\",     (string) The transaction id locked\n"
+//            "    \"vout\" : n                      (numeric) The vout value\n"
+//            "  }\n"
+//            "  ,...\n"
+//            "]\n"
+//            "\nExamples:\n"
+//            "\nList the unspent transactions\n"
+//            + HelpExampleCli("listunspent", "") +
+//            "\nLock an unspent transaction\n"
+//            + HelpExampleCli("lockunspent", "false \"[{\\\"txid\\\":\\\"cdf21f8cfaee3544ada266ff2da8554e8374fcd7efc6a0444f7ac75d7948884e\\\",\\\"vout\\\":1}]\"") +
+//            "\nList the locked transactions\n"
+//            + HelpExampleCli("listlockunspent", "") +
+//            "\nUnlock the transaction again\n"
+//            + HelpExampleCli("lockunspent", "true \"[{\\\"txid\\\":\\\"cdf21f8cfaee3544ada266ff2da8554e8374fcd7efc6a0444f7ac75d7948884e\\\",\\\"vout\\\":1}]\"") +
+//            "\nAs a json rpc call\n"
+//            + HelpExampleRpc("listlockunspent", "")
+//        );
+//
+//    vector<COutPoint> vOutpts;
+//    pwalletMain->ListLockedCoins(vOutpts);
+//
+//    Array ret;
+//
+//    BOOST_FOREACH(COutPoint &outpt, vOutpts) {
+//        Object o;
+//
+//        o.push_back(Pair("txid", outpt.hash.GetHex()));
+//        o.push_back(Pair("vout", (int)outpt.n));
+//        ret.push_back(o);
+//    }
+//
+//    return ret;
+//}
 
 Value settxfee(const Array& params, bool fHelp)
 {
