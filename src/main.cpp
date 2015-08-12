@@ -2631,8 +2631,11 @@ bool ActivateBestChain(CValidationState &state, CBlock *pblock) {
                 {
                     //LogPrintf("relay block:chainnactive higiht:%i pnode->nStartingHeight:%i \n",chainActive.Height(),pnode->nStartingHeight);
                     //ccc:for service flag SERVICE_NOBLOCKCHAINDATA,don't broadcast any blockchain data
-                    if (chainActive.Height() > (pnode->nStartingHeight != -1 ? pnode->nStartingHeight - 2000 : nBlockEstimate)&&(!pnode->nServices>>SERVICE_NOBLOCKCHAINDATA&1))
+                    if (chainActive.Height() > (pnode->nStartingHeight != -1 ? pnode->nStartingHeight - 2000 : nBlockEstimate)&&((pnode->nServices&(1<<SERVICE_NOBLOCKCHAINDATA))==0))
+                    {
+                        //LogPrintf("relay block:%s \n",pnode->addr.ToString());
                         pnode->PushInventory(CInv(MSG_BLOCK, hashNewTip));
+                    }
                 }
             }
             // Notify external listeners about the new tip.
