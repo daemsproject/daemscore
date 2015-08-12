@@ -231,15 +231,24 @@ bool CContent::FirstNCc(std::vector<cctype>& ccv, bool& countOverN, const unsign
     return true;
 }
 
-int CContent::GetFirstCc()const
+int CContent::GetFirstCc(int nIteratrions)const
 {
     if (IsEmpty())
         return 0;
+    if(nIteratrions>1)
+        return CC_P;
     const_iterator pc = begin();
     //cctype cc;
     uint64_t n;
     if (!ReadVarInt(pc, n))
         return 0;
+    if(n==CC_P)
+    {
+        vector<pair<int,string> >vDecoded;
+        if(!Decode(vDecoded))
+                return n;
+        return CContent(vDecoded[0].second).GetFirstCc(nIteratrions+1);        
+    }
     return n;
 }
 

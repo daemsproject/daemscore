@@ -598,7 +598,7 @@ bool CDomainViewDB::_GetDomainByOwner(const int nExtension,const CScript scriptP
     if(scriptPubKey.size()==0)
         return false;
     string searchColumn="owner";
-    const char* searchValue;//NOte: for varchar, need to add'' arround value
+    //const char* searchValue;//NOte: for varchar, need to add'' arround value
     const string tableName=(nExtension==DOMAIN_10000?"domain10000":"domain100");
 //    char** result;
 //    int nRow;
@@ -716,9 +716,9 @@ bool CDomainViewDB::GetDomainByTags(const vector<string>& vTag,vector<CDomain>& 
     vector<int64_t>vTagIDs;
     string searchColumn="rowid";
     //char searchValue[2000];//NOte: for varchar, need to add'' arround value
-    const string tableName="domaintag10000";      
+    string tableName="domaintag10000";      
     char chTag[1000];
-    if(vTag.size()=0||vTag.size()>10)
+    if(vTag.size()==0||vTag.size()>10)
             return false; 
     const char* tagselectstatement="SELECT domainid FROM %s WHERE tagid =%lld ;";  
     if(!db->GetTagID(vTag[0],vTagIDs[0]))
@@ -758,9 +758,9 @@ bool CDomainViewDB::GetDomainsByAlias(const std::string strAlias,std::vector<CDo
     
     string searchColumn="alias";
     char searchValue[1000];
-    sprintf(searchValue,"'%s' LIMIT %i",strAlias,nMax);//NOte: for varchar, need to add'' arround value
+    sprintf(searchValue,"'%s' LIMIT %i",strAlias.c_str(),nMax);//NOte: for varchar, need to add'' arround value
     
-    const string tableName="domain10000";    
+    string tableName="domain10000";    
     bool ret= db->GetDomain(tableName.c_str(),searchColumn.c_str(),"=", searchValue,vDomain1);
     if(FSupport100)
     {
@@ -779,13 +779,13 @@ bool CDomainViewDB::GetDomainNamesToExpire(std::vector<string> &vDomainNames,con
     string searchColumn="expiredate";
     char chTime[1000];
     sprintf(chTime,"%i",nExpireIn+GetAdjustedTime());
-    const string tableName="domain10000";    
-    bool ret=db->SearchStrs(tableName,"expiredate",chTime,"domainname",SQLITEDATATYPE_TEXT,vDomainNames,"<",nMax);
+    string tableName="domain10000";    
+    bool ret=db->SearchStrs(tableName.c_str(),"expiredate",chTime,"domainname",SQLITEDATATYPE_TEXT,vDomainNames,"<",nMax);
            
     if(FSupport100)
     {
         tableName="domain100";                  
-            ret&=db->SearchStrs(tableName,"expiredate",chTime,"domainname",SQLITEDATATYPE_TEXT,vDomainNames,"<",nMax);
+            ret&=db->SearchStrs(tableName.c_str(),"expiredate",chTime,"domainname",SQLITEDATATYPE_TEXT,vDomainNames,"<",nMax);
            
     }
     return ret;
@@ -840,16 +840,16 @@ CTagViewDB::CTagViewDB(CSqliteWrapper* dbIn,bool fWipe) : db(dbIn)
     if(fWipe)
         ClearTables();
 }
-bool CTagViewDB::HasLink(const CLink link)const{
-    vector<CLink> vLink;
-    vector<string> vTag;
-    return (db->GetLinks(vTag,0,link,vLink)&&vLink.size()>0);
-}
-bool CTagViewDB::Search(vector<CLink>& vLink,const std::vector<string> &vTag,const int cc,const int nMaxItems,const int nOffset)const
-{
-    return db->GetLinks(vTag,cc,CLink(),vLink,nMaxItems, nOffset);
-
-}           
+//bool CTagViewDB::HasLink(const CLink link)const{
+//    vector<CLink> vLink;
+//    vector<string> vTag;
+//    return (db->GetLinks(vTag,0,link,vLink)&&vLink.size()>0);
+//}
+//bool CTagViewDB::Search(vector<CLink>& vLink,const std::vector<string> &vTag,const int cc,const int nMaxItems,const int nOffset)const
+//{
+//    return db->GetLinks(vTag,cc,CLink(),vLink,nMaxItems, nOffset);
+//
+//}           
 bool CTagViewDB::Insert(const CContentDBItem& item)
 {
     int64_t scriptIndex;
@@ -1203,6 +1203,8 @@ void GetBlockContentAndTagList(const CBlock& block,const vector<pair<uint256, CD
                 //LogPrintf("main:updatetagdb str isstandard: %b \n",str.IsStandard());
             if(!str.IsStandard())
                 continue;
+            if(str.GetFirstCc()==CC_DOMAIN_P)
+                continue;            
             std::vector<std::pair<int,std::string> >vTagList;              
             str.GetTags(vTagList);           
             CLink link(block.nBlockHeight,ii,i);  
@@ -1402,15 +1404,17 @@ void GetBlockChequeUpdates(const CBlock& block,const vector<vector<pair<CScript,
          if(psqliteDB->GetScriptIndex(vSenders[i],id))
              vSenderIDs.push_back(id);
      }
+     if(vCCs.size()>10)
+         return false;
      vector<int64_t> vTagIDs;
      if(vTags.size()>10)
          return false;
      for(unsigned int i=1;i<vTags.size();i++)
      {
          int64_t tagid;
-         if(!psqliteDB->GetTagID(vSenders[i],tagid))
+         if(!psqliteDB->GetTagID(vTags[i],tagid))
              return false;
-             vTagIDs.push_back(tagid);
+         vTagIDs.push_back(tagid);
      }
     return psqliteDB->SearchContents(vSenderIDs,vCCs,vTagIDs,vContents,nMaxResults,nOffset);
  }

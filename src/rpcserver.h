@@ -271,6 +271,9 @@ extern json_spirit::Value getdomaininfo(const json_spirit::Array& params, bool f
 extern json_spirit::Value getdomainsbyowner(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getdomainbyforward(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getdomainsbyforward(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getdomainsbytags(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getdomainsbyalias(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getdomainsexpiring(const json_spirit::Array& params, bool fHelp);
 
 extern json_spirit::Value searchproducts(const json_spirit::Array& params, bool fHelp);
 

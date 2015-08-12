@@ -300,6 +300,7 @@ static const CRPCCommand vRPCCommands[] =
     { "blockchain",         "getlinkbytxidout",       &getlinkbytxidout,       true,      false,      false },
     { "blockchain",         "getlinktype",            &getlinktype,            true,      false,      false },
     { "blockchain",         "getcontents",            &getcontents,            true,      false,      false },
+    { "blockchain",         "getpromotedcontents",            &getpromotedcontents,            true,      false,      false },
     { "blockchain",         "getfirstncc",            &getfirstncc,            true,      false,      false },
     { "blockchain",         "getmessages",            &getmessages,            true,      false,      false },
     { "blockchain",         "gettxmessages",          &gettxmessages,          true,      false,      false },
@@ -308,6 +309,10 @@ static const CRPCCommand vRPCCommands[] =
     { "blockchain",         "getdomainsbyowner",      &getdomainsbyowner,      true,      false,      false },
     { "blockchain",         "getdomainbyforward",     &getdomainbyforward,     true,      false,      false },
     { "blockchain",         "getdomainsbyforward",    &getdomainsbyforward,    true,      false,      false },
+   { "blockchain",         "getdomainsbytags",    &getdomainsbytags,    true,      false,      false },
+   { "blockchain",         "getdomainsbyalias",    &getdomainsbyalias,    true,      false,      false },
+   { "blockchain",         "getdomainsexpiring",    &getdomainsexpiring,    true,      false,      false },
+   
     { "blockchain",         "searchproducts",         &searchproducts,         true,      false,      false },
     { "blockchain",         "getfilepackageurl",      &getfilepackageurl,      true,      false,      false },
 

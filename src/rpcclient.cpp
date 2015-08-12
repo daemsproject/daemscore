@@ -98,6 +98,10 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "getlink", 1 },
     { "getcontents", 0 },
     { "getcontents", 1 },
+    { "getpromotedcontents", 0 },
+    { "getpromotedcontents", 1 },
+    { "getpromotedcontents", 2 },
+    { "getpromotedcontents", 3 },
     { "getfirstncc", 1 },
     { "getcontentbylink", 1 },
     { "getcontentbystring", 1 },
@@ -118,6 +122,9 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "getdomaininfo", 0 },
     { "getdomainsbyowner", 0 },
     { "getdomainsbyforward", 0 },
+    { "getdomainsbytags", 0 },
+    { "getdomainsbyalias", 0 },
+    { "getdomainsexpiring", 0 },
      
 };
 

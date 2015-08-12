@@ -52,5 +52,6 @@ class CCheque;
 bool IsSpentInMempool(const COutPoint op);
 void GetUnspentCheques(const vector<CScript>& vScriptPubKeys,vector<CCheque>& vCheques,bool fSpendableOnly=true,int nMaxResults=1000,int nOffset=0);
 void GetMempoolCheques(const vector<CScript>& vScriptPubKeys,vector<CCheque>& vCheques);
+bool GetTxOutFromVoutPos(const int64_t pos,CTxOut& out);
 #endif	/* CCCOIN_CONTENTUTIL_H */
 

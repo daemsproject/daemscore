@@ -181,11 +181,38 @@ bool ProcessP2PServiceRequest(CNode* pfrom,CDataStream& vRecv, int64_t nTimeRece
             vector<CScript> vScriptPubKey;
             vScriptPubKey.push_back(id);
             vector<CCheque> vCheques;
-            GetUnspentCheques(vScriptPubKey,vCheques,false,1000);
+            GetUnspentCheques(vScriptPubKey,vCheques,false,1000);            
            CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
             ss<<(int)SC_FULLNODEPLUS_S_UNSPENTTXOUT;
             ss<<msgID;
             ss<<vCheques;
+             pfrom->PushMessage(ss,"service");
+             break;
+        }
+        case SC_FULLNODEPLUS_C_SEARCHPROMOTEDCONTENT:
+        {
+            vector<string>vTags;
+            vector<int> vCCs;
+            vRecv>>vCCs>>vTags;
+            if(vTags.size()>10||vCCs.size()>1)
+            {
+                pfrom->PushMessage("reject", strCommand, REJECT_NONSTANDARD, string("invalid search parameters"));
+                Misbehaving(pfrom->GetId(), 10);
+                return false;
+             }
+            vector<CContentDBItem> vContents;
+            vector<CScript> vSenders;//set empty 
+            SearchPromotedContents(vSenders,vCCs,vTags,vContents,30,0);            
+            for(unsigned int i=0;i<vContents.size();i++)
+            {
+                CDomain domain;
+                pDomainDBView->GetDomainByForward(vContents[i].sender,domain,false);
+                vContents[i].senderDomain=domain.strDomain;
+            }
+            CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
+            ss<<(int)SC_FULLNODEPLUS_S_PROMOTEDCONTENTS;
+            ss<<msgID;
+            ss<<vContents;
              pfrom->PushMessage(ss,"service");
              break;
         }

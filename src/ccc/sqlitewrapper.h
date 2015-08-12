@@ -44,8 +44,9 @@ class CSqliteDBBatch
 {
     
 };
-struct CContentDBItem
+class CContentDBItem
 {
+public:
    CLink link;
    int64_t pos;
    CScript sender;
@@ -53,7 +54,15 @@ struct CContentDBItem
    CAmount lockValue;
    uint32_t lockTime;
    vector<string>vTags;
-   string strContent;
+   string senderDomain;
+   //string strContent;
+   CContentDBItem()
+   {
+       pos=0;
+       cc=0;
+       lockValue=0;
+       lockTime=0;
+   }
    CContentDBItem(CLink linkIn,int64_t posIn,CScript senderIn,int ccIn,
    CAmount lockValueIn,  uint32_t lockTimeIn,vector<string>vTagsIn)
    {
@@ -65,6 +74,18 @@ struct CContentDBItem
        lockTime=lockTimeIn;
        vTags=vTagsIn;
    }   
+   ADD_SERIALIZE_METHODS;   
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {        
+        READWRITE(link);         
+        READWRITE(sender);  
+        READWRITE(senderDomain);   
+        READWRITE(VARINT(cc));
+        READWRITE(VARINT(lockValue));
+        READWRITE(VARINT(lockTime));
+        READWRITE(vTags);
+    }
 };
 class CCheque
 {
@@ -299,7 +320,7 @@ public:
 
     bool InsertTag(const char* tableName,const int64_t tagID,const int64_t nLink);
     bool InsertTags(const char* tableName,const int64_t nLink,const vector<int64_t>& vTagID);
-    bool GetLinks(const vector<string>& vTag,const int cc,const CLink link,std::vector<CLink>& vLink,const int nMaxItems=1000,const int nOffset=0) const;
+    //bool GetLinks(const vector<string>& vTag,const int cc,const CLink link,std::vector<CLink>& vLink,const int nMaxItems=1000,const int nOffset=0) const;
     bool InsertTagID(const string tag,int64_t& tagID);
     bool GetTagID(const string tag,int64_t& tagID) const;
     //bool ClearExpiredTags(const unsigned int nTime);

@@ -107,8 +107,8 @@ public:
      bool _GetDomainByForward(const int nExtension,const CScript scriptPubKey,std::vector<CDomain> &vDomain)const ; 
      bool _GetDomainByOwner(const int nExtension,const CScript scriptPubKey,std::vector<CDomain> &vDomain)const ;
      bool GetDomainByForward(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupport100=true)const ;
-     bool GetDomainByForward(const CScript scriptPubKey,CDomain& domain,bool FSupport100)const;
-     bool GetDomainByOwner(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupport100)const ;
+     bool GetDomainByForward(const CScript scriptPubKey,CDomain& domain,bool FSupport100=true)const;
+     bool GetDomainByOwner(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupport100=true)const ;
      bool GetDomainByName(const string strDomainName,CDomain& domain)const ;
 
      bool GetDomainByTags(const std::vector<std::string>& vTag,std::vector<CDomain> &vDomain,const bool FSupport100=true,const int nMax=1000)const;    
@@ -138,8 +138,8 @@ public:
     //std::string strtest="db loaded";
     CTagViewDB(CSqliteWrapper* dbIn, bool fWipe = false);
      //bool GetForward(const std::string strDomainName,CContent& forward)const ;   
-    bool HasLink(const CLink link)const;
-     bool Search(vector<CLink>& vLink,const std::vector<string> &vTag,const int cc=-1,const int nMaxItems=1000,const int nOffset=0)const ;           
+    //bool HasLink(const CLink link)const;
+     //bool Search(vector<CLink>& vLink,const std::vector<string> &vTag,const int cc=-1,const int nMaxItems=1000,const int nOffset=0)const ;           
      //bool InsertContent(const CContentDBItem);
      bool Insert(const CContentDBItem& item);
      bool InsertTags(const vector<string>& vTags);

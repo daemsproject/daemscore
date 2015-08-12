@@ -777,7 +777,7 @@ bool CSqliteWrapper::GetDomain(const char* tableName,const char* searchColumn,co
     const char* selectstatement="SELECT rowid,domainname,expiredate,owner,redirecttype,redirrectto\
     ,alias,icon,intro,redirecthsitory FROM %s WHERE %s %s %s;";    
     char sql[2000];
-    sprintf(sql,selectstatement,tableName,searchColumn,searchValue);
+    sprintf(sql,selectstatement,tableName,searchColumn,searchOperator,searchValue);
     LogPrintf("CSqliteWrapper::GetDomain sql %s\n",sql); 
     sqlite3_stmt  *stmt = NULL;
     int rc;
@@ -1062,7 +1062,7 @@ bool CSqliteWrapper::InsertContents(const vector<CContentDBItem>& vContents,cons
    sqlite3_finalize( stat );
    return (result==SQLITE_OK||result==101);
 }
-bool CSqliteWrapper::SearchContents(const vector<int>& vSenderIDs,const vector<int>& vCCs,const vector<int>& vTagIDs,vector<CContentDBItem>& vContents,const int nMaxResults,const int nOffset)
+bool CSqliteWrapper::SearchContents(const vector<int64_t>& vSenderIDs,const vector<int>& vCCs,const vector<int64_t>& vTagIDs,vector<CContentDBItem>& vContents,const int nMaxResults,const int nOffset)
 {
     LogPrintf("CSqliteWrapper GetContents \n");    
     char sql[100000];
@@ -1083,21 +1083,21 @@ bool CSqliteWrapper::SearchContents(const vector<int>& vSenderIDs,const vector<i
         sprintf(chTag,"link IN(%s) ",chTag);
     }
     char chSender[2000];
-    if(vSenderIDs.size>0)
+    if(vSenderIDs.size()>0)
     {
         if(vSenderIDs.size()>100)
             return false;     
-        sprintf(chSender,"%lld",chSender,vSenderIDs[0]);     
+        sprintf(chSender,"%lld",vSenderIDs[0]);     
         for(unsigned int i=1;i<vSenderIDs.size();i++)        
             sprintf(chSender,"%s,%lld",chSender,vSenderIDs[i]);        
-        sprintf(chSender,"%ssender IN(%s) ",vTagIDs.size()>0?:"AND ":"",chSender);
+        sprintf(chSender,"%ssender IN(%s) ",(vTagIDs.size()>0)?"AND ":"",chSender);
     } 
     char chCC[1000];
-    if(vCCs.size>0)
+    if(vCCs.size()>0)
     {
         if(vCCs.size()>10)
             return false;     
-        sprintf(chCC,"%lld",chCC,vCCs[0]);     
+        sprintf(chCC,"%lld",vCCs[0]);     
         for(unsigned int i=1;i<vCCs.size();i++)        
             sprintf(chCC,"%s,%lld",chCC,vCCs[i]);        
         sprintf(chCC,"%scc IN(%s) ",(vTagIDs.size()+vSenderIDs.size())>0?"AND ":"",chCC);
@@ -1149,100 +1149,100 @@ bool CSqliteWrapper::SearchContents(const vector<int>& vSenderIDs,const vector<i
     return false;         
 }
 
-bool CSqliteWrapper::GetLinks(const vector<string>& vTag,const int cc,const CLink link,std::vector<CLink>& vLink,const int nMaxItems,const int nOffset) const
-{
-    LogPrintf("CSqliteWrapper GetLinks \n");
-    //char* zErrMsg=0;
-    const char* selectstatement="SELECT link FROM tag WHERE %s = %s;";    
-    char sql[2000];    
-    if(!link.IsEmpty())
-    {
-        string strLink="x'";
-        string strLink1=link.Serialize();
-        strLink.append(HexStr(strLink1.begin(),strLink1.end()));
-        strLink.append("'");
-        sprintf(sql,selectstatement,"link",strLink.c_str());
-    }
-    else
-    {        
-        vector<int> vTagID;
-        for(unsigned int i=0;i<vTag.size();i++)
-        {
-            int64_t nTagID;
-           if(GetTagID(vTag[i],nTagID)) 
-               vTagID.push_back(nTagID);
-        }
-        if(vTagID.size()==0&&cc==-1)
-            return false;
-        if(cc!=-1)
-        {
-            
-            selectstatement="SELECT link FROM tag WHERE cc = %i";    
-            sprintf(sql,selectstatement,cc);
-            if(vTag.size()>0)
-            {
-                selectstatement="%s AND tagid= %i";    
-                sprintf(sql,selectstatement,sql,vTagID[0]);
-            }
-        }
-        else
-        {
-            selectstatement="SELECT link FROM tag WHERE tagid= %i";    
-            sprintf(sql,selectstatement,vTagID[0]);
-        }
-        LogPrintf("CSqliteWrapper GetLinks sql %s\n",sql);
-        for(unsigned int i=1;i<vTagID.size();i++)
-        {
-            selectstatement="SELECT link FROM tag WHERE tagid= %i AND link IN(%s)";    
-            sprintf(sql,selectstatement,vTagID[i],sql);
-            
-        }
-        selectstatement="%s limit %i offset %i;"; 
-        sprintf(sql,selectstatement,sql,nMaxItems,nOffset);
-    }    
-    
-     LogPrintf("CSqliteWrapper GetLinks sql %s\n",sql); 
-    sqlite3_stmt  *stmt = NULL;
-    int rc;
-    rc = sqlite3_prepare_v2(pdb , sql , strlen(sql) , &stmt , NULL);
-    if(rc != SQLITE_OK)
-    {
-        if(stmt)
-        {
-            sqlite3_finalize(stmt);
-        }        
-        return false;
-    }
-    //int nColumn = sqlite3_column_count(stmt);
-    //int nItems=0;
-    do{ 
-        rc = sqlite3_step(stmt);
-        if(rc == SQLITE_ROW)
-        {
-           CLink link1;
-            if(sqlite3_column_bytes(stmt,0)>0)
-            {                
-                string str((char*)sqlite3_column_blob(stmt,0),(char*)sqlite3_column_blob(stmt,0)+sqlite3_column_bytes(stmt,0));
-                LogPrintf("db.getlink link length %i, hex %s \n",sqlite3_column_bytes(stmt,0),HexStr(str.begin(),str.end())); 
-                link1.Unserialize(str);        
-            }
-            LogPrintf("Link %s \n",link1.ToString());             
-            vLink.push_back(link1);               
-        }
-        else if(rc == SQLITE_DONE)
-        {            
-            sqlite3_finalize(stmt);
-            return true;
-        }
-        else
-        {
-            sqlite3_finalize(stmt);
-            return false;
-        }
-        //nItems++;
-    }while(1);//(nItems<nLimit);
-    return false;     
-}
+//bool CSqliteWrapper::GetLinks(const vector<string>& vTag,const int cc,const CLink link,std::vector<CLink>& vLink,const int nMaxItems,const int nOffset) const
+//{
+//    LogPrintf("CSqliteWrapper GetLinks \n");
+//    //char* zErrMsg=0;
+//    const char* selectstatement="SELECT link FROM tag WHERE %s = %s;";    
+//    char sql[2000];    
+//    if(!link.IsEmpty())
+//    {
+//        string strLink="x'";
+//        string strLink1=link.Serialize();
+//        strLink.append(HexStr(strLink1.begin(),strLink1.end()));
+//        strLink.append("'");
+//        sprintf(sql,selectstatement,"link",strLink.c_str());
+//    }
+//    else
+//    {        
+//        vector<int> vTagID;
+//        for(unsigned int i=0;i<vTag.size();i++)
+//        {
+//            int64_t nTagID;
+//           if(GetTagID(vTag[i],nTagID)) 
+//               vTagID.push_back(nTagID);
+//        }
+//        if(vTagID.size()==0&&cc==-1)
+//            return false;
+//        if(cc!=-1)
+//        {
+//            
+//            selectstatement="SELECT link FROM tag WHERE cc = %i";    
+//            sprintf(sql,selectstatement,cc);
+//            if(vTag.size()>0)
+//            {
+//                selectstatement="%s AND tagid= %i";    
+//                sprintf(sql,selectstatement,sql,vTagID[0]);
+//            }
+//        }
+//        else
+//        {
+//            selectstatement="SELECT link FROM tag WHERE tagid= %i";    
+//            sprintf(sql,selectstatement,vTagID[0]);
+//        }
+//        LogPrintf("CSqliteWrapper GetLinks sql %s\n",sql);
+//        for(unsigned int i=1;i<vTagID.size();i++)
+//        {
+//            selectstatement="SELECT link FROM tag WHERE tagid= %i AND link IN(%s)";    
+//            sprintf(sql,selectstatement,vTagID[i],sql);
+//            
+//        }
+//        selectstatement="%s limit %i offset %i;"; 
+//        sprintf(sql,selectstatement,sql,nMaxItems,nOffset);
+//    }    
+//    
+//     LogPrintf("CSqliteWrapper GetLinks sql %s\n",sql); 
+//    sqlite3_stmt  *stmt = NULL;
+//    int rc;
+//    rc = sqlite3_prepare_v2(pdb , sql , strlen(sql) , &stmt , NULL);
+//    if(rc != SQLITE_OK)
+//    {
+//        if(stmt)
+//        {
+//            sqlite3_finalize(stmt);
+//        }        
+//        return false;
+//    }
+//    //int nColumn = sqlite3_column_count(stmt);
+//    //int nItems=0;
+//    do{ 
+//        rc = sqlite3_step(stmt);
+//        if(rc == SQLITE_ROW)
+//        {
+//           CLink link1;
+//            if(sqlite3_column_bytes(stmt,0)>0)
+//            {                
+//                string str((char*)sqlite3_column_blob(stmt,0),(char*)sqlite3_column_blob(stmt,0)+sqlite3_column_bytes(stmt,0));
+//                LogPrintf("db.getlink link length %i, hex %s \n",sqlite3_column_bytes(stmt,0),HexStr(str.begin(),str.end())); 
+//                link1.Unserialize(str);        
+//            }
+//            LogPrintf("Link %s \n",link1.ToString());             
+//            vLink.push_back(link1);               
+//        }
+//        else if(rc == SQLITE_DONE)
+//        {            
+//            sqlite3_finalize(stmt);
+//            return true;
+//        }
+//        else
+//        {
+//            sqlite3_finalize(stmt);
+//            return false;
+//        }
+//        //nItems++;
+//    }while(1);//(nItems<nLimit);
+//    return false;     
+//}
 bool CSqliteWrapper::InsertTagID(const string tag,int64_t& tagID)
 {
     if (tag.size()>32)

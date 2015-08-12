@@ -490,9 +490,28 @@ bool IsSpentInMempool(const COutPoint op)
 {
     return(mempool.mapNextTx.find(op)!=mempool.mapNextTx.end());
 }
-bool GetPromotedContents(const vector<CScript>& vSenders,const vector<string>& vCCs,const vector<string>& vTags,vector<CContentDBItem>& vContents,const int nMaxResults,const int nOffset)
+//bool GetPromotedContents(const vector<CScript>& vSenders,const vector<string>& vCCs,const vector<string>& vTags,vector<CContentDBItem>& vContents,const int nMaxResults,const int nOffset)
+//{
+//    
+//    psqliteDB->GetPromotedContents(const vector<CScript>& vSenders,const vector<string>& vCCs,const vector<string>& vTags,vector<CContentDBItem>& vContents,const int nMaxResults,const int nOffset)
+//
+//}
+bool GetTxOutFromVoutPos(const int64_t pos,CTxOut& out)
 {
-    
-    psqliteDB->GetContents(const vector<CScript>& vSenders,const vector<string>& vCCs,const vector<string>& vTags,vector<CContentDBItem>& vContents,const int nMaxResults,const int nOffset)
-
+    CDiskBlockPos filePos;
+    filePos.nFile=pos>>32;
+    filePos.nPos=pos|0xffffffff;
+    CAutoFile file(OpenBlockFile(filePos, true), SER_DISK, CLIENT_VERSION);
+    if (file.IsNull())
+    {
+        LogPrintf("Getransaction by pos, file not found \n");
+        return error("%s: OpenBlockFile failed", __func__);
+    }    
+    try {        
+        file >> out;
+    } catch (std::exception &e) {
+        LogPrintf("GetTxOutFromVoutPos by pos, error: %s\n",e.what());
+        return error("%s : Deserialize or I/O error - %s", __func__, e.what());
+    }
+    return true;
 }

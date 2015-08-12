@@ -24,6 +24,7 @@ using namespace json_spirit;
 using namespace std;
 
 static const int DEFAULT_MAX_CONTENTS = 100;
+static const int DEFAULT_MAX_PROMOTEDCONTENTS = 100;
 static const int DEFAULT_MAX_CONTENTSBYTES = 10000000;
 static const int DEFAULT_MAX_BLKCOUNT = 10;
 
@@ -345,42 +346,61 @@ Object _output_content(const CContent& cttIn, const int& cformat, const unsigned
     }
     return r;
 }
-
+bool _get_posters2(const CScript& sender,Array& posters)
+{  
+    CDomain domain;
+    if (pDomainDBView->GetDomainByForward(sender, domain, true))
+    {
+        Object obj;
+        obj.push_back(Pair("domain", domain.ToJson()));
+        posters.push_back(obj);
+        //return true;
+    }
+    string str;
+    ScriptPubKeyToString(sender,str);
+    Object obj;
+    obj.push_back(Pair("id", str));
+    posters.push_back(obj);
+    return true;
+}
 Array _get_posters(const CTransaction& tx)
 {
     Array posters;
 
-    BOOST_FOREACH(const CTxIn& in, tx.vin)
+    //BOOST_FOREACH(const CTxIn& in, tx.vin)
     {
+        CTxIn in=tx.vin[0];
         if (in.prevout.hash.EqualTo(0))
-            continue;
+            return posters;
         CTransaction prevTx;
         uint256 tmphash;
         if (!GetTransaction(in.prevout.hash, prevTx, tmphash, true))
             throw JSONRPCError(RPC_INTERNAL_ERROR, "Get prev tx failed");
-        txnouttype type;
-        vector<CTxDestination> raddresses;
-        unsigned int wRequired;
-        if (!ExtractDestinations(prevTx.vout[in.prevout.n].scriptPubKey, type, raddresses, wRequired))
-            continue;
-        CDomain domain;
-        if (pDomainDBView->GetDomainByForward(prevTx.vout[in.prevout.n].scriptPubKey, domain, true))
-        {
-            Object obj;
-            obj.push_back(Pair("domain", domain.strDomain));
-            posters.push_back(obj);
-        }
-
-        BOOST_FOREACH(const CTxDestination & raddr, raddresses)
-        {
-            CBitcoinAddress addr(raddr);
-            Object obj;
-            obj.push_back(Pair("id", addr.ToString()));
-            posters.push_back(obj);
-        }
+        _get_posters2(prevTx.vout[in.prevout.n].scriptPubKey,posters);
+//        txnouttype type;
+//        vector<CTxDestination> raddresses;
+//        unsigned int wRequired;
+//        if (!ExtractDestinations(prevTx.vout[in.prevout.n].scriptPubKey, type, raddresses, wRequired))
+//            continue;
+//        CDomain domain;
+//        if (pDomainDBView->GetDomainByForward(prevTx.vout[in.prevout.n].scriptPubKey, domain, true))
+//        {
+//            Object obj;
+//            obj.push_back(Pair("domain", domain.strDomain));
+//            posters.push_back(obj);
+//        }
+//
+//        BOOST_FOREACH(const CTxDestination & raddr, raddresses)
+//        {
+//            CBitcoinAddress addr(raddr);
+//            Object obj;
+//            obj.push_back(Pair("id", addr.ToString()));
+//            posters.push_back(obj);
+//        }
     }
     return posters;
 }
+
 
 Value getcontentbylink(const Array& params, bool fHelp)
 {
@@ -589,6 +609,107 @@ bool _parse_getcontents_params(const Array& params, int& fbh, int& maxc, int& ma
         frAddrs = params[1].get_array();
     return true;
 }
+bool _parse_getpromotedcontents_params(const Array& params, int& maxc,int& nOffset, int& maxb, Array& firstcc,Array& arrTags, int& fContentFormat, unsigned char& cflag, Array& frAddrs)
+{
+    if (params.size() > 4)
+        return false;
+    if (params.size() == 0)
+    {       
+        maxc = DEFAULT_MAX_PROMOTEDCONTENTS;
+        maxb = DEFAULT_MAX_CONTENTSBYTES;
+        return true;
+    }
+    Object param = params[0].get_obj();
+    const Value& maxc_v = find_value(param, "maxc");
+    try
+    {
+        maxc = maxc_v.get_int();
+    } catch (std::exception& e)
+    {
+        maxc = DEFAULT_MAX_PROMOTEDCONTENTS;
+    }
+    const Value& nOffset_v = find_value(param, "offset");
+    try
+    {
+        nOffset = nOffset_v.get_int();
+    } catch (std::exception& e)
+    {
+        nOffset =0;
+    }
+    const Value& maxb_v = find_value(param, "maxb");
+    try
+    {
+        maxb = maxb_v.get_int();
+    } catch (std::exception& e)
+    {
+        maxb = DEFAULT_MAX_CONTENTSBYTES;
+    }
+    
+    const Value& fContentFormat_v = find_value(param, "cformat");
+    try
+    {
+        fContentFormat = fContentFormat_v.get_int();
+    } catch (std::exception& e)
+    {
+        fContentFormat = CONTENT_FORMAT_JSON_B64;
+    }
+
+    // cflag
+    cttflag fShowLink;
+    const Value& fShowLink_v = find_value(param, "fShowLink");
+    try
+    {
+        fShowLink = fShowLink_v.get_bool() ? CONTENT_SHOW_LINK : CONTENT_FALSE;
+    } catch (std::exception& e)
+    {
+        fShowLink = CONTENT_SHOW_LINK;
+    }
+    cttflag fShowPoster;
+    const Value& fShowPoster_v = find_value(param, "fShowPoster");
+    try
+    {
+        fShowPoster = fShowPoster_v.get_bool() ? CONTENT_SHOW_POSTER : CONTENT_FALSE;
+    } catch (std::exception& e)
+    {
+        fShowPoster = CONTENT_SHOW_POSTER;
+    }
+    cttflag fShowValue;
+    const Value& fShowValue_v = find_value(param, "fShowValue");
+    try
+    {
+        fShowValue = fShowValue_v.get_bool() ? CONTENT_SHOW_VALUE : CONTENT_FALSE;
+    } catch (std::exception& e)
+    {
+        fShowValue = CONTENT_SHOW_VALUE;
+    }
+    cttflag fShowAddr;
+    const Value& fShowAddr_v = find_value(param, "fShowAddr");
+    try
+    {
+        fShowAddr = fShowAddr_v.get_bool() ? CONTENT_SHOW_ADDR : CONTENT_FALSE;
+    } catch (std::exception& e)
+    {
+        fShowAddr = CONTENT_SHOW_ADDR;
+    }
+    cttflag fSimpleFormat;
+    const Value& fSimpleFormat_v = find_value(param, "fSimpleFormat");
+    try
+    {
+        fSimpleFormat = fSimpleFormat_v.get_bool() ? CONTENT_SIMPLE_FORMAT : CONTENT_FALSE;
+    } catch (std::exception& e)
+    {
+        fSimpleFormat = CONTENT_FALSE;
+    }
+    cflag = fShowLink | fShowPoster | fShowValue | fShowAddr | fSimpleFormat;
+    
+    if (params.size() > 1)
+        arrTags=params[1].get_array();
+    if (params.size() > 2)    
+        firstcc = params[2].get_array();    
+    if (params.size() > 3)
+        frAddrs = params[3].get_array();
+    return true;
+}
 
 // true if have one in firstcc array, and one in withcc array, and none in withoutcc array
 
@@ -736,7 +857,7 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
                     CBlockIndex* pindex = (*mi).second;
                     if ((fAsc ? pindex->nHeight >= fbh : pindex->nHeight <= fbh) && std::abs(pindex->nHeight - fbh) <= total)
                     { // make sure the tx is in block range
-                        int nTx = GetNTx(it->first.GetHash()); // Very inefficient
+                        int nTx = GetNTx(it->first.GetHash()); 
                         CLink clink(pindex->nHeight, nTx, i);
                         CContent ctt;
                         if (GetContentFromVout(it->first, i, ctt))
@@ -770,7 +891,55 @@ std::string _test()
 }
 json_spirit::Value getpromotedcontents(const json_spirit::Array& params, bool fHelp)
 {
-    
+    if (fHelp)
+        throw runtime_error("getpromotedcontents Help msg");    
+    int maxb;    
+    int nMaxResults;
+    int nOffset;
+    Array firstcc;
+    Array gAddrs;
+    Array arrTags;
+    int cformat;
+    unsigned char cflag;    
+    if (!_parse_getpromotedcontents_params(params, nMaxResults,nOffset, maxb, firstcc,arrTags, cformat, cflag, gAddrs))
+        throw runtime_error("getpromotedcontents Error parsing parameters");
+    vector<CScript> vSenders;
+    BOOST_FOREACH(const Value& addrStr, gAddrs)
+    {
+        CBitcoinAddress address(addrStr.get_str());
+        if (!address.IsValid())
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Address is invalid");
+        CScript scriptPubKey = GetScriptForDestination(address.Get());
+        vSenders.push_back(scriptPubKey);
+    }    
+    vector<int> vCCs;
+    BOOST_FOREACH(const Value& cc, firstcc)
+        vCCs.push_back(cc.get_int());
+    vector<string> vTags;
+    BOOST_FOREACH(const Value& tag, arrTags)
+        vTags.push_back(tag.get_str());
+    vector<CContentDBItem> vContents;
+    Array r;    
+    int b = 0;
+    if(!SearchPromotedContents(vSenders,vCCs,vTags,vContents,nMaxResults,nOffset))
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "SearchPromotedContents failed");      
+    for (int i = 0; i < (int) vContents.size(); i++)
+    {
+        if ( b > maxb)
+            return r;
+        CContent ctt;
+        CTxOut out;
+        if (GetTxOutFromVoutPos(vContents[i].pos,out))
+        {
+            Array posters;
+            if (cflag & CONTENT_SHOW_POSTER)
+                 _get_posters2(vContents[i].sender,posters);
+            b += ctt.size();
+            Object cttr = _output_content(CContent(out.strContent), cformat, cflag, vContents[i].link, posters, vContents[i].lockValue, out.scriptPubKey);
+            r.push_back(cttr);
+        }            
+    }            
+    return r;
 }
 Value devtest(const Array& params, bool fHelp)
 {
@@ -1287,6 +1456,60 @@ json_spirit::Value getdomainsbyforward(const json_spirit::Array& params, bool fH
     LogPrintf("getdomainsbyoForward toJson%i \n", arrDomains.size());
     return Value(arrDomains);
 }
+json_spirit::Value getdomainsbytags(const json_spirit::Array& params, bool fHelp)
+{
+    if (fHelp || params.size() != 1)
+        throw runtime_error("Wrong number of parameters");
+    if (params[0].type() != array_type)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter ids, expected array");
+    Array arrTags = params[0].get_array(); 
+    std::vector<CDomain> vDomain;
+    vector<string>vTags;
+    for (unsigned int i = 0; i < arrTags.size(); i++)
+    {
+        vTags.push_back(arrTags[i].get_str());
+    }   
+        pDomainDBView->GetDomainByTags(vTags, vDomain, true);    
+    Array arrDomains;
+   for (unsigned int i = 0; i < vDomain.size(); i++) 
+   {
+       arrDomains.push_back(vDomain[i].ToJson());
+   }
+    LogPrintf("getdomainsbytags toJson%i \n", arrDomains.size());
+    return Value(arrDomains);
+}
+json_spirit::Value getdomainsbyalias(const json_spirit::Array& params, bool fHelp)
+{
+    if (fHelp || params.size() != 1)
+        throw runtime_error("Wrong number of parameters");    
+    string alias = params[0].get_str(); 
+    vector<CDomain> vDomain;
+    pDomainDBView->GetDomainsByAlias(alias, vDomain, true);    
+    Array arrDomains;
+   for (unsigned int i = 0; i < vDomain.size(); i++) 
+   {
+       arrDomains.push_back(vDomain[i].ToJson());
+   }
+    LogPrintf("getdomainsbyalias toJson%i \n", arrDomains.size());
+    return Value(arrDomains);
+}
+json_spirit::Value getdomainsexpiring(const json_spirit::Array& params, bool fHelp)
+{
+    if (fHelp || params.size() != 1)
+        throw runtime_error("Wrong number of parameters");
+    if (params[0].type() != array_type)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter ids, expected array");
+    uint32_t time = params[0].get_int(); //note:this parameter is time from now on
+    vector<string> vDomain;
+    pDomainDBView->GetDomainNamesToExpire(vDomain,time, true);    
+    Array arrDomains;
+   for (unsigned int i = 0; i < vDomain.size(); i++) 
+   {
+       arrDomains.push_back(vDomain[i]);
+   }
+    LogPrintf("getdomainsexpiring toJson%i \n", arrDomains.size());
+    return Value(arrDomains);
+}
 
 json_spirit::Value getdomainbyforward(const json_spirit::Array& params, bool fHelp)
 {
@@ -1304,51 +1527,53 @@ json_spirit::Value getdomainbyforward(const json_spirit::Array& params, bool fHe
 
 json_spirit::Value searchproducts(const json_spirit::Array& params, bool fHelp)
 {
-    if (fHelp || params.size() < 1)
-        throw runtime_error("Wrong number of parameters");
-    if (params[0].type() != array_type)
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter tags, expected array");
-    Array arrTag = params[0].get_array();    
-    std::vector<string> vTag;
-    for (unsigned int i = 0; i < arrTag.size(); i++)
+    if (fHelp)
+        throw runtime_error("getpromotedcontents Help msg");    
+    int maxb;    
+    int nMaxResults;
+    int nOffset;
+    Array firstcc;
+    Array gAddrs;
+    Array arrTags;
+    int cformat;
+    unsigned char cflag;    
+    if (!_parse_getpromotedcontents_params(params, nMaxResults,nOffset, maxb, firstcc,arrTags, cformat, cflag, gAddrs))
+        throw runtime_error("getpromotedcontents Error parsing parameters");
+    vector<CScript> vSenders;
+    BOOST_FOREACH(const Value& addrStr, gAddrs)
     {
-        if (arrTag[i].type() == str_type)
-        {
-            string tag = arrTag[i].get_str();
-            if (tag != "" && tag.size() <= 32)
-                vTag.push_back(tag);
-        }
-    }
-    int nMaxItems = 100;
-    if (params.size() > 1 && params[1].type() == int_type)
-        nMaxItems = params[1].get_int();
-    int nOffset = 0;
-    if (params.size() > 2 && params[2].type() == int_type)
-        nOffset = params[2].get_int();
-    vector<CLink> vLink;
-    pTagDBView->Search(vLink, vTag, CC_PRODUCT, nMaxItems, nOffset);
-    LogPrintf("search tag result %i \n", vLink.size());
+        CBitcoinAddress address(addrStr.get_str());
+        if (!address.IsValid())
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Address is invalid");
+        CScript scriptPubKey = GetScriptForDestination(address.Get());
+        vSenders.push_back(scriptPubKey);
+    }    
+    vector<int> vCCs;    
+    vCCs.push_back(CC_PRODUCT_P);
+    vector<string> vTags;
+    BOOST_FOREACH(const Value& tag, arrTags)
+        vTags.push_back(tag.get_str());
+    vector<CContentDBItem> vContents;
+    Array r;    
+    int b = 0;
+    if(!SearchPromotedContents(vSenders,vCCs,vTags,vContents,nMaxResults,nOffset))
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "SearchPromotedContents failed");
     Array arrProducts;
     vector<CProduct> vProduct;
-    for (unsigned int i = 0; i < vLink.size(); i++) 
+    for (int i = 0; i < (int) vContents.size(); i++)
    {
-       CBlockIndex* pblockindex;
-        CBlock block;
-        if (!GetBlockByHeight(vLink[i].nHeight, block, pblockindex))
-            continue;
-        CTransaction tx;
-        if (!GetTxFromBlock(block, vLink[i].nTx, tx))
-            continue;
-        CContent content;
-        if (!GetContentFromVout(tx, vLink[i].nVout, content))
-            continue;    
-       CProduct product;
-       
+       if ( b > maxb)
+            return r;
+       CTxOut out;
+       if (!GetTxOutFromVoutPos(vContents[i].pos,out))
+           continue;       
+        CContent content(out.strContent);           
+       CProduct product;       
         if (product.SetContent(content))
        {           
            LogPrintf("searchproducts secontent done \n");
-            product.link = vLink[i];
-            product.seller = GetTxInScriptPubKey(tx.vin[0]);
+            product.link = vContents[i].link;
+            product.seller = vContents[i].sender;
            LogPrintf("searchproducts seller %s \n", product.seller.ToString());
             bool fFound = false;
             for (unsigned int j = 0; j < vProduct.size(); j++)
@@ -1368,20 +1593,19 @@ json_spirit::Value searchproducts(const json_spirit::Array& params, bool fHelp)
            }
            if (fFound)
                continue;           
-            if (product.seller.size() > 0)
+            if (vContents[i].senderDomain.size() > 0)
            {
-               vector<CDomain> vDomain;
-                pDomainDBView->GetDomainByForward(product.seller, vDomain, true);
-                 for (unsigned int j = 0; j < vDomain.size(); j++) 
-                 {
-                    if (vDomain[j].strAlias.size() > 0)
-                         product.vSellerDomain.push_back(vDomain[j].strAlias);
+               CDomain domain;
+                pDomainDBView->GetDomainByName(vContents[i].senderDomain, domain);
+                
+                    if (domain.strAlias.size() > 0)
+                         product.vSellerDomain.push_back(domain.strAlias);
                      else
-                     product.vSellerDomain.push_back(vDomain[j].strDomain);
-                 }
-                if (product.recipient.size() == 0)
-                    product.recipient = product.seller;
-           }
+                        product.vSellerDomain.push_back(domain.strDomain);
+                 
+            }
+            if (product.recipient.size() == 0)
+                product.recipient = product.seller;           
            vProduct.push_back(product);           
        }
            

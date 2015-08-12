@@ -75,7 +75,7 @@ public:
     bool HasCc(const cctype& cc,const bool requireStandard = true)const; // if requireStandard = false, this function will be very costly
     bool FirstCc(const cctype& cc)const;
     bool FirstNCc(std::vector<cctype>& ccv,bool& countOverN,const unsigned int n = STANDARD_CONTENT_MAX_CC)const;
-    int GetFirstCc()const;
+    int GetFirstCc(int nIteratrions=0)const;
     bool IsStandard()const;
     bool EncodeP(const int cc, const std::vector<std::pair<int, string> >& vEncoding);
     bool EncodeUnit(const int cc, const string& content);
