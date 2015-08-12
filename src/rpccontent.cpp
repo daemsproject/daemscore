@@ -467,7 +467,7 @@ Value getfirstncc(const Array& params, bool fHelp)
     return r;
 }
 
-bool _parse_getcontents_params(const Array& params, int& fbh, int& maxc, int& maxb, int& blkc, Array& withcc, Array& withoutcc, Array& firstcc, int& fContentFormat, unsigned char& cflag, int& mincsize, Array& frAddrs, bool& fAsc)
+bool _parse_getcontents_params(const Array& params, int& fbh, int& fntx, int&fnout, int& maxc, int& maxb, int& blkc, Array& withcc, Array& withoutcc, Array& firstcc, int& fContentFormat, unsigned char& cflag, int& mincsize, Array& frAddrs, bool& fAsc)
 {
     if (params.size() > 3)
         return false;
@@ -485,7 +485,35 @@ bool _parse_getcontents_params(const Array& params, int& fbh, int& maxc, int& ma
         fbh = fbh_v.get_int();
     } catch (std::exception& e)
     {
-        fbh = 0;
+        fbh = chainActive.Height();
+    }
+    const Value& fntx_v = find_value(param, "fntx");
+    try
+    {
+        fntx = fntx_v.get_int();
+    } catch (std::exception& e)
+    {
+        fntx = 0;
+    }
+    const Value& fnout_v = find_value(param, "fnout");
+    try
+    {
+        fnout = fnout_v.get_int();
+    } catch (std::exception& e)
+    {
+        fnout = 0;
+    }
+    const Value& flink_v = find_value(param, "flink");
+    try
+    {
+        CLink flink(flink_v.get_str());
+        if(flink.IsValid()){
+            fbh = flink.nHeight;
+            fntx = flink.nTx;
+            fnout = flink.nVout;
+        }
+    } catch (std::exception& e)
+    {
     }
     const Value& maxc_v = find_value(param, "maxc");
     try
@@ -761,7 +789,9 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
 {
     if (fHelp)
         throw runtime_error("Help msg");
-    int fbh = chainActive.Height();
+    int fbh;
+    int fntx;
+    int fnout;
     int maxc;
     int maxb;
     int blkc;
@@ -773,7 +803,7 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
     unsigned char cflag;
     int minsz;
     bool fAsc; // get the block by ascending or descending sequence
-    if (!_parse_getcontents_params(params, fbh, maxc, maxb, blkc, withcc, withoutcc, firstcc, cformat, cflag, minsz, gAddrs, fAsc))
+    if (!_parse_getcontents_params(params, fbh, fntx, fnout, maxc, maxb, blkc, withcc, withoutcc, firstcc, cformat, cflag, minsz, gAddrs, fAsc))
         throw runtime_error("Error parsing parameters");
     Array r;
     int c = 0;
@@ -789,17 +819,15 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
             CBlock block;
             if (!GetBlockByHeight(nHeight, block, pblockindex))
                 throw JSONRPCError(RPC_INTERNAL_ERROR, "Get block failed");
-            int nTx = 0;
-
-            BOOST_FOREACH(const CTransaction& tx, block.vtx)
+            for (int nTx = i == 0 ? fntx : 0; nTx < (int) block.vtx.size(); nTx++)
             {
-                int nVout = 0;
+                const CTransaction& tx = block.vtx.at(nTx);
                 Array posters;
                 if (cflag & CONTENT_SHOW_POSTER)
                     posters = _get_posters(tx);
-
-                BOOST_FOREACH(const CTxOut& out, tx.vout)
+                for (int nVout = (i == 0 && nTx == fntx) ? fnout : 0; nVout < (int) tx.vout.size(); nVout++)
                 {
+                    const CTxOut& out = tx.vout.at(nVout);
                     if (c >= maxc)
                         return r;
                     if ((int) out.strContent.size() >= minsz)
@@ -821,9 +849,7 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
                         }
 
                     }
-                    nVout++;
                 }
-                nTx++;
             }
             fAsc ? nHeight++ : nHeight--;
         }

@@ -30,6 +30,11 @@ bool CLink::IsEmpty() const
     return (nHeight == -1 && nTx == 0 && nVout == 0);
 }
 
+bool CLink::IsValid() const
+{
+    return nHeight != -1;
+}
+
 bool CLink::SetInt(const int nHeightIn, const int nTxIn, const int nVoutIn)
 {
     nHeight = nHeightIn;

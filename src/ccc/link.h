@@ -79,6 +79,7 @@ public:
     std::string ToString(const linkformat linkFormat = LINK_FORMAT_DEC)const;
     void SetEmpty();
     bool IsEmpty() const;
+    bool IsValid() const;   // Can not guarantee link content exists in block chain
     bool SetInt(const int nHeightIn, const int nTxIn, const int nVoutIn = 0);
     bool SetString(const std::string linkStr);
     bool SetString(const vector<unsigned char>& linkVch);
