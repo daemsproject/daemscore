@@ -11,6 +11,7 @@
 #include <boost/filesystem.hpp>
 #include <stdio.h>
 #include <bits/stl_vector.h>
+#include <bits/basic_string.h>
 using namespace std;
 //class sqlite_error : public std::runtime_error
 //{
@@ -1071,6 +1072,8 @@ bool CSqliteWrapper::SearchContents(const vector<int64_t>& vSenderIDs,const vect
     if((vSenderIDs.size()+vCCs.size()+vTagIDs.size())>0)
         strWhere="WHERE ";    
     char chTag[1000];
+    chTag[0]=0;
+    string strtmp;
     if(vTagIDs.size()>0)
     {
         if(vTagIDs.size()>10)
@@ -1079,31 +1082,52 @@ bool CSqliteWrapper::SearchContents(const vector<int64_t>& vSenderIDs,const vect
         sprintf(chTag,tagselectstatement,vTagIDs[0]);
         const char* tagselectstatement2="SELECT link FROM tag WHERE link IN(%s) AND tagid=%lld;";
         for(unsigned int i=1;i<vTagIDs.size();i++)   
-            sprintf (chTag,tagselectstatement2,chTag,vTagIDs[i]);
-        sprintf(chTag,"link IN(%s) ",chTag);
+        {
+            strtmp.assign(chTag);
+            sprintf (chTag,tagselectstatement2,strtmp.c_str(),vTagIDs[i]);
+        }
+        strtmp.assign(chTag);
+        sprintf(chTag,"link IN(%s) ",strtmp.c_str());
     }
     char chSender[2000];
+    chSender[0]=0;
+    const char* chAnd="AND ";
+    const char* chEmpty="";
+    
     if(vSenderIDs.size()>0)
     {
         if(vSenderIDs.size()>100)
             return false;     
         sprintf(chSender,"%lld",vSenderIDs[0]);     
-        for(unsigned int i=1;i<vSenderIDs.size();i++)        
-            sprintf(chSender,"%s,%lld",chSender,vSenderIDs[i]);        
-        sprintf(chSender,"%ssender IN(%s) ",(vTagIDs.size()>0)?"AND ":"",chSender);
+        for(unsigned int i=1;i<vSenderIDs.size();i++)      
+        {
+            strtmp.assign(chSender);
+            sprintf(chSender,"%s,%lld",strtmp.c_str(),vSenderIDs[i]);    
+        }
+        strtmp.assign(chSender);
+        sprintf(chSender,"%ssender IN(%s) ",(vTagIDs.size()>0)?chAnd:chEmpty,strtmp.c_str());
     } 
     char chCC[1000];
+    chCC[0]=0;
+    string strCC;
     if(vCCs.size()>0)
     {
         if(vCCs.size()>10)
             return false;     
         sprintf(chCC,"%lld",vCCs[0]);     
-        for(unsigned int i=1;i<vCCs.size();i++)        
-            sprintf(chCC,"%s,%lld",chCC,vCCs[i]);        
-        sprintf(chCC,"%scc IN(%s) ",(vTagIDs.size()+vSenderIDs.size())>0?"AND ":"",chCC);
+        //LogPrintf("CSqliteWrapper GetContents chCC: %s\n",chCC); 
+        for(unsigned int i=1;i<vCCs.size();i++)     
+        {
+            strCC.assign(chCC);
+            sprintf(chCC,"%s,%lld",strCC.c_str(),vCCs[i]);  
+        }
+       // LogPrintf("CSqliteWrapper GetContents chCC: %s\n",chCC);   
+        strCC.assign(chCC);
+        sprintf(chCC,"%scc IN(%s) ",(vTagIDs.size()+vSenderIDs.size())>0?chAnd:chEmpty,strCC.c_str());
+       // LogPrintf("CSqliteWrapper GetContents chCC: %s\n",chCC); 
     } 
     sprintf(sql,selectstatement,strWhere.c_str(),chSender,chTag,chCC,nMaxResults,nOffset);
-    LogPrintf("CSqliteWrapper GetLinks GetContents %s\n",sql); 
+    LogPrintf("CSqliteWrapper GetContents sql: %s\n",sql); 
     sqlite3_stmt  *stmt = NULL;
     int rc;
     rc = sqlite3_prepare_v2(pdb , sql , strlen(sql) , &stmt , NULL);

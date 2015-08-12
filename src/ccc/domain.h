@@ -54,7 +54,7 @@ public:
     bool IsLevel2() const;
     json_spirit::Value ToJson()const;
     CLink GetLastRedirectLink()const;
-    
+    bool IsEmpty() const;
     ADD_SERIALIZE_METHODS;   
 
     template <typename Stream, typename Operation>

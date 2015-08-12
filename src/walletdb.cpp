@@ -378,7 +378,7 @@ bool CWalletDB::ReadKeyStore(CCryptoKeyStore* keyStore){
             CBitcoinSecret addtmp;
             addtmp.SetString(valTemp.get_str());
             keyStore->baseKey=addtmp.GetKey();
-            LogPrintf("privekey to pubkey:%s \n",CBitcoinAddress(keyStore->baseKey.pubKey).ToString());
+            //LogPrintf("privekey to pubkey:%s \n",CBitcoinAddress(keyStore->baseKey.pubKey).ToString());
             keyStore->fHasPriv=true;
         }
         //step key priv
@@ -387,7 +387,7 @@ bool CWalletDB::ReadKeyStore(CCryptoKeyStore* keyStore){
             CBitcoinSecret addtmp;
             addtmp.SetString(valTemp.get_str());
             keyStore->stepKey=addtmp.GetKey();
-            LogPrintf("privekey to pubkey:%s \n",CBitcoinAddress(keyStore->stepKey.pubKey).ToString());
+           // LogPrintf("privekey to pubkey:%s \n",CBitcoinAddress(keyStore->stepKey.pubKey).ToString());
             keyStore->fHasStepPriv=true;
         }
         valTemp = find_value(objId, "basepub");

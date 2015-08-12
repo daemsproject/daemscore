@@ -9,6 +9,7 @@
 #include "sync.h"
 #include "util.h"
 #include "ccc/content.h"
+#include "ccc/shop.h"
 #include "ccc/link.h"
 #include "ccc/filepackage.h"
 
@@ -289,7 +290,7 @@ Object _voutToJson(const CTxOut& txout)
     return out;
 }
 
-Object _output_content(const CContent& cttIn, const int& cformat, const unsigned char& cttf, const CLink& clinkIn, const Array& posters, const CAmount nValue, const CScript& scriptPubKey)
+Object _output_content(const CContent& cttIn, const int& cformat, const unsigned char& cttf, const CLink& clinkIn, const CBitcoinAddress& posterAddress, const CDomain& domain, const CAmount nValue, const CScript& scriptPubKey)
 {
     CLink clink = clinkIn;
     CContent ctt = cttIn;
@@ -304,7 +305,11 @@ Object _output_content(const CContent& cttIn, const int& cformat, const unsigned
 
     if (cttf & CONTENT_SHOW_POSTER)
         {
-        r.push_back(Pair("poster", posters));
+        Object poster;
+        poster.push_back(Pair("id", posterAddress.ToString()));
+        if (!domain.IsEmpty())
+            poster.push_back(Pair("domain", domain.ToJson()));
+        r.push_back(Pair("poster", poster));
         }
     if (cttf & CONTENT_SHOW_VALUE)
         r.push_back(Pair("satoshi", nValue));
@@ -313,9 +318,10 @@ Object _output_content(const CContent& cttIn, const int& cformat, const unsigned
         if (scriptPubKey.size() == 0)
             r.push_back(Pair("addr", ""));
         else
-        {
-            CBitcoinAddress addr(scriptPubKey);
-            r.push_back(Pair("addr", addr.ToString()));
+        {            
+            std::string addr;
+            ScriptPubKeyToString(scriptPubKey, addr);
+            r.push_back(Pair("addr", addr));
         }
     }
     switch (cformat)
@@ -346,7 +352,8 @@ Object _output_content(const CContent& cttIn, const int& cformat, const unsigned
     }
     return r;
 }
-bool _get_posters2(const CScript& sender,Array& posters)
+
+bool _get_posters2(const CScript& sender, Array& posters)
 {  
     CDomain domain;
     if (pDomainDBView->GetDomainByForward(sender, domain, true))
@@ -357,26 +364,27 @@ bool _get_posters2(const CScript& sender,Array& posters)
         //return true;
     }
     string str;
-    ScriptPubKeyToString(sender,str);
+    ScriptPubKeyToString(sender, str);
     Object obj;
     obj.push_back(Pair("id", str));
     posters.push_back(obj);
     return true;
 }
+
 Array _get_posters(const CTransaction& tx)
 {
     Array posters;
 
     //BOOST_FOREACH(const CTxIn& in, tx.vin)
     {
-        CTxIn in=tx.vin[0];
+        CTxIn in = tx.vin[0];
         if (in.prevout.hash.EqualTo(0))
             return posters;
         CTransaction prevTx;
         uint256 tmphash;
         if (!GetTransaction(in.prevout.hash, prevTx, tmphash, true))
             throw JSONRPCError(RPC_INTERNAL_ERROR, "Get prev tx failed");
-        _get_posters2(prevTx.vout[in.prevout.n].scriptPubKey,posters);
+        _get_posters2(prevTx.vout[in.prevout.n].scriptPubKey, posters);
 //        txnouttype type;
 //        vector<CTxDestination> raddresses;
 //        unsigned int wRequired;
@@ -401,6 +409,20 @@ Array _get_posters(const CTransaction& tx)
     return posters;
 }
 
+bool _get_poster(const CTransaction& tx, string& address, CDomain& domain) // return false for coinbase
+{
+    CTxIn in = tx.vin[0];
+    if (in.prevout.hash.EqualTo(0))
+        return false;
+    CTransaction prevTx;
+    uint256 tmphash;
+    if (!GetTransaction(in.prevout.hash, prevTx, tmphash, true))
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "Get prev tx failed");
+    ScriptPubKeyToString(prevTx.vout[in.prevout.n].scriptPubKey, address);
+    pDomainDBView->GetDomainByForward(prevTx.vout[in.prevout.n].scriptPubKey, domain, true);
+    return true;
+
+}
 
 Value getcontentbylink(const Array& params, bool fHelp)
 {
@@ -418,9 +440,11 @@ Value getcontentbylink(const Array& params, bool fHelp)
     if (!GetContentFromVout(tx, clink.nVout, content))
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Get content failed");
     int cformat = (params.size() == 2) ? params[1].get_int() : CONTENT_FORMAT_STR_HEX;
-    Array posters = _get_posters(tx);
+    string address;
+    CDomain domain;
+    _get_poster(tx, address, domain);
     unsigned char cflag = CONTENT_SHOW_LINK | CONTENT_SHOW_POSTER | CONTENT_SHOW_VALUE | CONTENT_SHOW_ADDR;
-    Object r = _output_content(content, cformat, cflag, clink, posters, tx.vout[clink.nVout].nValue, tx.vout[clink.nVout].scriptPubKey);
+    Object r = _output_content(content, cformat, cflag, clink, address, domain, tx.vout[clink.nVout].nValue, tx.vout[clink.nVout].scriptPubKey);
     return r;
 }
 
@@ -435,11 +459,11 @@ Value getcontentbystring(const Array& params, bool fHelp)
     int cformat = (params.size() == 2) ? params[1].get_int() : CONTENT_FORMAT_STR_HEX;
     unsigned char cflag = CONTENT_SHOW_ADDR;
     CLink clink;
-    Array posters;
     CAmount nValue = 0;
     CScript scriptPubKey;
-
-    Object r = _output_content(content, cformat, cflag, clink, posters, nValue, scriptPubKey);
+    string address;
+    CDomain domain;
+    Object r = _output_content(content, cformat, cflag, clink, address, domain, nValue, scriptPubKey);
     return r;
 }
 
@@ -467,7 +491,7 @@ Value getfirstncc(const Array& params, bool fHelp)
     return r;
 }
 
-bool _parse_getcontents_params(const Array& params, int& fbh, int& fntx, int&fnout, int& maxc, int& maxb, int& blkc, Array& withcc, Array& withoutcc, Array& firstcc, int& fContentFormat, unsigned char& cflag, int& mincsize, Array& frAddrs, bool& fAsc)
+bool _parse_getcontents_params(const Array& params, int& fbh, int& fntx, int&fnout, int& maxc, int& maxb, int& blkc, Array& withcc, Array& withoutcc, Array& firstcc, int& fContentFormat, unsigned char& cflag, int& mincsize, Array& frAddrs, Array& toAddrs, bool& fAsc)
 {
     if (params.size() > 3)
         return false;
@@ -507,7 +531,8 @@ bool _parse_getcontents_params(const Array& params, int& fbh, int& fntx, int&fno
     try
     {
         CLink flink(flink_v.get_str());
-        if(flink.IsValid()){
+        if (flink.IsValid())
+        {
             fbh = flink.nHeight;
             fntx = flink.nTx;
             fnout = flink.nVout;
@@ -633,13 +658,25 @@ bool _parse_getcontents_params(const Array& params, int& fbh, int& fntx, int&fno
     } catch (std::exception& e)
     {
     }
-    if (params.size() > 1)
-        frAddrs = params[1].get_array();
+    const Value& frAddrs_v = find_value(param, "frAddrs");
+    try
+    {
+        frAddrs = frAddrs_v.get_array();
+    } catch (std::exception& e)
+    {
+    }
+    const Value& toAddrs_v = find_value(param, "toAddrs");
+    try
+    {
+        toAddrs = toAddrs_v.get_array();
+    } catch (std::exception& e)
+    {
+    }
     return true;
 }
 bool _parse_getpromotedcontents_params(const Array& params, int& maxc,int& nOffset, int& maxb, Array& firstcc,Array& arrTags, int& fContentFormat, unsigned char& cflag, Array& frAddrs)
 {
-    if (params.size() > 4)
+    if (params.size() >1 )
         return false;
     if (params.size() == 0)
     {       
@@ -729,13 +766,27 @@ bool _parse_getpromotedcontents_params(const Array& params, int& maxc,int& nOffs
         fSimpleFormat = CONTENT_FALSE;
     }
     cflag = fShowLink | fShowPoster | fShowValue | fShowAddr | fSimpleFormat;
-    
-    if (params.size() > 1)
-        arrTags=params[1].get_array();
-    if (params.size() > 2)    
-        firstcc = params[2].get_array();    
-    if (params.size() > 3)
-        frAddrs = params[3].get_array();
+    const Value& farrTags_v = find_value(param, "tags"); 
+    if(farrTags_v.type()!=null_type)
+    {
+        if(farrTags_v.type()!=array_type)
+            return false;
+        arrTags=farrTags_v.get_array();
+    }
+    const Value& ffirstcc_v = find_value(param, "ccs");   
+    if(ffirstcc_v.type()!=null_type)
+    {
+        if(ffirstcc_v.type()!=array_type)
+            return false;
+        firstcc = ffirstcc_v.get_array();  
+    }
+    const Value& ffrAddrs_v = find_value(param, "ids"); 
+    if(ffrAddrs_v.type()!=null_type)
+    {
+        if(ffrAddrs_v.type()!=array_type)
+            return false;
+        frAddrs = ffrAddrs_v.get_array();
+    }
     return true;
 }
 
@@ -798,12 +849,13 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
     Array withcc;
     Array withoutcc;
     Array firstcc;
-    Array gAddrs;
+    Array frAddrs;
+    Array toAddrs;
     int cformat;
     unsigned char cflag;
     int minsz;
     bool fAsc; // get the block by ascending or descending sequence
-    if (!_parse_getcontents_params(params, fbh, fntx, fnout, maxc, maxb, blkc, withcc, withoutcc, firstcc, cformat, cflag, minsz, gAddrs, fAsc))
+    if (!_parse_getcontents_params(params, fbh, fntx, fnout, maxc, maxb, blkc, withcc, withoutcc, firstcc, cformat, cflag, minsz, frAddrs, toAddrs, fAsc))
         throw runtime_error("Error parsing parameters");
     Array r;
     int c = 0;
@@ -811,7 +863,7 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
     int nHeight = fbh;
     int totalM = fAsc ? chainActive.Height() - fbh + 1 : std::min(blkc, fbh);
         int total = totalM > blkc ? blkc : totalM;
-    if (gAddrs.size() == 0)
+    if (frAddrs.size() == 0 && toAddrs.size() == 0)
     {
         for (int i = 0; i < total; i++)
         {
@@ -822,9 +874,10 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
             for (int nTx = i == 0 ? fntx : 0; nTx < (int) block.vtx.size(); nTx++)
             {
                 const CTransaction& tx = block.vtx.at(nTx);
-                Array posters;
+                string address;
+                CDomain domain;
                 if (cflag & CONTENT_SHOW_POSTER)
-                    posters = _get_posters(tx);
+                    _get_poster(tx, address, domain);
                 for (int nVout = (i == 0 && nTx == fntx) ? fnout : 0; nVout < (int) tx.vout.size(); nVout++)
                 {
                     const CTxOut& out = tx.vout.at(nVout);
@@ -839,7 +892,7 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
                         if (_check_cc(ctt, withcc, withoutcc, firstcc))
                         {
                             CLink clink(nHeight, nTx, nVout);
-                            Object cttr = _output_content(ctt, cformat, cflag, clink, posters, out.nValue, out.scriptPubKey);
+                            Object cttr = _output_content(ctt, cformat, cflag, clink, address, domain, out.nValue, out.scriptPubKey);
                             r.push_back(cttr);
                             c++;
                         } else
@@ -855,58 +908,161 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
         }
     } else
     {
-        std::vector<CScript> vIds;
+        std::vector<CScript> vFrIds;
 
-        BOOST_FOREACH(const Value& addrStr, gAddrs)
+        BOOST_FOREACH(const Value& addrStr, frAddrs)
         {
             CBitcoinAddress address(addrStr.get_str());
             if (!address.IsValid())
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Address is invalid");
             CScript scriptPubKey = GetScriptForDestination(address.Get());
-            vIds.push_back(scriptPubKey);
+            vFrIds.push_back(scriptPubKey);
         }
-        std::vector<std::pair<CTransaction, uint256> > vTxs;
-        if (!GetTransactions(vIds, vTxs))
-            throw JSONRPCError(RPC_INTERNAL_ERROR, "Get tx failed");
-        for (std::vector<std::pair<CTransaction, uint256> >::iterator it = vTxs.begin(); it != vTxs.end(); ++it)
+        std::vector<CScript> vToIds;
+
+        BOOST_FOREACH(const Value& addrStr, toAddrs)
         {
-            BlockMap::iterator mi = mapBlockIndex.find(it->second);
-            if (mi != mapBlockIndex.end() && (*mi).second)
+            CBitcoinAddress address(addrStr.get_str());
+            if (!address.IsValid())
+                throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Address is invalid");
+            CScript scriptPubKey = GetScriptForDestination(address.Get());
+            vToIds.push_back(scriptPubKey);
+        }
+        std::vector<CTxPosItem> vTxPosFr;
+        GetDiskTxPoses(vFrIds, vTxPosFr);
+        std::vector<CTxPosItem> vTxPosTo;
+        GetDiskTxPoses(vToIds, vTxPosTo);
+        //        int tmp = 0;
+        for (std::vector<CTxPosItem>::iterator it = vTxPosFr.begin(); it != vTxPosFr.end(); it++)
             {
-                Array posters;
+            //            std::cout << "fr " << vFrIds.at(tmp++).ToString() << "\n";
+            uint256 hashBlock;
+            int nHeight;
+            pBlockPosDB->GetByPos(it->nFile, it->nPos, hashBlock, nHeight);
+            if ((fAsc ? nHeight <= fbh : nHeight >= fbh) && std::abs(nHeight - fbh) > total)
+                continue;
+            CTransaction tx;
+
+            if (!(it->nFlags & 1 << TXITEMFLAG_SENDCONTENT))
+                continue;
+
+            if (!GetTransaction(*it, tx))
+                throw JSONRPCError(RPC_INTERNAL_ERROR, "Get transaction failed");
+            int nTx = GetNTx(tx.GetHash());
+            if (nHeight == fbh && nTx < fntx)
+                continue;
+            string address;
+            CDomain domain;
                 if (cflag & CONTENT_SHOW_POSTER)
-                    posters = _get_posters(it->first);
-                for (int i = 0; i < (int) it->first.vout.size(); i++)
+                _get_poster(tx, address, domain);
+            for (int nVout = (nHeight == fbh && nTx == fntx) ? fnout : 0; nVout < (int) tx.vout.size(); nVout++)
                 {
                     if (c >= maxc)
                         return r;
-                    CBlockIndex* pindex = (*mi).second;
-                    if ((fAsc ? pindex->nHeight >= fbh : pindex->nHeight <= fbh) && std::abs(pindex->nHeight - fbh) <= total)
-                    { // make sure the tx is in block range
-                        int nTx = GetNTx(it->first.GetHash()); 
-                        CLink clink(pindex->nHeight, nTx, i);
+                CLink clink(nHeight, nTx, nVout);
                         CContent ctt;
-                        if (GetContentFromVout(it->first, i, ctt))
+                if (!GetContentFromVout(tx, nVout, ctt))
+                    continue;
+                if ((int) ctt.size() < minsz)
+                    continue;
+                b += ctt.size();
+                if (b > maxb)
+                    return r;
+                if (!_check_cc(ctt, withcc, withoutcc, firstcc))
+                    b -= ctt.size();
+                Object cttr = _output_content(ctt, cformat, cflag, clink, address, domain, tx.vout[nVout].nValue, tx.vout[nVout].scriptPubKey);
+                r.push_back(cttr);
+                c++;
+            }
+
+        }
+        //        tmp = 0;
+        for (std::vector<CTxPosItem>::iterator it = vTxPosTo.begin(); it != vTxPosFr.end(); it++)
                         {
-                            if ((int) ctt.size() >= minsz)
+            //            std::cout << "fr " << vToIds.at(tmp++).ToString() << "\n";
+            uint256 hashBlock;
+            int nHeight;
+            pBlockPosDB->GetByPos(it->nFile, it->nPos, hashBlock, nHeight);
+            if ((fAsc ? nHeight <= fbh : nHeight >= fbh) && std::abs(nHeight - fbh) > total)
+                continue;
+            CTransaction tx;
+
+            if (!(it->nFlags & 1 << TXITEMFLAG_RECEIVECONTENT))
+                continue;
+
+            if (!GetTransaction(*it, tx))
+                throw JSONRPCError(RPC_INTERNAL_ERROR, "Get transaction failed");
+            int nTx = GetNTx(tx.GetHash());
+            if (nHeight == fbh && nTx < fntx)
+                continue;
+            string address;
+            CDomain domain;
+            if (cflag & CONTENT_SHOW_POSTER)
+                _get_poster(tx, address, domain);
+            for (int nVout = (nHeight == fbh && nTx == fntx) ? fnout : 0; nVout < (int) tx.vout.size(); nVout++)
                             {
+                if (c >= maxc)
+                    return r;
+                CLink clink(nHeight, nTx, nVout);
+                CContent ctt;
+                if (!GetContentFromVout(tx, nVout, ctt))
+                    continue;
+                if ((int) ctt.size() < minsz)
+                    continue;
                                 b += ctt.size();
-                                if (c > maxc || b > maxb)
+                if (b > maxb)
                                     return r;
-                                if (_check_cc(ctt, withcc, withoutcc, firstcc))
-                                {
-                                    Object cttr = _output_content(ctt, cformat, cflag, clink, posters, it->first.vout[i].nValue, it->first.vout[i].scriptPubKey);
+                if (!_check_cc(ctt, withcc, withoutcc, firstcc))
+                    b -= ctt.size();
+                Object cttr = _output_content(ctt, cformat, cflag, clink, address, domain, tx.vout[nVout].nValue, tx.vout[nVout].scriptPubKey);
                                     r.push_back(cttr);
                                     c++;
-                                } else
-                                    b -= ctt.size();
                             }
+
                         }
+
+        //        std::vector<std::pair<CTransaction, uint256> > vTxs;
+        //        if (!GetTransactions(vIds, vTxs))
+        //            throw JSONRPCError(RPC_INTERNAL_ERROR, "Get tx failed");
+        //        for (std::vector<std::pair<CTransaction, uint256> >::iterator it = vTxs.begin(); it != vTxs.end(); ++it)
+        //        {
+        //            BlockMap::iterator mi = mapBlockIndex.find(it->second);
+        //            if (mi != mapBlockIndex.end() && (*mi).second)
+        //            {
+        //                Array posters;
+        //                if (cflag & CONTENT_SHOW_POSTER)
+        //                    posters = _get_posters(it->first);
+        //                for (int i = 0; i < (int) it->first.vout.size(); i++)
+        //                {
+        //                    if (c >= maxc)
+        //                        return r;
+        //                    CBlockIndex* pindex = (*mi).second;
+        //                    if ((fAsc ? pindex->nHeight >= fbh : pindex->nHeight <= fbh) && std::abs(pindex->nHeight - fbh) <= total)
+        //                    { // make sure the tx is in block range
+        //                        int nTx = GetNTx(it->first.GetHash()); 
+        //                        CLink clink(pindex->nHeight, nTx, i);
+        //                        CContent ctt;
+        //                        if (GetContentFromVout(it->first, i, ctt))
+        //                        {
+        //                            if ((int) ctt.size() >= minsz)
+        //                            {
+        //                                b += ctt.size();
+        //                                if (c > maxc || b > maxb)
+        //                                    return r;
+        //                                if (_check_cc(ctt, withcc, withoutcc, firstcc))
+        //                                {
+        //                                    Object cttr = _output_content(ctt, cformat, cflag, clink, posters, it->first.vout[i].nValue, it->first.vout[i].scriptPubKey);
+        //                                    r.push_back(cttr);
+        //                                    c++;
+        //                                } else
+        //                                    b -= ctt.size();
+        //                            }
+        //                        }
+        //                    }
+        //                }
+        //            }
+        //        }
                     }
-                }
-            }
-        }
-    }
     return r;
 }
 
@@ -915,6 +1071,7 @@ std::string _test()
     std::string str;
     return str;
 }
+
 json_spirit::Value getpromotedcontents(const json_spirit::Array& params, bool fHelp)
 {
     if (fHelp)
@@ -957,14 +1114,102 @@ json_spirit::Value getpromotedcontents(const json_spirit::Array& params, bool fH
         CTxOut out;
         if (GetTxOutFromVoutPos(vContents[i].pos,out))
         {
-            Array posters;
+            string address;
+            CDomain domain;
             if (cflag & CONTENT_SHOW_POSTER)
-                 _get_posters2(vContents[i].sender,posters);
+            {
+                ScriptPubKeyToString(vContents[i].sender, address);
+                pDomainDBView->GetDomainByForward(vContents[i].sender, domain, true);
+            }
             b += ctt.size();
-            Object cttr = _output_content(CContent(out.strContent), cformat, cflag, vContents[i].link, posters, vContents[i].lockValue, out.scriptPubKey);
+            Object cttr = _output_content(CContent(out.strContent), cformat, cflag, vContents[i].link, address, domain, vContents[i].lockValue, out.scriptPubKey);
             r.push_back(cttr);
         }            
     }            
+    return r;
+}
+json_spirit::Value getsalesrecord(const json_spirit::Array& params, bool fHelp)
+{
+    if (fHelp||params.size()<1)
+        throw runtime_error("getpromotedcontents Help msg");    
+    
+    
+    std::vector<CScript> vIds;
+
+    BOOST_FOREACH(const Value& addrStr, params[0].get_array())
+    {
+        CBitcoinAddress address(addrStr.get_str());
+        if (!address.IsValid())
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Address is invalid");
+        CScript scriptPubKey = GetScriptForDestination(address.Get());
+        vIds.push_back(scriptPubKey);
+    }
+    int nDirection=0;
+    if (params.size()>1)
+        nDirection=params[1].get_int();
+    int nMax=1000;
+    if (params.size()>2)
+        nMax=params[2].get_int();
+    int nOffset=0;
+    if (params.size()>3)
+        nOffset=params[3].get_int();
+    std::vector<CTxPosItem> vTxPosAll;
+    GetDiskTxPoses (vIds,vTxPosAll); 
+    Array r;    
+    int nCount=0;
+    for (int i =(int)vTxPosAll.size()-1; i >=0; i--)  
+    {        
+        if(((nDirection==0)&&!(vTxPosAll[i].nFlags&((1<<TXITEMFLAG_RECEIVECONTENT)|(1<<TXITEMFLAG_RECEIVEMONEY))))
+                ||((nDirection==1)&&!(vTxPosAll[i].nFlags&(1<<TXITEMFLAG_SENDCONTENT))))
+            continue;
+        CTransaction txOut;
+        if(!GetTransaction(vTxPosAll[i], txOut))
+            continue;
+        string payer;
+        CDomain domain;
+        bool fGotPoster=false;
+        
+        for (int j =0; j <(int)txOut.vout.size(); j++)  
+        {
+            const CTxOut& out=txOut.vout[j];
+            //LogPrintf("getsalesrecord1 \n" );
+            if(out.strContent.size()==0||CContent(out.strContent).GetFirstCc()!=CC_PAYMENT_P)
+                continue;
+            LogPrintf("getsalesrecord2 \n" );
+            CPayment payment;
+            payment.recipient=out.scriptPubKey;
+            if(!payment.SetContent(out.strContent))
+                continue;    
+            LogPrintf("getsalesrecord3 \n" );
+            nCount++;
+            if(nCount<nOffset)
+                continue;
+            if(nCount>nOffset+nMax)
+                break;
+            LogPrintf("getsalesrecord4 \n" );
+            if(!fGotPoster)
+            {
+                _get_poster(txOut,payer,domain);
+                fGotPoster=true;
+            }
+            
+            Object obj;
+            Value val=payment.ToJson();
+            uint256 hashBlock;
+            int nHeight;
+            pBlockPosDB->GetByPos(vTxPosAll[i].nFile,vTxPosAll[i].nPos,hashBlock,nHeight);
+            obj=val.get_obj();
+            obj.push_back(Pair("total",out.nValue));
+            obj.push_back(Pair("payer",payer));
+             obj.push_back(Pair("link",CLink(nHeight,vTxPosAll[i].nTx,j).ToString()));
+              obj.push_back(Pair("blockhash",hashBlock.GetHex()));
+            obj.push_back(Pair("txid",txOut.GetHash().GetHex()));
+            r.push_back(obj);
+            LogPrintf("getsalesrecord5\n" );
+        }   
+        if(nCount>nOffset+nMax)
+                break;
+    }
     return r;
 }
 Value devtest(const Array& params, bool fHelp)
@@ -1504,6 +1749,7 @@ json_spirit::Value getdomainsbytags(const json_spirit::Array& params, bool fHelp
     LogPrintf("getdomainsbytags toJson%i \n", arrDomains.size());
     return Value(arrDomains);
 }
+
 json_spirit::Value getdomainsbyalias(const json_spirit::Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 1)
@@ -1519,6 +1765,7 @@ json_spirit::Value getdomainsbyalias(const json_spirit::Array& params, bool fHel
     LogPrintf("getdomainsbyalias toJson%i \n", arrDomains.size());
     return Value(arrDomains);
 }
+
 json_spirit::Value getdomainsexpiring(const json_spirit::Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 1)
@@ -1527,7 +1774,7 @@ json_spirit::Value getdomainsexpiring(const json_spirit::Array& params, bool fHe
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter ids, expected array");
     uint32_t time = params[0].get_int(); //note:this parameter is time from now on
     vector<string> vDomain;
-    pDomainDBView->GetDomainNamesToExpire(vDomain,time, true);    
+    pDomainDBView->GetDomainNamesToExpire(vDomain, time, true);
     Array arrDomains;
    for (unsigned int i = 0; i < vDomain.size(); i++) 
    {
@@ -1566,6 +1813,7 @@ json_spirit::Value searchproducts(const json_spirit::Array& params, bool fHelp)
     if (!_parse_getpromotedcontents_params(params, nMaxResults,nOffset, maxb, firstcc,arrTags, cformat, cflag, gAddrs))
         throw runtime_error("getpromotedcontents Error parsing parameters");
     vector<CScript> vSenders;
+
     BOOST_FOREACH(const Value& addrStr, gAddrs)
     {
         CBitcoinAddress address(addrStr.get_str());
@@ -1590,7 +1838,7 @@ json_spirit::Value searchproducts(const json_spirit::Array& params, bool fHelp)
    {
        if ( b > maxb)
             return r;
-       CTxOut out;
+       CTxOut out;       
        if (!GetTxOutFromVoutPos(vContents[i].pos,out))
            continue;       
         CContent content(out.strContent);           
@@ -1619,16 +1867,10 @@ json_spirit::Value searchproducts(const json_spirit::Array& params, bool fHelp)
            }
            if (fFound)
                continue;           
-            if (vContents[i].senderDomain.size() > 0)
+            if (product.seller.size() > 0)
            {
-               CDomain domain;
-                pDomainDBView->GetDomainByName(vContents[i].senderDomain, domain);
-                
-                    if (domain.strAlias.size() > 0)
-                         product.vSellerDomain.push_back(domain.strAlias);
-                     else
-                        product.vSellerDomain.push_back(domain.strDomain);
-                 
+               
+                pDomainDBView->GetDomainByForward(product.seller, product.sellerDomain,true);                
             }
             if (product.recipient.size() == 0)
                 product.recipient = product.seller;           

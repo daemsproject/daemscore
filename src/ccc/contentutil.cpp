@@ -154,7 +154,7 @@ int GetNTx(const uint256 &hashTx)
 {
     int64_t txIndex;
     psqliteDB->GetTxIndex(hashTx,txIndex);
-    LogPrintf("getntx,tx:%s,height:%i,ntx:%i \n",hashTx.GetHex(),txIndex>>16,txIndex&0xffff);
+    //LogPrintf("getntx,tx:%s,height:%i,ntx:%i \n",hashTx.GetHex(),txIndex>>16,txIndex&0xffff);
     return txIndex&0xffff;
 //    CTransaction tx;
 //    uint256 hashBlock = 0;
@@ -498,9 +498,10 @@ bool IsSpentInMempool(const COutPoint op)
 //}
 bool GetTxOutFromVoutPos(const int64_t pos,CTxOut& out)
 {
+    LogPrintf("Getransaction by pos %lld nfile %lld,pos%lld \n",pos,pos>>32,pos&0xffffffff);
     CDiskBlockPos filePos;
     filePos.nFile=pos>>32;
-    filePos.nPos=pos|0xffffffff;
+    filePos.nPos=pos&0xffffffff;
     CAutoFile file(OpenBlockFile(filePos, true), SER_DISK, CLIENT_VERSION);
     if (file.IsNull())
     {

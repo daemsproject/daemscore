@@ -621,7 +621,7 @@ bool CLinkUni::SetJson(const Object& obj,string& strError)
         return false;
     }     
     linkType=GetCcValue(tmp.get_str());
-    LogPrintf("CProduct::SetJson linkType %s\n", GetCcName(linkType));
+    LogPrintf("CLinkUni::SetJson linkType %s\n", GetCcName(linkType));
     tmp = find_value(obj, "link");
     if (tmp.type() != str_type)
     {            

@@ -11,6 +11,7 @@
 #include "netbase.h"
 #include "rpcserver.h"
 #include "ccc/contentutil.h"
+#include "ccc/shop.h"
 #include "timedata.h"
 #include "util.h"
 #include "ccc/domain.h"

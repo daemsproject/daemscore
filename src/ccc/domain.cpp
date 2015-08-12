@@ -108,6 +108,9 @@ void CDomain::Clear()
         redirectType=-1;
         nExpireTime=0;        
 }
+bool CDomain::IsEmpty() const{
+    return nDomainGroup == -1;
+}
 bool CDomain::IsLevel2()const
 {
     return (strDomain.find(".")!=strDomain.rfind("."));

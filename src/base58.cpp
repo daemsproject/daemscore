@@ -511,7 +511,20 @@ bool ScriptPubKeyToString(const CScript& script, string& str)
     ExtractDestinations(script, type, addresses, wRequired);
     if (addresses.size() == 0)
         return false;
-    str = CBitcoinAddress(addresses[0]).ToString();
+    switch(type)
+    {
+        case TX_PUBKEY:
+        case TX_SCRIPTHASH:
+            str = CBitcoinAddress(addresses[0]).ToString();
+            break;
+        case TX_SCRIPT:
+        case TX_MULTISIG:
+            str=CBitcoinAddress(script).ToString();
+            break;
+        default:
+            return false;
+    }
+    
     //LogPrintf("ScriptPubKeyToString\n");
     return true;
 }
