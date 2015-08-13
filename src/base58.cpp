@@ -511,7 +511,7 @@ bool ScriptPubKeyToString(const CScript& script, string& str)
     ExtractDestinations(script, type, addresses, wRequired);
     if (addresses.size() == 0)
         return false;
-    switch(type)
+    switch((int)type)
     {
         case TX_PUBKEY:
         case TX_SCRIPTHASH:
@@ -519,13 +519,20 @@ bool ScriptPubKeyToString(const CScript& script, string& str)
             break;
         case TX_SCRIPT:
         case TX_MULTISIG:
-            str=CBitcoinAddress(script).ToString();
+        {
+            txnouttype type;
+            std::vector<std::vector<unsigned char> > vSolutions;
+            if (!Solver(script, type, vSolutions))
+                return false;
+            if (vSolutions.size() != 1)
+                return false;
+            CScript sc(vSolutions.front().begin(), vSolutions.front().end());
+            str = CBitcoinAddress(sc).ToString();
+        }
             break;
         default:
             return false;
     }
-    
-    //LogPrintf("ScriptPubKeyToString\n");
     return true;
 }
 

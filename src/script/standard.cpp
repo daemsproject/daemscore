@@ -9,6 +9,7 @@
 #include "script/script.h"
 #include "util.h"
 #include "utilstrencodings.h"
+#include "script.h"
 
 #include <boost/foreach.hpp>
 #include <vector>
@@ -188,10 +189,20 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, vector<vector<unsi
         }
     }
 
-    vSolutionsRet.clear();
-    if(scriptPubKey.IsProperFormat())
+
+    if (scriptPubKey.IsProperFormat())
+    {
         typeRet = TX_SCRIPT;
-    else
+        vector<unsigned char> vch1;
+        const CScript& script1 = scriptPubKey;
+        CScript::const_iterator pc1 = script1.begin();
+        opcodetype opcode1;
+        if (!script1.GetOp(pc1, opcode1, vch1))
+            return false;
+        vSolutionsRet.push_back(vch1);
+        return true;
+    }
+    vSolutionsRet.clear();
         typeRet = TX_NONSTANDARD;
     return false;
 }
@@ -260,7 +271,16 @@ bool ExtractDestinations(const CScript& scriptPubKey, txnouttype& typeRet, vecto
     vector<valtype> vSolutions;
     if (!Solver(scriptPubKey, typeRet, vSolutions))
         return false;
-    if (typeRet == TX_NULL_DATA){
+    if (typeRet == TX_SCRIPT)
+    {
+        if (vSolutions.size() != 1)
+            return false;
+        CScript sc(vSolutions.front().begin(),vSolutions.front().end());
+        if (!Solver(sc, typeRet, vSolutions))
+            return false; 
+    }
+    if (typeRet == TX_NULL_DATA)
+    {
         // This is data, not addresses
         return false;
     }
