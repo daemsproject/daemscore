@@ -1098,7 +1098,8 @@ json_spirit::Value getpromotedcontents(const json_spirit::Array& params, bool fH
     }    
     vector<int> vCCs;
     BOOST_FOREACH(const Value& cc, firstcc)
-        vCCs.push_back(cc.get_int());
+        if(GetCcValue(cc.get_str())!=0)
+            vCCs.push_back(GetCcValue(cc.get_str()));
     vector<string> vTags;
     BOOST_FOREACH(const Value& tag, arrTags)
         vTags.push_back(tag.get_str());
@@ -1824,20 +1825,29 @@ json_spirit::Value getdomainsbyforward(const json_spirit::Array& params, bool fH
 }
 json_spirit::Value getdomainsbytags(const json_spirit::Array& params, bool fHelp)
 {
-    if (fHelp || params.size() != 1)
+    if (fHelp || params.size() < 1)
         throw runtime_error("Wrong number of parameters");
     if (params[0].type() != array_type)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter ids, expected array");
     Array arrTags = params[0].get_array(); 
+    int nMax=100;
+    if(params.size()>1)
+        nMax=params[1].get_int();
     std::vector<CDomain> vDomain;
+    bool fInclude100=true;
+    if(params.size()>2)
+        fInclude100=params[2].get_bool();
     vector<string>vTags;
     for (unsigned int i = 0; i < arrTags.size(); i++)
     {
+        LogPrintf("getdomainsbytags tag:%s \n", arrTags[i].get_str());
         vTags.push_back(arrTags[i].get_str());
     }   
-        pDomainDBView->GetDomainByTags(vTags, vDomain, true);    
+    
+        pDomainDBView->GetDomainByTags(vTags, vDomain, fInclude100,nMax,true);    
+        LogPrintf("getdomainsbytags domains:%i \n", vDomain.size());
     Array arrDomains;
-   for (unsigned int i = 0; i < vDomain.size(); i++) 
+   for (unsigned int i = 0; i <vDomain.size(); i++) 
    {
        arrDomains.push_back(vDomain[i].ToJson());
    }

@@ -1875,7 +1875,7 @@ void BitcoinGUI::loadUrl(const QUrl &url)
       WebView* page= mainView->newTab(true,url,nPageID); 
        //page->nPageID=nPageID;
         //mainView->loadUrlInCurrentTab(url);        
-       // mainView->currentLineEdit()->setText(QString::fromUtf8(url.toEncoded()));
+        mainView->currentLineEdit()->setText(QString::fromUtf8(url.toEncoded()));
        // mainView->gotoWebPage(nPageID,url);
         LogPrintf("bitcoingui loadUrl: 5\n"); 
        

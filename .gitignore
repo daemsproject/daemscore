@@ -60,6 +60,7 @@ src/qt_ui/browserexe
 src/qt_ui/browsertest
 src/qt_ui/forms/ui_*.h
 src/qt_ui/test/moc*.cpp
+src/qt_ui/browser-qt.pro.user.*
 
 .deps
 .dirstamp

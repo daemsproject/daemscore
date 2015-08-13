@@ -880,10 +880,23 @@ CPaymentOrder GetUpdateDomainPaymentRequest(const Array arr)
 //            char strlink[s.size()];
 //            s.read(strlink,s.size());         
             string str=link.Serialize();
-            LogPrintf("domain info reuest link %s\n",HexStr(str.begin(),str.end()));
+            LogPrintf("domain info request link %s\n",HexStr(str.begin(),str.end()));
             //vcInfo.push_back(make_pair(CC_DOMAIN_INFO_ICON,strlink));
             cInfo.EncodeUnit(CC_DOMAIN_INFO_ICON,link.Serialize());
-    }        
+    }  
+    tmp = find_value(obj, "tags");
+    if (tmp.type() == array_type)              
+    {
+        
+        Array arrTags=tmp.get_array();
+        CContent cTag;
+        for(unsigned int i=0;i<arrTags.size();i++)  
+        {
+            if(arrTags[i].get_str().size()<=32)
+                cInfo.EncodeUnit(CC_TAG,arrTags[i].get_str());
+            LogPrintf("domain info request tag %s\n",arrTags[i].get_str());
+        }
+    } 
 
     std::vector<std::pair<int,string> > vcc;
     vcc.push_back(make_pair(CC_DOMAIN,arr[1].get_str()));

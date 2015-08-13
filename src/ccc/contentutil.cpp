@@ -322,13 +322,13 @@ bool GetNativeLink(const string urlIn,string& urlOut,int& nPageID)
         {
             //temporary code
             boost::filesystem::path fullpath = boost::filesystem::initial_path().parent_path().parent_path().parent_path() / "cccpages" / "html" / (str+"_en.html");
-            urlOut="file://"+fullpath.string();
+            urlOut="file://"+fullpath.string()+(strExt.size()>0?strExt.substr(1):"");
 
             // final code
             nPageID=i;
             string strPath;
             if(GetFilePackageMain(mapPageNames[nPageID],strPath,true))
-                urlOut=strPath+strExt;
+                urlOut=strPath+(strExt.size()>0?strExt.substr(1):"");
             LogPrintf("ParseUrl  urlIn:%s urlout:%s,pageid:%i\n",urlIn,urlOut,nPageID);
             return true;
         }

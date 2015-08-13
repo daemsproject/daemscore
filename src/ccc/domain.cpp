@@ -106,7 +106,8 @@ void CDomain::Clear()
 {
     nDomainGroup=-1;
         redirectType=-1;
-        nExpireTime=0;        
+        nExpireTime=0;   
+        nLockValue=0;
 }
 bool CDomain::IsEmpty() const{
     return nDomainGroup == -1;
@@ -153,6 +154,7 @@ json_spirit::Value CDomain::ToJson()const
     }
     //obj.push_back(json_spirit::Pair("forward",redirect.ToJson()));
     obj.push_back(json_spirit::Pair("expireTime",(uint64_t)(nExpireTime)));
+    obj.push_back(json_spirit::Pair("lockvalue",nLockValue));
     obj.push_back(json_spirit::Pair("alias",strAlias));
     obj.push_back(json_spirit::Pair("intro",strIntro));
     obj.push_back(json_spirit::Pair("icon",iconLink.ToString(LINK_FORMAT_DEC)));

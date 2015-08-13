@@ -645,8 +645,11 @@ bool CContent::DecodeDomainInfo(string& strAlias, string& strIntro, CLink& iconL
             //CDataStream s(str.c_str(),str.c_str()+str.size(),0,0);
             iconLink.Unserialize(str);
         }
-        else if(cc==CC_TAG&&str.size()<=32)
+        else if(cc==CC_TAG&&str.size()<=32){
+            
+        LogPrintf("CContent DecodeDomainInfo tag:%s\n",str);
             vTags.push_back(str);
+        }
     }
     LogPrintf("CContent DecodeDomainInfo done\n");
     return true;

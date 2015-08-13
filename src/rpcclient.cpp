@@ -129,6 +129,8 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "getdomainsbyowner", 0 },
     { "getdomainsbyforward", 0 },
     { "getdomainsbytags", 0 },
+    { "getdomainsbytags", 1 },
+    { "getdomainsbytags", 2 },
     { "getdomainsbyalias", 0 },
     { "getdomainsexpiring", 0 },
      

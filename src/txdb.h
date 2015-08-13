@@ -104,15 +104,15 @@ public:
     //std::string strtest="db loaded";
     CDomainViewDB(CSqliteWrapper* dbIn, bool fWipe = false);
      //bool GetForward(const std::string strDomainName,CContent& forward)const ;   
-     bool _GetDomainByForward(const int nExtension,const CScript scriptPubKey,std::vector<CDomain> &vDomain)const ; 
-     bool _GetDomainByOwner(const int nExtension,const CScript scriptPubKey,std::vector<CDomain> &vDomain)const ;
-     bool GetDomainByForward(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupport100=true)const ;
-     bool GetDomainByForward(const CScript scriptPubKey,CDomain& domain,bool FSupport100=true)const;
-     bool GetDomainByOwner(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupport100=true)const ;
-     bool GetDomainByName(const string strDomainName,CDomain& domain)const ;
+     bool _GetDomainByForward(const int nExtension,const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool fGetTags=false)const ; 
+     bool _GetDomainByOwner(const int nExtension,const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool fGetTags=true)const ;
+     bool GetDomainByForward(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupport100=true,bool fGetTags=false)const ;
+     bool GetDomainByForward(const CScript scriptPubKey,CDomain& domain,bool FSupport100=true,bool fGetTags=false)const;
+     bool GetDomainByOwner(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupport100=true,bool fGetTags=true)const ;
+     bool GetDomainByName(const string strDomainName,CDomain& domain,bool fGetTags=true)const ;
 
-     bool GetDomainByTags(const std::vector<std::string>& vTag,std::vector<CDomain> &vDomain,const bool FSupport100=true,const int nMax=1000)const;    
-     bool GetDomainsByAlias(const std::string strAlias,std::vector<CDomain> &vDomain,const bool FSupport100=true,const int nMax=1000)const;    
+     bool GetDomainByTags(const std::vector<std::string>& vTag,std::vector<CDomain> &vDomain,const bool FSupport100=true,const int nMax=1000,bool fGetTags=false)const;    
+     bool GetDomainsByAlias(const std::string strAlias,std::vector<CDomain> &vDomain,const bool FSupport100=true,const int nMax=1000,bool fGetTags=false)const;    
      bool GetDomainNamesToExpire(std::vector<string> &vDomainNames,const uint32_t nExpireIn=3600*24,bool FSupport100=true,const int nMax=1000)const;    
 //     bool GetDomainNamesExpired(std::vector<CDomain> &vDomain,const int nMax=1000,const uint32_t nExpiredFor=3600*24,bool FSupportFAI=true);       
      bool GetUpdateDomain(const CScript ownerIn,const string& strDomainContent,const uint64_t lockedValue,const uint32_t nLockTimeIn,const CLink link,CDomain& domainOut,bool&fHasRecord);

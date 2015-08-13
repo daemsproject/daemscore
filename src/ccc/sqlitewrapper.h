@@ -306,7 +306,7 @@ public:
     bool Update(const CDomain& domain,const int64_t ownerID);
     bool Delete(const CDomain& domain);
     bool Get(const char* tableName,const char* searchColumn,const char* searchValue,char**& result,int& nRow,int& nColumn) const;
-    bool GetDomain(const char* tableName,const char* searchColumn,const char* searchOperator,const char* searchValue,std::vector<CDomain>& vDomain,bool fGetTags=true) const;
+    bool GetDomain(const char* tableName,const char* searchColumn,const char* searchOperator,const char* searchValue,std::vector<CDomain>& vDomain,const int nMaxResult=30,bool fGetTags=true) const;
     //bool GetExpiredDomainIDs(const char* tableName,vector<int64_t>& vDomainIDs,const uint32_t time);
 
 

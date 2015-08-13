@@ -43,6 +43,7 @@ public:
     CLink iconLink;
     std::vector<std::string> vTags;
     std::vector<CLink> vDirectHistory;
+    int64_t nLockValue;
     CDomain()    {        Clear();    };
     CDomain(char** sqlItem,int nOffset=0);    
     bool SetContent(const CContent content,const CScript ownerIn,bool& fRegister,bool& fForward);    
@@ -70,6 +71,7 @@ public:
         READWRITE(iconLink);
         READWRITE(vTags);
         READWRITE(vDirectHistory);
+        READWRITE(nLockValue);
     }
     
     

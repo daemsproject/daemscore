@@ -430,7 +430,8 @@ bool CDomainViewDB::GetUpdateDomain(const CScript ownerIn,const string& strDomai
             if(lockedValue<(domain.nDomainGroup==DOMAIN_10000?(domain.IsLevel2()?100*COIN:10000*COIN):100*COIN))
                 return false;
             existingDomain=domain;
-            existingDomain.nExpireTime=nLockTimeIn;
+            existingDomain.nExpireTime=LockTimeToTime(nLockTimeIn);
+            existingDomain.nLockValue=lockedValue;
         }
         else
         {
@@ -454,7 +455,8 @@ bool CDomainViewDB::GetUpdateDomain(const CScript ownerIn,const string& strDomai
         existingDomain=domain;
         existingDomain.owner=ownerIn;
         //if(existingDomain.nExpireTime<nLockTimeIn)//there's possiblilty that renew time is closer to previous lock time
-            existingDomain.nExpireTime=nLockTimeIn;
+            existingDomain.nExpireTime=LockTimeToTime(nLockTimeIn);
+            existingDomain.nLockValue=lockedValue;
         LogPrintf("update domain register done\n"); 
         //
         
@@ -482,9 +484,12 @@ bool CDomainViewDB::GetUpdateDomain(const CScript ownerIn,const string& strDomai
                 return false;
             }
         }
-        existingDomain.vDirectHistory.push_back(link);
-        while(existingDomain.vDirectHistory.size()>8)
-            existingDomain.vDirectHistory.erase(existingDomain.vDirectHistory.begin());
+        if(find(existingDomain.vDirectHistory.begin(),existingDomain.vDirectHistory.end(),link)==existingDomain.vDirectHistory.end())
+        {
+            existingDomain.vDirectHistory.push_back(link);
+            while(existingDomain.vDirectHistory.size()>8)
+                existingDomain.vDirectHistory.erase(existingDomain.vDirectHistory.begin());
+        }
     }
     domainOut=existingDomain;
 //    LogPrintf("update domain to write\n"); 
@@ -545,7 +550,8 @@ bool CDomainViewDB::WriteTags(const CDomain &domain,const map<string,int64_t>& m
 {
     int64_t domainID;
     const char* tableName=(domain.nDomainGroup==DOMAIN_10000?"domain10000":"domain100");
-    if(!db->SearchInt(tableName,"domainname",domain.strDomain.c_str(),"rowid",domainID))
+    string str="'"+domain.strDomain+"'";
+    if(!db->SearchInt(tableName,"domainname",str.c_str(),"rowid",domainID))
     {
         LogPrintf("GetDomainID failed %s \n",domain.strDomain);
         return false;
@@ -557,9 +563,11 @@ bool CDomainViewDB::WriteTags(const CDomain &domain,const map<string,int64_t>& m
     }
     char chDomainID[20];
     sprintf(chDomainID,"%lld",domainID);
-    return db->Delete(tableName,"domainid",chDomainID,"=")&&db->InsertTags(tableName,domainID,vTagIDs);
+    const char* tableName2=(domain.nDomainGroup==DOMAIN_10000?"domaintag10000":"domaintag100");
+    db->Delete(tableName2,"domainid",chDomainID,"=");
+    return db->InsertTags(tableName2,domainID,vTagIDs);
 }
-bool CDomainViewDB::_GetDomainByForward(const int nExtension,const CScript scriptPubKey,std::vector<CDomain> &vDomain)const 
+bool CDomainViewDB::_GetDomainByForward(const int nExtension,const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool fGetTags)const 
 {
     if(scriptPubKey.size()==0)
         return false;
@@ -577,7 +585,7 @@ bool CDomainViewDB::_GetDomainByForward(const int nExtension,const CScript scrip
     
     
     
-    return db->GetDomain(tableName.c_str(),searchColumn.c_str(),"=", searchValue,vDomain);
+    return db->GetDomain(tableName.c_str(),searchColumn.c_str(),"=", searchValue,vDomain,30,fGetTags);
     
     
     
@@ -593,7 +601,7 @@ bool CDomainViewDB::_GetDomainByForward(const int nExtension,const CScript scrip
 //    else
 //        return false;
 }
-bool CDomainViewDB::_GetDomainByOwner(const int nExtension,const CScript scriptPubKey,std::vector<CDomain> &vDomain)const 
+bool CDomainViewDB::_GetDomainByOwner(const int nExtension,const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool fGetTags)const 
 {
     if(scriptPubKey.size()==0)
         return false;
@@ -612,7 +620,7 @@ bool CDomainViewDB::_GetDomainByOwner(const int nExtension,const CScript scriptP
         return false;
     char chOwnerID[20];
     sprintf(chOwnerID,"%lld",ownerID);
-    return db->GetDomain(tableName.c_str(),searchColumn.c_str(),"=", chOwnerID,vDomain);
+    return db->GetDomain(tableName.c_str(),searchColumn.c_str(),"=", chOwnerID,vDomain,100000,fGetTags);
     
     
 //    
@@ -628,7 +636,7 @@ bool CDomainViewDB::_GetDomainByOwner(const int nExtension,const CScript scriptP
 //    else
 //        return false;
 }
-bool CDomainViewDB::GetDomainByName(const string strDomainName,CDomain& domain)const 
+bool CDomainViewDB::GetDomainByName(const string strDomainName,CDomain& domain,bool fGetTags)const 
 {
     //char* searchColumn="domainname";
     string searchColumn="domainname";
@@ -645,7 +653,7 @@ bool CDomainViewDB::GetDomainByName(const string strDomainName,CDomain& domain)c
     std::vector<CDomain> vDomain;
     
     
-    if(db->GetDomain(tableName.c_str(),searchColumn.c_str(),"=", searchValue,vDomain)&&vDomain.size()>0)
+    if(db->GetDomain(tableName.c_str(),searchColumn.c_str(),"=", searchValue,vDomain,1,fGetTags)&&vDomain.size()>0)
     {
         domain=vDomain[0];
         return true;
@@ -667,15 +675,15 @@ bool CDomainViewDB::GetDomainByName(const string strDomainName,CDomain& domain)c
 //    else
 //        return false;
 }
-bool CDomainViewDB::GetDomainByForward(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupport100)const 
+bool CDomainViewDB::GetDomainByForward(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupport100,bool fGetTags)const 
 {
     std::vector<CDomain> vDomain1;
     int nExtension=DOMAIN_10000;
-    bool ret=_GetDomainByForward(nExtension,scriptPubKey, vDomain1);
+    bool ret=_GetDomainByForward(nExtension,scriptPubKey, vDomain1,fGetTags);
     if(FSupport100)
     {
         nExtension=DOMAIN_100;
-        ret&=_GetDomainByForward(nExtension,scriptPubKey, vDomain1);
+        ret&=_GetDomainByForward(nExtension,scriptPubKey, vDomain1,fGetTags);
     }
     for(unsigned int i=0;i<vDomain1.size();i++)
     {
@@ -684,10 +692,10 @@ bool CDomainViewDB::GetDomainByForward(const CScript scriptPubKey,std::vector<CD
     }
     return ret;
 }
-bool CDomainViewDB::GetDomainByForward(const CScript scriptPubKey,CDomain& domain,bool FSupport100)const
+bool CDomainViewDB::GetDomainByForward(const CScript scriptPubKey,CDomain& domain,bool FSupport100,bool fGetTags)const
 {
     std::vector<CDomain> vDomain;
-    if(!GetDomainByForward(scriptPubKey,vDomain,FSupport100))
+    if(!GetDomainByForward(scriptPubKey,vDomain,FSupport100,fGetTags))
         return false;
     if(vDomain.size()==0)
         return false;
@@ -699,19 +707,20 @@ bool CDomainViewDB::GetDomainByForward(const CScript scriptPubKey,CDomain& domai
     }
     return true;
 }
-bool CDomainViewDB::GetDomainByOwner(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupport100)const 
+bool CDomainViewDB::GetDomainByOwner(const CScript scriptPubKey,std::vector<CDomain> &vDomain,bool FSupport100,bool fGetTags)const 
 {
     int nExtension=DOMAIN_10000;
-    bool ret=_GetDomainByOwner(nExtension,scriptPubKey, vDomain);
+    bool ret=_GetDomainByOwner(nExtension,scriptPubKey, vDomain,fGetTags);
     if(FSupport100)
     {
         nExtension=DOMAIN_100;
-        ret&=_GetDomainByOwner(nExtension,scriptPubKey, vDomain);
+        ret&=_GetDomainByOwner(nExtension,scriptPubKey, vDomain,fGetTags);
     }
     return ret;
 }
-bool CDomainViewDB::GetDomainByTags(const vector<string>& vTag,vector<CDomain>& vDomain,bool FSupport100,const int nMax)const 
+bool CDomainViewDB::GetDomainByTags(const vector<string>& vTag,vector<CDomain>& vDomain,bool FSupport100,const int nMax,bool fGetTags)const 
 {
+    LogPrintf("CDomainViewDB::GetDomainByTags1\n"); 
     std::vector<CDomain> vDomain1;
     vector<int64_t>vTagIDs;
     string searchColumn="rowid";
@@ -720,30 +729,47 @@ bool CDomainViewDB::GetDomainByTags(const vector<string>& vTag,vector<CDomain>& 
     char chTag[1000];
     if(vTag.size()==0||vTag.size()>10)
             return false; 
-    const char* tagselectstatement="SELECT domainid FROM %s WHERE tagid =%lld ";  
-    if(!db->GetTagID(vTag[0],vTagIDs[0]))
+    LogPrintf("CDomainViewDB::GetDomainByTags2\n"); 
+    const char* tagselectstatement="SELECT domainid FROM %s WHERE tagid =%lld "; 
+    int64_t tagid;
+    if(!db->GetTagID(vTag[0],tagid))
             return false;
-    sprintf(chTag,tagselectstatement,vTagIDs[0]);
+    vTagIDs.push_back(tagid);
+    sprintf(chTag,tagselectstatement,tableName.c_str(),vTagIDs[0]);
+    LogPrintf("CDomainViewDB::GetDomainByTags stmt:%s\n",chTag); 
     const char* tagselectstatement2="SELECT domainid FROM %s WHERE domainid IN(%s) AND tagid=%lld ";
-    
+    string strTgstmt;
     for(unsigned int i=1;i<vTag.size();i++)  
     {
-        if(!db->GetTagID(vTag[i],vTagIDs[i]))
+        if(!db->GetTagID(vTag[i],tagid))
             return false;
-        sprintf (chTag,tagselectstatement2,chTag,vTagIDs[i]);
+        vTagIDs.push_back(tagid);
+        strTgstmt.assign(chTag);        
+        sprintf (chTag,tagselectstatement2,tableName.c_str(),strTgstmt.c_str(),vTagIDs[i]);
+        LogPrintf("CDomainViewDB::GetDomainByTags stmt:%s\n",chTag); 
     }
-    sprintf(chTag,"(%s) ",chTag);
-    
-    bool ret= db->GetDomain(tableName.c_str(),searchColumn.c_str(),"IN", chTag,vDomain1);
+    strTgstmt.assign(chTag);
+    sprintf(chTag,"(%s) ",strTgstmt.c_str());
+    LogPrintf("CDomainViewDB::GetDomainByTags stmt:%s\n",chTag); 
+    tableName="domain10000";
+    bool ret= db->GetDomain(tableName.c_str(),searchColumn.c_str(),"IN", chTag,vDomain1,nMax,fGetTags);
     if(FSupport100)
     {
         char chTag1[1000];
-    tableName="domain100";
-    sprintf(chTag1,tagselectstatement,vTagIDs[0]);
-    for(unsigned int i=1;i<vTag.size();i++)   
-        sprintf (chTag1,tagselectstatement2,chTag1,vTagIDs[i]);
-    sprintf(chTag1,"(%s) ",chTag1);
-        ret&=db->GetDomain(tableName.c_str(),searchColumn.c_str(),"IN", chTag1,vDomain1);
+        tableName="domaintag100";
+        sprintf(chTag1,tagselectstatement,tableName.c_str(),vTagIDs[0]);
+        LogPrintf("CDomainViewDB::GetDomainByTags stmt:%s\n",chTag); 
+        for(unsigned int i=1;i<vTag.size();i++)   
+        {
+            strTgstmt.assign(chTag1);
+            sprintf (chTag1,tagselectstatement2,tableName.c_str(),strTgstmt.c_str(),vTagIDs[i]);
+            LogPrintf("CDomainViewDB::GetDomainByTags stmt:%s\n",chTag); 
+        }
+        strTgstmt.assign(chTag1);
+        sprintf(chTag1,"(%s) ",strTgstmt.c_str());
+        LogPrintf("CDomainViewDB::GetDomainByTags stmt:%s\n",chTag); 
+        tableName="domain100";
+        ret&=db->GetDomain(tableName.c_str(),searchColumn.c_str(),"IN", chTag1,vDomain1,nMax,fGetTags);
     }
     for(unsigned int i=0;i<vDomain1.size();i++)
     {
@@ -752,7 +778,7 @@ bool CDomainViewDB::GetDomainByTags(const vector<string>& vTag,vector<CDomain>& 
     }
     return ret;
 }
-bool CDomainViewDB::GetDomainsByAlias(const std::string strAlias,std::vector<CDomain> &vDomain,const bool FSupport100,const int nMax)  const  
+bool CDomainViewDB::GetDomainsByAlias(const std::string strAlias,std::vector<CDomain> &vDomain,const bool FSupport100,const int nMax,bool fGetTags)  const  
 {
     std::vector<CDomain> vDomain1;
     
@@ -761,11 +787,11 @@ bool CDomainViewDB::GetDomainsByAlias(const std::string strAlias,std::vector<CDo
     sprintf(searchValue,"'%s' LIMIT %i",strAlias.c_str(),nMax);//NOte: for varchar, need to add'' arround value
     
     string tableName="domain10000";    
-    bool ret= db->GetDomain(tableName.c_str(),searchColumn.c_str(),"=", searchValue,vDomain1);
+    bool ret= db->GetDomain(tableName.c_str(),searchColumn.c_str(),"=", searchValue,vDomain1,nMax,fGetTags);
     if(FSupport100)
     {
         tableName="domain100";
-        ret&=db->GetDomain(tableName.c_str(),searchColumn.c_str(),"=", searchValue,vDomain1);
+        ret&=db->GetDomain(tableName.c_str(),searchColumn.c_str(),"=", searchValue,vDomain1,nMax,fGetTags);
     }
     for(unsigned int i=0;i<vDomain1.size();i++)
     {
@@ -1287,7 +1313,10 @@ void GetBlockDomainUpdateList(const CBlock& block,const vector<vector<pair<CScri
                         CDomain domain;
                         bool fExists;
                         if(pDomainDBView->GetUpdateDomain(vPrevouts[ii][i].first,vContent[0].second,(uint64_t)tx.vout[i].nValue,IsFrozen(tx,i,block.nBlockHeight,block.nTime)?tx.vout[i].nLockTime:0,link,domain,fExists))
-                            vDomains.push_back(make_pair(domain,fExists));   
+                        {
+                            
+                            vDomains.push_back(make_pair(domain,fExists));  
+                        }
                         else
                             LogPrintf("domain update failed \n"); 
                     }     
