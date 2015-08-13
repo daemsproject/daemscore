@@ -306,14 +306,14 @@ bool CSqliteWrapper::BeginBatch()
 {
     char* sErrMsg;
     sqlite3_exec(pdb, "BEGIN TRANSACTION", NULL, NULL, &sErrMsg);
-    LogPrintf("sqlite batch begin %s \n",sErrMsg);  
+   // LogPrintf("sqlite batch begin %s \n",sErrMsg);  
     return true;
 }
 bool CSqliteWrapper::EndBatch()
 {
     char* sErrMsg;
     sqlite3_exec(pdb, "END TRANSACTION", NULL, NULL, &sErrMsg);    
-    LogPrintf("sqlite batch end %s \n",sErrMsg);  
+    //LogPrintf("sqlite batch end %s \n",sErrMsg);  
     if(sErrMsg)
         return false;
     return true;
@@ -666,14 +666,14 @@ bool CSqliteWrapper::Insert(const CDomain& domain,const int64_t ownerID)
 bool CSqliteWrapper::BatchUpdate(const char* tableName,const char* indexColumnName,const int format1,const char* changedColumnName,const int format2,const vector<pair<string,string> >& vValue)
     {
        
-    LogPrintf("BatchUpdate\n");  
+    //LogPrintf("BatchUpdate\n");  
     char sql[2000]; 
     sprintf(sql,"UPDATE %s SET %s =? WHERE %s = ?",tableName,changedColumnName,indexColumnName);
     
     int result;
     sqlite3_stmt  *stat;    
    result=sqlite3_prepare_v2( pdb, sql, -1, &stat, 0 );
-   LogPrintf("BatchUpdate sql %i\n",result);   
+   //LogPrintf("BatchUpdate sql %i\n",result);   
    for(unsigned int i=0;i<vValue.size();i++)
    {
        if(!BindValue(stat,1,format2,vValue[i].second))
@@ -761,7 +761,7 @@ bool CSqliteWrapper::Delete(const char* tableName,const char* searchColumn,const
     char deletetatement[2000];    
     sprintf(deletetatement,"DELETE FROM %s WHERE %s %s %s;",tableName,searchColumn,chOperator,searchValue);
     char* zErrMsg=0;
-     LogPrintf("CSqliteWrapper Delete statement:%s\n",deletetatement);
+     //LogPrintf("CSqliteWrapper Delete statement:%s\n",deletetatement);
      sqlite3_exec(pdb,deletetatement,0,0,&zErrMsg);
      //LogPrintf("CSqliteWrapper Delete done\n");     
      if(zErrMsg)
@@ -779,7 +779,7 @@ bool CSqliteWrapper::GetDomain(const char* tableName,const char* searchColumn,co
     ,alias,icon,intro,redirecthsitory FROM %s WHERE %s %s %s;";    
     char sql[2000];
     sprintf(sql,selectstatement,tableName,searchColumn,searchOperator,searchValue);
-    LogPrintf("CSqliteWrapper::GetDomain sql %s\n",sql); 
+    //LogPrintf("CSqliteWrapper::GetDomain sql %s\n",sql); 
     sqlite3_stmt  *stmt = NULL;
     int rc;
     rc = sqlite3_prepare_v2(pdb , sql , strlen(sql) , &stmt , NULL);
@@ -799,10 +799,10 @@ bool CSqliteWrapper::GetDomain(const char* tableName,const char* searchColumn,co
            CDomain domain;
            int64_t domainid=sqlite3_column_int64(stmt,  0);
            domain.strDomain=(char*)sqlite3_column_text(stmt,  1);
-            LogPrintf("GetDomain strDomain %s \n",domain.strDomain); 
+          //  LogPrintf("GetDomain strDomain %s \n",domain.strDomain); 
             domain.nDomainGroup=GetDomainGroup(domain.strDomain);    
             domain.nExpireTime= (uint32_t)sqlite3_column_int64(stmt,  2);
-            LogPrintf("CDomain CDomain() expiretime %i \n",domain.nExpireTime); 
+         //   LogPrintf("CDomain CDomain() expiretime %i \n",domain.nExpireTime); 
             int64_t ownerID=sqlite3_column_int64(stmt,  3);
             char chOwnerID[20];
             sprintf(chOwnerID,"%lld",ownerID);
@@ -810,15 +810,15 @@ bool CSqliteWrapper::GetDomain(const char* tableName,const char* searchColumn,co
             SearchStr("table_script2txpos","scriptindex",chOwnerID,"script",SQLITEDATATYPE_BLOB,ownerStr);
             domain.owner.assign(ownerStr.begin(),ownerStr.end());
             //domain.owner=CScript((unsigned char*)sqlite3_column_blob(stmt,  3),(unsigned char*)sqlite3_column_blob(stmt,  3)+sqlite3_column_bytes(stmt,  3));
-            LogPrintf("CDomain CDomain() owner %s\n",domain.owner.ToString());                    
+          //  LogPrintf("CDomain CDomain() owner %s\n",domain.owner.ToString());                    
             domain.redirectType=sqlite3_column_int(stmt,  4);
-            LogPrintf("CDomain CDomain() redirectType %i \n",domain.redirectType);     
+           // LogPrintf("CDomain CDomain() redirectType %i \n",domain.redirectType);     
             domain.redirectTo=string((char*)sqlite3_column_blob(stmt,5),(char*)sqlite3_column_blob(stmt,5)+sqlite3_column_bytes(stmt,5));
-            LogPrintf("CDomain CDomain() redirectTo %s \n",HexStr(domain.redirectTo.begin(),domain.redirectTo.end()));   
+           // LogPrintf("CDomain CDomain() redirectTo %s \n",HexStr(domain.redirectTo.begin(),domain.redirectTo.end()));   
             if(domain.redirectType>=0&&domain.redirectTo.size()>0)
                 domain.redirect.EncodeUnit(domain.redirectType,domain.redirectTo);
             domain.strAlias=(char*)sqlite3_column_text(stmt,6);
-            LogPrintf("CDomain CDomain() strAlias %s \n",domain.strAlias); 
+          //  LogPrintf("CDomain CDomain() strAlias %s \n",domain.strAlias); 
             //LogPrintf("CDomain CDomain() iconlink len %i \n",sqlite3_column_bytes(stmt,7)); 
             //if(sqlite3_column_bytes(stmt,6)>0)
             //{
@@ -827,9 +827,9 @@ bool CSqliteWrapper::GetDomain(const char* tableName,const char* searchColumn,co
                 int64_t nLink=sqlite3_column_int64(stmt,  7);
                 domain.iconLink.Unserialize(nLink);        
             //}
-            LogPrintf("CDomain() iconLink %s \n",domain.iconLink.ToString()); 
+           // LogPrintf("CDomain() iconLink %s \n",domain.iconLink.ToString()); 
             domain.strIntro=(char*)sqlite3_column_text(stmt,8);  
-            LogPrintf("CDomain() strIntro %s \n",domain.strIntro);     
+           // LogPrintf("CDomain() strIntro %s \n",domain.strIntro);     
             //int len=(int)(sqlite3_column_bytes(stmt,8)/8);
             //if(len>0)
 //            {
@@ -843,7 +843,7 @@ bool CSqliteWrapper::GetDomain(const char* tableName,const char* searchColumn,co
                         domain.vDirectHistory.push_back(link);        
                 //}
             //}    
-            LogPrintf("CDomain() vDirectHistory %i \n",domain.vDirectHistory.size()); 
+           // LogPrintf("CDomain() vDirectHistory %i \n",domain.vDirectHistory.size()); 
             if(fGetTags)
             {
                 vector<int64_t> vTagIDs;
@@ -1027,7 +1027,7 @@ bool CSqliteWrapper::InsertContent(const int64_t nLink,const int64_t pos,const i
 bool CSqliteWrapper::InsertContents(const vector<CContentDBItem>& vContents,const map<CScript,int64_t>& mapScriptIndex)
 {
     
-    LogPrintf("InsertContents %i\n",vContents.size());    
+    //LogPrintf("InsertContents %i\n",vContents.size());    
     string insertstatement="INSERT OR IGNORE INTO table_content VALUES (?,?,?,?,?,?)";
     //LogPrintf("GetInsertSql %s\n",insertstatement.c_str());
     int result;
@@ -1078,9 +1078,9 @@ bool CSqliteWrapper::SearchContents(const vector<int64_t>& vSenderIDs,const vect
     {
         if(vTagIDs.size()>10)
             return false;  
-        const char* tagselectstatement="SELECT link FROM tag WHERE tagid =%lld ;";  
+        const char* tagselectstatement="SELECT link FROM tag WHERE tagid =%lld ";  
         sprintf(chTag,tagselectstatement,vTagIDs[0]);
-        const char* tagselectstatement2="SELECT link FROM tag WHERE link IN(%s) AND tagid=%lld;";
+        const char* tagselectstatement2="SELECT link FROM tag WHERE link IN(%s) AND tagid=%lld";
         for(unsigned int i=1;i<vTagIDs.size();i++)   
         {
             strtmp.assign(chTag);
@@ -1593,7 +1593,7 @@ bool CSqliteWrapper::InsertCheque(int64_t scriptIndex,int64_t link, int64_t nVal
 bool CSqliteWrapper::BatchInsertCheque(vector<CCheque>& vCheque,const map<CScript,int64_t>& mapScriptIndex)
 {
     
-    LogPrintf("BatchInsertCheque %i\n",vCheque.size());    
+    //LogPrintf("BatchInsertCheque %i\n",vCheque.size());    
     string insertstatement="INSERT OR IGNORE INTO chequetable VALUES (?,?,?,?);";
     //LogPrintf("GetInsertSql %s\n",insertstatement.c_str());
     int result;

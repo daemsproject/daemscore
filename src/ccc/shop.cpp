@@ -536,7 +536,7 @@ bool CPaymentItem::SetContent(const CContent content)
         if(cc==CC_PRODUCT_ID)
         {
             productID=str; 
-            //LogPrintf("CProduct::SetContent id:%s \n",id);
+            LogPrintf("CProduct::SetContent id:%s \n",str);
         }        
         else if(cc==CC_PRODUCT_PRICE)
         {
@@ -577,7 +577,7 @@ Value CPaymentItem::ToJson(bool fLinkOnly)const
 {
     json_spirit::Object obj;
     obj.push_back(Pair("type",Value(GetCcName(ccPaymentType))));
-    if(ccPaymentType==CC_PAYMENT_TYPE_PRODUCT)
+    if(ccPaymentType==CC_PAYMENT_TYPE_PRODUCT||ccPaymentType==CC_PAYMENT_TYPE_SHIPMENTFEE)
     {
         if(productID.size()>0)
             obj.push_back(Pair("productID",Value(productID)));
@@ -585,7 +585,7 @@ Value CPaymentItem::ToJson(bool fLinkOnly)const
             obj.push_back(Pair("paytolink",Value(linkPayTo.ToString())));
         obj.push_back(Pair("price",_ValueFromAmount(price)));
         obj.push_back(Pair("quantity",Value(nQuantity)));
-    }   
+    }       
     if(strMemo.size()>0)
         obj.push_back(Pair("memo",Value(strMemo)));    
     return Value(obj);
@@ -662,7 +662,7 @@ CContent CPaymentItem::ToContent()const
     if(productID.size()>0)
         vcc.push_back(make_pair(CC_PRODUCT_ID,productID));
     if(!linkPayTo.IsEmpty())
-        vcc.push_back(make_pair(CC_PRODUCT_ID,linkPayTo.Serialize()));
+        vcc.push_back(make_pair(CC_PAYMENT_LINK,linkPayTo.Serialize()));
     CContent cPrice;
     cPrice.WriteVarInt(price);
     vcc.push_back(make_pair(CC_PRODUCT_PRICE,cPrice));

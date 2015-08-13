@@ -32,8 +32,7 @@
 #include "autosaver.h"
 #include "settings2.h"
 #include "ui_passworddialog.h"
-
-
+#include <QtGui/QIcon>
 #include <QWebHistory>
 #include <QtNetwork/QLocalServer>
 #include <QtNetwork/QLocalSocket>
@@ -55,21 +54,21 @@
 #include <QAction>
 #include <QApplication>
 #include <QDateTime>
-#include <QDesktopWidget>
+
 #include <QDragEnterEvent>
 #include <QIcon>
 #include <QListWidget>
-#include <QMenuBar>
-#include <QMessageBox>
+
+
 #include <QMimeData>
 #include <QProgressBar>
 #include <QProgressDialog>
 #include <QSettings>
 #include <QStackedWidget>
-#include <QStatusBar>
+
 #include <QStyle>
 #include <QTimer>
-#include <QToolBar>
+
 #include <QVBoxLayout>
 #include <QSettings>
 #include <QtWidgets/QFileDialog>
@@ -78,6 +77,21 @@
 #include <QtPrintSupport/QPrintPreviewDialog>
 #include <QtPrintSupport/QPrinter>
 #include <QtWidgets/QInputDialog>
+#include <QWidget>
+
+#include <QtWidgets/QDesktopWidget>
+
+
+#include <QtWidgets/QMenuBar>
+
+#include <QtWidgets/QStatusBar>
+#include <QtWidgets/QToolBar>
+#include <QtWidgets/QToolButton>
+
+
+
+
+
 
 
 #ifdef ENABLE_WALLET
@@ -248,9 +262,10 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle *networkStyle,QString languageIn,  QWi
     layout->addWidget(new QWidget); // <- OS X tab widget style bug
 #else
     
-    
+   
     addToolBar(m_bookmarksToolbar);
     addToolBarBreak();
+     m_navigationBar = addToolBar(tr("Navigation"));
 #endif
     layout->addWidget(mainView);
     centralWidget->setLayout(layout);
@@ -352,7 +367,7 @@ LogPrintf("bitcoingui: 10 \n");
             this, SLOT(close()));
 #else
     connect(mainView, SIGNAL(lastTabClosed()),
-            mainView, SLOT(newTab(true,QUrl("ccc:browser"),2)));
+            mainView, SLOT(newTab()));
 #endif
     
 
@@ -397,7 +412,7 @@ LogPrintf("bitcoingui: 10 \n");
     //mainView->newTab();
 
     int size = mainView->lineEditStack()->sizeHint().height();
-    m_navigationBar->setIconSize(QSize(size, size));
+    //m_navigationBar->setIconSize(QSize(size, size));
     BitcoinGUI::historyManager();
 }
 
@@ -764,7 +779,7 @@ void BitcoinGUI::createMenuBar()
 
 //#if defined(QWEBHISTORY_RESTORESESSION)
     m_restoreLastSession = new QAction(tr("Restore Last Session"), this);
-    connect(m_restoreLastSession, SIGNAL(triggered()), BitcoinApplication::instance(), SLOT(restoreLastSession()));
+    connect(m_restoreLastSession, SIGNAL(triggered()), this, SLOT(restoreLastSession()));
     m_restoreLastSession->setEnabled(canRestoreSession());
     historyActions.append(mainView->recentlyClosedTabsAction());
     historyActions.append(m_restoreLastSession);
@@ -843,13 +858,14 @@ void BitcoinGUI::createToolBars()
         
         
            LogPrintf("bitcoingui createToolBars: 1 \n");    
-        m_navigationBar = addToolBar(tr("Navigation"));
+        //m_navigationBar = addToolBar(tr("Navigation"));
         m_navigationBar->setMaximumHeight(30);
+        m_navigationBar->setToolButtonStyle(Qt::ToolButtonIconOnly);
          LogPrintf("bitcoingui createToolBars: 2 \n"); 
         connect(m_navigationBar->toggleViewAction(), SIGNAL(toggled(bool)),
             this, SLOT(updateToolbarActionText(bool)));
          LogPrintf("bitcoingui createToolBars: 3 \n"); 
-        m_historyBack->setIcon(style()->standardIcon(QStyle::SP_ArrowBack, 0, this));
+        m_historyBack->setIcon(QApplication::style()->standardIcon(QStyle::SP_ArrowBack, 0, this));
         m_historyBackMenu = new QMenu(this);
         m_historyBack->setMenu(m_historyBackMenu);
          LogPrintf("bitcoingui createToolBars: 4 \n"); 
@@ -860,8 +876,9 @@ void BitcoinGUI::createToolBars()
             this, SLOT(slotOpenActionUrl(QAction*)));
          LogPrintf("bitcoingui createToolBars: 6 \n"); 
     m_navigationBar->addAction(m_historyBack);
-
-    m_historyForward->setIcon(style()->standardIcon(QStyle::SP_ArrowForward, 0, this));
+    
+    m_historyForward->setIcon(QApplication::style()->standardIcon(QStyle::SP_ArrowForward, 0, this));
+    m_historyForward->setIconVisibleInMenu(true);
     m_historyForwardMenu = new QMenu(this);
      LogPrintf("bitcoingui createToolBars: 7 \n"); 
     connect(m_historyForwardMenu, SIGNAL(aboutToShow()),
@@ -874,7 +891,8 @@ void BitcoinGUI::createToolBars()
     m_navigationBar->addAction(m_historyForward);
  LogPrintf("bitcoingui createToolBars: 10 \n"); 
     m_stopReload = new QAction(this);
-    m_reloadIcon = style()->standardIcon(QStyle::SP_BrowserReload);
+    m_historyBack->setIconVisibleInMenu(true);
+    m_reloadIcon = QApplication::style()->standardIcon(QStyle::SP_BrowserReload);
     m_stopReload->setIcon(m_reloadIcon);
  LogPrintf("bitcoingui createToolBars: 11 \n"); 
     m_navigationBar->addAction(m_stopReload);

@@ -17,36 +17,36 @@
 
 bool GetContentByLink(const CLink clink,CContent& content)
 {
-    LogPrintf("GetContentByLink1 \n");
+    //LogPrintf("GetContentByLink1 \n");
     CBlockIndex* pblockindex;
     CBlock block;
     if (!GetBlockByHeight(clink.nHeight, block, pblockindex))
         return false;
-    LogPrintf("GetContentByLink2 \n");
+    //LogPrintf("GetContentByLink2 \n");
     CTransaction tx;
     if (!GetTxFromBlock(block, clink.nTx, tx))
         return false;    
-    LogPrintf("GetContentByLink3 \n");
+    //LogPrintf("GetContentByLink3 \n");
     if (!GetContentFromVout(tx, clink.nVout, content))
         return false;
-    LogPrintf("GetContentByLink 4\n");
+    //LogPrintf("GetContentByLink 4\n");
     return true;
 }
 bool GetContentByLink(const CLinkUni clink,CContent& content)
 {
-    LogPrintf("GetContentByLink1 \n");
+    //LogPrintf("GetContentByLink1 \n");
     CBlockIndex* pblockindex;
     CBlock block;
     if (!GetBlockByHeight(clink.nHeight, block, pblockindex))
         return false;
-    LogPrintf("GetContentByLink2 \n");
+    //LogPrintf("GetContentByLink2 \n");
     CTransaction tx;
     if (!GetTxFromBlock(block, clink.nTx, tx))
         return false;    
-    LogPrintf("GetContentByLink3 \n");
+    //LogPrintf("GetContentByLink3 \n");
     if (!GetContentFromVout(tx, clink.nVout, content))
         return false;
-    LogPrintf("GetContentByLink 4\n");
+    //LogPrintf("GetContentByLink 4\n");
     return true;
 }
 bool GetBlockByHeight(const int nHeight, CBlock& blockOut, CBlockIndex*& pblockindex)
@@ -307,6 +307,14 @@ bool GetNativeLink(const string urlIn,string& urlOut,int& nPageID)
 {
     std::size_t posColon = urlIn.find(URI_COLON);
     std::string str = urlIn.substr(posColon+1);
+    
+    string strExt;
+    if(str.find("/")!=str.npos)
+    {
+        strExt=str.substr(str.find("/"));
+        str=str.substr(0,str.find("/"));   
+    }
+    
     LogPrintf("ParseUrl  posColon+1:%s\n",str);
     for(int i=1;i<=11;i++)
     {
@@ -320,7 +328,7 @@ bool GetNativeLink(const string urlIn,string& urlOut,int& nPageID)
             nPageID=i;
             string strPath;
             if(GetFilePackageMain(mapPageNames[nPageID],strPath,true))
-                urlOut=strPath;
+                urlOut=strPath+strExt;
             LogPrintf("ParseUrl  urlIn:%s urlout:%s,pageid:%i\n",urlIn,urlOut,nPageID);
             return true;
         }
@@ -380,7 +388,7 @@ bool _ParseDomainUrl(const string& strDomain,const string& strDomainExt,string& 
                 if(!ScriptPubKeyToString(script,id))
                     return false;
                 GetNativeLink("ccc:browser",urlOut,nPageID);                
-                urlOut+="?id="+id;
+                urlOut+="/?id="+id;
                 LogPrintf("ParseUrl urlout:%s,pageid:%i\n",urlOut,nPageID);
                 return true;
             }        

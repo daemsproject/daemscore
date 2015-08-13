@@ -258,6 +258,7 @@ extern json_spirit::Value getlinktype(const json_spirit::Array& params, bool fHe
 extern json_spirit::Value getcontents(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getpromotedcontents(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getsalesrecord(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getpurchaserecord(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getfirstncc(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getmessages(const json_spirit::Array& params, bool fHelp);
 //extern json_spirit::Value getbrowserconf(const json_spirit::Array& params, bool fHelp);
@@ -277,7 +278,7 @@ extern json_spirit::Value getdomainsbyalias(const json_spirit::Array& params, bo
 extern json_spirit::Value getdomainsexpiring(const json_spirit::Array& params, bool fHelp);
 
 extern json_spirit::Value searchproducts(const json_spirit::Array& params, bool fHelp);
-
+extern json_spirit::Value getproductbylink(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value setconf(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getconf(const json_spirit::Array& params, bool fHelp); 
 extern json_spirit::Value readfile(const json_spirit::Array& params, bool fHelp);

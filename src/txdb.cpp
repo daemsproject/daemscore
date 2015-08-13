@@ -309,7 +309,7 @@ bool CScript2TxPosDB::BatchUpdate(const std::map<CScript, std::vector<CTxPosItem
         string strVTxPos;
         strVTxPos.assign(ssKey.begin(),ssKey.end());
         vList.push_back(make_pair(strScriptPubKey,strVTxPos));
-        LogPrintf("CScript2TxPosDB::BatchUpdate script %s,vtxpos %s \n",it->first.ToString(),strVTxPos.size());
+        //LogPrintf("CScript2TxPosDB::BatchUpdate script %s,vtxpos %s \n",it->first.ToString(),strVTxPos.size());
     }  
     return db->BatchUpdate("table_script2txpos","script",SQLITEDATATYPE_BLOB,"vtxpos",SQLITEDATATYPE_BLOB,vList);
 }
@@ -720,11 +720,11 @@ bool CDomainViewDB::GetDomainByTags(const vector<string>& vTag,vector<CDomain>& 
     char chTag[1000];
     if(vTag.size()==0||vTag.size()>10)
             return false; 
-    const char* tagselectstatement="SELECT domainid FROM %s WHERE tagid =%lld ;";  
+    const char* tagselectstatement="SELECT domainid FROM %s WHERE tagid =%lld ";  
     if(!db->GetTagID(vTag[0],vTagIDs[0]))
             return false;
     sprintf(chTag,tagselectstatement,vTagIDs[0]);
-    const char* tagselectstatement2="SELECT domainid FROM %s WHERE domainid IN(%s) AND tagid=%lld;";
+    const char* tagselectstatement2="SELECT domainid FROM %s WHERE domainid IN(%s) AND tagid=%lld ";
     
     for(unsigned int i=1;i<vTag.size();i++)  
     {
@@ -951,7 +951,7 @@ bool  CScriptCoinDB::ClearTables()
 }
 bool UpdateSqliteDB(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >& vPos,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,bool fErase)
 {
-    LogPrintf("UpdateSqliteDB0 \n");
+    //LogPrintf("UpdateSqliteDB0 \n");
     map<CScript,vector<CTxPosItem> > mapScript2TxPos;
     map<CScript,int64_t> mapScriptIndex;
     //vector<CScript> vScriptNew;
@@ -1257,7 +1257,7 @@ void PrePareBlockTxIndex(const CBlock& block,map<uint256,int64_t>& mapTxIndex)
 }
 void GetBlockDomainUpdateList(const CBlock& block,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,vector<pair<CDomain,bool> >& vDomains,bool fReverse)
 {
-    LogPrintf("GetBlockDomainUpdateList vtx:%i\n",block.vtx.size()); 
+    //LogPrintf("GetBlockDomainUpdateList vtx:%i\n",block.vtx.size()); 
     for (unsigned int ii = 0; ii < block.vtx.size(); ii++)
     {
         const CTransaction &tx = block.vtx[ii];
@@ -1398,7 +1398,7 @@ void GetBlockChequeUpdates(const CBlock& block,const vector<vector<pair<CScript,
      vector<int64_t> vSenderIDs;
      if(vSenders.size()>100)
          return false;
-     for(unsigned int i=1;i<vSenders.size();i++)
+     for(unsigned int i=0;i<vSenders.size();i++)
      {
          int64_t id;
          if(psqliteDB->GetScriptIndex(vSenders[i],id))
@@ -1407,14 +1407,16 @@ void GetBlockChequeUpdates(const CBlock& block,const vector<vector<pair<CScript,
      if(vCCs.size()>10)
          return false;
      vector<int64_t> vTagIDs;
+     LogPrintf("SearchPromotedContents vtags:%i \n",vTags.size());
      if(vTags.size()>10)
          return false;
-     for(unsigned int i=1;i<vTags.size();i++)
+     for(unsigned int i=0;i<vTags.size();i++)
      {
          int64_t tagid;
          if(!psqliteDB->GetTagID(vTags[i],tagid))
              return false;
          vTagIDs.push_back(tagid);
      }
+    // LogPrintf("SearchPromotedContents vtagids:%i \n",vTagIDs.size());
     return psqliteDB->SearchContents(vSenderIDs,vCCs,vTagIDs,vContents,nMaxResults,nOffset);
  }

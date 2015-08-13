@@ -192,14 +192,14 @@ public:
     bool InsertBatch(const char* tableName,const char* columnName1,const int format1,const char* columnName2,const int format2,const vector<pair<V1,V2> >& vValue,const bool fReplace=true)
     {
         {
-    LogPrintf("InsertBatch2\n");  
+    //LogPrintf("InsertBatch2\n");  
     char sql[2000]; 
     const char* insertstatement="INSERT OR %s INTO %s(%s,%s) VALUES (?,?);";    
      sprintf(sql,insertstatement,fReplace?"REPLACE":"IGNORE",tableName,columnName1,columnName2);
     int result;
     sqlite3_stmt  *stat;    
    result=sqlite3_prepare_v2( pdb, sql, -1, &stat, 0 );
-   LogPrintf("GetInsertSql1 %i\n",result);   
+   //LogPrintf("GetInsertSql1 %i\n",result);   
    for(unsigned int i=0;i<vValue.size();i++)
    {
        if(!BindValue(stat,1,format1,vValue[i].first))
@@ -225,7 +225,7 @@ public:
 //                default:
 //                    return false;              
 //            }  
-        LogPrintf("GetInsertSql2 %i\n",result); 
+       // LogPrintf("GetInsertSql2 %i\n",result); 
         result=sqlite3_step( stat );
         if(result!=0&&result!=101)
             LogPrintf("Insert2 failed result %i\n",result);
@@ -240,19 +240,19 @@ public:
     bool InsertBatch(const char* tableName,const char* columnName1,const int format1,const vector<V1>& vValue,const bool fReplace=true)
     {
         
-        LogPrintf("InsertBatch1\n");  
+        //LogPrintf("InsertBatch1\n");  
         char sql[2000]; 
         const string insertstatement="INSERT OR %s INTO %s(%s) VALUES (?)";    
          sprintf(sql,insertstatement.c_str(),fReplace?"REPLACE":"IGNORE",tableName,columnName1);
         int result;
         sqlite3_stmt  *stat;    
        result=sqlite3_prepare_v2( pdb, sql, -1, &stat, 0 );
-       LogPrintf("GetInsertSql1 %i\n",result);   
+       //LogPrintf("GetInsertSql1 %i\n",result);   
        for(unsigned int i=0;i<vValue.size();i++)
        {
            if(!BindValue(stat,1,format1,vValue[i]))
            return false;
-            LogPrintf("GetInsertSql2 %i\n",result); 
+            //LogPrintf("GetInsertSql2 %i\n",result); 
             result=sqlite3_step( stat );
             if(result!=0&&result!=101)
                 LogPrintf("Insert2 failed result %i\n",result);

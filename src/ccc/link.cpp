@@ -272,37 +272,56 @@ std::string CLink::ToString(const linkformat linkFormat)const
 bool CLinkUni::SetString(const std::string linkStr)
 {
     strLink=linkStr;
-    if(SetStringNative(linkStr))
+    if(IsValidFileFormat(linkStr))
+    {        
+        linkType=CC_LINK_TYPE_FILE; 
         return true;
-    if(SetStringBlockChain(linkStr))
+    }
+    if(IsValidHttpFormat(linkStr))   
+    {
+        LogPrintf("valid http link \n");
+        linkType=CC_LINK_TYPE_HTTP;        
+        return true;
+    }
+    if(linkStr.find("ftp:")==0)
+    {
+        linkType=CC_LINK_TYPE_FTP; 
+        return true;
+    }
+    if(linkStr.find("//")!=linkStr.npos)
+    {
+        linkType=CC_LINK_TYPE_UNKNOWN; 
+        return true;
+    }
+    // 
+    
+    if(SetStringNative(strLink))
+        return true;
+    if(SetStringBlockChain(strLink))
     return true;
-    if(SetStringTxidOut(linkStr))
+    if(SetStringTxidOut(strLink))
     return true;
-    if(SetStringScriptPubKey(linkStr))
+    if(SetStringScriptPubKey(strLink))
     return true;
 //    if(strLink.size()>64)
 //        return false;
-    if(IsValidDomainFormat(linkStr))
+    if(IsValidDomainFormat(strLink))
     {
         linkType=CC_LINK_TYPE_DOMAIN;
-        string str=strDomain.substr(0,strDomain.find("/"));
-        strDomain=str;
-        strDomainExtension=str.substr(strDomain.find("/"));
+        if(linkStr.find("/")!=linkStr.npos)
+        {
+        strLink=linkStr.substr(0,linkStr.find("/"));      
+        strDomainExtension=linkStr.substr(linkStr.find("/"));
+        }
+        
         return true;
-    }
-    else if(IsValidHttpFormat(linkStr))   
-    {
-        LogPrintf("valid http link \n");
-        linkType=CC_LINK_TYPE_HTTP; 
-    }
-    else if(IsValidFileFormat(linkStr))   
-        linkType=CC_LINK_TYPE_FILE; 
+    }    
+    
     else if(linkStr.find("magnet:")==0)
         linkType=CC_LINK_TYPE_MAGNET; 
     else if(linkStr.find("mailto:")==0)
         linkType=CC_LINK_TYPE_MAILTO; 
-    else if(linkStr.find("ftp:")==0)
-        linkType=CC_LINK_TYPE_FTP; 
+    
     else
         linkType=CC_LINK_TYPE_UNKNOWN; 
     return true;    
@@ -317,7 +336,7 @@ bool CLinkUni::SetStringNative(const std::string linkStr)
         if (sn == URI_SCHEME_NAME) 
         {//ccc url, to be parsed as app or link.
             str = linkStr.substr(posColon + 1);
-        
+            str=str.substr(0,str.find("/"));   
             for(int i=1;i<=11;i++)            
                 if (str==mapPageNames[i])
                 {

@@ -6,6 +6,7 @@
 #include "checkpoints.h"
 #include "main.h"
 #include "rpcserver.h"
+#include "timedata.h"
 #include "sync.h"
 #include "util.h"
 #include "ccc/content.h"
@@ -1144,23 +1145,24 @@ json_spirit::Value getsalesrecord(const json_spirit::Array& params, bool fHelp)
         CScript scriptPubKey = GetScriptForDestination(address.Get());
         vIds.push_back(scriptPubKey);
     }
-    int nDirection=0;
-    if (params.size()>1)
-        nDirection=params[1].get_int();
+    //int nDirection=0;
+    //if (params.size()>1)
+    //    nDirection=params[1].get_int();
     int nMax=1000;
-    if (params.size()>2)
-        nMax=params[2].get_int();
+    if (params.size()>1)
+        nMax=params[1].get_int();
     int nOffset=0;
-    if (params.size()>3)
-        nOffset=params[3].get_int();
+    if (params.size()>2)
+        nOffset=params[2].get_int();
     std::vector<CTxPosItem> vTxPosAll;
     GetDiskTxPoses (vIds,vTxPosAll); 
     Array r;    
     int nCount=0;
     for (int i =(int)vTxPosAll.size()-1; i >=0; i--)  
     {        
-        if(((nDirection==0)&&!(vTxPosAll[i].nFlags&((1<<TXITEMFLAG_RECEIVECONTENT)|(1<<TXITEMFLAG_RECEIVEMONEY))))
-                ||((nDirection==1)&&!(vTxPosAll[i].nFlags&(1<<TXITEMFLAG_SENDCONTENT))))
+        //if(((nDirection==0)&&!(vTxPosAll[i].nFlags&((1<<TXITEMFLAG_RECEIVECONTENT)|(1<<TXITEMFLAG_RECEIVEMONEY))))
+        //        ||((nDirection==1)&&!(vTxPosAll[i].nFlags&(1<<TXITEMFLAG_SENDCONTENT))))
+        if(!(vTxPosAll[i].nFlags&((1<<TXITEMFLAG_RECEIVECONTENT)|(1<<TXITEMFLAG_RECEIVEMONEY))))
             continue;
         CTransaction txOut;
         if(!GetTransaction(vTxPosAll[i], txOut))
@@ -1199,13 +1201,106 @@ json_spirit::Value getsalesrecord(const json_spirit::Array& params, bool fHelp)
             int nHeight;
             pBlockPosDB->GetByPos(vTxPosAll[i].nFile,vTxPosAll[i].nPos,hashBlock,nHeight);
             obj=val.get_obj();
-            obj.push_back(Pair("total",out.nValue));
-            obj.push_back(Pair("payer",payer));
+            obj.push_back(Pair("paidvalue",(double)out.nValue/COIN));
+            Object objPayer;
+            objPayer.push_back(Pair("id",payer));
+            if(!domain.IsEmpty())
+                objPayer.push_back(Pair("domain",domain.ToJson()));
+            obj.push_back(Pair("payer",objPayer));
              obj.push_back(Pair("link",CLink(nHeight,vTxPosAll[i].nTx,j).ToString()));
               obj.push_back(Pair("blockhash",hashBlock.GetHex()));
+              if(nHeight>0)
+                obj.push_back(Pair("time",(int64_t)chainActive[nHeight]->nTime));
+              else
+                  obj.push_back(Pair("time",(int64_t)GetAdjustedTime()));
             obj.push_back(Pair("txid",txOut.GetHash().GetHex()));
             r.push_back(obj);
             LogPrintf("getsalesrecord5\n" );
+        }   
+        if(nCount>nOffset+nMax)
+                break;
+    }
+    return r;
+}
+json_spirit::Value getpurchaserecord(const json_spirit::Array& params, bool fHelp)
+{
+    if (fHelp||params.size()<1)
+        throw runtime_error("getpromotedcontents Help msg");    
+    
+    
+    std::vector<CScript> vIds;
+
+    BOOST_FOREACH(const Value& addrStr, params[0].get_array())
+    {
+        CBitcoinAddress address(addrStr.get_str());
+        if (!address.IsValid())
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Address is invalid");
+        CScript scriptPubKey = GetScriptForDestination(address.Get());
+        vIds.push_back(scriptPubKey);
+    }
+    //int nDirection=0;
+    //if (params.size()>1)
+    //    nDirection=params[1].get_int();
+    int nMax=1000;
+    if (params.size()>1)
+        nMax=params[1].get_int();
+    int nOffset=0;
+    if (params.size()>2)
+        nOffset=params[2].get_int();
+    std::vector<CTxPosItem> vTxPosAll;
+    GetDiskTxPoses (vIds,vTxPosAll); 
+    Array r;    
+    int nCount=0;
+    for (int i =(int)vTxPosAll.size()-1; i >=0; i--)  
+    {       
+        
+        if(!(vTxPosAll[i].nFlags&(1<<TXITEMFLAG_SENDCONTENT)))
+            continue;
+        CTransaction txOut;
+        if(!GetTransaction(vTxPosAll[i], txOut))
+            continue;
+        
+        CDomain domain;
+        
+        
+        for (int j =0; j <(int)txOut.vout.size(); j++)  
+        {
+            const CTxOut& out=txOut.vout[j];
+            //LogPrintf("getsalesrecord1 \n" );
+            if(out.strContent.size()==0||CContent(out.strContent).GetFirstCc()!=CC_PAYMENT_P)
+                continue;
+            LogPrintf("getpurchaserecord2 \n" );
+            CPayment payment;
+            payment.recipient=out.scriptPubKey;
+            if(!payment.SetContent(out.strContent))
+                continue;    
+            LogPrintf("getpurchaserecord2 \n" );
+            nCount++;
+            if(nCount<nOffset)
+                continue;
+            if(nCount>nOffset+nMax)
+                break;
+            LogPrintf("getpurchaserecord4 \n" );
+            pDomainDBView->GetDomainByForward(payment.recipient, domain, true);
+            Object obj;
+            Value val=payment.ToJson();
+            uint256 hashBlock;
+            int nHeight;
+            pBlockPosDB->GetByPos(vTxPosAll[i].nFile,vTxPosAll[i].nPos,hashBlock,nHeight);
+            obj=val.get_obj();
+            obj.push_back(Pair("paidvalue",(double)out.nValue/COIN));
+            
+            if(!domain.IsEmpty())
+                obj.push_back(Pair("shopdomain",domain.ToJson()));            
+             obj.push_back(Pair("link",CLink(nHeight,vTxPosAll[i].nTx,j).ToString()));
+              obj.push_back(Pair("blockhash",hashBlock.GetHex()));
+              if(nHeight>0)
+                obj.push_back(Pair("time",(int64_t)chainActive[nHeight]->nTime));
+              else
+                  obj.push_back(Pair("time",(int64_t)GetAdjustedTime()));
+            obj.push_back(Pair("txid",txOut.GetHash().GetHex()));
+            r.push_back(obj);
+            LogPrintf("getpurchaserecord5\n" );
         }   
         if(nCount>nOffset+nMax)
                 break;
@@ -1801,7 +1896,7 @@ json_spirit::Value getdomainbyforward(const json_spirit::Array& params, bool fHe
 json_spirit::Value searchproducts(const json_spirit::Array& params, bool fHelp)
 {
     if (fHelp)
-        throw runtime_error("getpromotedcontents Help msg");    
+        throw runtime_error("searchproducts Help msg");    
     int maxb;    
     int nMaxResults;
     int nOffset;
@@ -1813,7 +1908,7 @@ json_spirit::Value searchproducts(const json_spirit::Array& params, bool fHelp)
     if (!_parse_getpromotedcontents_params(params, nMaxResults,nOffset, maxb, firstcc,arrTags, cformat, cflag, gAddrs))
         throw runtime_error("getpromotedcontents Error parsing parameters");
     vector<CScript> vSenders;
-
+    LogPrintf("searchproducts arrtags:%i \n",arrTags.size());
     BOOST_FOREACH(const Value& addrStr, gAddrs)
     {
         CBitcoinAddress address(addrStr.get_str());
@@ -1873,7 +1968,8 @@ json_spirit::Value searchproducts(const json_spirit::Array& params, bool fHelp)
                 pDomainDBView->GetDomainByForward(product.seller, product.sellerDomain,true);                
             }
             if (product.recipient.size() == 0)
-                product.recipient = product.seller;           
+                product.recipient = product.seller;   
+            product.nExpireTime=LockTimeToTime(out.nLockTime);
            vProduct.push_back(product);           
        }
            
@@ -1883,7 +1979,43 @@ json_spirit::Value searchproducts(const json_spirit::Array& params, bool fHelp)
     LogPrintf("searchproducts toJson%i \n", arrProducts.size());
     return Value(arrProducts);
 }
-
+json_spirit::Value getproductbylink(const json_spirit::Array& params, bool fHelp)
+{
+    if (fHelp||params.size()<1)
+        throw runtime_error("getproductbylink Help msg"); 
+    CLink link;
+    //LogPrintf("getproductbylink 1 \n");
+    if(!link.SetString(params[0].get_str()))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter link");
+    CContent content;    
+    CBlockIndex* pblockindex;
+    CBlock block;
+    //LogPrintf("getproductbylink 2 \n");
+    if (!GetBlockByHeight(link.nHeight, block, pblockindex))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter link,content not found");
+    CTransaction tx;
+    //LogPrintf("getproductbylink 3 \n");
+    if (!GetTxFromBlock(block, link.nTx, tx))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter link,content not found"); 
+    //LogPrintf("getproductbylink 4 \n");
+    if (!GetContentFromVout(tx, link.nVout, content))
+       throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter link,content not found");
+    /////LogPrintf("getproductbylink 5 \n");
+    CProduct product;
+    if (!product.SetContent(content))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter link,content is not product");
+    //LogPrintf("getproductbylink 6 \n");
+    product.link = link;
+    string seller;
+    _get_poster(tx,seller,product.sellerDomain);   
+    //LogPrintf("getproductbylink 7 \n");
+    StringToScriptPubKey(seller,product.seller);
+   // LogPrintf("getproductbylink 8 \n");
+    if (product.recipient.size() == 0)
+        product.recipient = product.seller; 
+    //LogPrintf("getproductbylink 9 \n");
+    return product.ToJson();
+}
 json_spirit::Value getfilepackageurl(const json_spirit::Array& params, bool fHelp)
 {
     if (fHelp || params.size() < 1)
@@ -1891,7 +2023,7 @@ json_spirit::Value getfilepackageurl(const json_spirit::Array& params, bool fHel
     if (params[0].type() != str_type)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter link, expected str");
     CLink link;
-    if (!link.UnserializeConst(params[0].get_str()))
+    if (!link.SetString(params[0].get_str()))
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter link content");
     string url;
     if (!GetFilePackageUrl(link, url))

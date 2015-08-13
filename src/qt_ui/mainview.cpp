@@ -157,7 +157,11 @@ void MainView::gotoWebPage(int nPageID,QUrl url,int nFromPageID)
 }
 void MainView::gotoCustomPage(QUrl url,int nFromPageID)
 {
-    gotoWebPage(255,url,nFromPageID);
+    //BitcoinGUI *mw=qobject_cast<BitcoinGUI*>(parent());
+    QString qstrUrl=url.toString();
+    //mw->loadPage(qstrUrl);
+    emit loadPage(qstrUrl);
+    //gotoWebPage(255,url,nFromPageID);
 }
 void MainView::loadWebPage(int nPageID)
 {
@@ -453,6 +457,7 @@ void MainView::closeTab(int index)
     emit tabsChanged();
     if (hasFocus && count() > 0)
         currentWebView()->setFocus();
+    LogPrintf("close tab,tabs left:%i \n",count());
     if (count() == 0)
         emit lastTabClosed();
 }
