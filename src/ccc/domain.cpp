@@ -132,7 +132,7 @@ json_spirit::Value CDomain::ToJson()const
         {
             string strID;
             CScript scriptPubKey((unsigned char*)redirectTo.c_str(),(unsigned char*)redirectTo.c_str()+redirectTo.size());
-            LogPrintf("scriptPubKey %s\n",scriptPubKey.ToString());
+            //LogPrintf("scriptPubKey %s\n",scriptPubKey.ToString());
             if(ScriptPubKeyToString(scriptPubKey,strID))
             {                
                 obj1.push_back(json_spirit::Pair("linkType","ID"));            
