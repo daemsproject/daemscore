@@ -369,14 +369,9 @@ bool CBitcoinAddress::Set(const CScriptID& id)
 
 bool CBitcoinAddress::Set(const CScript& script)
 {
-    std::string str;
-    std::vector<unsigned char>::const_iterator pc = script.begin();
-    while (pc < script.end()) {
-        str += *pc++;
-    }
-    const char* sch = (const char*) str.c_str();
-    ;
-    SetData(Params().Base32Prefix(CChainParams::SCRIPT_ADDRESS), sch, script.size());
+    if(script.size()==0)
+        return false;
+    SetData(Params().Base32Prefix(CChainParams::SCRIPT_ADDRESS), (void*)&script[0], script.size());
     return true;
 }
 

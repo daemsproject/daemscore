@@ -272,7 +272,7 @@ bool CWallet::EncryptMessages(const std::map<string,std::vector<string> >& mapMe
         CKey sharedKey;        
         if(!GetSharedKey(id,pub,sharedKey))
             MakeSharedKey(id,pub,sharedKey,true);
-         //LogPrintf("CWallet::EncryptMessages sharedKey:%s\n",HexStr(sharedKey.begin(),sharedKey.end()));       
+         LogPrintf("CWallet::EncryptMessages sharedKey:%s\n",HexStr(sharedKey.begin(),sharedKey.end()));       
         std::vector<string> vMsg=it->second;
         std::vector<string> vMsgOut;
         for(unsigned int i=0;i<vMsg.size();i++){
@@ -301,11 +301,11 @@ bool CWallet::EncryptMessages(const std::map<string,std::vector<string> >& mapMe
                         CContent ccmsg;
                         std::vector<std::pair<int,string> > vEncoding;
                         string str(vchIV.begin(),vchIV.end());
-                        vEncoding.push_back(make_pair(0x140002,str));
+                        vEncoding.push_back(make_pair(CC_ENCRYPT_PARAMS_IV,str));
                         string str2(encrypted.begin(),encrypted.end());  
-                        vEncoding.push_back(make_pair(0x14,str2));
+                        vEncoding.push_back(make_pair(CC_ENCRYPT,str2));
                         //LogPrintf("CWallet::EncryptMessages vstr\n"); 
-                        ccmsg.EncodeP(0X15,vEncoding);
+                        ccmsg.EncodeP(CC_MESSAGE_P,vEncoding);
                         //LogPrintf("CWallet::EncryptMessages ccmsg %s\n",HexStr(ccmsg.begin(),ccmsg.end())); 
                         vMsgOut.push_back(ccmsg);
                         continue;
@@ -321,38 +321,38 @@ bool CWallet::EncryptMessages(const std::map<string,std::vector<string> >& mapMe
                 std::vector<std::pair<int,string> > vContent;
                 if(CContent(vMsg[i]).Decode(vContent))
                 {
-                    //LogPrintf("CWallet::decryptMessages pass1 \n"); 
+                    LogPrintf("CWallet::decryptMessages pass1 \n"); 
                     for(unsigned int j=0;j<vContent.size();j++)
                     {
-                        if(vContent[j].first==0x15)
+                        if(vContent[j].first==CC_MESSAGE_P)
                         {                        
-                            //LogPrintf("CWallet::decryptMessages pass2 \n"); 
+                            LogPrintf("CWallet::decryptMessages pass2 \n"); 
                             std::vector<std::pair<int,string> > vInnerContent;
                             if(CContent(vContent[j].second).Decode(vInnerContent))
                             {
-                                //LogPrintf("CWallet::decryptMessages pass3 \n"); 
+                                LogPrintf("CWallet::decryptMessages pass3 \n"); 
                                 std::vector<unsigned char> vchIV(WALLET_CRYPTO_IV_SIZE);   
                                 string strEncrypted;
                                 bool fHasIV=false;
                                 bool fHasContent=false;
                                 for(unsigned int k=0;k<vInnerContent.size();k++)
                                 {  
-                                //LogPrintf("getmessagesFromtx:effective msg found:%s\n",vInnerContent[k].second);
-                                    if(vInnerContent[k].first==0x140002)
+                                LogPrintf("getmessagesFromtx:effective msg found:%s\n",vInnerContent[k].second);
+                                    if(vInnerContent[k].first==CC_ENCRYPT_PARAMS_IV)
                                     {
                                         
                                         string s= vInnerContent[k].second;                               
-                                        //LogPrintf("CWallet::decryptMessages pass4 ,s%s size:%s\n",HexStr(s.begin(),s.end()),s.size()); 
+                                        LogPrintf("CWallet::decryptMessages pass4 ,s%s size:%s\n",HexStr(s.begin(),s.end()),s.size()); 
                                         if(s.size()==WALLET_CRYPTO_IV_SIZE)
                                         {
-                                             //LogPrintf("CWallet::decryptMessages pass41 \n");
+                                             LogPrintf("CWallet::decryptMessages pass41 \n");
                                             copy(s.begin(),s.end(),vchIV.begin());                                            
                                             fHasIV=true;
                                         }
                                     }
-                                    else if (vInnerContent[k].first==0x14)
+                                    else if (vInnerContent[k].first==CC_ENCRYPT)
                                     {
-                                        //LogPrintf("CWallet::decryptMessages pass5 \n"); 
+                                        LogPrintf("CWallet::decryptMessages pass5 \n"); 
                                         strEncrypted=vInnerContent[k].second; 
                                       fHasContent=true;
                                     }
@@ -360,23 +360,23 @@ bool CWallet::EncryptMessages(const std::map<string,std::vector<string> >& mapMe
                                 }
                                 if(fHasIV&&fHasContent)
                                 {
-                                    //LogPrintf("decode message:effective msg found:iv:%s,content:%s\n",HexStr(vchIV.begin(),vchIV.end()),strEncrypted);                            
+                                    LogPrintf("decode message:effective msg found:iv:%s,content:%s\n",HexStr(vchIV.begin(),vchIV.end()),strEncrypted);                            
                                     CKeyingMaterial simpleSig(32);
                                     uint256 hash;
                                     sharedKey.MakeSimpleSig(vchIV,hash);                             
                                     copy(hash.begin(),hash.end(),simpleSig.begin());
-                                    //LogPrintf("CWallet::EncryptMessages simplesig:%s\n",HexStr(simpleSig.begin(),simpleSig.end())); 
+                                    LogPrintf("CWallet::EncryptMessages simplesig:%s\n",HexStr(simpleSig.begin(),simpleSig.end())); 
                                     CCrypter crypter;
                                     if (crypter.SetKey(simpleSig,vchIV))
                                     {
                                         CKeyingMaterial decrypted;
                                         std::vector<unsigned char> encrypted(strEncrypted.size());
                                         copy(strEncrypted.begin(),strEncrypted.end(),encrypted.begin()); 
-                                        //LogPrintf("CWallet::EncryptMessages encrypted:%s\n",HexStr(encrypted.begin(),encrypted.end())); 
+                                        LogPrintf("CWallet::EncryptMessages encrypted:%s\n",HexStr(encrypted.begin(),encrypted.end())); 
                                         if(crypter.Decrypt(encrypted, decrypted))
                                         {
                                             string strDecrypted(decrypted.begin(),decrypted.end());
-                                            //LogPrintf("decode message:decoded msg %s\n",strDecrypted);  
+                                            LogPrintf("decode message:decoded msg %s\n",strDecrypted);  
                                             vMsgOut.push_back(CContent(strDecrypted));
                                             continue;
                                         }
@@ -704,23 +704,23 @@ bool CWallet::AddToWallet(const CWalletTx& wtxIn, bool fFromLoadWallet)
         mapWallet[hash] = wtxIn;
         mapWallet[hash].BindWallet(this);
         AddToSpends(hash);
-        //LogPrintf("wallet:AddToWallet2\n");   
+       // LogPrintf("wallet:AddToWallet2\n");   
     }
     else
     {
-        //LogPrintf("wallet:AddToWallet3\n");   
+       // LogPrintf("wallet:AddToWallet3\n");   
         LOCK(cs_wallet);
         // Inserts only if not already there, returns tx inserted or tx found
         pair<map<uint256, CWalletTx>::iterator, bool> ret = mapWallet.insert(make_pair(hash, wtxIn));
         CWalletTx& wtx = (*ret.first).second;
         wtx.BindWallet(this);
-        //LogPrintf("wallet:AddToWallet4\n");   
+       // LogPrintf("wallet:AddToWallet4\n");   
         bool fInsertedNew = ret.second;
         if (fInsertedNew)
         {
             wtx.nTimeReceived = GetAdjustedTime();
             wtx.nOrderPos = nOrderPosNext++; 
-            //LogPrintf("wallet:AddToWallet5\n");   
+            //LogPrintf("wallet:AddToWallet5,txhash %s\n",wtxIn.hashBlock.GetHash());   
             wtx.nTimeSmart = wtx.nTimeReceived;
             if (wtxIn.hashBlock != 0)
             {
@@ -734,7 +734,7 @@ bool CWallet::AddToWallet(const CWalletTx& wtxIn, bool fFromLoadWallet)
                         //LogPrintf("wallet:AddToWallet6\n");   
                         //std::list<CAccountingEntry> acentries;
                         TxItems txOrdered = OrderedTxItems();
-                        //LogPrintf("wallet:AddToWallet7\n");   
+                       // LogPrintf("wallet:AddToWallet7\n");   
                         for (TxItems::reverse_iterator it = txOrdered.rbegin(); it != txOrdered.rend(); ++it)
                         {
                             CWalletTx *const pwtx = (*it).second.first;
@@ -759,7 +759,7 @@ bool CWallet::AddToWallet(const CWalletTx& wtxIn, bool fFromLoadWallet)
                             }
                         }
                     }
-                    //LogPrintf("wallet:AddToWallet8\n");   
+                   // LogPrintf("wallet:AddToWallet8\n");   
                     int64_t blocktime = mapBlockIndex[wtxIn.hashBlock]->GetBlockTime();
                     wtx.nTimeSmart = std::max(latestEntry, std::min(blocktime, latestNow));
                 }
@@ -768,10 +768,10 @@ bool CWallet::AddToWallet(const CWalletTx& wtxIn, bool fFromLoadWallet)
                              wtxIn.GetHash().ToString(),
                              wtxIn.hashBlock.ToString());
             }
-            //LogPrintf("wallet:AddToWallet81\n");
+           // LogPrintf("wallet:AddToWallet81\n");
             AddToSpends(hash);
         }
-        //LogPrintf("wallet:AddToWallet9\n");   
+       // LogPrintf("wallet:AddToWallet9\n");   
         bool fUpdated = false;
         if (!fInsertedNew)
         {
@@ -828,20 +828,25 @@ bool CWallet::AddToWallet(const CWalletTx& wtxIn, bool fFromLoadWallet)
  */
 bool CWallet::AddToWalletIfInvolvingMe(const CTransaction& tx, const CBlock* pblock, bool fUpdate)
 {
-    
+    //LogPrintf("AddToWalletIfInvolvingMe\n");
     {
         AssertLockHeld(cs_wallet);
         
         bool fExisted = mapWallet.count(tx.GetHash()) != 0;
+        //LogPrintf("AddToWalletIfInvolvingMe2 \n");
+        //LogPrintf("AddToWalletIfInvolvingMe2 fExisted %b, fupdated %b\n",fExisted,fUpdate);
         if (fExisted && !fUpdate) return false;
-        
+       // LogPrintf("AddToWalletIfInvolvingMe3\n");
+       // LogPrintf("AddToWalletIfInvolvingMe ismine:%b,isfromme %b\n",IsMine(tx),IsFromMe(tx));
+       // LogPrintf("AddToWalletIfInvolvingMe31\n");
         if (fExisted || IsMine(tx) || IsFromMe(tx))
         {
            
             CWalletTx wtx(this,tx);
-            
+            //LogPrintf("AddToWalletIfInvolvingMe2\n");
             // Get merkle branch if transaction was found in a block
-            //if (pblock)
+            if (pblock)
+                wtx.hashBlock=pblock->GetHash();
             //    wtx.SetMerkleBranch(*pblock);
             
             return AddToWallet(wtx);
@@ -861,23 +866,25 @@ void CWallet::SyncTransaction(const CTransaction& tx, const CBlock* pblock)
         blockHash=uint256(0);
     else
         blockHash=pblock->GetHash();
-    //LogPrintf("notfiytransactionchanged\n");
+    //LogPrintf("SyncTransaction1\n");
     if(!fReindex){
         NotifyTransactionChanged(tx.GetHash(),blockHash);
         //LogPrintf("notfiytransactionchanged\n");
     }
+   // LogPrintf("SyncTransaction2\n");
     if (!AddToWalletIfInvolvingMe(tx, pblock, true))
         return; // Not one of ours
 
     // If a transaction changes 'conflicted' state, that changes the balance
     // available of the outputs it spends. So force those to be
     // recomputed, also:
+    //LogPrintf("SyncTransaction3\n");
     BOOST_FOREACH(const CTxIn& txin, tx.vin)
     {
         if (mapWallet.count(txin.prevout.hash))
             mapWallet[txin.prevout.hash].MarkDirty();
     }
-    LogPrintf("CWallet::SyncTransaction new wallet tx recieved\n");
+    //LogPrintf("CWallet::SyncTransaction new wallet tx recieved\n");
     //if(fReindex)
        // NotifyTransactionChanged(tx.GetHash(),blockHash);
 }
@@ -1294,7 +1301,7 @@ std::map<uint256, CWalletTx> CWallet::GetWalletTxs(std::vector<CPubKey> vIds)con
         //LogPrintf("wallet.cpp getwallettxs script:%s \n",GetScriptForDestination(address.Get()).ToString());
     }
     std::vector<std::pair<CTransaction, uint256> > vTxs;
-    GetTransactions(vScriptPubkeys,vTxs);
+    GetTransactions(vScriptPubkeys,vTxs,true,false);
     std::map<uint256, CWalletTx> mapWalletTx;
     LogPrintf("wallet.cpp getwallettxs txs:%u \n",vTxs.size());
     int64_t nOrderPos=0;

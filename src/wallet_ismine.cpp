@@ -70,15 +70,18 @@ isminetype IsMine(const CKeyStore &keystore, const CScript& scriptPubKey)
     case TX_SCRIPT:
     case TX_MULTISIG:
     {
+         return ISMINE_NO;
+         //note:now solver gives out the whole multisig scirpt as one address
         // Only consider transactions "mine" if we own ALL the
         // keys involved. multi-signature transactions that are
         // partially owned (somebody else has a key that can spend
         // them) enable spend-out-from-under-you attacks, especially
         // in shared-wallet situations.
-        vector<valtype> keys(vSolutions.begin()+1, vSolutions.begin()+vSolutions.size()-1);
-        if (HaveKeys(keys, keystore) == keys.size()/2)
-            return ISMINE_SPENDABLE;
-        break;
+       
+        //vector<valtype> keys(vSolutions.begin()+1, vSolutions.begin()+vSolutions.size()-1);
+//        if (HaveKeys(keys, keystore) == keys.size()/2)
+//            return ISMINE_SPENDABLE;
+//        break;
     }
     }
 

@@ -1373,7 +1373,7 @@ bool GetTransaction(const CDiskTxPos &postx, CTransaction &txOut, uint256 &hashB
 }
 //get transactions by addresses, returns the transaction and block hash
 bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTransaction, uint256> >& vTxs,bool fIncludeUnconfirmed,
-    bool fNoContent,unsigned int nOffset,unsigned int nNumber){
+    bool fIncludeNoMoneyChange,unsigned int nOffset,unsigned int nNumber){
     unsigned int nTxCount=0;
     if (fIncludeUnconfirmed){
         std::vector<CTransaction> vutx;    
@@ -1381,11 +1381,12 @@ bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTr
         //LogPrintf("main:gettx, mempoolsize:%u \n",vutx.size());
         for (std::vector<CTransaction>::iterator it3 = vutx.begin();it3 != vutx.end(); it3++){
             if (nTxCount>=nOffset&&nTxCount<nOffset+nNumber){
-                if (fNoContent){
-                    CTransaction newTx;
-                    it3->ClearContent(newTx);                
-                    vTxs.push_back(make_pair(newTx,uint256(0)));
-                }
+                //because no content will cause txid change, so this function is risky
+//                if (fNoContent){
+//                    CTransaction newTx;
+//                    it3->ClearContent(newTx);                
+//                    vTxs.push_back(make_pair(newTx,uint256(0)));
+//                }
                 vTxs.push_back(make_pair(*it3,uint256(0)));
             }
             nTxCount++;
@@ -1430,6 +1431,8 @@ bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTr
         for (std::vector<CTxPosItem>::iterator it2 = vTxPosAll.begin();it2 != vTxPosAll.end(); it2++) {
             CTransaction txOut;
             uint256 hashBlock;
+            if((!fIncludeNoMoneyChange)&&(!(it2->nFlags&(1<<TXITEMFLAG_SENDER))&&(!(it2->nFlags&(1<<TXITEMFLAG_RECEIVEMONEY)))))
+                    continue;
             //LogPrintf("main:gettx:cdisktxpos after sort file:%i,pos:%u,txpos:%i\n",it2->nFile,it2->nPos,it2->nTxOffset);
             if (nTxCount>=nOffset&&nTxCount<nOffset+nNumber)
             {
@@ -2241,6 +2244,8 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     int64_t nTime4 = GetTimeMicros(); nTimeCallbacks += nTime4 - nTime3;
     LogPrint("bench", "    - Callbacks: %.2fms [%.2fs]\n", 0.001 * (nTime4 - nTime3), nTimeCallbacks * 0.000001);
     //LogPrintf("connect block: done \n");
+    //if(block.GetBlockHeader()->nBlockHeight>600)
+    //    MilliSleep(500);
     return true;
 }
 
@@ -2422,6 +2427,7 @@ bool static ConnectTip(CValidationState &state, CBlockIndex *pindexNew, CBlock *
         CCoinsViewCache view(pcoinsTip);
         CInv inv(MSG_BLOCK, pindexNew->GetBlockHash());
         bool rv = ConnectBlock(*pblock, state, pindexNew, view);
+        //LogPrintf("Connect tip :ConnectBlock done\n");
         g_signals.BlockChecked(*pblock, state);
         if (!rv) {
             if (state.IsInvalid())
@@ -2446,16 +2452,18 @@ bool static ConnectTip(CValidationState &state, CBlockIndex *pindexNew, CBlock *
     mempool.check(pcoinsTip);
     // Update chainActive & related variables.
     UpdateTip(pindexNew);
+    //LogPrintf("Connect tip :connected\n");
     // Tell wallet about transactions that went from mempool
     // to conflicted:
     BOOST_FOREACH(const CTransaction &tx, txConflicted) {
         SyncWithWallets(tx, NULL);
     }
+    //LogPrintf("Connect tip :SyncWithWallets1\n");
     // ... and about transactions that got confirmed:
     BOOST_FOREACH(const CTransaction &tx, pblock->vtx) {
         SyncWithWallets(tx, pblock);
     }
-
+    //LogPrintf("Connect tip :SyncWithWallets2\n");
     int64_t nTime6 = GetTimeMicros(); nTimePostConnect += nTime6 - nTime5; nTimeTotal += nTime6 - nTime1;
     LogPrint("bench", "  - Connect postprocess: %.2fms [%.2fs]\n", (nTime6 - nTime5) * 0.001, nTimePostConnect * 0.000001);
     LogPrint("bench", "- Connect block: %.2fms [%.2fs]\n", (nTime6 - nTime1) * 0.001, nTimeTotal * 0.000001);
@@ -2568,6 +2576,7 @@ static bool ActivateBestChainStep(CValidationState &state, CBlockIndex *pindexMo
                 return false;
             }
         } else {
+            //LogPrintf("ActivateBestChainStep tip connected\n");
             PruneBlockIndexCandidates();
             if (!pindexOldTip || chainActive.Tip()->nChainWork > pindexOldTip->nChainWork) {
                 // We're in a better position than we were. Return temporarily to release the lock.
@@ -2577,7 +2586,7 @@ static bool ActivateBestChainStep(CValidationState &state, CBlockIndex *pindexMo
         }
     }
     }
-
+    //LogPrintf("ActivateBestChainStep\n");
     // Callbacks/notifications for a new best chain.
     if (fInvalidFound)
         CheckForkWarningConditionsOnNewFork(vpindexToConnect.back());
@@ -2586,7 +2595,7 @@ static bool ActivateBestChainStep(CValidationState &state, CBlockIndex *pindexMo
     if(fFallBack)
     {
         g_signals.BlockChainFallback(pindexFork);
-        LogPrintf("fallback signal sent \n");
+        LogPrintf("fallback signal sent height %i\n",pindexFork->nHeight);
     }
     return true;
 }
@@ -4679,24 +4688,27 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
     else if (strCommand == "block" && !fImporting && !fReindex) // Ignore blocks received while importing
     {
         CBlock block;
-          CDataStream vrecvcopy=vRecv;
+        //  CDataStream vrecvcopy=vRecv;
+        //if(chainActive.Height()==621||chainActive.Height()==620)
+           // LogPrintf("block datastream len:%i,data:%s \n",vRecv.size(),HexStr(vRecv.begin(),vRecv.end()));
         vRecv >> block;
-        CDataStream vrecvretrieve=vRecv;
-        vrecvretrieve<<block;
-
+        //CDataStream vrecvretrieve=vRecv;
+        
+        //vrecvretrieve<<block;
 
         CInv inv(MSG_BLOCK, block.GetHash());
         LogPrint("net", "received block %s peer=%d\n", inv.hash.ToString(), pfrom->id);
-
+        //LogPrintf("received block %s peer=%d\n", inv.hash.ToString(), pfrom->id);
         pfrom->AddInventoryKnown(inv);
-
+        
         CValidationState state;
-        if(vrecvcopy!=vrecvretrieve)
-        {
-            state.DoS(100, error("Checkblock() : unserialize mismatch"),
-                         REJECT_INVALID, "bad-block-unserialize");
-        }
-        else
+        //note this kind of block check is dangerous, because block domain map is added
+//        if(vrecvcopy!=vrecvretrieve)
+//        {
+//            state.DoS(100, error("Checkblock() : unserialize mismatch"),
+//                         REJECT_INVALID, "bad-block-unserialize");
+//        }
+//        else
         ProcessNewBlock(state, pfrom, &block);
         int nDoS;
         if (state.IsInvalid(nDoS)) {

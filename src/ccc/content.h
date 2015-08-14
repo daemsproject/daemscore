@@ -82,7 +82,7 @@ public:
     bool Decode(std::vector<std::pair<int, string> >& vDecoded)const;
     bool DecodeDomainInfo(string& strAlias, string& strIntro, CLink& iconLink, std::vector<string>& vTags)const;
     bool DecodeDomainForward(int& redirectType, string& redirectTo,vector<unsigned char>& forwardsig)const;
-    bool DecodeFileString(std::string& strFile);
+    bool DecodeFileString(std::string& strFile,int nIterations=0);
     //this fucnction is for TagDB
     bool GetTags(std::vector<std::pair<int, std::string> >& vTagList) const;       
     bool _GetTags(std::vector<std::pair<int, std::string> >& vTagList, int ccp = -1) const;

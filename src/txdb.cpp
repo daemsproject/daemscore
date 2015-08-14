@@ -469,20 +469,19 @@ bool CDomainViewDB::GetUpdateDomain(const CScript ownerIn,const string& strDomai
         if(existingDomain.redirectType==CC_LINK_TYPE_SCRIPTPUBKEY)
         {
             string id;
-            
             existingDomain.redirectID.assign(existingDomain.redirectTo.begin(),existingDomain.redirectTo.end());
             ScriptPubKeyToString(existingDomain.redirectID,id);
             string strMessage=existingDomain.strDomain+"->"+id;
             LogPrintf("update domain forward type:scriptpubkey msg4sig:%s,sig:%s\n",strMessage,HexStr(existingDomain.forwardsig.begin(),existingDomain.forwardsig.end())); 
             CHashWriter ss(SER_GETHASH, 0);
             ss << strMessage;
-            CPubKey pubkey;
-            
+            CPubKey pubkey;            
             if (!pubkey.RecoverCompact(ss.GetHash(), existingDomain.forwardsig)||CBitcoinAddress(pubkey).ToString()!=id)
             {
                 LogPrintf("update domain forward verify sig failed,recovered id:%s,original id:%s\n",CBitcoinAddress(pubkey).ToString(),id); 
                 return false;
             }
+            
         }
         if(find(existingDomain.vDirectHistory.begin(),existingDomain.vDirectHistory.end(),link)==existingDomain.vDirectHistory.end())
         {
@@ -533,9 +532,7 @@ bool CDomainViewDB::Reverse(const string& strDomainContent)
  
 }
 bool CDomainViewDB::Write(const CDomain &domain,const bool fExists)
-{
-    //char* sql=domain.GetInsertSql();
-    //    return db->Write(sql);
+{    
     int64_t ownerID;
     if(!db->GetScriptIndex(domain.owner,ownerID))
     {
@@ -582,7 +579,7 @@ bool CDomainViewDB::_GetDomainByForward(const int nExtension,const CScript scrip
     string str2="x'";
     str2.append(HexStr(scriptPubKey.begin(),scriptPubKey.end())).append("'");
     searchValue=str2.c_str();
-    
+    LogPrintf("_GetDomainByForward  \n");
     
     
     return db->GetDomain(tableName.c_str(),searchColumn.c_str(),"=", searchValue,vDomain,30,fGetTags);
@@ -966,7 +963,7 @@ bool CScriptCoinDB::Erase(const uint256 txid, const uint32_t nOut)
     int64_t nLink=(txIndex<<16)+nOut;
     //return db->EraseCheque((txIndex<<16)+nOut);
     char chLink[20];
-                sprintf(chLink,"%lld",nLink);
+    sprintf(chLink,"%lld",nLink);
     return db->Delete("chequetable","link",chLink,"=");
 }
 bool  CScriptCoinDB::ClearTables()
@@ -1080,20 +1077,23 @@ bool UpdateSqliteDB(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >
         pTagDBView->InsertContentTags(vContents,mapTags);
        // LogPrintf("UpdateSqliteDB37 \n");
     }
-  //  LogPrintf("UpdateSqliteDB38 \n");
+    //LogPrintf("UpdateSqliteDB38 \n");
     psqliteDB->BatchInsertCheque(vChequeAdd,mapScriptIndex);
-   // LogPrintf("UpdateSqliteDB39 \n");
+    //LogPrintf("UpdateSqliteDB39 \n");
     
     if(vChequeErase.size()>0)
     {
         char strList[vChequeErase.size()*20];
+        string tmp;
         sprintf(strList,"(%lld",vChequeErase[0]);
+        tmp.assign(strList);
         for(unsigned int i=1;i<vChequeErase.size();i++)
-        {
-            sprintf(strList,"%s,%lld",strList,vChequeErase[i]);
-        }
-        sprintf(strList,"%s)",strList);
-        //psqliteDB->BatchEraseCheque(vChequeErase);  
+        {            
+            sprintf(strList,"%s,%lld",tmp.c_str(),vChequeErase[i]);
+            tmp.assign(strList);
+        }        
+        sprintf(strList,"%s)",tmp.c_str());
+        //LogPrintf("eraseCheque sql:%s \n",strList);
         psqliteDB->Delete("chequetable","link",strList,"IN");
     }
     //LogPrintf("UpdateSqliteDB40 \n");
@@ -1437,7 +1437,7 @@ void GetBlockChequeUpdates(const CBlock& block,const vector<vector<pair<CScript,
          return false;
      vector<int64_t> vTagIDs;
      LogPrintf("SearchPromotedContents vtags:%i \n",vTags.size());
-     if(vTags.size()>10)
+     if(vTags.size()>9)
          return false;
      for(unsigned int i=0;i<vTags.size();i++)
      {

@@ -215,7 +215,7 @@ bool GetTransaction(const uint256 &hash, CTransaction &tx, uint256 &hashBlock, b
 bool GetTransaction(const CDiskTxPos &postx, CTransaction &txOut, uint256 &hashBlock);
 bool GetTransaction(const CTxPosItem &postx, CTransaction &txOut);
 /**get all transactions related to the id list, with block hash*/
-bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTransaction, uint256> >& vTxs,bool fIncludeUnconfirmed =true,bool fNoContent=false,unsigned int nOffset=0,unsigned int nNumber=1000000);
+bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTransaction, uint256> >& vTxs,bool fIncludeUnconfirmed =true,bool fIncludeNoMoneyChange=true,unsigned int nOffset=0,unsigned int nNumber=1000000);
 bool GetDiskTxPoses (const std::vector<CScript>& vIds,std::vector<CTxPosItem>& vTxPosAll);
 
 /** Find the best known block, and make it the tip of the block chain */

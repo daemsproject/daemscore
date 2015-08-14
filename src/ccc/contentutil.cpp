@@ -345,7 +345,7 @@ bool _ParseContentUrl(const CLinkUni link,const CContent content,string& urlOut,
             return GetFilePackageMain(link.ToString(),urlOut,true);        
         default:
             GetNativeLink("ccc:browser",urlOut,nPageID);    
-            urlOut+="?link="+link.ToString();
+            urlOut+="/?link="+link.ToString();
     }
    return true;
 }

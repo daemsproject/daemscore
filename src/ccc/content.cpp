@@ -654,8 +654,10 @@ bool CContent::DecodeDomainInfo(string& strAlias, string& strIntro, CLink& iconL
     LogPrintf("CContent DecodeDomainInfo done\n");
     return true;
 }
-bool CContent::DecodeFileString(std::string& strFile)
+bool CContent::DecodeFileString(std::string& strFile,int nIterations)
 {
+    if(nIterations>1)
+        return false;
     LogPrintf("CContent DecodeFileString 1\n");
     std::vector<std::pair<int, string> > vDecoded;
     if(!Decode(vDecoded))
@@ -685,6 +687,10 @@ bool CContent::DecodeFileString(std::string& strFile)
             LogPrintf("CContent DecodeFileString 6\n");
             strFile= vDecoded[0].second;         
                     return true;
+        case CC_P:
+        {            
+            return CContent(vDecoded[0].second).DecodeFileString(strFile,nIterations+1);
+        }
         default:
             LogPrintf("CContent DecodeFileString 7\n");
             return false;

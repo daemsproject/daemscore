@@ -1448,7 +1448,7 @@ Value listtransactions(const Array& params, bool fHelp)
 
     Array ret;
 
-   // CWallet::TxItems txOrdered = pwallet->OrderedTxItems(fIncludeExtendedKeys);
+    CWallet::TxItems txOrdered = pwallet->OrderedTxItems(fIncludeExtendedKeys);
 
     
     if (nFrom > (int)pwallet->mapWallet.size())
@@ -1457,15 +1457,16 @@ Value listtransactions(const Array& params, bool fHelp)
         nCount = pwallet->mapWallet.size() - nFrom;
     // iterate backwards until we have nCount items to return:    
     int n=0;
-    for (std::map<uint256, CWalletTx>::reverse_iterator it = pwallet->mapWallet.rbegin(); it != pwallet->mapWallet.rend(); it++)
+   // for (std::map<uint256, CWalletTx>::reverse_iterator it = pwallet->mapWallet.rbegin(); it != pwallet->mapWallet.rend(); it++)
+   for (CWallet::TxItems::reverse_iterator it = txOrdered.rbegin(); it != txOrdered.rend(); it++)  
     {
         n++;
         if(n<nFrom)
             continue;
         if(n>nFrom+nCount)
             break;
-        CWalletTx *const pwtx = &it->second;
-        std::map<int,CScript> *pmapPrevoutScriptPubKey=&(it->second.mapPrevoutScriptPubKey);
+        CWalletTx *const pwtx = it->second.first;
+        std::map<int,CScript> *pmapPrevoutScriptPubKey=&(it->second.first->mapPrevoutScriptPubKey);
         //LogPrintf("rpcwallet listtxs pos :%i \n",it->first);
 //        if (pwtx != 0)
 //            ListTransactions(*pwtx, strAccount, 0, true, ret, filter);

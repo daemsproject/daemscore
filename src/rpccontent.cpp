@@ -1560,7 +1560,7 @@ void GetMessagesFromTx(std::vector<CMessage>& vMessages, const CTransaction& tx,
             {
                 for (unsigned int j = 0; j < vContent.size(); j++)
                 {
-                    if (vContent[j].first == 0x15)
+                    if (vContent[j].first == CC_MESSAGE_P)
                     {
                         //LogPrintf("getmessagesFromtx:effective msg found:%s\n",vContent[j].second);
                         std::vector<std::pair<int, string> > vInnerContent;
@@ -1572,15 +1572,15 @@ void GetMessagesFromTx(std::vector<CMessage>& vMessages, const CTransaction& tx,
                             for (unsigned int k = 0; k < vInnerContent.size(); k++)
                             {
                                 //LogPrintf("getmessagesFromtx:effective msg found:%s\n",vInnerContent[k].second);
-                                if (vInnerContent[k].first == 0x140002)
+                                if (vInnerContent[k].first == CC_ENCRYPT_PARAMS_IV)
                                     hasIV = true;
-                                else if (vInnerContent[k].first == 0x14)
+                                else if (vInnerContent[k].first == CC_ENCRYPT)
                                     hasContent = true;
                             }
                             if (hasIV && hasContent)
                             {
                                 CContent cmsg;
-                                cmsg.EncodeUnit(0x15, vContent[j].second);
+                                cmsg.EncodeUnit(CC_MESSAGE_P, vContent[j].second);
                                 vRawMsg.push_back(make_pair(i, cmsg));
                             }
                         }
@@ -1838,6 +1838,8 @@ json_spirit::Value getdomainsbytags(const json_spirit::Array& params, bool fHelp
     if(params.size()>2)
         fInclude100=params[2].get_bool();
     vector<string>vTags;
+    if(arrTags.size()>9)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "too many tags");
     for (unsigned int i = 0; i < arrTags.size(); i++)
     {
         LogPrintf("getdomainsbytags tag:%s \n", arrTags[i].get_str());
@@ -1929,6 +1931,8 @@ json_spirit::Value searchproducts(const json_spirit::Array& params, bool fHelp)
     }    
     vector<int> vCCs;    
     vCCs.push_back(CC_PRODUCT_P);
+    if(arrTags.size()>9)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "too many tags");
     vector<string> vTags;
     BOOST_FOREACH(const Value& tag, arrTags)
         vTags.push_back(tag.get_str());

@@ -194,7 +194,7 @@ bool ProcessP2PServiceRequest(CNode* pfrom,CDataStream& vRecv, int64_t nTimeRece
             vector<string>vTags;
             vector<int> vCCs;
             vRecv>>vCCs>>vTags;
-            if(vTags.size()>10||vCCs.size()>1)
+            if(vTags.size()>9||vCCs.size()>1)
             {
                 pfrom->PushMessage("reject", strCommand, REJECT_NONSTANDARD, string("invalid search parameters"));
                 Misbehaving(pfrom->GetId(), 10);
