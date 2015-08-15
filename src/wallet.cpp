@@ -16,7 +16,7 @@
 #include "utilmoneystr.h"
 #include "core_io.h"
 #include <assert.h>
-
+#include <boost/filesystem.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/thread.hpp>
 #include "json/json_spirit_utils.h"
@@ -200,6 +200,45 @@ bool CWallet::SwitchToAccount(CPubKey idIn,bool fSetDefault){
         }
         return false;
     };
+bool CWallet::ImportAccount(string fileName)
+{
+    Object objId;
+    Value valId;
+    if(ReadFileToJson(fileName,valId))
+    {
+        if (valId.type()==obj_type)
+        {
+            objId = valId.get_obj();
+            Value valTemp = find_value(objId, "basepub");
+            if(valTemp.type()==json_spirit::str_type)
+            {                
+                std::string str=valTemp.get_str();
+                CPubKey pubKey;
+                if(CBitcoinAddress(str).GetKey(pubKey))  {
+                    string tmp;
+                    if(!pwalletdb->GetWalletName(str,tmp))//this means it's a new id;
+                    {
+                        str.append(".id");
+                        boost::filesystem::path fpFile=pwalletdb->fpWalletPath / str;     
+                        return WriteJsonToFile(json_spirit::Value(objId),fpFile.string());
+                    }   
+                    else
+                    {
+                        LogPrintf("Import wallet:wallet exists");
+                    }
+                }
+            }
+        }                    
+    }
+    return false;
+}
+bool CWallet::ExportAccount(string id,string fileName)
+{
+    Object objId;
+    if(pwalletdb->GetIdObj(id,objId))
+            return WriteJsonToFile(json_spirit::Value(objId),fileName);
+    return false;
+}
     //generate a new extended key
 CPubKey CWallet::GenerateNewKey()
 {

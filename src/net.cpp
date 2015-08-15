@@ -523,7 +523,8 @@ void CNode::copyStats(CNodeStats &stats)
     X(nLastSend);
     X(nLastRecv);
     X(nTimeConnected);
-    X(addrName);
+    //X(addrName);
+    stats.addrName=addr.ToStringIPPort(false);
     X(nVersion);
     X(cleanSubVer);
     X(fInbound);

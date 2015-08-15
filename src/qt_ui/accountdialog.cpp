@@ -172,6 +172,7 @@ AccountDialog::AccountDialog(Mode mode,QWidget *parent,WalletModel* walletModelI
         
             break;
         case Switch:
+        {
             setWindowTitle(tr("Switch Account"));
             ui->passLabel1->hide();
             ui->passEdit1->hide();
@@ -191,6 +192,30 @@ AccountDialog::AccountDialog(Mode mode,QWidget *parent,WalletModel* walletModelI
             QStringList idList=walletModel->GetAccountList();
             LogPrintf("switchto list size:%i \n",idList.size());
             ui->selectList->addItems(idList);
+        }
+            break;
+            case Export:
+            {
+            setWindowTitle(tr("Export Account"));
+            ui->passLabel1->hide();
+            ui->passEdit1->hide();
+            ui->passLabel2->hide();
+            ui->passEdit2->hide();
+            ui->passLabel3->hide();
+            ui->passEdit3->hide();
+            ui->headerLabel->hide();
+            ui->headerEdit->hide();            
+            ui->timeLabel->hide();
+            ui->timeDisplay->hide();
+            ui->checkBoxHeader->hide();
+            ui->checkBoxEncrypt->hide();
+            ui->Button3->hide();
+            ui->Button2->setText("OK");
+            ui->warningLabel->setText(tr("Please choose an account to export."));
+            QStringList idList=walletModel->GetAccountList();
+            LogPrintf("switchto list size:%i \n",idList.size());
+            ui->selectList->addItems(idList);
+            }
             break;
     }
     textChanged();
@@ -231,6 +256,7 @@ void AccountDialog::textChanged()
         break;
     case Switch:
     case Lock:
+    case Export:
             acceptable=true;
             break;
     }
@@ -354,6 +380,10 @@ void AccountDialog::DoAccountAction(bool fSwitchTo)
             break;    
         case Switch:
             walletModel->switchToAccount(ui->selectList->currentText());
+            QDialog::accept(); 
+             break;
+        case Export:
+            walletModel->exportAccount(ui->selectList->currentText());
             QDialog::accept(); 
              break;
          case Unlock:

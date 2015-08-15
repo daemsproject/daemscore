@@ -54,6 +54,7 @@ public:
     char** GetSqlItems()const;
     bool IsLevel2() const;
     json_spirit::Value ToJson()const;
+    string ToJsonString()const;
     CLink GetLastRedirectLink()const;
     bool IsEmpty() const;
     ADD_SERIALIZE_METHODS;   

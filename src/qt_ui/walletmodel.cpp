@@ -33,6 +33,7 @@
 #include <QDebug>
 #include <QSet>
 #include <QTimer>
+#include <QtWidgets/QFileDialog>
 #include "json/json_spirit_value.h"
 #include "json/json_spirit_utils.h"
 using namespace std;
@@ -370,6 +371,39 @@ bool WalletModel::switchToAccount(QString ID)
      wallet->SwitchToAccount(pub,true);
      
      return true;
+}
+bool WalletModel::exportAccount(QString ID)
+{
+    QSettings settings;
+    settings.beginGroup(QLatin1String("downloadmanager"));
+    QString defaultLocation = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+    QString downloadDirectory = settings.value(QLatin1String("downloadDirectory"), defaultLocation).toString();
+    
+    QString defaultFileName = downloadDirectory+QLatin1String("/")+ID+QLatin1String(".id");
+    
+    QString fileName = QFileDialog::getSaveFileName(gui, tr("Export Account"),defaultFileName);
+        if (!fileName.isEmpty()) {
+            return wallet->ExportAccount(ID.toStdString(),fileName.toStdString());
+            
+        }
+     
+     return false;
+}
+bool WalletModel::importAccount()
+{
+    QSettings settings;
+    settings.beginGroup(QLatin1String("downloadmanager"));
+    QString defaultLocation = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+    QString downloadDirectory = settings.value(QLatin1String("downloadDirectory"), defaultLocation).toString();
+   
+    QString fileName = QFileDialog::getOpenFileName(gui, tr("Export Account"),downloadDirectory);
+        if (!fileName.isEmpty()) {
+            CWallet* pwallet= new CWallet();
+            bool rt= pwallet->ImportAccount(fileName.toStdString());
+            delete pwallet;
+            return rt;
+        }
+    return false;
 }
 void WalletModel::notifyAccountSwitched(const std::string id)
 {

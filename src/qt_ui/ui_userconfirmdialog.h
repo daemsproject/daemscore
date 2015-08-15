@@ -19,7 +19,7 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
-#include <QtWidgets/QScrollArea>
+#include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -32,8 +32,8 @@ public:
     QHBoxLayout *layout_password;
     QLabel *label_7;
     QLineEdit *passwordEdit;
-    QScrollArea *scrollArea;
-    QWidget *scrollAreaWidgetContents;
+    QWidget *verticalLayoutWidget;
+    QVBoxLayout *verticalLayout;
     QLabel *label_message;
 
     void setupUi(QDialog *UserConfirmDialog)
@@ -41,7 +41,7 @@ public:
         if (UserConfirmDialog->objectName().isEmpty())
             UserConfirmDialog->setObjectName(QStringLiteral("UserConfirmDialog"));
         UserConfirmDialog->resize(650, 300);
-        QSizePolicy sizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding);
+        QSizePolicy sizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(UserConfirmDialog->sizePolicy().hasHeightForWidth());
@@ -70,24 +70,23 @@ public:
 
         layout_password->addWidget(passwordEdit);
 
-        scrollArea = new QScrollArea(UserConfirmDialog);
-        scrollArea->setObjectName(QStringLiteral("scrollArea"));
-        scrollArea->setGeometry(QRect(30, 10, 591, 201));
-        scrollArea->setWidgetResizable(true);
-        scrollAreaWidgetContents = new QWidget();
-        scrollAreaWidgetContents->setObjectName(QStringLiteral("scrollAreaWidgetContents"));
-        scrollAreaWidgetContents->setGeometry(QRect(0, 0, 589, 199));
-        label_message = new QLabel(scrollAreaWidgetContents);
+        verticalLayoutWidget = new QWidget(UserConfirmDialog);
+        verticalLayoutWidget->setObjectName(QStringLiteral("verticalLayoutWidget"));
+        verticalLayoutWidget->setGeometry(QRect(20, 10, 611, 191));
+        verticalLayout = new QVBoxLayout(verticalLayoutWidget);
+        verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
+        verticalLayout->setSizeConstraint(QLayout::SetMinimumSize);
+        verticalLayout->setContentsMargins(0, 0, 0, 0);
+        label_message = new QLabel(verticalLayoutWidget);
         label_message->setObjectName(QStringLiteral("label_message"));
-        label_message->setGeometry(QRect(10, 10, 571, 171));
-        QSizePolicy sizePolicy1(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        sizePolicy1.setHorizontalStretch(0);
-        sizePolicy1.setVerticalStretch(0);
-        sizePolicy1.setHeightForWidth(label_message->sizePolicy().hasHeightForWidth());
-        label_message->setSizePolicy(sizePolicy1);
+        sizePolicy.setHeightForWidth(label_message->sizePolicy().hasHeightForWidth());
+        label_message->setSizePolicy(sizePolicy);
         label_message->setTextFormat(Qt::RichText);
         label_message->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop);
-        scrollArea->setWidget(scrollAreaWidgetContents);
+        label_message->setWordWrap(true);
+
+        verticalLayout->addWidget(label_message);
+
 
         retranslateUi(UserConfirmDialog);
         QObject::connect(buttonBox, SIGNAL(accepted()), UserConfirmDialog, SLOT(accept()));

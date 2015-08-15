@@ -176,6 +176,8 @@ public:
     bool SwitchToAccount(CPubKey idIn,bool fSetDefault=false);
          
     bool SwitchToAccount(CKey keyIn);
+    bool ImportAccount(string fileName);
+    bool ExportAccount(string id,string fileName);
     bool IsWalletExists(const CPubKey& id)const{return pwalletdb->IsWalletExists(id);}
     void SetNull()
     {

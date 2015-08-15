@@ -81,7 +81,7 @@ bool CSettings::LoadSettings()
             return false;
         }
         string str=obj2[i].value_.get_str();
-        if(pageID>=1&&pageID<=11&&IsValidDomainFormat(str))
+        if(pageID>=1&&pageID<=HELPPAGE_ID&&IsValidDomainFormat(str))
         {
             mapPageDomain[pageID]=str;
             CLink link;

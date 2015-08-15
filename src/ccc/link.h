@@ -148,6 +148,7 @@ public:
     bool SetStringBlockChain(const std::string linkStr);
     bool SetStringTxidOut(const std::string linkStr);
     bool SetStringScriptPubKey(const std::string linkStr);
+    bool UnserializeConst(const string& str);
     //this function only outputs the content of link ,w/o link type information
     std::string ToString(const linkformat linkFormat = LINK_FORMAT_DEC)const;
     std::string ToStringBlockChain(const linkformat linkFormat= LINK_FORMAT_DEC)const;

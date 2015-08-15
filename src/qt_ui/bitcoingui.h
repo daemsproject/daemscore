@@ -172,6 +172,7 @@ private:
     QAction *showHideTabBarAction;
     QAction *showHelpMessageAction;
     QAction *settingsAction;
+    QAction *helpAction;
     QAction *serviceManagerAction;
 
     QSystemTrayIcon *trayIcon;
@@ -301,10 +302,7 @@ private slots:
     void gotoMinerPage();  
     
 
-    /** Show Sign/Verify Message dialog and switch to sign message tab */
-    //void gotoSignMessageTab(QString addr = "");
-    /** Show Sign/Verify Message dialog and switch to verify message tab */
-    //void gotoVerifyMessageTab(QString addr = "");
+    
 
     /** Show open dialog */
     void openClicked();
@@ -313,7 +311,8 @@ private slots:
     //void optionsClicked();
    
    
-   void backupWallet(){};
+   void backupWallet();
+   void importWallet();
    void encryptWallet();
    void decryptWallet();
     void changePassphrase();
@@ -327,6 +326,7 @@ private slots:
     void gotoDownloaderPage();
     void gotoSettingsPage();
     void gotoToolsPage();
+    void gotoHelpPage();
     /** Show about dialog */    
     void aboutClicked();
     void showHideTabBarClicked();

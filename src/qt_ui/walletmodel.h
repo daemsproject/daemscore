@@ -95,6 +95,8 @@ public:
     bool stopVanityGen();
     QStringList GetAccountList();
     bool switchToAccount(QString ID);
+    bool exportAccount(QString ID);
+    bool importAccount();
     QString HandlePaymentRequest(const json_spirit::Array arrData);    
     QString HandlePaymentRequest2(const json_spirit::Array arrData);  
     QString DoPayment(const CPaymentOrder& pr);

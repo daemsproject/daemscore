@@ -1216,12 +1216,12 @@ std::string CService::ToStringPort() const
     return strprintf("%u", port);
 }
 
-std::string CService::ToStringIPPort() const
+std::string CService::ToStringIPPort(bool fMask) const
 {
     if (IsIPv4() || IsTor()) {
-        return ToStringIPMask() + ":" + ToStringPort();
+        return fMask?ToStringIPMask():ToStringIP() + ":" + ToStringPort();
     } else {
-        return "[" + ToStringIPMask() + "]:" + ToStringPort();
+        return "[" + fMask?ToStringIPMask():ToStringIP() + "]:" + ToStringPort();
     }
 }
 

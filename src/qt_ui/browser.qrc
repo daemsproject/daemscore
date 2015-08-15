@@ -46,6 +46,8 @@
         <file alias="browser">res/icons/browser.png</file>
         <file alias="publisher">res/icons/publish.png</file>
         <file alias="chat">res/icons/chat.png</file>
+        <file alias="shop">res/icons/shop.png</file>
+        <file alias="tool">res/icons/configure.png</file>
     </qresource>
     <qresource prefix="/images">
         <file alias="about">res/images/about.png</file>

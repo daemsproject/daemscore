@@ -228,7 +228,7 @@ QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
                 std::string appName=arrData[0].get_str();
                 //if (nPageID==WALLETPAGE_ID)
                 //    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid pageID, wallet page setting is forbidden");
-                if (nPageID<9&&appNames[nPageID]!=appName)
+                if (nPageID<=HELPPAGE_ID&&appNames[nPageID]!=appName)
                     throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid appName, not corresponds to pageid");
             }
             

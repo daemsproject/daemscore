@@ -310,10 +310,11 @@ bool CLinkUni::SetString(const std::string linkStr)
         linkType=CC_LINK_TYPE_DOMAIN;
         if(linkStr.find("/")!=linkStr.npos)
         {
-        strLink=linkStr.substr(0,linkStr.find("/"));      
+        strDomain=linkStr.substr(0,linkStr.find("/"));      
         strDomainExtension=linkStr.substr(linkStr.find("/"));
         }
-        
+        else
+            strDomain=strLink;
         return true;
     }    
     
@@ -337,7 +338,7 @@ bool CLinkUni::SetStringNative(const std::string linkStr)
         {//ccc url, to be parsed as app or link.
             str = linkStr.substr(posColon + 1);
             str=str.substr(0,str.find("/"));   
-            for(int i=1;i<=11;i++)            
+            for(int i=1;i<=HELPPAGE_ID;i++)            
                 if (str==mapPageNames[i])
                 {
                     linkType=CC_LINK_TYPE_NATIVE;            
@@ -349,8 +350,9 @@ bool CLinkUni::SetStringNative(const std::string linkStr)
 }
 bool CLinkUni::SetStringBlockChain(const std::string linkStr)
 {
+    LogPrintf("CLinkUni::SetStringBlockChain  linkStr %s\n",linkStr);
     CLink link;
-    if(!link.SetString(strLink))           
+    if(!link.SetString(linkStr))           
         return false;           
     nHeight=link.nHeight;
     nTx=link.nTx;
@@ -413,6 +415,17 @@ bool CLinkUni::SetStringScriptPubKey(const std::string linkStr)
 //    if(scriptPubKey.size()>64)
 //        return false;
     linkType=CC_LINK_TYPE_SCRIPTPUBKEY;
+    return true;
+}
+bool CLinkUni::UnserializeConst(const string& str)
+{
+    CLink link;
+    if(!link.UnserializeConst(str))
+        return false; 
+    nHeight=link.nHeight;
+    nTx=link.nTx;
+    nVout=link.nVout; 
+    linkType=CC_LINK_TYPE_BLOCKCHAIN;
     return true;
 }
 std::string CLinkUni::ToString(const linkformat linkFormat)const

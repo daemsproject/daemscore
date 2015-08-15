@@ -34,7 +34,8 @@ public:
         Lock,
         Unlock,    
         ChangePass, /**< Ask old passphrase + new passphrase twice */
-        Decrypt     /**< Ask passphrase and decrypt wallet */
+        Decrypt,
+        Export/**< Ask passphrase and decrypt wallet */
     };
     explicit AccountDialog(Mode mode,QWidget *parent,WalletModel* walletModelIn);
     ~AccountDialog();

@@ -188,6 +188,7 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle *networkStyle,QString languageIn,  QWi
     showHideTabBarAction(0),
     showHelpMessageAction(0),
     settingsAction(0),
+    helpAction(0),
     serviceManagerAction(0),
     trayIcon(0),
     trayIconMenu(0),
@@ -438,23 +439,23 @@ BitcoinGUI::~BitcoinGUI()
 void BitcoinGUI::createActions(const NetworkStyle *networkStyle)
 {
     QActionGroup *tabGroup = new QActionGroup(this);
-    walletAction = new QAction(QIcon(":/icons/wallet"), tr("&Wallet"), this);
+    walletAction = new QAction(QIcon(":/icons/wallet"), tr("Wallet"), this);
     walletAction->setStatusTip(tr("Show wallet page"));
     walletAction->setToolTip(walletAction->statusTip());
     walletAction->setCheckable(true);
-    walletAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_1));
+    walletAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_W));
     tabGroup->addAction(walletAction);    
-    browserAction = new QAction(QIcon(":/icons/browser"), tr("&Browser"), this);
+    browserAction = new QAction(QIcon(":/icons/browser"), tr("Browser"), this);
     browserAction->setStatusTip(tr("Show browser page"));
     browserAction->setToolTip(browserAction->statusTip());
     browserAction->setCheckable(true);
-    browserAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_2));
+    browserAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_B));
     tabGroup->addAction(browserAction);
-    publisherAction = new QAction(QIcon(":/icons/publisher"), tr("&Publisher"), this);
+    publisherAction = new QAction(QIcon(":/icons/publisher"), tr("Publisher"), this);
     publisherAction->setStatusTip(tr("Show publisher page"));
     publisherAction->setToolTip(publisherAction->statusTip());
     publisherAction->setCheckable(true);
-    publisherAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_3));
+    publisherAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_P));
     tabGroup->addAction(publisherAction);
     messengerAction = new QAction(QIcon(":/icons/chat"), tr("&Messenger"), this);
     messengerAction->setStatusTip(tr("Show messenger page"));
@@ -469,21 +470,23 @@ void BitcoinGUI::createActions(const NetworkStyle *networkStyle)
     minerAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_M));
     tabGroup->addAction(minerAction);
     
-    shopAction = new QAction(QIcon(":/icons/key"), tr("&Shop"), this);
+    shopAction = new QAction(QIcon(":/icons/shop"), tr("&Shop"), this);
     shopAction->setStatusTip(tr("shop"));
     shopAction->setCheckable(true);
     shopAction->setToolTip(shopAction->statusTip()); 
+    shopAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_S));
     tabGroup->addAction(shopAction);
-    downloaderAction = new QAction(QIcon(":/icons/tx_mined"), tr("&Downloader"), this);
+    downloaderAction = new QAction(QIcon(":/icons/receiving_addresses"), tr("&Downloader"), this);
     downloaderAction->setStatusTip(tr("Show downloader page"));
     downloaderAction->setToolTip(downloaderAction->statusTip());    
     downloaderAction->setCheckable(true);
-    downloaderAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_D)); 
+    downloaderAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_L)); 
     tabGroup->addAction(downloaderAction);
-    toolsAction = new QAction(QIcon(":/icons/key"), tr("&Tools"), this);
+    toolsAction = new QAction(QIcon(":/icons/tool"), tr("&Tools"), this);
     toolsAction->setStatusTip(tr("Tools"));
     toolsAction->setToolTip(toolsAction->statusTip());     
     toolsAction->setCheckable(true);
+    toolsAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_T)); 
     tabGroup->addAction(toolsAction);
 LogPrintf("bitcoingui:createactions 1 \n");
 #ifdef ENABLE_WALLET
@@ -540,6 +543,7 @@ LogPrintf("bitcoingui:createactions 2 \n");
     
     domainNameAction = new QAction(QIcon(":/icons/key"), tr("&Domain name manage..."), this);
     domainNameAction->setStatusTip(tr("Domain name manage"));
+    domainNameAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_D)); 
     exportAccountAction = new QAction(QIcon(":/icons/key"), tr("&Export Account"), this);
     exportAccountAction->setStatusTip(tr("Export Account"));
     importAccountAction = new QAction(QIcon(":/icons/key"), tr("&Import Account"), this);
@@ -562,6 +566,10 @@ LogPrintf("bitcoingui:createactions 2 \n");
     showHelpMessageAction->setStatusTip(tr("Show the Cccoin Core help message to get a list with possible Cccoin command-line options"));
     settingsAction = new QAction(QIcon(":/icons/key"), tr("&Settings"), this);
     settingsAction->setStatusTip(tr("Settings"));
+    settingsAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_S)); 
+    helpAction = new QAction(QApplication::style()->standardIcon(QStyle::SP_MessageBoxInformation), tr("&Help"), this);
+    helpAction->setStatusTip(tr("Help"));
+    helpAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_H)); 
     serviceManagerAction = new QAction(QIcon(":/icons/key"), tr("&Service Manager"), this);
     serviceManagerAction->setStatusTip(tr("Service Manager"));
 //LogPrintf("bitcoingui:createactions 5 \n");
@@ -577,6 +585,7 @@ LogPrintf("bitcoingui:createactions 2 \n");
     //connect(showHideTabBarAction, SIGNAL(triggered()), this, SLOT(showHideTabBarClicked()));
     connect(showHelpMessageAction, SIGNAL(triggered()), this, SLOT(showHelpMessageClicked()));
     connect(settingsAction, SIGNAL(triggered()), this, SLOT(gotoSettingsPage()));
+    connect(helpAction, SIGNAL(triggered()), this, SLOT(gotoHelpPage()));
     connect(serviceManagerAction, SIGNAL(triggered()), this, SLOT(gotoSettingsPage()));
     //LogPrintf("bitcoingui:createactions 6 \n");
 #ifdef ENABLE_WALLET
@@ -585,6 +594,7 @@ LogPrintf("bitcoingui:createactions 2 \n");
         connect(decryptAccountAction, SIGNAL(triggered()), this, SLOT(decryptWallet()));
         //LogPrintf("bitcoingui:createactions 7 \n");
         connect(exportAccountAction, SIGNAL(triggered()), this, SLOT(backupWallet()));
+        connect(importAccountAction, SIGNAL(triggered()), this, SLOT(importWallet()));
         //LogPrintf("bitcoingui:createactions 8 \n");
         connect(changePassphraseAction, SIGNAL(triggered()), this, SLOT(changePassphrase()));
         //LogPrintf("bitcoingui:createactions 9 \n");
@@ -629,7 +639,7 @@ void BitcoinGUI::createMenuBar()
     //#if defined(QWEBPAGE_SETNETWORKACCESSMANAGER)
     fileMenu->addAction(tr("&Save As..."), this,
                 SLOT(slotFileSaveAs()), QKeySequence(QKeySequence::Save));
-    fileMenu->addAction(tr("Download Manager"), this,
+    fileMenu->addAction(tr("Download List"), this,
                 SLOT(slotDownloadManager()));
     fileMenu->addSeparator();
 //#endif
@@ -831,10 +841,10 @@ void BitcoinGUI::createMenuBar()
     {
         //help->addAction(openRPCConsoleAction);
     }
-    help->addAction(showHelpMessageAction);
-    help->addSeparator();
+    //help->addAction(showHelpMessageAction);
+    //help->addSeparator();
     help->addAction(aboutAction);
-    //help->addAction(aboutQtAction);
+    help->addAction(helpAction);
        
     
 }
@@ -1136,7 +1146,23 @@ void BitcoinGUI::switchAccountClicked()
         AccountDialog dlg(AccountDialog::Switch,this, walletModel);    
     
         if(dlg.exec()){
+            
         }
+}
+void BitcoinGUI::backupWallet()
+{
+    if(!walletModel)
+        return;
+        AccountDialog dlg(AccountDialog::Export,this, walletModel);    
+    
+        if(dlg.exec()){
+        }
+}
+void BitcoinGUI::importWallet()
+{
+    if(!walletModel)
+        return;
+        walletModel->importAccount();
 }
 void BitcoinGUI::unlockAccountClicked()
 {
@@ -1253,11 +1279,7 @@ void BitcoinGUI::gotoDownloaderPage()
    // if (mainView) mainView->loadWebPage(DOWNLOADERPAGE_ID);
     loadUrl(QUrl("ccc:downloader"));
 }
-void BitcoinGUI::gotoSettingsPage()
-{    
-   loadUrl(QUrl("ccc:settings"));
-    
-}
+
 void BitcoinGUI::gotoToolsPage()
 {    
     loadUrl(QUrl("ccc:tools"));
@@ -1269,9 +1291,19 @@ void BitcoinGUI::domainNameClicked()
 }
 
 #endif // ENABLE_WALLET
+void BitcoinGUI::gotoSettingsPage()
+{    
+   loadUrl(QUrl("ccc:settings"));
+    
+}
+void BitcoinGUI::gotoHelpPage()
+{    
+   loadUrl(QUrl("ccc:help"));
+    
+}
 void BitcoinGUI::installWebPages()
 {
-    for(int i=1;i<=11;i++)
+    for(int i=1;i<=HELPPAGE_ID;i++)
     {
        if(mainView) mainView->installWebPage(mapPageNames[i]);
     }

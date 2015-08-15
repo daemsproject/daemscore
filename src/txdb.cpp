@@ -579,7 +579,7 @@ bool CDomainViewDB::_GetDomainByForward(const int nExtension,const CScript scrip
     string str2="x'";
     str2.append(HexStr(scriptPubKey.begin(),scriptPubKey.end())).append("'");
     searchValue=str2.c_str();
-    LogPrintf("_GetDomainByForward  \n");
+    //LogPrintf("_GetDomainByForward  \n");
     
     
     return db->GetDomain(tableName.c_str(),searchColumn.c_str(),"=", searchValue,vDomain,30,fGetTags);
@@ -964,12 +964,12 @@ bool CScriptCoinDB::Erase(const uint256 txid, const uint32_t nOut)
     //return db->EraseCheque((txIndex<<16)+nOut);
     char chLink[20];
     sprintf(chLink,"%lld",nLink);
-    return db->Delete("chequetable","link",chLink,"=");
+    return db->Delete("table_unspent","link",chLink,"=");
 }
 bool  CScriptCoinDB::ClearTables()
 {    
     db->ClearTable("txindextable");
-    db->ClearTable("chequetable");
+    db->ClearTable("table_unspent");
    return true; 
 }
 bool UpdateSqliteDB(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >& vPos,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,bool fErase)
@@ -1094,7 +1094,7 @@ bool UpdateSqliteDB(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >
         }        
         sprintf(strList,"%s)",tmp.c_str());
         //LogPrintf("eraseCheque sql:%s \n",strList);
-        psqliteDB->Delete("chequetable","link",strList,"IN");
+        psqliteDB->Delete("table_unspent","link",strList,"IN");
     }
     //LogPrintf("UpdateSqliteDB40 \n");
     if(block.nBlockHeight%120==0)

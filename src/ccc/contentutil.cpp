@@ -268,8 +268,12 @@ bool ParseUrl(const string urlIn,string& urlOut,int& nPageID)
                 return false;
             return _ParseContentUrl(link,content,urlOut,nPageID);
         }
-        case CC_LINK_TYPE_DOMAIN:        
-             return _ParseDomainUrl(link.strDomain,link.strDomainExtension,urlOut,nPageID,1);   
+        case CC_LINK_TYPE_DOMAIN:   
+        {     
+            //LogPrintf("ParseUrl  strDomain %s\n",link.strDomain);
+            //LogPrintf("ParseUrl  strDomainExtension %s\n",link.strDomainExtension);
+             return _ParseDomainUrl(link.strDomain,link.strDomainExtension,urlOut,nPageID,1);  
+        }
         case CC_LINK_TYPE_TXIDOUT:       
             {       
                 CContent content;
@@ -316,7 +320,7 @@ bool GetNativeLink(const string urlIn,string& urlOut,int& nPageID)
     }
     
     LogPrintf("ParseUrl  posColon+1:%s\n",str);
-    for(int i=1;i<=11;i++)
+    for(int i=1;i<=HELPPAGE_ID;i++)
     {
         if (str==mapPageNames[i])
         {
@@ -353,15 +357,18 @@ bool _ParseDomainUrl(const string& strDomain,const string& strDomainExt,string& 
 {
     if (nIterations>10)
         return false;
+    //LogPrintf("_ParseDomainUrl  domain:%s \n",strDomain);
     CDomain domain;
     if(!pDomainDBView->GetDomainByName(strDomain,domain))
         return false;
     CLinkUni link;
+    //LogPrintf("_ParseDomainUrl  domain:%s\n",domain.ToJsonString());
     switch((int)domain.redirectType)
     {
         case CC_LINK_TYPE_BLOCKCHAIN:        
         {
-            if(!link.SetStringBlockChain(domain.redirectTo))
+            //LogPrintf("_ParseDomainUrl  redirectTo %s\n",domain.redirectTo);                       
+            if(!link.UnserializeConst(domain.redirectTo))
                 return false;
             CContent content;
             if(!GetContentByLink(link,content))
@@ -400,6 +407,8 @@ bool _ParseDomainUrl(const string& strDomain,const string& strDomainExt,string& 
         case CC_LINK_TYPE_FILE:
             urlOut=domain.redirectTo+strDomainExt;        
             return true;
+        case -1:
+            return false;
         default:
             urlOut="http://"+domain.redirectTo+strDomainExt;            
     }

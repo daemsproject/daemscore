@@ -10,6 +10,7 @@
 #include "utilstrencodings.h"
 #include <assert.h>
 #include <util.h>
+#include "json/json_spirit_writer_template.h"
 
 using namespace std;
 bool CDomain::SetContent(const CContent content,const CScript ownerIn,bool& fRegister,bool& fForward)
@@ -167,6 +168,10 @@ json_spirit::Value CDomain::ToJson()const
         arrTags.push_back(Value(vTags[i]));
     obj.push_back(json_spirit::Pair("tags",arrTags));    
     return Value(obj);
+}
+string CDomain::ToJsonString()const
+{
+    return write_string(ToJson(), false);
 }
 CLink CDomain::GetLastRedirectLink()const
 {
