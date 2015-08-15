@@ -188,7 +188,7 @@ TEST(MemEnvTest, DBTest) {
   options.env = env_;
   DB* db;
 
-  const Slice keys[] = {Slice("aaa"), Slice("bbb"), Slice("ccc")};
+  const Slice keys[] = {Slice("aaa"), Slice("bbb"), Slice("fai")};
   const Slice vals[] = {Slice("foo"), Slice("bar"), Slice("baz")};
 
   ASSERT_OK(DB::Open(options, "/dir/db", &db));

@@ -1,22 +1,15 @@
-/* 
- * File:   settings.h
- * Author: alan
- *
- * Created on July 26, 2015, 8:37 PM
- */
-
-#ifndef CCCOIN_SETTINGS_H
-#define	CCCOIN_SETTINGS_H
+#ifndef FAICOIN_SETTINGS_H
+#define	FAICOIN_SETTINGS_H
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_value.h"
-#include "ccc/cc.h"
+#include "fai/cc.h"
 #include <string>
 #include <vector>
 #include <map>
 #include <boost/assign.hpp>
 
-//#include "ccc/link.h"
-//#include "ccc/content.h"
+//#include "fai/link.h"
+//#include "fai/content.h"
 
 using namespace std;
 using namespace json_spirit;
@@ -58,5 +51,5 @@ public:
 //    bool ChangeSetting(const string settingType,const string key,const string& value);
     
 };
-#endif	/* CCCOIN_SETTINGS_H */
+#endif	/* FAICOIN_SETTINGS_H */
 

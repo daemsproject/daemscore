@@ -1,9 +1,9 @@
 Gitian building
 ================
 
-*Setup instructions for a gitian build of Cccoin using a Debian VM or physical system.*
+*Setup instructions for a gitian build of Faicoin using a Debian VM or physical system.*
 
-Gitian is the deterministic build process that is used to build the Cccoin
+Gitian is the deterministic build process that is used to build the Faicoin
 Core executables. It provides a way to be reasonably sure that the
 executables are really built from source on GitHub. It also makes sure that
 the same, tested dependencies are used and statically built into the executable.
@@ -11,7 +11,7 @@ the same, tested dependencies are used and statically built into the executable.
 Multiple developers build the source code by following a specific descriptor
 ("recipe"), cryptographically sign the result, and upload the resulting signature.
 These results are compared and only if they match, the build is accepted and uploaded
-to cccoin.org.
+to faicoin.org.
 
 More independent gitian builders are needed, which is why I wrote this
 guide. It is preferred to follow these steps yourself instead of using someone else's
@@ -26,7 +26,7 @@ Table of Contents
 - [Installing gitian](#installing-gitian)
 - [Setting up gitian images](#setting-up-gitian-images)
 - [Getting and building the inputs](#getting-and-building-the-inputs)
-- [Building Cccoin](#building-cccoin)
+- [Building Faicoin](#building-faicoin)
 - [Building an alternative repository](#building-an-alternative-repository)
 - [Signing externally](#signing-externally)
 - [Uploading signatures](#uploading-signatures)
@@ -277,12 +277,12 @@ cd ..
 
 **Note**: When sudo asks for a password, enter the password for the user *debian* not for *root*.
 
-Clone the git repositories for cccoin and gitian and then checkout the cccoin version that you want to build.
+Clone the git repositories for faicoin and gitian and then checkout the faicoin version that you want to build.
 
 ```bash
 git clone https://github.com/devrandom/gitian-builder.git
-git clone https://github.com/cccoin-project/cccoin.git
-cd cccoin
+git clone https://github.com/faicoin-project/faicoin.git
+cd faicoin
 git checkout v${VERSION}
 cd ..
 ```
@@ -310,16 +310,16 @@ There will be a lot of warnings printed during build of the images. These can be
 Getting and building the inputs
 --------------------------------
 
-Follow the instructions in [doc/release-process.md](release-process.md) in the cccoin repository
+Follow the instructions in [doc/release-process.md](release-process.md) in the faicoin repository
 under 'Fetch and build inputs' to install sources which require manual intervention. Also follow
 the next step: 'Seed the Gitian sources cache', which will fetch all necessary source files allowing
 for gitian to work offline.
 
-Building Cccoin
+Building Faicoin
 ----------------
 
-To build Cccoin (for Linux, OSX and Windows) just follow the steps under 'perform
-gitian builds' in [doc/release-process.md](release-process.md) in the cccoin repository.
+To build Faicoin (for Linux, OSX and Windows) just follow the steps under 'perform
+gitian builds' in [doc/release-process.md](release-process.md) in the faicoin repository.
 
 This may take a long time as it also builds the dependencies needed for each descriptor.
 These dependencies will be cached after a successful build to avoid rebuilding them when possible.
@@ -332,12 +332,12 @@ tail -f var/build.log
 
 Output from `gbuild` will look something like
 
-    Initialized empty Git repository in /home/debian/gitian-builder/inputs/cccoin/.git/
+    Initialized empty Git repository in /home/debian/gitian-builder/inputs/faicoin/.git/
     remote: Reusing existing pack: 35606, done.
     remote: Total 35606 (delta 0), reused 0 (delta 0)
     Receiving objects: 100% (35606/35606), 26.52 MiB | 4.28 MiB/s, done.
     Resolving deltas: 100% (25724/25724), done.
-    From https://github.com/cccoin-project/cccoin
+    From https://github.com/faicoin-project/faicoin
     ... (new tags, new branch etc)
     --- Building for precise x86_64 ---
     Stopping target if it is up
@@ -363,11 +363,11 @@ and inputs.
 
 For example:
 ```bash
-URL=https://github.com/user/cccoin.git
+URL=https://github.com/user/faicoin.git
 COMMIT=2014_03_windows_unicode_path
-./bin/gbuild --commit cccoin=${COMMIT} --url cccoin=${URL} ../cccoin/contrib/gitian-descriptors/gitian-linux.yml
-./bin/gbuild --commit cccoin=${COMMIT} --url cccoin=${URL} ../cccoin/contrib/gitian-descriptors/gitian-win.yml
-./bin/gbuild --commit cccoin=${COMMIT} --url cccoin=${URL} ../cccoin/contrib/gitian-descriptors/gitian-osx.yml
+./bin/gbuild --commit faicoin=${COMMIT} --url faicoin=${URL} ../faicoin/contrib/gitian-descriptors/gitian-linux.yml
+./bin/gbuild --commit faicoin=${COMMIT} --url faicoin=${URL} ../faicoin/contrib/gitian-descriptors/gitian-win.yml
+./bin/gbuild --commit faicoin=${COMMIT} --url faicoin=${URL} ../faicoin/contrib/gitian-descriptors/gitian-osx.yml
 ```
 
 Signing externally
@@ -382,9 +382,9 @@ When you execute `gsign` you will get an error from GPG, which can be ignored. C
 in `gitian.sigs` to your signing machine and do
 
 ```bash
-    gpg --detach-sign ${VERSION}-linux/${SIGNER}/cccoin-build.assert
-    gpg --detach-sign ${VERSION}-win/${SIGNER}/cccoin-build.assert
-    gpg --detach-sign ${VERSION}-osx/${SIGNER}/cccoin-build.assert
+    gpg --detach-sign ${VERSION}-linux/${SIGNER}/faicoin-build.assert
+    gpg --detach-sign ${VERSION}-win/${SIGNER}/faicoin-build.assert
+    gpg --detach-sign ${VERSION}-osx/${SIGNER}/faicoin-build.assert
 ```
 
 This will create the `.sig` files that can be committed together with the `.assert` files to assert your
@@ -394,5 +394,5 @@ Uploading signatures
 ---------------------
 
 After building and signing you can push your signatures (both the `.assert` and `.assert.sig` files) to the
-[cccoin/gitian.sigs](https://github.com/cccoin-project/gitian.sigs.ltc/) repository, or if that's not possible create a pull
+[faicoin/gitian.sigs](https://github.com/faicoin-project/gitian.sigs.ltc/) repository, or if that's not possible create a pull
 request. 

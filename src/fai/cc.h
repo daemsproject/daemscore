@@ -1,12 +1,6 @@
-/* 
- * File:   cc.h
- * Author: alan
- *
- * Created on August 2, 2015, 3:37 PM
- */
 
-#ifndef CCC_CC_H
-#define	CCC_CC_H
+#ifndef FAI_CC_H
+#define	FAI_CC_H
 
 #include <boost/assign.hpp>
 #include <map>

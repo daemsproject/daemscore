@@ -8,7 +8,7 @@
 #include "rpcserver.h"
 #include "sync.h"
 #include "util.h"
-#include "ccc/contentutil.h"
+#include "fai/contentutil.h"
 #include <stdint.h>
 
 #include "json/json_spirit_value.h"
@@ -159,7 +159,7 @@ Value getrawmempool(const Array& params, bool fHelp)
             "{                           (json object)\n"
             "  \"transactionid\" : {       (json object)\n"
             "    \"size\" : n,             (numeric) transaction size in bytes\n"
-            "    \"fee\" : n,              (numeric) transaction fee in cccoins\n"
+            "    \"fee\" : n,              (numeric) transaction fee in faicoins\n"
             "    \"time\" : n,             (numeric) local time transaction entered pool in seconds since 1 Jan 1970 GMT\n"
             "    \"height\" : n,           (numeric) block height when transaction entered pool\n"
             "    \"startingpriority\" : n, (numeric) priority when transaction entered pool\n"
@@ -455,8 +455,8 @@ Value gettxout(const Array& params, bool fHelp)
             "     \"hex\" : \"hex\",        (string) \n"
             "     \"reqSigs\" : n,          (numeric) Number of required signatures\n"
             "     \"type\" : \"pubkey\", (string) The type, eg pubkey\n"
-            "     \"addresses\" : [          (array of string) array of cccoin addresses\n"
-            "        \"cccoinaddress\"     (string) cccoin address\n"
+            "     \"addresses\" : [          (array of string) array of faicoin addresses\n"
+            "        \"faicoinaddress\"     (string) faicoin address\n"
             "        ,...\n"
             "     ]\n"
             "  },\n"

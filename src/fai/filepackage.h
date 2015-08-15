@@ -5,11 +5,11 @@
  * Created on July 26, 2015, 6:59 PM
  */
 
-#ifndef CCCOIN_FILEPACKAGE_H
-#define	CCCOIN_FILEPACKAGE_H
+#ifndef FAICOIN_FILEPACKAGE_H
+#define	FAICOIN_FILEPACKAGE_H
 #include <boost/filesystem.hpp>
 #include "json/json_spirit_value.h"
-#include "ccc/link.h"
+#include "fai/link.h"
 using namespace std;
 using namespace json_spirit;
 
@@ -51,5 +51,5 @@ bool GetFilePackageMain(const string packageName,string& path,const bool fIntern
 bool CheckFilePackage(const string packageName);
 bool GetFilePackageUrl(const CLink link,string& url);
 bool DeleteFilePackage(const CLink link);
-#endif	/* CCCOIN_FILEPACKAGE_H */
+#endif	/* FAICOIN_FILEPACKAGE_H */
 

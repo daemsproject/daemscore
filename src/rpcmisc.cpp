@@ -10,12 +10,12 @@
 #include "net.h"
 #include "netbase.h"
 #include "rpcserver.h"
-#include "ccc/contentutil.h"
-#include "ccc/shop.h"
+#include "fai/contentutil.h"
+#include "fai/shop.h"
 #include "timedata.h"
 #include "util.h"
-#include "ccc/domain.h"
-#include "ccc/filepackage.h"
+#include "fai/domain.h"
+#include "fai/filepackage.h"
 #ifdef ENABLE_WALLET
 #include "wallet.h"
 #include "walletdb.h"
@@ -27,9 +27,9 @@
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_value.h"
 #include "json/json_spirit_reader_template.h"
-#include "ccc/content.h"
+#include "fai/content.h"
 #include "utilstrencodings.h"
-#include "ccc/settings.h"
+#include "fai/settings.h"
 
 using namespace boost;
 using namespace boost::assign;
@@ -60,7 +60,7 @@ Value getinfo(const Array& params, bool fHelp)
             "  \"version\": xxxxx,           (numeric) the server version\n"
             "  \"protocolversion\": xxxxx,   (numeric) the protocol version\n"
             "  \"walletversion\": xxxxx,     (numeric) the wallet version\n"
-            "  \"balance\": xxxxxxx,         (numeric) the total cccoin balance of the wallet\n"
+            "  \"balance\": xxxxxxx,         (numeric) the total faicoin balance of the wallet\n"
             "  \"blocks\": xxxxxx,           (numeric) the current number of blocks processed in the server\n"
             "  \"timeoffset\": xxxxx,        (numeric) the time offset\n"
             "  \"connections\": xxxxx,       (numeric) the number of connections\n"
@@ -173,14 +173,14 @@ Value validateaddress(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 1)
         throw runtime_error(
-            "validateaddress \"cccoinaddress\"\n"
-            "\nReturn information about the given cccoin address.\n"
+            "validateaddress \"faicoinaddress\"\n"
+            "\nReturn information about the given faicoin address.\n"
             "\nArguments:\n"
-            "1. \"cccoinaddress\"     (string, required) The cccoin address to validate\n"
+            "1. \"faicoinaddress\"     (string, required) The faicoin address to validate\n"
             "\nResult:\n"
             "{\n"
             "  \"isvalid\" : true|false,         (boolean) If the address is valid or not. If not, this is the only property returned.\n"
-            "  \"address\" : \"cccoinaddress\", (string) The cccoin address validated\n"
+            "  \"address\" : \"faicoinaddress\", (string) The faicoin address validated\n"
             "  \"ismine\" : true|false,          (boolean) If the address is yours or not\n"
             "  \"isscript\" : true|false,        (boolean) If the key is a script\n"
             "  \"pubkey\" : \"publickeyhex\",    (string) The hex value of the raw public key\n"
@@ -231,7 +231,7 @@ CScript _createmultisig_redeemScript(const Array& params)
     BOOST_FOREACH(const Pair& s, sendTo) {
         CBitcoinAddress address(s.name_);
         if (!address.IsValid())
-            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, string("Invalid Cccoin address: ")+s.name_);
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, string("Invalid Faicoin address: ")+s.name_);
 
         //        if (setDest. .count(address))
         //            throw JSONRPCError(RPC_INVALID_PARAMETER, string("Invalid parameter, duplicated address: ")+s.name_);
@@ -258,9 +258,9 @@ Value createmultisig(const Array& params, bool fHelp)
 
                 "\nArguments:\n"
                 "1. nrequired      (numeric, required) The number of required signatures out of the n keys or addresses.\n"
-                "2. \"keys\"       (string, required) A json array of keys which are cccoin addresses or hex-encoded public keys\n"
+                "2. \"keys\"       (string, required) A json array of keys which are faicoin addresses or hex-encoded public keys\n"
                 "     [\n"
-                "       \"key\"    (string) cccoin address or hex-encoded public key\n"
+                "       \"key\"    (string) faicoin address or hex-encoded public key\n"
                 "       ,...\n"
                 "     ]\n"
 
@@ -297,10 +297,10 @@ Value verifymessage(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 3)
         throw runtime_error(
-            "verifymessage \"cccoinaddress\" \"signature\" \"message\"\n"
+            "verifymessage \"faicoinaddress\" \"signature\" \"message\"\n"
             "\nVerify a signed message\n"
             "\nArguments:\n"
-            "1. \"cccoinaddress\"  (string, required) The cccoin address to use for the signature.\n"
+            "1. \"faicoinaddress\"  (string, required) The faicoin address to use for the signature.\n"
             "2. \"signature\"       (string, required) The signature provided by the signer in base 64 encoding (see signmessage).\n"
             "3. \"message\"         (string, required) The message that was signed.\n"
             "\nResult:\n"

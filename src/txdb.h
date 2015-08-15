@@ -7,9 +7,9 @@
 #define BITCOIN_TXDB_H
 
 #include "leveldbwrapper.h"
-#include "ccc/sqlitewrapper.h"
+#include "fai/sqlitewrapper.h"
 #include "main.h"
-#include "ccc/link.h"
+#include "fai/link.h"
 #include <map>
 #include <string>
 #include <utility>
@@ -62,7 +62,7 @@ public:
     bool ReadFlag(const std::string &name, bool &fValue);
     bool LoadBlockIndexGuts();
 };
-//ccc:CScript2TxPosViewDB, because this map is very big, no memory cache is available
+//fai:CScript2TxPosViewDB, because this map is very big, no memory cache is available
 //class CScript2TxPosViewDB :public CScript2TxPosDBView
 //{
 //protected:

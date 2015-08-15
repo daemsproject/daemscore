@@ -30,5 +30,5 @@ RESOURCES += \
     browser.qrc \
     browser_locale.qrc
 
-include(../cccoin.pri)
+include(../faicoin.pri)
 include(qt.pri)

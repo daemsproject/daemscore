@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef CCCOIN_KEYSTORE_H
-#define CCCOIN_KEYSTORE_H
+#ifndef FAICOIN_KEYSTORE_H
+#define FAICOIN_KEYSTORE_H
 #include "util.h"
 #include "key.h"
 #include "pubkey.h"

@@ -24,11 +24,11 @@ Release Process
 
 ###perform gitian builds
 
- From a directory containing the cccoin source, gitian-builder and gitian.sigs.ltc
+ From a directory containing the faicoin source, gitian-builder and gitian.sigs.ltc
   
 	export SIGNER=(your gitian key, ie wtogami, coblee, etc)
 	export VERSION=(new version, e.g. 0.8.0)
-	pushd ./cccoin
+	pushd ./faicoin
 	git checkout v${VERSION}
 	popd
 	pushd ./gitian-builder
@@ -49,29 +49,29 @@ Release Process
 
   By default, gitian will fetch source files as needed. For offline builds, they can be fetched ahead of time:
 
-	make -C ../cccoin/depends download SOURCES_PATH=`pwd`/cache/common
+	make -C ../faicoin/depends download SOURCES_PATH=`pwd`/cache/common
 
   Only missing files will be fetched, so this is safe to re-run for each build.
 
-###Build Cccoin Core for Linux, Windows, and OS X:
+###Build Faicoin Core for Linux, Windows, and OS X:
   
-	./bin/gbuild --commit cccoin=v${VERSION} ../cccoin/contrib/gitian-descriptors/gitian-linux.yml
-	./bin/gsign --signer $SIGNER --release ${VERSION}-linux --destination ../gitian.sigs.ltc/ ../cccoin/contrib/gitian-descriptors/gitian-linux.yml
-	mv build/out/cccoin-*.tar.gz build/out/src/cccoin-*.tar.gz ../
-	./bin/gbuild --commit cccoin=v${VERSION} ../cccoin/contrib/gitian-descriptors/gitian-win.yml
-	./bin/gsign --signer $SIGNER --release ${VERSION}-win --destination ../gitian.sigs.ltc/ ../cccoin/contrib/gitian-descriptors/gitian-win.yml
-	mv build/out/cccoin-*.zip build/out/cccoin-*.exe ../
-	./bin/gbuild --commit cccoin=v${VERSION} ../cccoin/contrib/gitian-descriptors/gitian-osx.yml
-	./bin/gsign --signer $SIGNER --release ${VERSION}-osx-unsigned --destination ../gitian.sigs.ltc/ ../cccoin/contrib/gitian-descriptors/gitian-osx.yml
-	mv build/out/cccoin-*-unsigned.tar.gz inputs/cccoin-osx-unsigned.tar.gz
-	mv build/out/cccoin-*.tar.gz build/out/cccoin-*.dmg ../
+	./bin/gbuild --commit faicoin=v${VERSION} ../faicoin/contrib/gitian-descriptors/gitian-linux.yml
+	./bin/gsign --signer $SIGNER --release ${VERSION}-linux --destination ../gitian.sigs.ltc/ ../faicoin/contrib/gitian-descriptors/gitian-linux.yml
+	mv build/out/faicoin-*.tar.gz build/out/src/faicoin-*.tar.gz ../
+	./bin/gbuild --commit faicoin=v${VERSION} ../faicoin/contrib/gitian-descriptors/gitian-win.yml
+	./bin/gsign --signer $SIGNER --release ${VERSION}-win --destination ../gitian.sigs.ltc/ ../faicoin/contrib/gitian-descriptors/gitian-win.yml
+	mv build/out/faicoin-*.zip build/out/faicoin-*.exe ../
+	./bin/gbuild --commit faicoin=v${VERSION} ../faicoin/contrib/gitian-descriptors/gitian-osx.yml
+	./bin/gsign --signer $SIGNER --release ${VERSION}-osx-unsigned --destination ../gitian.sigs.ltc/ ../faicoin/contrib/gitian-descriptors/gitian-osx.yml
+	mv build/out/faicoin-*-unsigned.tar.gz inputs/faicoin-osx-unsigned.tar.gz
+	mv build/out/faicoin-*.tar.gz build/out/faicoin-*.dmg ../
 	popd
   Build output expected:
 
-  1. source tarball (cccoin-${VERSION}.tar.gz)
-  2. linux 32-bit and 64-bit binaries dist tarballs (cccoin-${VERSION}-linux[32|64].tar.gz)
-  3. windows 32-bit and 64-bit installers and dist zips (cccoin-${VERSION}-win[32|64]-setup.exe, cccoin-${VERSION}-win[32|64].zip)
-  4. OSX unsigned installer (cccoin-${VERSION}-osx-unsigned.dmg)
+  1. source tarball (faicoin-${VERSION}.tar.gz)
+  2. linux 32-bit and 64-bit binaries dist tarballs (faicoin-${VERSION}-linux[32|64].tar.gz)
+  3. windows 32-bit and 64-bit installers and dist zips (faicoin-${VERSION}-win[32|64]-setup.exe, faicoin-${VERSION}-win[32|64].zip)
+  4. OSX unsigned installer (faicoin-${VERSION}-osx-unsigned.dmg)
   5. Gitian signatures (in gitian.sigs/${VERSION}-<linux|win|osx-unsigned>/(your gitian key)/
 
 ###Next steps:
@@ -95,9 +95,9 @@ Commit your signature to gitian.sigs:
 	pushd ./gitian-builder
 	# Fetch the signature as instructed by Warren/Coblee
 	cp signature.tar.gz inputs/
-	./bin/gbuild -i ../cccoin/contrib/gitian-descriptors/gitian-osx-signer.yml
-	./bin/gsign --signer $SIGNER --release ${VERSION}-osx-signed --destination ../gitian.sigs/ ../cccoin/contrib/gitian-descriptors/gitian-osx-signer.yml
-	mv build/out/cccoin-osx-signed.dmg ../cccoin-${VERSION}-osx.dmg
+	./bin/gbuild -i ../faicoin/contrib/gitian-descriptors/gitian-osx-signer.yml
+	./bin/gsign --signer $SIGNER --release ${VERSION}-osx-signed --destination ../gitian.sigs/ ../faicoin/contrib/gitian-descriptors/gitian-osx-signer.yml
+	mv build/out/faicoin-osx-signed.dmg ../faicoin-${VERSION}-osx.dmg
 	popd
 
 Commit your signature for the signed OSX binary:
@@ -126,19 +126,19 @@ rm SHA256SUMS
 ```
 (the digest algorithm is forced to sha256 to avoid confusion of the `Hash:` header that GPG adds with the SHA256 used for the files)
 
-- Upload zips and installers, as well as `SHA256SUMS.asc` from last step, to the cccoin.org server
+- Upload zips and installers, as well as `SHA256SUMS.asc` from last step, to the faicoin.org server
 
-- Update cccoin.org version
+- Update faicoin.org version
 
 - Announce the release:
 
-  - Release sticky on cccointalk: https://cccointalk.org/index.php?board=1.0
+  - Release sticky on faicointalk: https://faicointalk.org/index.php?board=1.0
 
-  - cccoin-development mailing list
+  - faicoin-development mailing list
 
-  - Update title of #cccoin on Freenode IRC
+  - Update title of #faicoin on Freenode IRC
 
-  - Optionally reddit /r/cccoin, ... but this will usually sort out itself
+  - Optionally reddit /r/faicoin, ... but this will usually sort out itself
 
 - Add release notes for the new version to the directory `doc/release-notes` in git master
 

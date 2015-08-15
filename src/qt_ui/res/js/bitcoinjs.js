@@ -2854,7 +2854,7 @@ Bitcoin.Address.prototype.fromString = function(b) {
     }
     this.version = d.shift();
     this.hash = d;
-    //alan :delete these codes to support multi-coin
+    // :delete these codes to support multi-coin
 //    if (this.version != Bitcoin.Address.pubKeyHashVersion && this.version != Bitcoin.Address.p2shVersion) {
 //        throw"Version " + version + " not supported!"
 //    }

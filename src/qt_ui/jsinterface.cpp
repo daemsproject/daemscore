@@ -18,8 +18,8 @@
 
 //#include "main.h"
 #include "init.h"
-#include "ccc/content.h"
-#include "ccc/settings.h"
+#include "fai/content.h"
+#include "fai/settings.h"
 #include "json/json_spirit_value.h"
 #include "json/json_spirit_utils.h"
 using namespace std;

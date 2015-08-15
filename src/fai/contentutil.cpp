@@ -1,15 +1,15 @@
 
 #include "main.h"
 #include "txdb.h"
-#include "ccc/link.h"
-#include "ccc/content.h"
-#include "ccc/domain.h"
-#include "ccc/filepackage.h"
-#include "ccc/settings.h"
+#include "fai/link.h"
+#include "fai/content.h"
+#include "fai/domain.h"
+#include "fai/filepackage.h"
+#include "fai/settings.h"
 #include "timedata.h"
 #include "base58.h"
 //#include "utilstrencodings.h"
-#include "ccc/contentutil.h"
+#include "fai/contentutil.h"
 #include <string>
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
@@ -287,8 +287,8 @@ bool ParseUrl(const string urlIn,string& urlOut,int& nPageID)
                 string id;
                 if(!ScriptPubKeyToString(link.scriptPubKey,id))
                     return false;
-                //urlIn="ccc:"+id;
-                GetNativeLink("ccc:browser",urlOut,nPageID);                
+                //urlIn="fai:"+id;
+                GetNativeLink("fai:browser",urlOut,nPageID);                
                 urlOut+="?id="+id;
                 LogPrintf("ParseUrl  urlIn:%s urlout:%s,pageid:%i\n",urlIn,urlOut,nPageID);
                 return true;
@@ -349,7 +349,7 @@ bool _ParseContentUrl(const CLinkUni link,const CContent content,string& urlOut,
                 return false;            
             return GetFilePackageMain(link.ToString(),urlOut,true);        
         default:
-            GetNativeLink("ccc:browser",urlOut,nPageID);    
+            GetNativeLink("fai:browser",urlOut,nPageID);    
             urlOut+=("?link="+link.ToString());
     }
    return true;
@@ -395,7 +395,7 @@ bool _ParseDomainUrl(const string& strDomain,const string& strDomainExt,string& 
                 script.assign(domain.redirectTo.begin(),domain.redirectTo.end());
                 if(!ScriptPubKeyToString(script,id))
                     return false;
-                GetNativeLink("ccc:browser",urlOut,nPageID);                
+                GetNativeLink("fai:browser",urlOut,nPageID);                
                 urlOut+="?id="+id;
                 LogPrintf("ParseUrl urlout:%s,pageid:%i\n",urlOut,nPageID);
                 return true;

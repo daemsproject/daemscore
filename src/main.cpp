@@ -8,11 +8,11 @@
 #include "addrman.h"
 #include "alert.h"
 #include "chainparams.h"
-#include "ccc/settings.h"
-#include "ccc/link.h"
-#include "ccc/content.h"
-#include "ccc/domain.h"
-#include "ccc/p2pservice.h"
+#include "fai/settings.h"
+#include "fai/link.h"
+#include "fai/content.h"
+#include "fai/domain.h"
+#include "fai/p2pservice.h"
 #include "checkpoints.h"
 #include "checkqueue.h"
 #include "init.h"
@@ -1004,7 +1004,7 @@ CAmount GetMinRelayFee(const CTransaction& tx, unsigned int nBytes, bool fAllowF
 //            return 0;
 //    }
 
-    // Cccoin
+    // Faicoin
 //    fAllowFree = false;
 
     CAmount nMinFee = ::minRelayTxFee.GetFee(nBytes);
@@ -1783,7 +1783,7 @@ bool CheckInputs(const CTransaction& tx,const CTransaction& tx4CheckVins,CValida
 
         // This doesn't trigger the DoS code on purpose; if it did, it would make it easier
         // for an attacker to attempt to split the network.
-        //cccoin: modified this to tx4CheckVins to check overriding txs.
+        //faicoin: modified this to tx4CheckVins to check overriding txs.
         if (!inputs.HaveInputs(tx4CheckVins))
             return state.Invalid(error("CheckInputs() : %s inputs unavailable", tx.GetHash().ToString()));
 
@@ -2023,7 +2023,7 @@ bool FindUndoPos(CValidationState &state, int nFile, CDiskBlockPos &pos, unsigne
 static CCheckQueue<CScriptCheck> scriptcheckqueue(128);
 
 void ThreadScriptCheck() {
-    RenameThread("cccoin-scriptch");
+    RenameThread("faicoin-scriptch");
     scriptcheckqueue.Thread();
 }
 
@@ -2639,7 +2639,7 @@ bool ActivateBestChain(CValidationState &state, CBlock *pblock) {
                 BOOST_FOREACH(CNode* pnode, vNodes)
                 {
                     //LogPrintf("relay block:chainnactive higiht:%i pnode->nStartingHeight:%i \n",chainActive.Height(),pnode->nStartingHeight);
-                    //ccc:for service flag SERVICE_NOBLOCKCHAINDATA,don't broadcast any blockchain data
+                    //fai:for service flag SERVICE_NOBLOCKCHAINDATA,don't broadcast any blockchain data
                     if (chainActive.Height() > (pnode->nStartingHeight != -1 ? pnode->nStartingHeight - 2000 : nBlockEstimate)&&((pnode->nServices&(1<<SERVICE_NOBLOCKCHAINDATA))==0))
                     {
                         //LogPrintf("relay block:%s \n",pnode->addr.ToString());
@@ -3000,7 +3000,7 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
     if (pcheckpoint && nHeight < pcheckpoint->nHeight)
         return state.DoS(100, error("%s : forked chain older than last checkpoint (height %d)", __func__, nHeight));
 
-    // Cccoin: Reject block.nVersion=1 blocks (mainnet >= 710000, testnet >= 400000, regtest uses supermajority)
+    // Faicoin: Reject block.nVersion=1 blocks (mainnet >= 710000, testnet >= 400000, regtest uses supermajority)
 //    bool enforceV2 = false;
 //    if (block.nVersion < 2)
 //    {
@@ -3044,7 +3044,7 @@ bool ContextualCheckBlock(const CBlock& block, CValidationState& state, CBlockIn
 //            return state.DoS(10, error("%s : contains a non-final transaction", __func__), REJECT_INVALID, "bad-txns-nonfinal");
 //        }
 
-    // Cccoin: (mainnet >= 710000, testnet >= 400000, regtest uses supermajority)
+    // Faicoin: (mainnet >= 710000, testnet >= 400000, regtest uses supermajority)
     // Enforce block.nVersion=2 rule that the coinbase starts with serialized block height
     // if 750 of the last 1,000 blocks are version 2 or greater (51/100 if testnet):
 //    bool checkHeightMismatch = false;
@@ -3538,7 +3538,7 @@ bool CVerifyDB::VerifyDB(CCoinsView *coinsview, int nCheckLevel, int nCheckDepth
         return error("VerifyDB() : *** coin database inconsistencies found (last %i blocks, %i good transactions before that)\n", chainActive.Height() - pindexFailure->nHeight + 1, nGoodTransactions);
 
     // check level 4: try reconnecting blocks
-    //cccbrowser:this must be done after check level 3, so it's also level 3
+    //faibrowser:this must be done after check level 3, so it's also level 3
     if (nCheckLevel >= 3) {
         CBlockIndex *pindex = pindexState;
         while (pindex != chainActive.Tip()) {
@@ -4000,7 +4000,7 @@ void static ProcessGetData(CNode* pfrom)
                         assert(!"cannot load block from disk");
                     if (inv.type == MSG_BLOCK)
                     {
-                        //ccc:add blockdomain information to client peers
+                        //fai:add blockdomain information to client peers
                         if(pfrom->fClient)
                         {                          
                             CDataStream sBlockDomains(SER_DISK, CLIENT_VERSION);

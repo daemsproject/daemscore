@@ -127,7 +127,7 @@ var Miner = new function () {
                 htmlcontent += '<img src="../icons/tx_mined.png">';
                 htmlcontent += ('</td><td>');
                 htmlcontent += '<div><div style="float:left">' + dateToString(c) + '</div><div style="text-align:right">';
-                htmlcontent += (tx.amount + "CCC");
+                htmlcontent += (tx.amount + "FAI");
                 htmlcontent += '</div></div>';
                 htmlcontent += '<div>' + showID(tx.address) + '</div></td></tr>';
                 count++;
@@ -328,7 +328,7 @@ var Miner = new function () {
         clearInterval(intervalID);
         $('select[name="kernels"]').prop("disabled", true);
         $('.btn-primary').html("Stop Mining");
-        $("#mining_status").html("Mining  CCCoins...");
+        $("#mining_status").html("Mining  FAIcoins...");
         intervalID = setInterval(changeColor, 1000);
     }
     var color = "blue";
@@ -368,7 +368,7 @@ var Miner = new function () {
         });
         $('select[name="kernels"]').unbind().change(function () {
             $('#hashrate').html(formatRate($(this).val() * hashrate));
-            $('#estimated_revenue_amount').html(($(this).val() * kernelrevenue).toFixed(3) + " CCC/day");
+            $('#estimated_revenue_amount').html(($(this).val() * kernelrevenue).toFixed(3) + " FAI/day");
             $('#estimated_revenue_interval').html(formatTime(kernelinterval / $(this).val()));
         }).trigger("change");
     }

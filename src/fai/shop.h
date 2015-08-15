@@ -1,8 +1,8 @@
-#ifndef CCC_SHOP_H
-#define CCC_SHOP_H
+#ifndef FAI_SHOP_H
+#define FAI_SHOP_H
 
-#include "ccc/content.h"
-#include "ccc/domain.h"
+#include "fai/content.h"
+#include "fai/domain.h"
 using namespace json_spirit;
 using namespace std;
 using std::string;

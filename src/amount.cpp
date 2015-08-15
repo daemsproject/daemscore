@@ -32,5 +32,5 @@ CAmount CFeeRate::GetFee(size_t nSize) const
 
 std::string CFeeRate::ToString() const
 {
-    return strprintf("%d.%06d CCC/B", nSatoshisPerB / COIN, nSatoshisPerB % COIN);
+    return strprintf("%d.%06d FAI/B", nSatoshisPerB / COIN, nSatoshisPerB % COIN);
 }

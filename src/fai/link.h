@@ -1,12 +1,12 @@
-#ifndef CCC_LINK_H
-#define CCC_LINK_H
+#ifndef FAI_LINK_H
+#define FAI_LINK_H
 
 #include <string.h>
 #include <string>
 #include <vector>
 //
 #include "serialize.h"
-#include "ccc/cc.h"
+#include "fai/cc.h"
 #include "uint256.h"
 #include "script/script.h"
 #include "json/json_spirit_utils.h"
@@ -17,7 +17,7 @@ using namespace json_spirit;
 using namespace std;
 //using std::string;
 
-static const std::string URI_SCHEME_NAME = "ccc";
+static const std::string URI_SCHEME_NAME = "fai";
 static const std::string URI_HEX_HEADER = "x";
 static const std::string URI_B32_HEADER = "#";
 static const std::string URI_SEPERATOR = ".";
@@ -199,4 +199,4 @@ public:
         return !(a == b);
     }    
 };
-#endif // CCC_LINK_H
+#endif // FAI_LINK_H

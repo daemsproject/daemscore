@@ -1,12 +1,7 @@
-/* 
- * File:   p2pservice.h
- * Author: alan
- *
- * Created on July 31, 2015, 10:07 AM
- */
 
-#ifndef CCC_P2PSERVICE_H
-#define	CCC_P2PSERVICE_H
+
+#ifndef FAI_P2PSERVICE_H
+#define	FAI_P2PSERVICE_H
 class CNode;
 class CDataStream;
 enum servicetype
@@ -57,5 +52,5 @@ static std::map<int,std::string> mapSCNames=boost::assign::map_list_of
 
 bool ProcessP2PServiceRequest(CNode* pfrom, CDataStream& vRecv, int64_t nTimeReceived);
 
-#endif	/* CCC_P2PSERVICE_H */
+#endif	/* FAI_P2PSERVICE_H */
 

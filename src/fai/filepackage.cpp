@@ -12,11 +12,11 @@
 #include "json/json_spirit_value.h"
 #include "json/json_spirit_reader_template.h"
 #include "json/json_spirit_writer_template.h"
-#include "ccc/link.h"
+#include "fai/link.h"
 #include "util.h"
 #include "script/script.h"
-#include "ccc/content.h"
-#include "ccc/contentutil.h"
+#include "fai/content.h"
+#include "fai/contentutil.h"
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 using namespace std;

@@ -4,7 +4,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "primitives/block.h"
-#include "ccc/mhash.h"
+#include "fai/mhash.h"
 #include "hash.h"
 #include "tinyformat.h"
 #include "utilstrencodings.h"

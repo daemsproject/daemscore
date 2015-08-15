@@ -85,12 +85,12 @@
     </message>
     <message>
         <location line="+7"/>
-        <source>These are your Cccoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation>These are your Cccoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</translation>
+        <source>These are your Faicoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <translation>These are your Faicoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</translation>
     </message>
     <message>
         <location line="+4"/>
-        <source>These are your Cccoin addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
+        <source>These are your Faicoin addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -238,8 +238,8 @@
     </message>
     <message>
         <location line="+80"/>
-        <source>Cccoin will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your cccoins from being stolen by malware infecting your computer.</source>
-        <translation>Cccoin will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your cccoins from being stolen by malware infecting your computer.</translation>
+        <source>Faicoin will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your faicoins from being stolen by malware infecting your computer.</source>
+        <translation>Faicoin will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your faicoins from being stolen by malware infecting your computer.</translation>
     </message>
     <message>
         <location line="+13"/>
@@ -378,7 +378,7 @@
     </message>
     <message>
         <location line="+172"/>
-        <source>Cccoin Core client</source>
+        <source>Faicoin Core client</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -393,13 +393,13 @@
     </message>
     <message>
         <location line="-405"/>
-        <source>Send coins to a Cccoin address</source>
-        <translation>Send coins to a Cccoin address</translation>
+        <source>Send coins to a Faicoin address</source>
+        <translation>Send coins to a Faicoin address</translation>
     </message>
     <message>
         <location line="+48"/>
-        <source>Modify configuration options for Cccoin</source>
-        <translation>Modify configuration options for Cccoin</translation>
+        <source>Modify configuration options for Faicoin</source>
+        <translation>Modify configuration options for Faicoin</translation>
     </message>
     <message>
         <location line="+9"/>
@@ -428,8 +428,8 @@
     </message>
     <message>
         <location line="+437"/>
-        <source>Cccoin</source>
-        <translation>Cccoin</translation>
+        <source>Faicoin</source>
+        <translation>Faicoin</translation>
     </message>
     <message>
         <location line="-638"/>
@@ -448,7 +448,7 @@
     </message>
     <message>
         <location line="+32"/>
-        <source>Show information about Cccoin Core</source>
+        <source>Show information about Faicoin Core</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -468,13 +468,13 @@
     </message>
     <message>
         <location line="+7"/>
-        <source>Sign messages with your Cccoin addresses to prove you own them</source>
-        <translation>Sign messages with your Cccoin addresses to prove you own them</translation>
+        <source>Sign messages with your Faicoin addresses to prove you own them</source>
+        <translation>Sign messages with your Faicoin addresses to prove you own them</translation>
     </message>
     <message>
         <location line="+2"/>
-        <source>Verify messages to ensure they were signed with specified Cccoin addresses</source>
-        <translation>Verify messages to ensure they were signed with specified Cccoin addresses</translation>
+        <source>Verify messages to ensure they were signed with specified Faicoin addresses</source>
+        <translation>Verify messages to ensure they were signed with specified Faicoin addresses</translation>
     </message>
     <message>
         <location line="+48"/>
@@ -498,17 +498,17 @@
     </message>
     <message>
         <location line="-297"/>
-        <source>Cccoin Core</source>
-        <translation type="unfinished">Cccoin Core</translation>
+        <source>Faicoin Core</source>
+        <translation type="unfinished">Faicoin Core</translation>
     </message>
     <message>
         <location line="+155"/>
-        <source>Request payments (generates QR codes and cccoin: URIs)</source>
+        <source>Request payments (generates QR codes and faicoin: URIs)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+30"/>
-        <source>&amp;About Cccoin Core</source>
+        <source>&amp;About Faicoin Core</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -523,7 +523,7 @@
     </message>
     <message>
         <location line="+3"/>
-        <source>Open a cccoin: URI or payment request</source>
+        <source>Open a faicoin: URI or payment request</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -533,15 +533,15 @@
     </message>
     <message>
         <location line="+1"/>
-        <source>Show the Cccoin Core help message to get a list with possible Cccoin command-line options</source>
+        <source>Show the Faicoin Core help message to get a list with possible Faicoin command-line options</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
         <location line="+307"/>
-        <source>%n active connection(s) to Cccoin network</source>
+        <source>%n active connection(s) to Faicoin network</source>
         <translation>
-            <numerusform>%n active connection to Cccoin network</numerusform>
-            <numerusform>%n active connections to Cccoin network</numerusform>
+            <numerusform>%n active connection to Faicoin network</numerusform>
+            <numerusform>%n active connections to Faicoin network</numerusform>
         </translation>
     </message>
     <message>
@@ -1012,8 +1012,8 @@ Address: %4
     </message>
     <message>
         <location line="-5"/>
-        <source>The entered address &quot;%1&quot; is not a valid Cccoin address.</source>
-        <translation>The entered address &quot;%1&quot; is not a valid Cccoin address.</translation>
+        <source>The entered address &quot;%1&quot; is not a valid Faicoin address.</source>
+        <translation>The entered address &quot;%1&quot; is not a valid Faicoin address.</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -1058,8 +1058,8 @@ Address: %4
     <name>HelpMessageDialog</name>
     <message>
         <location filename="../utilitydialog.cpp" line="+31"/>
-        <source>Cccoin Core</source>
-        <translation type="unfinished">Cccoin Core</translation>
+        <source>Faicoin Core</source>
+        <translation type="unfinished">Faicoin Core</translation>
     </message>
     <message>
         <location line="+0"/>
@@ -1074,7 +1074,7 @@ Address: %4
     </message>
     <message>
         <location line="+5"/>
-        <source>About Cccoin Core</source>
+        <source>About Faicoin Core</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1132,17 +1132,17 @@ Address: %4
     </message>
     <message>
         <location line="+9"/>
-        <source>Welcome to Cccoin Core.</source>
+        <source>Welcome to Faicoin Core.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+26"/>
-        <source>As this is the first time the program is launched, you can choose where Cccoin Core will store its data.</source>
+        <source>As this is the first time the program is launched, you can choose where Faicoin Core will store its data.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+10"/>
-        <source>Cccoin Core will download and store a copy of the Cccoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
+        <source>Faicoin Core will download and store a copy of the Faicoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1157,8 +1157,8 @@ Address: %4
     </message>
     <message>
         <location filename="../intro.cpp" line="+82"/>
-        <source>Cccoin Core</source>
-        <translation type="unfinished">Cccoin Core</translation>
+        <source>Faicoin Core</source>
+        <translation type="unfinished">Faicoin Core</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1229,13 +1229,13 @@ Address: %4
     </message>
     <message>
         <location line="+6"/>
-        <source>Automatically start Cccoin after logging in to the system.</source>
-        <translation>Automatically start Cccoin after logging in to the system.</translation>
+        <source>Automatically start Faicoin after logging in to the system.</source>
+        <translation>Automatically start Faicoin after logging in to the system.</translation>
     </message>
     <message>
         <location line="+3"/>
-        <source>&amp;Start Cccoin on system login</source>
-        <translation>&amp;Start Cccoin on system login</translation>
+        <source>&amp;Start Faicoin on system login</source>
+        <translation>&amp;Start Faicoin on system login</translation>
     </message>
     <message>
         <location line="+9"/>
@@ -1330,8 +1330,8 @@ Address: %4
     </message>
     <message>
         <location line="+30"/>
-        <source>Automatically open the Cccoin client port on the router. This only works when your router supports UPnP and it is enabled.</source>
-        <translation>Automatically open the Cccoin client port on the router. This only works when your router supports UPnP and it is enabled.</translation>
+        <source>Automatically open the Faicoin client port on the router. This only works when your router supports UPnP and it is enabled.</source>
+        <translation>Automatically open the Faicoin client port on the router. This only works when your router supports UPnP and it is enabled.</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -1340,7 +1340,7 @@ Address: %4
     </message>
     <message>
         <location line="+17"/>
-        <source>Connect to the Cccoin network through a SOCKS5 proxy.</source>
+        <source>Connect to the Faicoin network through a SOCKS5 proxy.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1400,8 +1400,8 @@ Address: %4
     </message>
     <message>
         <location line="+13"/>
-        <source>The user interface language can be set here. This setting will take effect after restarting Cccoin.</source>
-        <translation>The user interface language can be set here. This setting will take effect after restarting Cccoin.</translation>
+        <source>The user interface language can be set here. This setting will take effect after restarting Faicoin.</source>
+        <translation>The user interface language can be set here. This setting will take effect after restarting Faicoin.</translation>
     </message>
     <message>
         <location line="+11"/>
@@ -1475,8 +1475,8 @@ Address: %4
     <message>
         <location line="+53"/>
         <location line="+372"/>
-        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Cccoin network after a connection is established, but this process has not completed yet.</source>
-        <translation>The displayed information may be out of date. Your wallet automatically synchronizes with the Cccoin network after a connection is established, but this process has not completed yet.</translation>
+        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Faicoin network after a connection is established, but this process has not completed yet.</source>
+        <translation>The displayed information may be out of date. Your wallet automatically synchronizes with the Faicoin network after a connection is established, but this process has not completed yet.</translation>
     </message>
     <message>
         <location line="-133"/>
@@ -1618,7 +1618,7 @@ Address: %4
     </message>
     <message>
         <location line="-401"/>
-        <source>Cannot start cccoin: click-to-pay handler</source>
+        <source>Cannot start faicoin: click-to-pay handler</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1628,7 +1628,7 @@ Address: %4
     </message>
     <message>
         <location line="+21"/>
-        <source>URI cannot be parsed! This can be caused by an invalid Cccoin address or malformed URI parameters.</source>
+        <source>URI cannot be parsed! This can be caused by an invalid Faicoin address or malformed URI parameters.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1708,13 +1708,13 @@ Address: %4
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../cccoinunits.cpp" line="+194"/>
+        <location filename="../faicoinunits.cpp" line="+194"/>
         <source>Amount</source>
         <translation type="unfinished">Amount</translation>
     </message>
     <message>
         <location filename="../guiutil.cpp" line="+106"/>
-        <source>Enter a Cccoin address (e.g. %1)</source>
+        <source>Enter a Faicoin address (e.g. %1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2019,8 +2019,8 @@ Address: %4
     </message>
     <message>
         <location line="+7"/>
-        <source>Open the Cccoin debug log file from the current data directory. This can take a few seconds for large log files.</source>
-        <translation>Open the Cccoin debug log file from the current data directory. This can take a few seconds for large log files.</translation>
+        <source>Open the Faicoin debug log file from the current data directory. This can take a few seconds for large log files.</source>
+        <translation>Open the Faicoin debug log file from the current data directory. This can take a few seconds for large log files.</translation>
     </message>
     <message>
         <location line="+76"/>
@@ -2029,8 +2029,8 @@ Address: %4
     </message>
     <message>
         <location filename="../rpcconsole.cpp" line="-35"/>
-        <source>Welcome to the Cccoin RPC console.</source>
-        <translation>Welcome to the Cccoin RPC console.</translation>
+        <source>Welcome to the Faicoin RPC console.</source>
+        <translation>Welcome to the Faicoin RPC console.</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2125,7 +2125,7 @@ Address: %4
     <message>
         <location line="+14"/>
         <location line="+23"/>
-        <source>An optional message to attach to the payment request, which will be displayed when the request is opened. Note: The message will not be sent with the payment over the Cccoin network.</source>
+        <source>An optional message to attach to the payment request, which will be displayed when the request is opened. Note: The message will not be sent with the payment over the Faicoin network.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2423,7 +2423,7 @@ Address: %4
     <message>
         <location line="+30"/>
         <location line="+13"/>
-        <source>Paying only the minimum fee is just fine as long as there is less transaction volume than space in the blocks. But be aware that this can end up in a never confirming transaction once there is more demand for cccoin transactions than the network can process.</source>
+        <source>Paying only the minimum fee is just fine as long as there is less transaction volume than space in the blocks. But be aware that this can end up in a never confirming transaction once there is more demand for faicoin transactions than the network can process.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2621,7 +2621,7 @@ Address: %4
     </message>
     <message>
         <location line="+107"/>
-        <source>Warning: Invalid Cccoin address</source>
+        <source>Warning: Invalid Faicoin address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2686,7 +2686,7 @@ Address: %4
     </message>
     <message>
         <location line="+33"/>
-        <source>The Cccoin address to send the payment to</source>
+        <source>The Faicoin address to send the payment to</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2728,7 +2728,7 @@ Address: %4
     </message>
     <message>
         <location line="+33"/>
-        <source>A message that was attached to the cccoin: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the Cccoin network.</source>
+        <source>A message that was attached to the faicoin: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the Faicoin network.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2753,7 +2753,7 @@ Address: %4
     <name>ShutdownWindow</name>
     <message>
         <location filename="../utilitydialog.cpp" line="+47"/>
-        <source>Cccoin Core is shutting down...</source>
+        <source>Faicoin Core is shutting down...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2781,7 +2781,7 @@ Address: %4
     </message>
     <message>
         <location line="+18"/>
-        <source>The Cccoin address to sign the message with</source>
+        <source>The Faicoin address to sign the message with</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2823,8 +2823,8 @@ Address: %4
     </message>
     <message>
         <location line="+21"/>
-        <source>Sign the message to prove you own this Cccoin address</source>
-        <translation>Sign the message to prove you own this Cccoin address</translation>
+        <source>Sign the message to prove you own this Faicoin address</source>
+        <translation>Sign the message to prove you own this Faicoin address</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -2854,13 +2854,13 @@ Address: %4
     </message>
     <message>
         <location line="+21"/>
-        <source>The Cccoin address the message was signed with</source>
+        <source>The Faicoin address the message was signed with</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+37"/>
-        <source>Verify the message to ensure it was signed with the specified Cccoin address</source>
-        <translation>Verify the message to ensure it was signed with the specified Cccoin address</translation>
+        <source>Verify the message to ensure it was signed with the specified Faicoin address</source>
+        <translation>Verify the message to ensure it was signed with the specified Faicoin address</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -2948,8 +2948,8 @@ Address: %4
     <name>SplashScreen</name>
     <message>
         <location filename="../splashscreen.cpp" line="+35"/>
-        <source>Cccoin Core</source>
-        <translation type="unfinished">Cccoin Core</translation>
+        <source>Faicoin Core</source>
+        <translation type="unfinished">Faicoin Core</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -3660,7 +3660,7 @@ Address: %4
     </message>
     <message>
         <location line="+20"/>
-        <source>Unable to bind to %s on this computer. Cccoin Core is probably already running.</source>
+        <source>Unable to bind to %s on this computer. Faicoin Core is probably already running.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3895,7 +3895,7 @@ Address: %4
     </message>
     <message>
         <location line="+4"/>
-        <source>Cannot obtain a lock on data directory %s. Cccoin Core is probably already running.</source>
+        <source>Cannot obtain a lock on data directory %s. Faicoin Core is probably already running.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3975,16 +3975,16 @@ Address: %4
     </message>
     <message>
         <location line="+4"/>
-        <source>To use cccoind, or the -server option to cccoin-qt, you must set an rpcpassword in the configuration file:
+        <source>To use faicoind, or the -server option to faicoin-qt, you must set an rpcpassword in the configuration file:
 %s
 It is recommended you use the following random password:
-rpcuser=cccoinrpc
+rpcuser=faicoinrpc
 rpcpassword=%s
 (you do not need to remember this password)
 The username and password MUST NOT be the same.
 If the file does not exist, create it with owner-readable-only file permissions.
 It is also recommended to set alertnotify so you are notified of problems;
-for example: alertnotify=echo %%s | mail -s &quot;Cccoin Alert&quot; admin@foo.com
+for example: alertnotify=echo %%s | mail -s &quot;Faicoin Alert&quot; admin@foo.com
 </source>
         <translation type="unfinished"></translation>
     </message>
@@ -3995,7 +3995,7 @@ for example: alertnotify=echo %%s | mail -s &quot;Cccoin Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+6"/>
-        <source>Warning: Please check that your computer&apos;s date and time are correct! If your clock is wrong Cccoin Core will not work properly.</source>
+        <source>Warning: Please check that your computer&apos;s date and time are correct! If your clock is wrong Faicoin Core will not work properly.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4020,7 +4020,7 @@ for example: alertnotify=echo %%s | mail -s &quot;Cccoin Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+3"/>
-        <source>Copyright (C) 2009-%i The Cccoin Core Developers</source>
+        <source>Copyright (C) 2009-%i The Faicoin Core Developers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4030,7 +4030,7 @@ for example: alertnotify=echo %%s | mail -s &quot;Cccoin Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+12"/>
-        <source>Error loading wallet.dat: Wallet requires newer version of Cccoin Core</source>
+        <source>Error loading wallet.dat: Wallet requires newer version of Faicoin Core</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4050,7 +4050,7 @@ for example: alertnotify=echo %%s | mail -s &quot;Cccoin Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+1"/>
-        <source>Initialization sanity check failed. Cccoin Core is shutting down.</source>
+        <source>Initialization sanity check failed. Faicoin Core is shutting down.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4095,7 +4095,7 @@ for example: alertnotify=echo %%s | mail -s &quot;Cccoin Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+7"/>
-        <source>RPC SSL options: (see the Cccoin Wiki for SSL setup instructions)</source>
+        <source>RPC SSL options: (see the Faicoin Wiki for SSL setup instructions)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4180,7 +4180,7 @@ for example: alertnotify=echo %%s | mail -s &quot;Cccoin Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+4"/>
-        <source>Wallet needed to be rewritten: restart Cccoin Core to complete</source>
+        <source>Wallet needed to be rewritten: restart Faicoin Core to complete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

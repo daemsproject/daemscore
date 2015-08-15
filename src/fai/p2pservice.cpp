@@ -3,9 +3,9 @@
 #include "addrman.h"
 #include "alert.h"
 #include "chainparams.h"
-#include "ccc/settings.h"
-#include "ccc/link.h"
-#include "ccc/content.h"
+#include "fai/settings.h"
+#include "fai/link.h"
+#include "fai/content.h"
 #include "p2pservice.h"
 #include "checkpoints.h"
 #include "checkqueue.h"
@@ -18,8 +18,8 @@
 #include "ui_interface.h"
 #include "util.h"
 #include "utilmoneystr.h"
-#include "ccc/contentutil.h"
-#include "ccc/domain.h"
+#include "fai/contentutil.h"
+#include "fai/domain.h"
 
 #include <sstream>
 

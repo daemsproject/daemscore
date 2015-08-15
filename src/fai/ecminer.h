@@ -3,8 +3,8 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef CCCOIN_EC_MINER_H
-#define CCCOIN_EC_MINER_H
+#ifndef FAICOIN_EC_MINER_H
+#define FAICOIN_EC_MINER_H
 
 #include <stdint.h>
 #include <string>
@@ -19,4 +19,4 @@ void EcMiner(CWallet* pwallet,const std::vector<std::string> vstrTarget,const CP
 extern double dEcsPerSec;
 extern int64_t nEcPSTimerStart;
 extern bool fEcHeaderFound;
-#endif // CCCOIN_EC_MINER_H
+#endif // FAICOIN_EC_MINER_H

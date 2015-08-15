@@ -2,14 +2,14 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef CCCOIN_SQLITEWRAPPER_H
-#define CCCOIN_SQLITEWRAPPER_H
+#ifndef FAICOIN_SQLITEWRAPPER_H
+#define FAICOIN_SQLITEWRAPPER_H
 
 #include "clientversion.h"
 #include "serialize.h"
 #include "streams.h"
 #include "util.h"
-#include "ccc/link.h"
+#include "fai/link.h"
 #include "version.h"
 //#include "script/script.h"
 #include "utilstrencodings.h"

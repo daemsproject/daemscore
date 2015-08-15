@@ -3,8 +3,8 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "sqlitewrapper.h"
-#include "ccc/domain.h"
-#include "ccc/link.h"
+#include "fai/domain.h"
+#include "fai/link.h"
 #include "util.h"
 #include "timedata.h"
 #include "txdb.h"

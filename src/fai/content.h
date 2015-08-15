@@ -1,18 +1,18 @@
-#ifndef CCC_CONTENT_H
-#define CCC_CONTENT_H
+#ifndef FAI_CONTENT_H
+#define FAI_CONTENT_H
 
 #include <string.h>
 #include <string>
 #include <vector>
 #include <map>
-#include "ccc/cc.h"
+#include "fai/cc.h"
 #include "utiltime.h"
 #include "serialize.h"
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_value.h"
 #include "uint256.h"
 #include "script/script.h"
-#include "ccc/link.h"
+#include "fai/link.h"
 
 #include "amount.h"
 using namespace json_spirit;

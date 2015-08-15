@@ -16,14 +16,14 @@ BEGIN
     BEGIN
         BLOCK "040904E4" // U.S. English - multilingual (hex)
         BEGIN
-            VALUE "CompanyName",        "Cccoin"
-            VALUE "FileDescription",    "Cccoin-cli (OSS RPC client for Cccoin)"
+            VALUE "CompanyName",        "Faicoin"
+            VALUE "FileDescription",    "Faicoin-cli (OSS RPC client for Faicoin)"
             VALUE "FileVersion",        VER_FILEVERSION_STR
-            VALUE "InternalName",       "cccoin-cli"
+            VALUE "InternalName",       "faicoin-cli"
             VALUE "LegalCopyright",     COPYRIGHT_STR
             VALUE "LegalTrademarks1",   "Distributed under the MIT/X11 software license, see the accompanying file COPYING or http://www.opensource.org/licenses/mit-license.php."
-            VALUE "OriginalFilename",   "cccoin-cli.exe"
-            VALUE "ProductName",        "Cccoin-cli"
+            VALUE "OriginalFilename",   "faicoin-cli.exe"
+            VALUE "ProductName",        "Faicoin-cli"
             VALUE "ProductVersion",     VER_PRODUCTVERSION_STR
         END
     END

@@ -1,5 +1,5 @@
-#include "ccc/link.h"
-#include "ccc/cc.h"
+#include "fai/link.h"
+#include "fai/cc.h"
 #include <string.h>
 #include <string>
 //#include <boost/algorithm/string.hpp>
@@ -7,8 +7,8 @@
 
 //#include <stdio.h>
 #include "util.h"
-#include "ccc/domain.h"
-#include "ccc/content.h"
+#include "fai/domain.h"
+#include "fai/content.h"
 #include "utilstrencodings.h"
 #include "base58.h"
 #include "json/json_spirit_writer_template.h"
@@ -335,7 +335,7 @@ bool CLinkUni::SetStringNative(const std::string linkStr)
     { // full link with colon
         std::string sn = linkStr.substr(0, posColon);
         if (sn == URI_SCHEME_NAME) 
-        {//ccc url, to be parsed as app or link.
+        {//fai url, to be parsed as app or link.
             str = linkStr.substr(posColon + 1);
             str=str.substr(0,str.find("/"));   
             for(int i=1;i<=HELPPAGE_ID;i++)            

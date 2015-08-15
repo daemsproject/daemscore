@@ -44,7 +44,7 @@ public:
         QFont font;
         font.setPointSize(10);
         HelpMessageDialog->setFont(font);
-        HelpMessageDialog->setWindowTitle(QStringLiteral("Cccoin Core - Command-line options"));
+        HelpMessageDialog->setWindowTitle(QStringLiteral("Faicoin Core - Command-line options"));
         horizontalLayout_2 = new QHBoxLayout(HelpMessageDialog);
         horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
         graphic = new QLabel(HelpMessageDialog);

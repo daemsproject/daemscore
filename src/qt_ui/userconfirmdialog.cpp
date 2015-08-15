@@ -10,7 +10,7 @@
 //#include "clientmodel.h"
 //#include "coincontroldialog.h"
 #include "guiutil.h"
-//#include "../ccc/content.h"
+//#include "../fai/content.h"
 //#include "optionsmodel.h"
 //#include "sendcoinsentry.h"
 //#include "walletmodel.h"

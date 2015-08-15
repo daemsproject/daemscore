@@ -20,7 +20,7 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/thread.hpp>
 #include "json/json_spirit_utils.h"
-#include "ccc/content.h"
+#include "fai/content.h"
 using namespace std;
 using namespace json_spirit;
 
@@ -1850,7 +1850,7 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
     wtxNew.fTimeReceivedIsTxTime = true;
     wtxNew.BindWallet(this);
     CMutableTransaction txNew;
-    //cccoin:for test
+    //faicoin:for test
 //    txNew.nLockTime=chainActive.Height()+10;
     {
         LOCK2(cs_main, cs_wallet);

@@ -10,8 +10,8 @@
 #include "rpcprotocol.h"
 #include "uint256.h"
 #include "primitives/transaction.h"
-//#include "ccc/content.h"
-//#include "ccc/link.h"
+//#include "fai/content.h"
+//#include "fai/link.h"
 #include "base58.h"
 #include <list>
 #include <map>

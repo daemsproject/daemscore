@@ -154,7 +154,7 @@ var MyWallet = new function () {
             htmlcontent += '<div><div style="float:left">' + dateToString(c) + '</div><div style="text-align:right">';
             if (tx.category == "send")
                 htmlcontent += '<font color="red">';
-            htmlcontent += (tx.amount + "CCC");
+            htmlcontent += (tx.amount + "FAI");
             if (tx.category == "send")
                 htmlcontent += '</font>';
             htmlcontent += '</div></div>';
@@ -517,7 +517,7 @@ var MyWallet = new function () {
         html += (tx.address + '</td><td style="text-align:right">');
         if (tx.amount <0)
             html += ('<font color="red">');
-        html += (tx.amount + " CCC");
+        html += (tx.amount + " FAI");
         if (tx.category == "send")
             html += ('</font>');
         html += ('</td>');

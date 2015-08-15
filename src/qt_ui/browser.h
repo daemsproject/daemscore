@@ -1,12 +1,7 @@
-/* 
- * File:   browser.h
- * Author: alan
- *
- * Created on August 5, 2015, 1:44 PM
- */
 
-#ifndef CCC_BROWSER_H
-#define	CCC_BROWSER_H
+
+#ifndef FAI_BROWSER_H
+#define	FAI_BROWSER_H
 /** Class encapsulating Bitcoin Core startup and shutdown.
  * Allows running startup and shutdown in a different thread from the UI thread.
  */
@@ -96,5 +91,5 @@ private:
 };
 
 
-#endif	/* CCC_BROWSER_H */
+#endif	/* FAI_BROWSER_H */
 

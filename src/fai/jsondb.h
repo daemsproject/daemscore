@@ -1,5 +1,5 @@
-#ifndef CCC_BROWSERDB_H
-#define	CCC_BROWSERDB_H
+#ifndef FAI_BROWSERDB_H
+#define	FAI_BROWSERDB_H
 
 #include "base58.h"
 #include "json/json_spirit_value.h"
@@ -49,4 +49,4 @@ public:
     bool setUnfollow(const CBitcoinAddress& addr);
 };
 
-#endif	// CCC_BROWSERDB_H 
+#endif	// FAI_BROWSERDB_H 

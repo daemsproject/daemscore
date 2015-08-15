@@ -4,7 +4,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "miner.h"
-#include "ccc/mhash.h"
+#include "fai/mhash.h"
 #include "amount.h"
 #include "primitives/block.h"
 #include "primitives/transaction.h"
@@ -372,7 +372,7 @@ bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CPubKey& miningID,bool f
     {
         LOCK(cs_main);
         if (pblock->hashPrevBlock != chainActive.Tip()->GetBlockHash())
-            return error("CccoinMiner : generated block is stale");
+            return error("FaicoinMiner : generated block is stale");
     }
 
     // Remove key from key pool
@@ -387,7 +387,7 @@ bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CPubKey& miningID,bool f
     // Process this block the same as if we had received it from another node
     CValidationState state;
     if (!ProcessNewBlock(state, NULL, pblock))
-        return error("CccoinMiner : ProcessNewBlock, block not accepted");
+        return error("FaicoinMiner : ProcessNewBlock, block not accepted");
     if (fExtendID)
         miningID=wallet.GenerateNewKey();
     return true;
@@ -395,9 +395,9 @@ bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CPubKey& miningID,bool f
 
 void BitcoinMiner(CWallet *pwallet,bool fExtendID)
 {
-    LogPrintf("CccoinMiner started\n");
+    LogPrintf("FaicoinMiner started\n");
     SetThreadPriority(THREAD_PRIORITY_LOWEST);
-    RenameThread("cccoin-miner");
+    RenameThread("faicoin-miner");
 
     // Each thread has its own key and counter
     
@@ -436,7 +436,7 @@ void BitcoinMiner(CWallet *pwallet,bool fExtendID)
             pblock->hashMerkleRoot = pblock->BuildMerkleTree();
             pblock->nBlockHeight=pindexPrev->nHeight+1;
             unsigned int rounds=(unsigned int)int(16*sqrt((double)pblock->nBlockHeight));
-            LogPrintf("Running CccoinMiner with %u transactions in block (%u bytes),%u rounds mhash\n", pblock->vtx.size(),
+            LogPrintf("Running FaicoinMiner with %u transactions in block (%u bytes),%u rounds mhash\n", pblock->vtx.size(),
                 ::GetSerializeSize(*pblock, SER_NETWORK, PROTOCOL_VERSION),rounds);            
             
             //
@@ -456,7 +456,7 @@ void BitcoinMiner(CWallet *pwallet,bool fExtendID)
                     {
                         // Found a solution
                         SetThreadPriority(THREAD_PRIORITY_NORMAL);
-                        LogPrintf("CccoinMiner:\n");
+                        LogPrintf("FaicoinMiner:\n");
                         LogPrintf("proof-of-work found  \n  powhash: %s  \ntarget: %s\n", thash.GetHex(), hashTarget.GetHex());
                         ProcessBlockFound(pblock, *pwallet, miningID,fExtendID);
                         SetThreadPriority(THREAD_PRIORITY_LOWEST);
@@ -526,7 +526,7 @@ void BitcoinMiner(CWallet *pwallet,bool fExtendID)
     }
     catch (boost::thread_interrupted)
     {
-        LogPrintf("CccoinMiner terminated\n");
+        LogPrintf("FaicoinMiner terminated\n");
         throw;
     }
 }
@@ -564,9 +564,9 @@ void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads,bool fExten
 
 void PoolMiningThread(CBlockHeader& block,uint64_t nNonceBegin,uint64_t nNonceEnd,uint32_t nbit)
 {
-    //LogPrintf("CccoinpoolMiner started header:nbit%i time%i, height%i\n",block.nBits,block.nTime,block.nBlockHeight);
+    //LogPrintf("FaicoinpoolMiner started header:nbit%i time%i, height%i\n",block.nBits,block.nTime,block.nBlockHeight);
     SetThreadPriority(THREAD_PRIORITY_LOWEST);
-    RenameThread("cccoin-poolminer");
+    RenameThread("faicoin-poolminer");
     CBlockHeader block1=block;
     block1.nNonce=nNonceBegin;
     
@@ -577,7 +577,7 @@ void PoolMiningThread(CBlockHeader& block,uint64_t nNonceBegin,uint64_t nNonceEn
 
            
             //unsigned int rounds=(unsigned int)int(16*sqrt((double)block1.nBlockHeight));
-            //LogPrintf("Running CccoinMiner with %u rounds mhash\n", rounds);            
+            //LogPrintf("Running FaicoinMiner with %u rounds mhash\n", rounds);            
             
             //
             // Search
@@ -600,7 +600,7 @@ void PoolMiningThread(CBlockHeader& block,uint64_t nNonceBegin,uint64_t nNonceEn
                     {
                         // Found a solution
                         SetThreadPriority(THREAD_PRIORITY_NORMAL);
-                        //LogPrintf("CccoinpoolMiner:\n");
+                        //LogPrintf("FaicoinpoolMiner:\n");
                         LogPrintf("proof-of-work found  \n  powhash: %s  \ntarget: %s\n", thash.GetHex(), hashTarget.GetHex());
                         //TODO feedback 
                         SetThreadPriority(THREAD_PRIORITY_LOWEST);
@@ -661,7 +661,7 @@ void PoolMiningThread(CBlockHeader& block,uint64_t nNonceBegin,uint64_t nNonceEn
                     {
                         LOCK(cs);
                         fPoolMiningFinished=true;
-                        //LogPrintf("CccoinpoolMiner finished:\n");
+                        //LogPrintf("FaicoinpoolMiner finished:\n");
                     }
                  throw boost::thread_interrupted();
                 }
@@ -671,7 +671,7 @@ void PoolMiningThread(CBlockHeader& block,uint64_t nNonceBegin,uint64_t nNonceEn
     }
     catch (boost::thread_interrupted)
     {
-        //LogPrintf("CccoinMiner terminated\n");
+        //LogPrintf("FaicoinMiner terminated\n");
        // if(pwallet!=pwalletMain&&pwallet!=NULL)
          //   delete pwallet;
         throw;

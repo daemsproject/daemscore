@@ -20,8 +20,8 @@
 #include "ui_userconfirmdialog.h"
 #include "accountdialog.h"
 #include "webpage.h"
-#include "ccc/settings.h"
-#include "ccc/contentutil.h"
+#include "fai/settings.h"
+#include "fai/contentutil.h"
 #include "toolbarsearch.h"
 #include "chasewidget.h"
 #include "bookmarks.h"
@@ -144,7 +144,7 @@ DownloadManager *BitcoinGUI::s_downloadManager = 0;
 QNetworkAccessManager *BitcoinGUI::s_networkAccessManager = 0;
 HistoryManager *BitcoinGUI::s_historyManager = 0;
 BookmarksManager *BitcoinGUI::s_bookmarksManager = 0;
-const char *BitcoinGUI::defaultHome = "ccc:browser";
+const char *BitcoinGUI::defaultHome = "fai:browser";
 BitcoinGUI::BitcoinGUI(const NetworkStyle *networkStyle,QString languageIn,  QWidget *parent) :
     QMainWindow(parent),
     language(languageIn),
@@ -205,7 +205,7 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle *networkStyle,QString languageIn,  QWi
     jsInterface=new JsInterface(this);
     GUIUtil::restoreWindowGeometry("nWindow", QSize(850, 550), this);
 
-    QString windowTitle = tr("Cccoin Browser");
+    QString windowTitle = tr("Faicoin Browser");
 #ifdef ENABLE_WALLET
     /* if compiled with wallet support, -disablewallet can still disable the wallet */
     enableWallet = !GetBoolArg("-disablewallet", false);
@@ -229,7 +229,7 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle *networkStyle,QString languageIn,  QWi
 #endif
 #ifndef QT_NO_OPENSSL
     if (!QSslSocket::supportsSsl()) {
-    QMessageBox::information(0, "CCC Browser",
+    QMessageBox::information(0, "FAI Browser",
                  "This system does not support OpenSSL. SSL websites will not be available.");
     }
 #endif
@@ -507,8 +507,8 @@ LogPrintf("bitcoingui:createactions 2 \n");
     quitAction->setStatusTip(tr("Quit application"));
     quitAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
     quitAction->setMenuRole(QAction::QuitRole);
-    aboutAction = new QAction(networkStyle->getAppIcon(), tr("&About Cccoin Browser"), this);
-    aboutAction->setStatusTip(tr("Show information about Cccoin Browser"));
+    aboutAction = new QAction(networkStyle->getAppIcon(), tr("&About Faicoin Browser"), this);
+    aboutAction->setStatusTip(tr("Show information about Faicoin Browser"));
     aboutAction->setMenuRole(QAction::AboutRole);
 #if QT_VERSION < 0x050000
    // aboutQtAction = new QAction(QIcon(":/trolltech/qmessagebox/images/qtlogo-64.png"), tr("About &Qt"), this);
@@ -518,7 +518,7 @@ LogPrintf("bitcoingui:createactions 2 \n");
     //aboutQtAction->setStatusTip(tr("Show information about Qt"));
     //aboutQtAction->setMenuRole(QAction::AboutQtRole);
     //optionsAction = new QAction(QIcon(":/icons/options"), tr("&Options..."), this);
-    //optionsAction->setStatusTip(tr("Modify configuration options for Cccoin"));
+    //optionsAction->setStatusTip(tr("Modify configuration options for Faicoin"));
     //optionsAction->setMenuRole(QAction::PreferencesRole);
     toggleHideAction = new QAction(networkStyle->getAppIcon(), tr("&Show / Hide"), this);
     toggleHideAction->setStatusTip(tr("Show or hide the main Window"));
@@ -558,12 +558,12 @@ LogPrintf("bitcoingui:createactions 2 \n");
 //    usedReceivingAddressesAction->setStatusTip(tr("Show the list of used receiving addresses and labels"));
 
     //openAction = new QAction(QApplication::style()->standardIcon(QStyle::SP_FileIcon), tr("Open &URI..."), this);
-    //openAction->setStatusTip(tr("Open a cccoin: URI or payment request"));
+    //openAction->setStatusTip(tr("Open a faicoin: URI or payment request"));
 //    showHideTabBarAction= new QAction(QApplication::style()->standardIcon(QStyle::SP_MessageBoxInformation), tr("&Show/Hide tab bar"), this);
 //    showHideTabBarAction->setStatusTip(tr("Show/Hide tab bar"));
 //    showHideTabBarAction->setCheckable(true);
     showHelpMessageAction = new QAction(QApplication::style()->standardIcon(QStyle::SP_MessageBoxInformation), tr("&Command-line options"), this);
-    showHelpMessageAction->setStatusTip(tr("Show the Cccoin Core help message to get a list with possible Cccoin command-line options"));
+    showHelpMessageAction->setStatusTip(tr("Show the Faicoin Core help message to get a list with possible Faicoin command-line options"));
     settingsAction = new QAction(QIcon(":/icons/key"), tr("&Settings"), this);
     settingsAction->setStatusTip(tr("Settings"));
     settingsAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_S)); 
@@ -979,7 +979,7 @@ bool BitcoinGUI::addWallet(const QString& name, WalletModel *walletModelIn)
     //QUrl walletUrl= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/wallet_en.html"); 
    // mainView->gotoWebPage(1,walletUrl);//, walletModel);    
     //LogPrintf("bitcoingui addwallet3 \n");
-    mainView->newTab(true,QUrl("ccc:browser"),2);
+    mainView->newTab(true,QUrl("fai:browser"),2);
      return true;
 }
 
@@ -1019,7 +1019,7 @@ void BitcoinGUI::createTrayIcon(const NetworkStyle *networkStyle)
 {
 #ifndef Q_OS_MAC
     trayIcon = new QSystemTrayIcon(this);
-    QString toolTip = tr("Cccoin browser client") + " " + networkStyle->getTitleAddText();
+    QString toolTip = tr("Faicoin browser client") + " " + networkStyle->getTitleAddText();
     trayIcon->setToolTip(toolTip);
     trayIcon->setIcon(networkStyle->getAppIcon());
     trayIcon->show();
@@ -1238,7 +1238,7 @@ void BitcoinGUI::changePassphrase()
 void BitcoinGUI::gotoWalletPage()
 {
 
-    loadUrl(QUrl("ccc:wallet"));
+    loadUrl(QUrl("fai:wallet"));
 }
 void BitcoinGUI::gotoBrowserPage()
 {
@@ -1246,30 +1246,30 @@ void BitcoinGUI::gotoBrowserPage()
 //    dir.cdUp();
 //    dir.cdUp();
 //    dir.cdUp();
-//    dir.cd(QString().fromStdString("cccpages"));
+//    dir.cd(QString().fromStdString("faipages"));
 //    QUrl url= QUrl("file://"+dir.path().toUtf8() + "/html/browser_en.html"); 
 //    LogPrintf("gotobrowser page url:%s \n",url.toString().toStdString());
 //    browserAction->setChecked(true);
    // if (mainView) mainView->gotoWebPage(BROWSERPAGE_ID,url);
     
-        loadUrl(QUrl("ccc:browser"));
+        loadUrl(QUrl("fai:browser"));
     
 }
 void BitcoinGUI::gotoPublisherPage()
 {  
-    loadUrl(QUrl("ccc:publisher"));
+    loadUrl(QUrl("fai:publisher"));
 }
 void BitcoinGUI::gotoMessengerPage()
 {
-   loadUrl(QUrl("ccc:messenger"));
+   loadUrl(QUrl("fai:messenger"));
 }
 void BitcoinGUI::gotoMinerPage()
 {
-    loadUrl(QUrl("ccc:miner"));
+    loadUrl(QUrl("fai:miner"));
 }
 void BitcoinGUI::gotoShopPage()
 {
-    loadUrl(QUrl("ccc:shop"));
+    loadUrl(QUrl("fai:shop"));
 }
 void BitcoinGUI::gotoDownloaderPage()
 {
@@ -1277,28 +1277,28 @@ void BitcoinGUI::gotoDownloaderPage()
 //    QUrl url= QUrl("file://"+QDir::currentPath().toUtf8() + "/res/html/downloader_en.html"); 
 //    if (mainView) mainView->gotoWebPage(DOWNLOADERPAGE_ID,url);
    // if (mainView) mainView->loadWebPage(DOWNLOADERPAGE_ID);
-    loadUrl(QUrl("ccc:downloader"));
+    loadUrl(QUrl("fai:downloader"));
 }
 
 void BitcoinGUI::gotoToolsPage()
 {    
-    loadUrl(QUrl("ccc:tools"));
+    loadUrl(QUrl("fai:tools"));
     
 }
 void BitcoinGUI::domainNameClicked()
 {
-    loadUrl(QUrl("ccc:domain"));
+    loadUrl(QUrl("fai:domain"));
 }
 
 #endif // ENABLE_WALLET
 void BitcoinGUI::gotoSettingsPage()
 {    
-   loadUrl(QUrl("ccc:settings"));
+   loadUrl(QUrl("fai:settings"));
     
 }
 void BitcoinGUI::gotoHelpPage()
 {    
-   loadUrl(QUrl("ccc:help"));
+   loadUrl(QUrl("fai:help"));
     
 }
 void BitcoinGUI::installWebPages()
@@ -1321,7 +1321,7 @@ void BitcoinGUI::setNumConnections(int count)
     default: icon = ":/icons/connect_4"; break;
     }
     labelConnectionsIcon->setPixmap(QIcon(icon).pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
-    labelConnectionsIcon->setToolTip(tr("%n active connection(s) to Cccoin network", "", count));
+    labelConnectionsIcon->setToolTip(tr("%n active connection(s) to Faicoin network", "", count));
 }
 
 void BitcoinGUI::setNumBlocks(int count)
@@ -1436,7 +1436,7 @@ void BitcoinGUI::setNumBlocks(int count)
 
 void BitcoinGUI::message(const QString &title, const QString &message, unsigned int style, bool *ret)
 {
-    QString strTitle = tr("Cccoin"); // default title
+    QString strTitle = tr("Faicoin"); // default title
     // Default to information icon
     int nMBoxIcon = QMessageBox::Information;
     int nNotifyIcon = Notificator::Information;
@@ -2137,12 +2137,12 @@ void BitcoinGUI::slotUpdateWindowTitle(const QString &title)
 {
     //LogPrintf("slot triggered:BitcoinGUI::slotUpdateWindowTitle \n");
     if (title.isEmpty()) {
-        setWindowTitle(tr("CCC Browser"));
+        setWindowTitle(tr("FAI Browser"));
     } else {
 #if defined(Q_OS_OSX)
         setWindowTitle(title);
 #else
-        setWindowTitle(tr("%1 - ccc Browser", "Page title and Browser name").arg(title));
+        setWindowTitle(tr("%1 - fai Browser", "Page title and Browser name").arg(title));
 #endif
     }
 }
@@ -2370,7 +2370,7 @@ void BitcoinGUI::slotAboutApplication()
 {
     QMessageBox::about(this, tr("About"), tr(
         "Version %1"
-        "CCC Browser"
+        "FAI Browser"
         ).arg(QCoreApplication::applicationVersion()));
 }
 void BitcoinGUI::slotDownloadManager()

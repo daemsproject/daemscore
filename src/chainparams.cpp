@@ -187,7 +187,7 @@ public:
         fSkipProofOfWorkCheck = false;
         fTestnetToBeDeprecatedFieldRPC = false;
 
-        // Cccoin: Mainnet v2 enforced as of block 710k
+        // Faicoin: Mainnet v2 enforced as of block 710k
        // nEnforceV2AfterHeight = 710000;
     }
 
@@ -248,7 +248,7 @@ public:
         fMineBlocksOnDemand = false;
         fTestnetToBeDeprecatedFieldRPC = true;
 
-        // Cccoin: Testnet v2 enforced as of block 400k
+        // Faicoin: Testnet v2 enforced as of block 400k
         nEnforceV2AfterHeight = 400000;
     }
     const Checkpoints::CCheckpointData& Checkpoints() const 
@@ -297,7 +297,7 @@ public:
         fMineBlocksOnDemand = true;
         fTestnetToBeDeprecatedFieldRPC = false;
 
-        // Cccoin: v2 enforced using Bitcoin's supermajority rule
+        // Faicoin: v2 enforced using Bitcoin's supermajority rule
         nEnforceV2AfterHeight = -1;
     }
     const Checkpoints::CCheckpointData& Checkpoints() const 
@@ -325,7 +325,7 @@ public:
         fAllowMinDifficultyBlocks = false;
         fMineBlocksOnDemand = true;
 
-        // Cccoin: v2 enforced using Bitcoin's supermajority rule
+        // Faicoin: v2 enforced using Bitcoin's supermajority rule
         nEnforceV2AfterHeight = -1;
     }
 

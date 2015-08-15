@@ -642,7 +642,7 @@ var CLink = new function () {
     };
     this.toString = function () {
         return nHeight >= 0 && nTx >= 0 ?
-                (nVout > 0 ? "ccc:" + nHeight + "." + nTx + "." + nVout : "ccc:" + nHeight + "." + nTx) : "";
+                (nVout > 0 ? "fai:" + nHeight + "." + nTx + "." + nVout : "fai:" + nHeight + "." + nTx) : "";
     };
     this.toHtmlId = function () {
         return nHeight >= 0 && nTx >= 0 ?

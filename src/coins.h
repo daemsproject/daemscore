@@ -258,7 +258,7 @@ public:
     bool IsAvailable(unsigned int nPos) const {
         return (nPos < vout.size() && !vout[nPos].IsNull());
     }
-    //cccoin:check whether a particular output is still in locktime
+    //faicoin:check whether a particular output is still in locktime
     //bool IsFrozen(unsigned int nPos) const;
 
     //! check whether the entire CCoins is spent

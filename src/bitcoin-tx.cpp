@@ -47,10 +47,10 @@ static bool AppInitRawTx(int argc, char* argv[])
     if (argc<2 || mapArgs.count("-?") || mapArgs.count("-help"))
     {
         // First part of help message is specific to this utility
-        std::string strUsage = _("Cccoin Core cccoin-tx utility version") + " " + FormatFullVersion() + "\n\n" +
+        std::string strUsage = _("Faicoin Core faicoin-tx utility version") + " " + FormatFullVersion() + "\n\n" +
             _("Usage:") + "\n" +
-              "  cccoin-tx [options] <hex-tx> [commands]  " + _("Update hex-encoded cccoin transaction") + "\n" +
-              "  cccoin-tx [options] -create [commands]   " + _("Create hex-encoded cccoin transaction") + "\n" +
+              "  faicoin-tx [options] <hex-tx> [commands]  " + _("Update hex-encoded faicoin transaction") + "\n" +
+              "  faicoin-tx [options] -create [commands]   " + _("Create hex-encoded faicoin transaction") + "\n" +
               "\n";
 
         fprintf(stdout, "%s", strUsage.c_str());

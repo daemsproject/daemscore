@@ -60,11 +60,11 @@ bin_PROGRAMS =
 TESTS =
 
 if BUILD_BITCOIND
-  bin_PROGRAMS += cccoind
+  bin_PROGRAMS += faicoind
 endif
 
 if BUILD_BITCOIN_UTILS
-  bin_PROGRAMS += cccoin-cli cccoin-tx
+  bin_PROGRAMS += faicoin-cli faicoin-tx
 endif
 
 .PHONY: FORCE
@@ -76,11 +76,11 @@ BITCOIN_CORE_H = \
   amount.h \
   base58.h \
   bloom.h \
-  ccc/cc.h \
-  ccc/content.h \
-  ccc/shop.h \
-  ccc/link.h \
-  ccc/jsondb.h \
+  fai/cc.h \
+  fai/content.h \
+  fai/shop.h \
+  fai/link.h \
+  fai/jsondb.h \
   chain.h \
   chainparams.h \
   chainparamsbase.h \
@@ -90,11 +90,11 @@ BITCOIN_CORE_H = \
   clientversion.h \
   coincontrol.h \
   coins.h \
-  ccc/script2txposdb.h \
-  ccc/domain.h \
-  ccc/contentutil.h\
-  ccc/settings.h\
-  ccc/filepackage.h\
+  fai/script2txposdb.h \
+  fai/domain.h \
+  fai/contentutil.h\
+  fai/settings.h\
+  fai/filepackage.h\
   compat.h \
   compressor.h \
   primitives/block.h \
@@ -103,17 +103,17 @@ BITCOIN_CORE_H = \
   crypter.h \
   crypto/scrypt.h \
   eccryptoverify.h \
-  ccc/ecminer.h \
+  fai/ecminer.h \
   ecwrapper.h \
   hash.h \
   init.h \
   key.h \
   keystore.h \
   leveldbwrapper.h \
-  ccc/sqlitewrapper.h \
+  fai/sqlitewrapper.h \
   limitedmap.h \
   main.h \
-  ccc/p2pservice.h \
+  fai/p2pservice.h \
   merkleblock.h \
   miner.h \
   mruset.h \
@@ -179,15 +179,15 @@ libbitcoin_server_a_SOURCES = \
   bloom.cpp \
   chain.cpp \
   checkpoints.cpp \
-  ccc/ecminer.cpp \
+  fai/ecminer.cpp \
   init.cpp \
   leveldbwrapper.cpp \
-  ccc/sqlitewrapper.cpp \
-  ccc/settings.cpp\
-  ccc/contentutil.cpp\
-  ccc/filepackage.cpp\
+  fai/sqlitewrapper.cpp \
+  fai/settings.cpp\
+  fai/contentutil.cpp\
+  fai/filepackage.cpp\
   main.cpp \
-  ccc/p2pservice.cpp \
+  fai/p2pservice.cpp \
   merkleblock.cpp \
   miner.cpp \
   net.cpp \
@@ -243,8 +243,8 @@ crypto_libbitcoin_crypto_a_SOURCES = \
   crypto/hmac_sha512.h \
   crypto/sha1.h \
   crypto/ripemd160.h\
-    ccc/mhash.h \
-    ccc/mhash.cpp
+    fai/mhash.h \
+    fai/mhash.cpp
 
 # univalue JSON library
 univalue_libbitcoin_univalue_a_SOURCES = \
@@ -261,13 +261,13 @@ libbitcoin_common_a_SOURCES = \
   amount.cpp \
   base58.cpp \
   chainparams.cpp \
-  ccc/content.cpp \
-  ccc/shop.cpp \
-  ccc/link.cpp \
-  ccc/jsondb.cpp \
+  fai/content.cpp \
+  fai/shop.cpp \
+  fai/link.cpp \
+  fai/jsondb.cpp \
   coins.cpp \
-  ccc/script2txposdb.cpp \
-  ccc/domain.cpp \
+  fai/script2txposdb.cpp \
+  fai/domain.cpp \
   compressor.cpp \
   primitives/block.cpp \
   primitives/transaction.cpp \
@@ -322,8 +322,8 @@ libbitcoin_cli_a_SOURCES = \
 nodist_libbitcoin_util_a_SOURCES = $(srcdir)/obj/build.h
 #
 
-# cccoind binary #
-cccoind_LDADD = \
+# faicoind binary #
+faicoind_LDADD = \
   $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_COMMON) \
   $(LIBBITCOIN_UNIVALUE) \
@@ -334,35 +334,35 @@ cccoind_LDADD = \
   $(LIBSECP256K1)
 
 if ENABLE_WALLET
-cccoind_LDADD += libbitcoin_wallet.a
+faicoind_LDADD += libbitcoin_wallet.a
 endif
-cccoind_SOURCES = bitcoind.cpp
+faicoind_SOURCES = bitcoind.cpp
 #
 
 if TARGET_WINDOWS
-cccoind_SOURCES += bitcoind-res.rc
+faicoind_SOURCES += bitcoind-res.rc
 endif
 
-cccoind_LDADD += $(BOOST_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS)
-cccoind_CPPFLAGS = $(BITCOIN_INCLUDES)
-cccoind_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+faicoind_LDADD += $(BOOST_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS)
+faicoind_CPPFLAGS = $(BITCOIN_INCLUDES)
+faicoind_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 # bitcoin-cli binary #
-cccoin_cli_LDADD = \
+faicoin_cli_LDADD = \
   $(LIBBITCOIN_CLI) \
   $(LIBBITCOIN_UTIL) \
   $(BOOST_LIBS) \
   $(SSL_LIBS) \
   $(CRYPTO_LIBS)
 
-cccoin_cli_SOURCES = \
+faicoin_cli_SOURCES = \
   bitcoin-cli.cpp
 
-cccoin_cli_CPPFLAGS = $(BITCOIN_INCLUDES)
+faicoin_cli_CPPFLAGS = $(BITCOIN_INCLUDES)
 #
 
 # bitcoin-tx binary #
-cccoin_tx_LDADD = \
+faicoin_tx_LDADD = \
   $(LIBBITCOIN_UNIVALUE) \
   $(LIBBITCOIN_COMMON) \
   $(LIBBITCOIN_UTIL) \
@@ -371,15 +371,15 @@ cccoin_tx_LDADD = \
   $(BOOST_LIBS) \
   $(CRYPTO_LIBS)
 
-cccoin_tx_SOURCES = bitcoin-tx.cpp
-cccoin_tx_CPPFLAGS = $(BITCOIN_INCLUDES)
+faicoin_tx_SOURCES = bitcoin-tx.cpp
+faicoin_tx_CPPFLAGS = $(BITCOIN_INCLUDES)
 #
-cccoin_tx_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+faicoin_tx_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-cccoin_cli_SOURCES += bitcoin-cli-res.rc
+faicoin_cli_SOURCES += bitcoin-cli-res.rc
 endif
-cccoin_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+faicoin_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if BUILD_BITCOIN_LIBS
 include_HEADERS = script/bitcoinconsensus.h

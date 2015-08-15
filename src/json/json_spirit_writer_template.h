@@ -126,7 +126,7 @@ namespace json_spirit
                 case bool_type:  output( value.get_bool() );  break;
                 case int_type:   output_int( value );         break;
 
-                /// cccoin: Added std::fixed and changed precision from 16 to 6
+                /// faicoin: Added std::fixed and changed precision from 16 to 6
                 case real_type:  os_ << std::showpoint << std::fixed << std::setprecision(6)
                                      << value.get_real();     break;
 

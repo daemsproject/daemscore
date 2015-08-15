@@ -14,9 +14,9 @@
 #include "chain.h"
 #include "chainparams.h"
 #include "coins.h"
-//#include "ccc/script2txposdb.h"
-//#include "ccc/settings.h"
-//#include "ccc/domain.h"
+//#include "fai/script2txposdb.h"
+//#include "fai/settings.h"
+//#include "fai/domain.h"
 #include "primitives/block.h"
 #include "primitives/transaction.h"
 #include "net.h"
@@ -314,7 +314,7 @@ bool CheckTransaction(const CTransaction& tx, CValidationState& state);
 bool IsStandardTx(const CTransaction& tx, std::string& reason);
 
 bool IsFinalTx(const CTransaction &tx, int nBlockHeight = 0, int64_t nBlockTime = 0);
-//cccoin: Check if tx is in frozen period
+//faicoin: Check if tx is in frozen period
 bool IsFrozen(const CTransaction &tx, const unsigned int nPos, int nBlockHeight=0, int64_t nBlockTime=0);
 bool IsFrozen(const CCoins &tx,const unsigned int nPos, int nBlockHeight=0, int64_t nBlockTime=0);
 uint32_t LockTimeToTime(uint32_t nLockTime);

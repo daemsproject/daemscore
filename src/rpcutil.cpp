@@ -23,8 +23,8 @@
 #include <boost/assign/list_of.hpp>
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_value.h"
-#include "ccc/link.h"
-#include "ccc/content.h"
+#include "fai/link.h"
+#include "fai/content.h"
 
 using namespace boost;
 using namespace boost::assign;

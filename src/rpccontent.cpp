@@ -9,15 +9,15 @@
 #include "timedata.h"
 #include "sync.h"
 #include "util.h"
-#include "ccc/content.h"
-#include "ccc/shop.h"
-#include "ccc/link.h"
-#include "ccc/filepackage.h"
+#include "fai/content.h"
+#include "fai/shop.h"
+#include "fai/link.h"
+#include "fai/filepackage.h"
 
-#include "ccc/domain.h"
+#include "fai/domain.h"
 #include "txdb.h"
 #include <stdint.h>
-#include "ccc/contentutil.h"
+#include "fai/contentutil.h"
 #include "json/json_spirit_value.h"
 #include "base58.h"
 #include "utilstrencodings.h"
@@ -879,6 +879,7 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
         }
     } else
     {
+        std::map<std::string,CDomain> posters;
         std::vector<CScript> vFrIds;
 
         BOOST_FOREACH(const Value& addrStr, frAddrs)
@@ -923,7 +924,17 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
             string address;
             CDomain domain;
                 if (cflag & CONTENT_SHOW_POSTER)
-                _get_poster(tx, address, domain);
+            {
+                _get_poster(tx, address, domain, 1);
+                if (posters.count(address) == 0)
+                {
+                    _get_poster(tx, address, domain, 2);
+                    posters[address] = domain;
+                } else
+                {
+                    domain = posters[address];
+                }
+            }
             for (int nVout = (nHeight == fbh && nTx == fntx) ? fnout : 0; nVout < (int) tx.vout.size(); nVout++)
                 {
                     if (c >= maxc)
@@ -969,7 +980,17 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
             string address;
             CDomain domain;
             if (cflag & CONTENT_SHOW_POSTER)
-                _get_poster(tx, address, domain);
+            {
+                _get_poster(tx, address, domain, 1);
+                if (posters.count(address) == 0)
+                {
+                    _get_poster(tx, address, domain, 2);
+                    posters[address] = domain;
+                } else
+                {
+                    domain = posters[address];
+                }
+            }
             for (int nVout = (nHeight == fbh && nTx == fntx) ? fnout : 0; nVout < (int) tx.vout.size(); nVout++)
                             {
                 if (c >= maxc)

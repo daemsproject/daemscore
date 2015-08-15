@@ -207,7 +207,7 @@ Value _ValueFromAmount(const CAmount& amount);
  */
 template <typename Callable> void LoopForever(const char* name,  Callable func, int64_t msecs)
 {
-    std::string s = strprintf("cccoin-%s", name);
+    std::string s = strprintf("faicoin-%s", name);
     RenameThread(s.c_str());
     LogPrintf("%s thread start\n", name);
     try
@@ -238,7 +238,7 @@ template <typename Callable> void LoopForever(const char* name,  Callable func, 
  */
 template <typename Callable> void TraceThread(const char* name,  Callable func)
 {
-    std::string s = strprintf("cccoin-%s", name);
+    std::string s = strprintf("faicoin-%s", name);
     RenameThread(s.c_str());
     try
     {

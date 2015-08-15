@@ -9,11 +9,11 @@
 #include "init.h"
 #include "keystore.h"
 #include "main.h"
-#include "ccc/contentutil.h"
-#include "ccc/sqlitewrapper.h"
+#include "fai/contentutil.h"
+#include "fai/sqlitewrapper.h"
 #include "net.h"
 #include "rpcserver.h"
-#include "ccc/content.h"
+#include "fai/content.h"
 #include "script/script.h"
 #include "script/sign.h"
 #include "script/standard.h"
@@ -233,7 +233,7 @@ Value getrawtransaction(const Array& params, bool fHelp)
             "         \"reqSigs\" : n,            (numeric) The required sigs\n"
             "         \"type\" : \"pubkey\",  (string) The type, eg 'pubkey'\n"
             "         \"addresses\" : [           (json array of string)\n"
-            "           \"cccoinaddress\"        (string) cccoin address\n"
+            "           \"faicoinaddress\"        (string) faicoin address\n"
             "           ,...\n"
             "         ]\n"
             "       }\n"
@@ -289,9 +289,9 @@ Value listunspent(const Array& params, bool fHelp)
             "\nArguments:\n"
             "1. minconf          (numeric, optional, default=1) The minimum confirmations to filter\n"
             "2. maxconf          (numeric, optional, default=9999999) The maximum confirmations to filter\n"
-            "3. \"addresses\"    (string) A json array of cccoin addresses to filter\n"
+            "3. \"addresses\"    (string) A json array of faicoin addresses to filter\n"
             "    [\n"
-            "      \"address\"   (string) cccoin address\n"
+            "      \"address\"   (string) faicoin address\n"
             "      ,...\n"
             "    ]\n"
             "\nResult\n"
@@ -299,7 +299,7 @@ Value listunspent(const Array& params, bool fHelp)
             "  {\n"
             "    \"txid\" : \"txid\",        (string) the transaction id \n"
             "    \"vout\" : n,               (numeric) the vout value\n"
-            "    \"address\" : \"address\",  (string) the cccoin address\n"
+            "    \"address\" : \"address\",  (string) the faicoin address\n"
             "    \"account\" : \"account\",  (string) The associated account, or \"\" for the default account\n"
             "    \"scriptPubKey\" : \"key\", (string) the script key\n"
             "    \"amount\" : x.xxx,         (numeric) the transaction amount in ltc\n"
@@ -331,7 +331,7 @@ Value listunspent(const Array& params, bool fHelp)
         {
             CBitcoinAddress address(input.get_str());
             if (!address.IsValid())
-                throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, string("Invalid Cccoin address: ")+input.get_str());
+                throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, string("Invalid Faicoin address: ")+input.get_str());
             if (setAddress.count(address))
                 throw JSONRPCError(RPC_INVALID_PARAMETER, string("Invalid parameter, duplicated address: ")+input.get_str());
            setAddress.insert(address);
@@ -413,7 +413,7 @@ json_spirit::Value listunspent2(const json_spirit::Array& params, bool fHelp)
     {
         CScript script;
         if(!StringToScriptPubKey(arrIDs[i].get_str(),script))
-            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Cccoin address");
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Faicoin address");
         vScriptPubKeys.push_back(script);
     }
     vector<CCheque>vCheques;
@@ -527,7 +527,7 @@ Value createrawtransaction(const Array& params, bool fHelp)
         if (address_v.get_str() != "") {
                 CBitcoinAddress address(address_v.get_str());
             if (!address.IsValid())
-                throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, string("Invalid Cccoin address: ") + address_v.get_str());
+                throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, string("Invalid Faicoin address: ") + address_v.get_str());
             scriptPubKey = GetScriptForDestination(address.Get());
         }
         const Value& value_v = find_value(o, "satoshi");
@@ -601,7 +601,7 @@ Value decoderawtransaction(const Array& params, bool fHelp)
             "         \"reqSigs\" : n,            (numeric) The required sigs\n"
             "         \"type\" : \"pubkey\",  (string) The type, eg 'pubkey'\n"
             "         \"addresses\" : [           (json array of string)\n"
-            "           \"Ler4HNAEfwYhBmGXcFP2Po1NpRUEiK8km2\"   (string) cccoin address\n"
+            "           \"Ler4HNAEfwYhBmGXcFP2Po1NpRUEiK8km2\"   (string) faicoin address\n"
             "           ,...\n"
             "         ]\n"
             "       }\n"
@@ -643,7 +643,7 @@ Value decodescript(const Array& params, bool fHelp)
             "  \"type\":\"type\", (string) The output type\n"
             "  \"reqSigs\": n,    (numeric) The required signatures\n"
             "  \"addresses\": [   (json array of string)\n"
-            "     \"address\"     (string) cccoin address\n"
+            "     \"address\"     (string) faicoin address\n"
             "     ,...\n"
             "  ],\n"
             "  \"p2sh\",\"address\" (string) script address\n"

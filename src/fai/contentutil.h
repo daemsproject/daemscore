@@ -5,8 +5,8 @@
  * Created on July 27, 2015, 5:21 PM
  */
 
-#ifndef CCCOIN_CONTENTUTIL_H
-#define	CCCOIN_CONTENTUTIL_H
+#ifndef FAICOIN_CONTENTUTIL_H
+#define	FAICOIN_CONTENTUTIL_H
 #include <string>
 #include <vector>
 using namespace std;
@@ -53,5 +53,5 @@ bool IsSpentInMempool(const COutPoint op);
 void GetUnspentCheques(const vector<CScript>& vScriptPubKeys,vector<CCheque>& vCheques,bool fSpendableOnly=true,int nMaxResults=1000,int nOffset=0);
 void GetMempoolCheques(const vector<CScript>& vScriptPubKeys,vector<CCheque>& vCheques);
 bool GetTxOutFromVoutPos(const int64_t pos,CTxOut& out);
-#endif	/* CCCOIN_CONTENTUTIL_H */
+#endif	/* FAICOIN_CONTENTUTIL_H */
 

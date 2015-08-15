@@ -12,8 +12,8 @@
 #include "undo.h"
 #include "script/script.h"
 #include "chain.h"
-#include "ccc/link.h"
-#include "ccc/content.h"
+#include "fai/link.h"
+#include "fai/content.h"
 #include <assert.h>
 #include <stdint.h>
 

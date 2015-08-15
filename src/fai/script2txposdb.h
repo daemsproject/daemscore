@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef CCCOIN_SCRIPT2TXPOSDB_H
-#define CCCOIN_SCRIPT2TXPOSDB_H
+#ifndef FAICOIN_SCRIPT2TXPOSDB_H
+#define FAICOIN_SCRIPT2TXPOSDB_H
 
 #include "compressor.h"
 #include "serialize.h"
@@ -52,4 +52,4 @@ public:
 
 
 
-#endif // CCCOIN_SCRIPT2TXPOSDB_H
+#endif // FAICOIN_SCRIPT2TXPOSDB_H

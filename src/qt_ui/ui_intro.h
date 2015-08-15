@@ -182,9 +182,9 @@ public:
     void retranslateUi(QDialog *Intro)
     {
         Intro->setWindowTitle(QApplication::translate("Intro", "Welcome", 0));
-        label_2->setText(QApplication::translate("Intro", "Welcome to Cccoin Core.", 0));
-        label_4->setText(QApplication::translate("Intro", "As this is the first time the program is launched, you can choose where Cccoin Core will store its data.", 0));
-        sizeWarningLabel->setText(QApplication::translate("Intro", "Cccoin Core will download and store a copy of the Cccoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.", 0));
+        label_2->setText(QApplication::translate("Intro", "Welcome to Faicoin Core.", 0));
+        label_4->setText(QApplication::translate("Intro", "As this is the first time the program is launched, you can choose where Faicoin Core will store its data.", 0));
+        sizeWarningLabel->setText(QApplication::translate("Intro", "Faicoin Core will download and store a copy of the Faicoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.", 0));
         dataDirDefault->setText(QApplication::translate("Intro", "Use the default data directory", 0));
         dataDirCustom->setText(QApplication::translate("Intro", "Use a custom data directory:", 0));
         freeSpace->setText(QString());

@@ -117,7 +117,7 @@ var Shop = new function () {
             html+='</td><td>';            
             html+=p.name.substr(0,32);
             html+='</td><td>';
-            html+=(p.price+"CCC");
+            html+=(p.price+"FAI");
             html+='</td><td>';
             if(p.seller){
                 if (p.seller.domain)
@@ -150,9 +150,9 @@ var Shop = new function () {
                 html+='<div>'+CBrowser.createIconHtml(CBrowser.getB64DataFromLink(p.icon),p.icon,200,200)+'</div>';
             }            
             html+='<div>Product Name:'+p.name+'</div>';
-            html+='<div>Price:'+(p.price+"CCC")+'</div>';
+            html+='<div>Price:'+(p.price+"FAI")+'</div>';
             if(p.shipmentfee)
-                html+='<div>Shipment fee:'+(p.shipmentfee+"CCC")+'</div>';
+                html+='<div>Shipment fee:'+(p.shipmentfee+"FAI")+'</div>';
             if(p.seller){
                 if (p.seller.domain)
                     html+='<div>Shop:'+p.seller.domain[0]+'</div>';
@@ -186,10 +186,10 @@ var Shop = new function () {
                 html+=showID(p.seller.id);
             }
             html+='</td><td>';
-            html+=(p.price+"CCC");
+            html+=(p.price+"FAI");
             html+='</td><td>';
             html+='<input name="quantity" type="text" style="width:40px" title="'+p.link+'" value="1" onkeyup="this.value=this.value.replace(/\D/g,\'\')" onafterpaste="this.value=this.value.replace(/\D/g,\'\')"/></td>';
-            html+='<td><div class="subtotal" style="display:inline">'+p.price+'</div>&nbspCCC</td>';
+            html+='<td><div class="subtotal" style="display:inline">'+p.price+'</div>&nbspFAI</td>';
             html+='<td><button class="btn btn-secondary" title="'+p.link+'">x</button>';
             html+='</td></tr>';
         }

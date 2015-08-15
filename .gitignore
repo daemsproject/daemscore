@@ -14,12 +14,12 @@ src/litecoin-tx
 src/test/test_litecoin
 src/qt/test/test_litecoin-qt
 src/qt/core
-src/cccoin
-src/cccoind
-src/cccoin-cli
-src/cccoin-tx
-src/test/test_cccoin
-src/qt/test/test_cccoin-qt
+src/faicoin
+src/faicoind
+src/faicoin-cli
+src/faicoin-tx
+src/test/test_faicoin
+src/qt/test/test_faicoin-qt
 
 # autoreconf
 Makefile.in
@@ -96,14 +96,14 @@ bitcoin-qt
 Bitcoin-Qt.app
 litecoin-qt
 Litecoin-Qt.app
-cccoin-qt
-Cccoin-Qt.app
+faicoin-qt
+Faicoin-Qt.app
 
 # Unit-tests
 Makefile.test
 bitcoin-qt_test
 litecoin-qt_test
-cccoin-qt_test
+faicoin-qt_test
 src/test/buildenv.py
 
 # Resources cpp

@@ -20,8 +20,8 @@
 #include "walletmodel.h"
 #include "jsinterface.h"
 #include "ui_interface.h"
-#include "ccc/filepackage.h"
-#include "ccc/settings.h"
+#include "fai/filepackage.h"
+#include "fai/settings.h"
 #include "json/json_spirit_reader_template.h"
 #include "util.h"
 #include "urllineedit.h"
@@ -218,7 +218,7 @@ void MainView::installWebPage(const string strPageName)
     //getcwd(buf, sizeof(buf));
     //LogPrintf("current working directory : %s\n", buf);
     //std::string str(buf);
-    //boost::filesystem::path fpPath=system_complete(str).parent_path().parent_path().parent_path() / "cccpages" / strPageName; 
+    //boost::filesystem::path fpPath=system_complete(str).parent_path().parent_path().parent_path() / "faipages" / strPageName; 
     LogPrintf("current working directory : %s\n", fpPath.string());
     boost::filesystem::path fpFile=fpPath / (strPageName+".package.json");
     string filename=fpFile.string();
