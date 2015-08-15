@@ -938,7 +938,11 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
                 if (b > maxb)
                     return r;
                 if (!_check_cc(ctt, withcc, withoutcc, firstcc))
+                {
                     b -= ctt.size();
+                    continue;
+                }
+                    
                 Object cttr = _output_content(ctt, cformat, cflag, clink, address, domain, tx.vout[nVout].nValue, tx.vout[nVout].scriptPubKey);
                 r.push_back(cttr);
                 c++;
@@ -980,7 +984,10 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
                 if (b > maxb)
                                     return r;
                 if (!_check_cc(ctt, withcc, withoutcc, firstcc))
+                 {
                     b -= ctt.size();
+                    continue;
+                }
                 Object cttr = _output_content(ctt, cformat, cflag, clink, address, domain, tx.vout[nVout].nValue, tx.vout[nVout].scriptPubKey);
                                     r.push_back(cttr);
                                     c++;
