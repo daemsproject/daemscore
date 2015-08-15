@@ -433,13 +433,20 @@ QString WalletModel::DoPayment(const CPaymentOrder& pr)
     if(id==wallet->GetID())
         pwallet=wallet;
     else
-        pwallet=new CWallet(id);    
+        pwallet=new CWallet(id);  
+    bool fDelete=(pwallet!=wallet);
     int nOP=0;//0::unencrypted,1::encrypted,2::offline
     if (!pwallet->HavePriv())
-        nOP=2;
+    {
+        if(fDelete)
+                delete pwallet;
+                return QString().fromStdString("{\"error\":\"no private key\"}"); 
+        //nOP=2;
+    }
+        
     else if (pwallet->IsLocked())
         nOP=1;
-    bool fDelete=(pwallet!=wallet);
+    
     if (!pwallet->CreateTransactionUnsigned(pr,tx,strError)){
         if(fDelete)
                 delete pwallet;
@@ -478,7 +485,7 @@ QString WalletModel::DoPayment(const CPaymentOrder& pr)
     if (!gui->handleUserConfirm(title,alert,nOP,strError,ssInput)){
         if(fDelete)
         delete pwallet;
-        return QString().fromStdString("{\"error\":\""+strError+"\"}");             
+        return QString().fromStdString("{\"error\":\"no private key\"}");             
     }  
     std::string result;
     CWalletTx wtxSigned; 
@@ -818,7 +825,12 @@ QString WalletModel::EncryptMessages(Array params)
     if(!fHasAllSharedKeys)
     {
         if (!pwallet->HavePriv())
-            nOP=2;
+        {
+            if(!fIsWalletMain)
+                delete pwallet;
+            return QString().fromStdString("{\"error\":\"no private key\"}");
+            //nOP=2;
+        }
         else if (pwallet->IsCrypted())
             nOP=1;   
         QString alert=getEncryptMessegeAlert(vstrIDsForeign,fEncrypt); 
@@ -896,7 +908,12 @@ QString WalletModel::SendMessage(Array arrData)
     int nOP=0;//0::unencrypted,1::encrypted,2::offline
     SecureString ssInput;
     if (!pwallet->HavePriv())
-            nOP=2;
+    {
+            //nOP=2;
+        if(!fIsWalletMain)
+                delete pwallet;
+            return QString().fromStdString("{\"error\":\"no private key\"}");
+    }
         else if (pwallet->IsLocked())
             nOP=1;
     if(!pwallet->HasSharedKey(pub,pubForeign)||nOP>0||msg.size()>1000)
@@ -917,17 +934,18 @@ QString WalletModel::SendMessage(Array arrData)
         }
     CWalletTx wtxSigned; 
     if(nOP==2){
-        std::vector<CScript> sigs;
-        if (!DecodeSigs(string(ssInput.begin(),ssInput.end()),sigs)){
-            if(!fIsWalletMain)
-                delete pwallet;
-            return QString().fromStdString("{\"error\":\"invalid signatures\"}");
-        }
-        
-        CMutableTransaction mtx=CMutableTransaction(tx);        
-        for(unsigned int i=0;i<mtx.vin.size();i++)
-            mtx.vin[i].scriptSig=sigs[i];
-        *static_cast<CTransaction*>(&wtxSigned) = CTransaction(mtx);
+                    
+//        std::vector<CScript> sigs;
+//        if (!DecodeSigs(string(ssInput.begin(),ssInput.end()),sigs)){
+//            if(!fIsWalletMain)
+//                delete pwallet;
+//            return QString().fromStdString("{\"error\":\"invalid signatures\"}");
+//        }
+//        
+//        CMutableTransaction mtx=CMutableTransaction(tx);        
+//        for(unsigned int i=0;i<mtx.vin.size();i++)
+//            mtx.vin[i].scriptSig=sigs[i];
+//        *static_cast<CTransaction*>(&wtxSigned) = CTransaction(mtx);
     }
     else
     {

@@ -1445,8 +1445,9 @@ bool CSqliteWrapper::InsertTxIndex(const uint256 txid,const int64_t& txIndex)
    result=sqlite3_prepare_v2( pdb, insertstatement.c_str(), -1, &stat, 0 );   
   // LogPrintf("GetInsertSql2 %i\n",result);
    result=sqlite3_bind_int64( stat, 1, txIndex);   
-   std::vector<unsigned char> vch=ParseHex(txid.GetHex());
-   result=sqlite3_bind_blob( stat, 2, &vch[0], 32, NULL ); 
+   //std::vector<unsigned char> vch=ParseHex(txid.GetHex());
+   //result=sqlite3_bind_blob( stat, 2, &vch[0], 32, NULL ); 
+   result=sqlite3_bind_blob( stat, 2, txid.begin(), 32, NULL ); 
    //LogPrintf("GetInsertSql4 %i\n",result);
     result=sqlite3_step( stat );
    // LogPrintf("InsertTxIndex result %i\n",result);
@@ -1474,8 +1475,10 @@ bool CSqliteWrapper::InsertTxIndice(const map<uint256, int64_t>& mapTxIndex)
    for(map<uint256, int64_t>::const_iterator it=mapTxIndex.begin();it!=mapTxIndex.end();it++)
    {
        result=sqlite3_bind_int64( stat, 1, it->second);   
-       std::vector<unsigned char> vch=ParseHex(it->first.GetHex());
-       result=sqlite3_bind_blob( stat, 2, &vch[0], 32, NULL ); 
+       //std::vector<unsigned char> vch=ParseHex(it->first.GetHex());
+       //result=sqlite3_bind_blob( stat, 2, &vch[0], 32, NULL ); 
+       uint256 txid=it->first;
+       result=sqlite3_bind_blob( stat, 2, txid.begin(), 32, NULL ); 
        //LogPrintf("GetInsertSql4 %i\n",result);
         result=sqlite3_step( stat );
        // LogPrintf("InsertTxIndex result %i\n",result);

@@ -671,7 +671,7 @@ Value decodescript(const Array& params, bool fHelp)
 
 Value signrawtransaction(const Array& params, bool fHelp)
 {
-    if (fHelp || params.size() < 1 || params.size() > 4)
+    if (fHelp || params.size() < 1 || params.size() > 5)
         throw runtime_error(
             "signrawtransaction \"hexstring\" ( [{\"txid\":\"id\",\"vout\":n,\"scriptPubKey\":\"hex\",\"redeemScript\":\"hex\"},...] [\"privatekey1\",...] sighashtype )\n"
             "\nSign inputs for raw transaction (serialized, hex-encoded).\n"
@@ -863,7 +863,15 @@ Value signrawtransaction(const Array& params, bool fHelp)
         else
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid sighash param");
     }
-
+    CScript p2shScript;
+    if(params.size()>4){
+        string scriptB32;
+        scriptB32=params[4].get_str();
+        CBitcoinAddress add;
+        if(!StringToScriptPubKey(scriptB32,p2shScript))
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid script param");
+        
+    }
     bool fHashSingle = ((nHashType & ~SIGHASH_ANYONECANPAY) == SIGHASH_SINGLE);
 
     // Sign what we can:
@@ -879,7 +887,12 @@ Value signrawtransaction(const Array& params, bool fHelp)
         txin.scriptSig.clear();
         // Only sign SIGHASH_SINGLE if there's a corresponding output:
         if (!fHashSingle || (i < mergedTx.vout.size()))
-            SignSignature(keystore, prevScriptPubKey, mergedTx, i, nHashType);
+        {
+            if(p2shScript.size()>0)
+                SignSignature4SH(keystore, prevScriptPubKey, mergedTx, i,p2shScript, nHashType);
+            else
+                SignSignature(keystore, prevScriptPubKey, mergedTx, i, nHashType);
+        }
 
         // ... and merge in other signatures:
 
