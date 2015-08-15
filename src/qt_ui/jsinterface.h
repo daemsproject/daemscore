@@ -25,6 +25,7 @@ public:
     //BitcoinGUI *gui;
     void subscribeToCoreSignals();
     void setWalletModel(WalletModel *walletModelIn);
+    QString GetLang();
 public slots:    
     void notifyAccountSwitched(const std::string id);
     Q_INVOKABLE    
@@ -48,7 +49,7 @@ private slots:
 
 private:
     std::map<std::string,std::pair<QString,QString> > mapAsync;
-
+    QString SetLang(json_spirit::Array arrData);
     //CWallet *wallet;
     WalletModel *walletModel;
     QString GoToCustomPage(json_spirit::Array arr,int nPageID);

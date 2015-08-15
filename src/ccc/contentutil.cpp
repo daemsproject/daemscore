@@ -67,7 +67,7 @@ bool GetBlockByHeight(const int nHeight, CBlock& blockOut, CBlockIndex*& pblocki
 }
 bool GetTxFromBlock(const CBlock& block, const int nTx, CTransaction& txOut)
 {
-    if (nTx <= (int) block.vtx.size()) {
+    if (nTx<0||nTx < (int) block.vtx.size()) {
         txOut = block.vtx[nTx];
         return true;
     } else
@@ -75,7 +75,7 @@ bool GetTxFromBlock(const CBlock& block, const int nTx, CTransaction& txOut)
 }
 bool GetVoutFromTx(const CTransaction& tx, const int nVout, CTxOut& vout)
 {
-    if (nVout <= (int) tx.vout.size()) {
+    if ((nVout<0)||(nVout < (int) tx.vout.size())) {
         vout = tx.vout[nVout];
         return true;
     } else
@@ -83,7 +83,7 @@ bool GetVoutFromTx(const CTransaction& tx, const int nVout, CTxOut& vout)
 }
 bool GetContentFromVout(const CTransaction& tx, const int nVout, CContent& content)
 {
-    if (nVout <= (int) tx.vout.size()) {
+    if ((nVout<0)||(nVout < (int) tx.vout.size())) {
         CTxOut vout = tx.vout[nVout];
         content.SetString(vout.strContent);
         return true;
@@ -266,6 +266,7 @@ bool ParseUrl(const string urlIn,string& urlOut,int& nPageID)
             CContent content;
             if(!GetContentByLink(link,content))
                 return false;
+            LogPrintf("ParseUrl linktype blockchain,link:%s",link.ToString());
             return _ParseContentUrl(link,content,urlOut,nPageID);
         }
         case CC_LINK_TYPE_DOMAIN:   
@@ -311,7 +312,7 @@ bool GetNativeLink(const string urlIn,string& urlOut,int& nPageID)
 {
     std::size_t posColon = urlIn.find(URI_COLON);
     std::string str = urlIn.substr(posColon+1);
-    
+    LogPrintf("GetNativeLink  urlIN:%s\n",urlIn);
     string strExt;
     if(str.find("/")!=str.npos)
     {
@@ -319,7 +320,7 @@ bool GetNativeLink(const string urlIn,string& urlOut,int& nPageID)
         str=str.substr(0,str.find("/"));   
     }
     
-    LogPrintf("ParseUrl  posColon+1:%s\n",str);
+    LogPrintf("GetNativeLink  ext:%s\n",str);
     for(int i=1;i<=HELPPAGE_ID;i++)
     {
         if (str==mapPageNames[i])
@@ -349,7 +350,7 @@ bool _ParseContentUrl(const CLinkUni link,const CContent content,string& urlOut,
             return GetFilePackageMain(link.ToString(),urlOut,true);        
         default:
             GetNativeLink("ccc:browser",urlOut,nPageID);    
-            urlOut+="/?link="+link.ToString();
+            urlOut+=("?link="+link.ToString());
     }
    return true;
 }
@@ -395,7 +396,7 @@ bool _ParseDomainUrl(const string& strDomain,const string& strDomainExt,string& 
                 if(!ScriptPubKeyToString(script,id))
                     return false;
                 GetNativeLink("ccc:browser",urlOut,nPageID);                
-                urlOut+="/?id="+id;
+                urlOut+="?id="+id;
                 LogPrintf("ParseUrl urlout:%s,pageid:%i\n",urlOut,nPageID);
                 return true;
             }        

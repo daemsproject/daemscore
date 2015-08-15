@@ -217,9 +217,15 @@ QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
                 return walletModel->PublishPackage(arrData);
             if (command.toStdString()==string("signmessage"))
                 return walletModel->SignMessage(arrData);
+             
             if (command.toStdString()==string("gotocustompage"))
                 return GoToCustomPage(arrData,nPageID);
-            
+            if(command.toStdString()==string("setlang"))
+            {
+                if (nPageID!=SETTINGPAGE_ID)
+                    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid pageID, lang setting is forbidden");
+                return SetLang(arrData);
+            }
             if (command.toStdString()==string("writefile")||command.toStdString()==string("readfile")
                     ||command.toStdString()==string("getconf")||command.toStdString()==string("setconf"))
             {
@@ -234,6 +240,9 @@ QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
             
                 
         }
+        if(command.toStdString()==string("getlang"))
+                return GetLang();
+              
         if (command.toStdString()==string("getsettings")||command.toStdString()==string("updatesettings"))
             {
                 if(nPageID!=SETTINGPAGE_ID)
@@ -261,6 +270,35 @@ QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
     //LogPrintf("jsinterface:jscall result %s\n",str);
     QString result=QString::fromStdString(str);    
     return result;
+}
+QString JsInterface::GetLang()
+{
+    Object objLang;
+    QSettings settings;
+    // Get desired locale (e.g. "de_DE")
+    // 1) System default language
+    QString lang_territory = QLocale::system().name();
+    objLang.push_back(Pair("systemlang",lang_territory.toStdString()));
+    // 2) Language from QSettings
+    QString lang_territory_qsettings = settings.value("language", "").toString();
+    objLang.push_back(Pair("userlang",lang_territory_qsettings.toStdString()));
+    json_spirit::Value valResult;
+    valResult=Value(objLang); 
+    string str=json_spirit::write_string(valResult,false);     
+    //LogPrintf("jsinterface:jscall result %s\n",str);
+    QString result=QString::fromStdString(str);    
+    return result;
+}
+QString JsInterface::SetLang(Array arr)
+{
+    if(arr.size()==0)
+        return QString("{\"error\":\"no data\"}");
+    Value val=arr[0];
+    if(val.type()!=str_type)
+        return QString("{\"error\":\"data is not string\"}");
+    QSettings settings;
+    settings.setValue("language",QString().fromStdString(val.get_str()));
+    return QString("OK");
 }
 QString JsInterface::jscallasync(QString command,QString dataJson,QString successfunc,QString errorfunc,int nPageID){
     LogPrintf("jsinterface:jscallasync command %s\n",command.toStdString());

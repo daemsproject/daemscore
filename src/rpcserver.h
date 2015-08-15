@@ -309,7 +309,7 @@ extern CContent _create_content(const json_spirit::Array& params);
 extern json_spirit::Object _decode_content(const json_spirit::Array& params);
 extern bool GetTxFromBlock(const CBlock& block, const int nTx, CTransaction& txOut);
 extern bool GetVoutFromTx(const CTransaction& tx, const int nVout, CTxOut& vout);
-extern bool GetContentFromVout(const CTransaction& tx, const int nVout, CContent& content);
+//extern bool GetContentFromVout(const CTransaction& tx, const int nVout, CContent& content);
 //extern json_spirit::Object _voutToJson(const CTxOut& txout);
 //extern json_spirit::Object _output_content(const CContent& cttIn, const int& cformat, const unsigned char& cttf, const CLink& clinkIn, const std::vector<CBitcoinAddress>& posters, const CAmount nValue, const CScript& scriptPubKey);
 //extern json_spirit::Array _get_posters(const CTransaction&tx);
