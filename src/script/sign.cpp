@@ -33,7 +33,7 @@ bool Sign1(const CPubKey& address, const CKeyStore& keystore, uint256 hash, int 
          LogPrintf("Sign1 keystore::GetKey failed\n");
         return false;
     }
-    LogPrintf("sign.cpp sign1,key:%s \n",HexStr(key.pubKey.begin(),key.pubKey.end()));
+    //LogPrintf("sign.cpp sign1,key:%s \n",HexStr(key.pubKey.begin(),key.pubKey.end()));
     vector<unsigned char> vchSig;
     if (!key.SignCompact(hash, vchSig)){
         LogPrintf("Sign1 signcompact failed\n");
@@ -101,7 +101,7 @@ bool Solver(const CKeyStore& keystore, const CScript& scriptPubKey, uint256 hash
     case TX_SCRIPT:
     case TX_MULTISIG:
     {
-        LogPrintf("sign.cpp solver vsolutions:%i \n",vSolutions.size());
+        //LogPrintf("sign.cpp solver vsolutions:%i \n",vSolutions.size());
         return SignN(vSolutions, keystore, hash, nHashType, scriptSigRet);
     }
     }

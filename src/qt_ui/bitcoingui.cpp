@@ -173,6 +173,7 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle *networkStyle,QString languageIn,  QWi
     exportAccountAction(0), 
     importAccountAction(0), 
     downloaderAction(0),
+        appsAction(0),
     toolsAction(0),    
     quitAction(0),    
     //usedSendingAddressesAction(0),
@@ -482,6 +483,12 @@ void BitcoinGUI::createActions(const NetworkStyle *networkStyle)
     downloaderAction->setCheckable(true);
     downloaderAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_L)); 
     tabGroup->addAction(downloaderAction);
+    appsAction = new QAction(QIcon(":/icons/tool"), tr("&Apps"), this);
+    appsAction->setStatusTip(tr("Apps"));
+    appsAction->setToolTip(appsAction->statusTip());     
+    appsAction->setCheckable(true);
+    appsAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_A)); 
+    tabGroup->addAction(appsAction);
     toolsAction = new QAction(QIcon(":/icons/tool"), tr("&Tools"), this);
     toolsAction->setStatusTip(tr("Tools"));
     toolsAction->setToolTip(toolsAction->statusTip());     
@@ -577,7 +584,8 @@ LogPrintf("bitcoingui:createactions 2 \n");
     connect(aboutAction, SIGNAL(triggered()), this, SLOT(aboutClicked()));
     connect(browserAction, SIGNAL(triggered()), this, SLOT(gotoBrowserPage()));    
     connect(shopAction, SIGNAL(triggered()), this, SLOT(gotoShopPage()));    
-    connect(downloaderAction, SIGNAL(triggered()), this, SLOT(gotoDownloaderPage()));    
+    connect(downloaderAction, SIGNAL(triggered()), this, SLOT(gotoDownloaderPage()));   
+    connect(appsAction, SIGNAL(triggered()), this, SLOT(gotoAppsPage()));    
     connect(toolsAction, SIGNAL(triggered()), this, SLOT(gotoToolsPage()));    
     //connect(aboutQtAction, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
     //connect(optionsAction, SIGNAL(triggered()), this, SLOT(optionsClicked()));
@@ -755,6 +763,7 @@ void BitcoinGUI::createMenuBar()
     applications->addAction(minerAction);
     applications->addAction(shopAction);
     applications->addAction(downloaderAction);
+    applications->addAction(appsAction);
     applications->addAction(toolsAction);
     
     //QMenu *pageMenu = appMenuBar->addMenu(tr("&Pages"));
@@ -864,6 +873,7 @@ void BitcoinGUI::createToolBars()
         toolbar->addAction(messengerAction);
         toolbar->addAction(minerAction);  
         toolbar->addAction(shopAction);  
+        toolbar->addAction(appsAction);  
         //toolbar->addAction(downloaderAction);
         
         
@@ -1299,6 +1309,11 @@ void BitcoinGUI::gotoSettingsPage()
 void BitcoinGUI::gotoHelpPage()
 {    
    loadUrl(QUrl("fai:help"));
+    
+}
+void BitcoinGUI::gotoAppsPage()
+{    
+   loadUrl(QUrl("fai:apps"));
     
 }
 void BitcoinGUI::installWebPages()

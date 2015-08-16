@@ -20,6 +20,7 @@
 #include "init.h"
 #include "fai/content.h"
 #include "fai/settings.h"
+#include "fai/filepackage.h"
 #include "json/json_spirit_value.h"
 #include "json/json_spirit_utils.h"
 using namespace std;
@@ -180,7 +181,7 @@ void JsInterface::notifyNewExtendedKey(const std::string id)
 //    SETTINGPAGE_ID=7,
 //    SERVICEPAGE_ID=8
 //};
-static const std::string appNames[9]={"null","wallet","browser","publisher","messenger","miner","domainname","setting","service"};
+//static const std::string appNames[9]={"null","wallet","browser","publisher","messenger","miner","domainname","setting","service"};
 QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
     json_spirit::Value valData;
     json_spirit::Array arrData;
@@ -200,7 +201,12 @@ QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
             if (command.toStdString()==string("encryptmessages"))
                 return walletModel->EncryptMessages(arrData);
             if (command.toStdString()==string("sendmessage"))
+            {
+                if(nPageID==MESSENGERPAGE_ID)
                 return walletModel->SendMessage(arrData);
+                else
+                    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid pageID, send message out of messenger is forbidden");
+            }
             if (command.toStdString()==string("registerdomain"))
                 return walletModel->RegisterDomain(arrData);
             if (command.toStdString()==string("renewdomain"))
@@ -234,8 +240,8 @@ QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
                 std::string appName=arrData[0].get_str();
                 //if (nPageID==WALLETPAGE_ID)
                 //    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid pageID, wallet page setting is forbidden");
-                if (nPageID<=HELPPAGE_ID&&appNames[nPageID]!=appName)
-                    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid appName, not corresponds to pageid");
+                if (nPageID<=HELPPAGE_ID&&mapPageNames[nPageID]!=appName)
+                    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid appName, not corresponding to pageid");
             }
             
                 
@@ -247,6 +253,13 @@ QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
             {
                 if(nPageID!=SETTINGPAGE_ID)
                     throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid pageID, getettings is forbidden");                
+            }
+        if (command.toStdString()==string("clearcache"))
+            {
+                if(nPageID!=SETTINGPAGE_ID)
+                    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid pageID, getettings is forbidden");
+                ClearFilePackageCache();
+                return QString("OK");
             }
         //return QString("{\"error\":\"empty data\"}");
         valResult= tableRPC.execute(command.toStdString(),arrData);            

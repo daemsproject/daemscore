@@ -78,7 +78,7 @@ MainView::MainView(QString languageIn,BitcoinGUI *parent,JsInterface *_js):
     connect(m_tabBar, SIGNAL(tabMoved(int,int)), this, SLOT(moveTab(int,int)));
     setTabBar(m_tabBar);
     setDocumentMode(true);
-    setStyleSheet("QTabBar::tab { max-width: 150px;alignment:left; }QTabBar::tab:hover{background:rgb(255, 255, 255, 100);}");    
+    setStyleSheet("QTabBar::tab {text-align:left;max-width: 150px; }QTabBar::tab:hover{background:rgb(120, 255, 255, 50);}");    
     // Actions
     m_newTabAction = new QAction(QIcon(QLatin1String(":addtab.png")), tr("New &Tab"), this);
     m_newTabAction->setShortcuts(QKeySequence::AddTab);

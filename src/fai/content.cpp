@@ -619,7 +619,7 @@ bool CContent::DecodeDomainForward(int& redirectType, string& redirectTo,vector<
 
 bool CContent::DecodeDomainInfo(string& strAlias, string& strIntro, CLink& iconLink, std::vector<string>& vTags)const
 {
-    LogPrintf("CContent DecodeDomainInfo\n");
+    //LogPrintf("CContent DecodeDomainInfo\n");
     std::vector<std::pair<int, string> > vDecoded;
     Decode(vDecoded);
     int cc;
@@ -647,11 +647,11 @@ bool CContent::DecodeDomainInfo(string& strAlias, string& strIntro, CLink& iconL
         }
         else if(cc==CC_TAG&&str.size()<=32){
             
-        LogPrintf("CContent DecodeDomainInfo tag:%s\n",str);
+        //LogPrintf("CContent DecodeDomainInfo tag:%s\n",str);
             vTags.push_back(str);
         }
     }
-    LogPrintf("CContent DecodeDomainInfo done\n");
+    //LogPrintf("CContent DecodeDomainInfo done\n");
     return true;
 }
 bool CContent::DecodeFileString(std::string& strFile,int nIterations)
@@ -779,7 +779,7 @@ bool CContent::GetDataByCC(cctype mainCc,std::vector<string> & vDataString,bool 
     for(unsigned int i=0; i<vDecoded.size();i++)
     {
         int cc=   vDecoded[i].first;      
-        LogPrintf("CContent::GetDataByCC maincc %s,cc: %s \n",GetCcName((cctype)mainCc),GetCcName((cctype)cc));
+        //LogPrintf("CContent::GetDataByCC maincc %s,cc: %s \n",GetCcName((cctype)mainCc),GetCcName((cctype)cc));
         string str=vDecoded[i].second;
         if (cc == mainCc && str.size() > 0 )
             vDataString.push_back(str);

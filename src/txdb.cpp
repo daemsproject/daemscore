@@ -831,8 +831,8 @@ bool  CDomainViewDB::ClearExpired(const uint32_t time)
     //db->GetExpiredDomainIDs("domain100",vDomainIDs100,time);
     char chTime[20];
     sprintf(chTime,"%i",time);
-    db->SearchInts("domain10000","rowid","expiredate",chTime,vDomainIDs10000,"<"); 
-    db->SearchInts("domain100","rowid","expiredate",chTime,vDomainIDs100,"<"); 
+    db->SearchInts("domain10000","expiredate",chTime,"rowid",vDomainIDs10000,"<"); 
+    db->SearchInts("domain100","expiredate",chTime,"rowid",vDomainIDs100,"<"); 
     db->Delete("domain10000","expiredate",chTime,"<");
     db->Delete("domain100","expiredate",chTime,"<");
     char chDomainID[20];
@@ -913,7 +913,7 @@ bool CTagViewDB::ClearExpired(uint32_t nTime)
     vector<int64_t>vLink;
     char chTime[20];
     sprintf(chTime,"%i",nTime);    
-    db->SearchInts("table_content","link","locktime",chTime,vLink,"<");    
+    db->SearchInts("table_content","locktime",chTime,"link",vLink,"<");    
     db->Delete("table_content","locktime",chTime,"<");
     
     char chLink[20];
@@ -1098,7 +1098,10 @@ bool UpdateSqliteDB(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >
     }
     //LogPrintf("UpdateSqliteDB40 \n");
     if(block.nBlockHeight%120==0)
+    {
         pDomainDBView->ClearExpired(GetAdjustedTime());
+        pTagDBView->ClearExpired(GetAdjustedTime());
+    }
     //LogPrintf("UpdateSqliteDB41 \n");
     psqliteDB->EndBatch();
     //LogPrintf("UpdateSqliteDB42 \n");
@@ -1259,7 +1262,7 @@ void FindBlockTagIDAndNewTags(const vector<string>& vTags,map<string,int64_t>& m
     {
         if(psqliteDB->GetTagID(vTags[i],tagID))
         {
-            LogPrintf("FindBlockTagIDAndNewTags:tag %s,id%i \n",vTags[i],tagID);
+            //LogPrintf("FindBlockTagIDAndNewTags:tag %s,id%i \n",vTags[i],tagID);
             mapTags[vTags[i]]=tagID;
         }
         else
@@ -1273,12 +1276,15 @@ void PrePareBlockTxIndex(const CBlock& block,map<uint256,int64_t>& mapTxIndex)
     {
         const CTransaction &tx = block.vtx[i];
         uint256 txid=tx.GetHash();
+        
         int64_t txIndex=block.GetBlockHeader().nBlockHeight;
         ///if(chainActive.Tip()->GetBlockHash()==block.hashPrevBlock)
        //     txIndex=chainActive.Tip()->nBlockHeight+1;        
         txIndex<<=16;
         txIndex|=i;
-        mapTxIndex[txid]=txIndex;
+        mapTxIndex[txid]=txIndex;        
+        if(block.GetBlockHeader().nBlockHeight==763||block.GetBlockHeader().nBlockHeight==846)
+            LogPrintf("PrePareBlockTxIndex 763:txid:%s,ixIndex:%i\n",txid.GetHex(),txIndex);
     }
 }
 void GetBlockDomainUpdateList(const CBlock& block,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,vector<pair<CDomain,bool> >& vDomains,bool fReverse)
@@ -1366,7 +1372,7 @@ void GetBlockChequeUpdates(const CBlock& block,const vector<vector<pair<CScript,
         for ( int ii = (int)block.vtx.size()-1; ii >=0; ii--)
         {
             const CTransaction &tx = block.vtx[ii];  
-            uint256 txid=tx.GetHash();
+            //uint256 txid=tx.GetHash();
             //LogPrintf("UpdateScriptCoinDB txid:%s\n",txid.GetHex());
             if(!tx.IsCoinBase())
             {        

@@ -25,8 +25,9 @@ public:
     map<int,string> mapPageDomain;
     map<int,CLink>mapPageLink;
     uint64_t nServiceFlags;
-    string language;
-    
+    int64_t maxFilePageInstallTime;
+    //string language;
+    int nMaxChacheSize;
     CSettings();
     bool LoadSettings();
     bool SaveSettings();

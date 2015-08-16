@@ -379,7 +379,7 @@ boost::filesystem::path GetDefaultDataDir()
     // Windows < Vista: C:\Documents and Settings\Username\Application Data\Fai
     // Windows >= Vista: C:\Users\Username\AppData\Roaming\Fai
     // Mac: ~/Library/Application Support/Fai
-    // Unix: ~/.faicoin
+    // Unix: ~/.fai
 #ifdef WIN32
     // Windows
     return GetSpecialFolderPath(CSIDL_APPDATA) / "Fai";

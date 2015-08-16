@@ -17,6 +17,7 @@
 #include "script/script.h"
 #include "fai/content.h"
 #include "fai/contentutil.h"
+
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 using namespace std;
@@ -153,7 +154,7 @@ bool CFilePackage::SetContent(const CContent contentIn)
     }
     return false;
 }
-bool CFilePackage::InstallPackage(const string strDirName,const bool fInternal)
+bool CFilePackage::InstallPackage(const string strDirName,const bool fInternal,int timeOut)
 {
     LogPrintf("InstallPackage to dir %s nFIles:%i\n",strDirName,mapFileList.size());
     boost::filesystem::path fpPath;
@@ -162,6 +163,7 @@ bool CFilePackage::InstallPackage(const string strDirName,const bool fInternal)
     else
         fpPath=GetDataDir()  / "appdata" / "filepackages" / strDirName ;
     boost::filesystem::create_directories(fpPath);     
+    int64_t startTime=GetTimeMillis();
      for(map<string,vector<CLink> >::iterator it=mapFileList.begin();it!=mapFileList.end();it++)
      {
          LogPrintf("InstallPackage filename %s link:%s\n",it->first,it->second[0].ToString());
@@ -175,6 +177,8 @@ bool CFilePackage::InstallPackage(const string strDirName,const bool fInternal)
         }
         else
             return false;
+         if((GetTimeMillis()-startTime)>timeOut)
+                 return false;
      } 
      boost::filesystem::path fpFile=fpPath / (strDirName+".package.json");
      LogPrintf("InstallPackage packagefile %s length:%i\n",fpFile.string(),write_string(ToJson(),true));
@@ -462,6 +466,15 @@ bool DeleteFilePackage(const CLink link)
 {
     
     boost::filesystem::path fpPath=GetDataDir()  / "appdata" / "filepackages" / link.ToString() ;
+    //fpPath.clear();
+    if(!boost::filesystem::exists(fpPath))
+        return false;
+    boost::filesystem::remove_all(fpPath);
+    return true;
+}
+bool ClearFilePackageCache(int nMaxSize)
+{
+    boost::filesystem::path fpPath=GetDataDir()  / "appdata" / "filepackages" ;
     //fpPath.clear();
     if(!boost::filesystem::exists(fpPath))
         return false;

@@ -24,10 +24,10 @@ using namespace boost;
 CSettings::CSettings()
 {
     //load default settings    
-    nServiceFlags=0x00000009;
-    language="en";
+    nServiceFlags=0x00000009;    
     mapPageDomain=mapDefaultPageDomain;
-    
+    maxFilePageInstallTime=5000;
+    nMaxChacheSize=1000;
 }
 bool CSettings::LoadSettings()
 {
@@ -90,7 +90,7 @@ bool CSettings::LoadSettings()
             {
                 LogPrintf("LoadSettings:  pagedomains link changed %s link %s \n",obj2[i].name_,link.ToString());
                 mapPageLink[pageID]=link;                
-                CFilePackage(link).InstallPackage(mapPageNames[pageID],true);
+                CFilePackage(link).InstallPackage(mapPageNames[pageID],true,10000);
             }
             LogPrintf("LoadSettings:  pagedomains page:%s link %s \n",obj2[i].name_,link.ToString());
         }
@@ -103,14 +103,22 @@ bool CSettings::LoadSettings()
         return false;
     }
     nServiceFlags=val3.get_uint64();
-    json_spirit::Value val4 = find_value(obj, "language");
-    if (val4.type()!=str_type)
+    json_spirit::Value val4 = find_value(obj, "filepackagetimeout");
+    if (val4.type()!=int_type)
     {
-        LogPrintf("LoadSettings:  language fail \n");
+        LogPrintf("LoadSettings:  filepackagetimeout fail \n");
        SaveSettings();
         return false;
     }
-    language=val4.get_str();
+    maxFilePageInstallTime=val4.get_int64();
+    json_spirit::Value val5 = find_value(obj, "maxcachesize");
+    if (val5.type()!=int_type)
+    {
+        LogPrintf("LoadSettings:  maxcachesize fail \n");
+       SaveSettings();
+        return false;
+    }
+    nMaxChacheSize=val5.get_int();
     return true;
    
 }
@@ -136,7 +144,8 @@ bool CSettings::SaveSettings()
 Value CSettings::ToJson()
 {
     Object obj;
-    obj.push_back(Pair("language",language));
+    obj.push_back(Pair("filepackagetimeout",maxFilePageInstallTime));
+    obj.push_back(Pair("maxcachesize",nMaxChacheSize));
     obj.push_back(Pair("serviceflags",nServiceFlags));
 //    Object obj1;
 //    BOOST_FOREACH(PAIRTYPE(int,string)& pair, mapServiceDomain)
@@ -169,9 +178,18 @@ bool CSettings::GetSetting(const string settingType,const string key,string& val
             return true;
         }
     }
-    else if(settingType=="language")
+    else if(settingType=="filepackagetimeout")
     {
-        value=language;
+        char ch[100];
+        sprintf(ch,"%lld",maxFilePageInstallTime);
+        value.assign(ch);
+        return true;
+    }
+    else if(settingType=="maxcachesize")
+    {
+        char ch[100];
+        sprintf(ch,"%i",nMaxChacheSize);
+        value.assign(ch);
         return true;
     }
     else if(settingType=="serviceflages")
@@ -220,11 +238,21 @@ bool CSettings::GetSetting(const string settingType,const string key,string& val
         }
             
     }
-    else if(settingType=="language")
+    else if(settingType=="filepackagetimeout")
     {
-        if(language!=value)
+        
+        if(maxFilePageInstallTime!=atoi64(value))
         {
-            language=value;
+            maxFilePageInstallTime=atoi64(value);
+            return SaveSettings();
+        }
+    }
+    else if(settingType=="maxcachesize")
+    {
+        
+        if(nMaxChacheSize!=atoi(value))
+        {
+            nMaxChacheSize=atoi(value);
             return SaveSettings();
         }
     }

@@ -126,7 +126,7 @@ string CLink::Serialize()const
     // str.append((char*)&(nHeight), sizeof(nHeight));
     // str.append((char*)&(nTx), sizeof(nTx));
     // str.append((char*)&(nVout), sizeof(nVout)); 
-    LogPrintf("CLink::Serialize() %s", HexStr(str.begin(), str.end()));
+    //LogPrintf("CLink::Serialize() %s", HexStr(str.begin(), str.end()));
     return str;
 }
 int64_t CLink::SerializeInt()const

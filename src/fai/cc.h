@@ -90,7 +90,7 @@ static std::map<int,std::string> mapPageNames=boost::assign::map_list_of
 (SETTINGPAGE_ID,"settings")
 (SERVICEPAGE_ID,"service")
 (SHOPPAGE_ID,"shop")
-(APPPAGE_ID,"app")
+(APPPAGE_ID,"apps")
 (TOOLSPAGE_ID,"tools")
 (DOWNLOADERPAGE_ID,"downloader")
 (HELPPAGE_ID,"help")
@@ -112,7 +112,7 @@ static std::map<int,std::string> mapDefaultServiceDomain=boost::assign::map_list
     (SERVICE_TORRENTFILE,"torrent.f")
     (SERVICE_EMAIL,"email.f")
     (SERVICE_NOBLOCKCHAINDATA,"")
-    (SERVICE_APP,"app.f");
+    (SERVICE_APP,"apps.f");
 
 static std::map<int,std::string> mapDefaultPageDomain=boost::assign::map_list_of
             (WALLETPAGE_ID,"wallet.f")
@@ -123,7 +123,7 @@ static std::map<int,std::string> mapDefaultPageDomain=boost::assign::map_list_of
 (SETTINGPAGE_ID,"settings.f")
 (SERVICEPAGE_ID,"servicepage.f")
 (SHOPPAGE_ID,"shop.f")
-(APPPAGE_ID,"app.f")
+(APPPAGE_ID,"apps.f")
 (TOOLSPAGE_ID,"tool.f")
 (DOWNLOADERPAGE_ID,"downloader.f")
 (HELPPAGE_ID,"help.f")

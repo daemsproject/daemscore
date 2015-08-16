@@ -40,7 +40,7 @@ public:
     bool SetJson(const Value json);
     CContent ToContent()const;
     Value ToJson()const;
-    bool InstallPackage(const string strDirName,const bool fInternal=false);
+    bool InstallPackage(const string strDirName,const bool fInternal=false,int timeOut=5000);
     void Clear();
     bool CheckLinks();
     bool IsValid(){return fValid;}
@@ -51,5 +51,6 @@ bool GetFilePackageMain(const string packageName,string& path,const bool fIntern
 bool CheckFilePackage(const string packageName);
 bool GetFilePackageUrl(const CLink link,string& url);
 bool DeleteFilePackage(const CLink link);
+bool ClearFilePackageCache(int nMaxSize=1000);
 #endif	/* FAICOIN_FILEPACKAGE_H */
 

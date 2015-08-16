@@ -145,20 +145,20 @@ int CTransaction::GetOutPos(int nOut)const
 {
     int pos=0;
     CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
-    LogPrintf("CTransaction::GetOutPos ss.size:%i \n",ss.size());
+    //LogPrintf("CTransaction::GetOutPos ss.size:%i \n",ss.size());
     ss<<VARINT(this->nVersion);
-    LogPrintf("CTransaction::GetOutPos ss.size:%i \n",ss.size());
+    //LogPrintf("CTransaction::GetOutPos ss.size:%i \n",ss.size());
     ss<<vin;    
-    LogPrintf("CTransaction::GetOutPos ss.size:%i \n",ss.size());
+    //LogPrintf("CTransaction::GetOutPos ss.size:%i \n",ss.size());
     pos+=ss.size();
     pos+=GetSizeOfCompactSize(vout.size());
-    LogPrintf("CTransaction::GetOutPos pos:%i \n",pos);
+    //LogPrintf("CTransaction::GetOutPos pos:%i \n",pos);
     for(int i=0;i<nOut-1;i++)
     {
         int outSize=vout[i].GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION);
         //pos+=GetSizeOfCompactSize(outSize);
         pos+=outSize;
-        LogPrintf("CTransaction::GetOutPos pos:%i \n",pos);
+        //LogPrintf("CTransaction::GetOutPos pos:%i \n",pos);
     }    
     return pos;
 }
