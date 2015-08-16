@@ -485,7 +485,7 @@ QString WalletModel::DoPayment(const CPaymentOrder& pr)
     if (!gui->handleUserConfirm(title,alert,nOP,strError,ssInput)){
         if(fDelete)
         delete pwallet;
-        return QString().fromStdString("{\"error\":\"no private key\"}");             
+        return QString().fromStdString("{\"error\":\"user canceled\"}");             
     }  
     std::string result;
     CWalletTx wtxSigned; 

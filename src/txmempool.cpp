@@ -467,10 +467,11 @@ void CTxMemPool::removeFromQueue(uint256 hash){
 }
 double CTxMemPool::getEntranceFeeRate(unsigned int threshould){
     unsigned int queueLength=0;    
-    for (unsigned int i=0;i<queue.size();i++){        
+    for (unsigned int i=0;i<queue.size();i++)
+    {        
         queueLength+=mapTx[queue[i]].GetTxSize();
         if (queueLength>threshould)                        
-           return mapTx[queue[i]].getFeeRate();        
+           return mapTx[queue[i]].getFeeRate()+1;        
     }
     return 0;
 }

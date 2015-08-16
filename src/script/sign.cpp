@@ -28,11 +28,12 @@ typedef vector<unsigned char> valtype;
 bool Sign1(const CPubKey& address, const CKeyStore& keystore, uint256 hash, int nHashType, CScript& scriptSigRet)
 {
     CKey key;
+    LogPrintf("sign.cpp sign1,keyIn:%s \n",HexStr(address.begin(),address.end()));
     if (!keystore.GetKey(address, key)){
          LogPrintf("Sign1 keystore::GetKey failed\n");
         return false;
     }
-   // LogPrintf("sign.cpp sign1,key:%s \n",HexStr(key.pubKey.begin(),key.pubKey.end()));
+    LogPrintf("sign.cpp sign1,key:%s \n",HexStr(key.pubKey.begin(),key.pubKey.end()));
     vector<unsigned char> vchSig;
     if (!key.SignCompact(hash, vchSig)){
         LogPrintf("Sign1 signcompact failed\n");
@@ -54,7 +55,8 @@ bool SignN(const vector<valtype>& multisigdata, const CKeyStore& keystore, uint2
         const valtype& pubkey = multisigdata[i];
         CPubKey keyID=CPubKey(pubkey);
         i++;
-        if (Sign1(keyID, keystore, hash, nHashType, scriptSigRet)){
+        if (Sign1(keyID, keystore, hash, nHashType, scriptSigRet))
+        {
             wSigned += CScriptNum(multisigdata[i],false).getint();
             sigCount++;
         }
@@ -84,7 +86,7 @@ bool Solver(const CKeyStore& keystore, const CScript& scriptPubKey, uint256 hash
     vector<valtype> vSolutions;
     if (!Solver(scriptPubKey, whichTypeRet, vSolutions))
         return false;
-
+    
     CPubKey keyID;
     switch (whichTypeRet)
     {
@@ -98,7 +100,10 @@ bool Solver(const CKeyStore& keystore, const CScript& scriptPubKey, uint256 hash
         return keystore.GetCScript(uint160(vSolutions[0]), scriptSigRet);
     case TX_SCRIPT:
     case TX_MULTISIG:
+    {
+        LogPrintf("sign.cpp solver vsolutions:%i \n",vSolutions.size());
         return SignN(vSolutions, keystore, hash, nHashType, scriptSigRet);
+    }
     }
     return false;
 }
@@ -161,18 +166,20 @@ bool SignSignature4SH(const CKeyStore &keystore, const CScript& fromPubKey, CMut
         // and then the serialized subscript:
         //LogPrintf("sign.cpp:whitch type tx_scriptyhbash\n");
         CScript subscript = txin.scriptSig;
-
+        LogPrintf("SignSignature4SH:subscript %s\n",HexStr(subscript.begin(),subscript.end()));
         // Recompute txn hash using subscript in place of scriptPubKey:
         uint256 hash2 = SignatureHash(subscript, txTo, nIn, nHashType);
 
         txnouttype subType;
         bool fSolved =
             Solver(keystore, subscript, hash2, nHashType, txin.scriptSig, subType) && subType != TX_SCRIPTHASH;
+       // LogPrintf("SignSignature4SH:subtype %i\n",subType);
+        
         // Append serialized subscript whether or not it is completely signed:
         txin.scriptSig << static_cast<valtype>(subscript);
         if (!fSolved) return false;
     }
-
+        LogPrintf("SignSignature4SH:signed\n");
     // Test solution
     return VerifyScript(txin.scriptSig, fromPubKey, STANDARD_SCRIPT_VERIFY_FLAGS, MutableTransactionSignatureChecker(&txTo, nIn));
 }

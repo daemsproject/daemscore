@@ -770,9 +770,10 @@ Value signrawtransaction(const Array& params, bool fHelp)
     bool fGivenKeys = false;
     CBasicKeyStore tempKeystore;
     if (params.size() > 2 && params[2].type() != null_type) {
-        fGivenKeys = true;
+        
         Array keys = params[2].get_array();
-
+        if(keys.size()>0)
+            fGivenKeys = true;
         BOOST_FOREACH(Value k, keys)
         {
             CBitcoinSecret vchSecret;

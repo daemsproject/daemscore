@@ -1093,7 +1093,7 @@ bool UpdateSqliteDB(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >
             tmp.assign(strList);
         }        
         sprintf(strList,"%s)",tmp.c_str());
-        //LogPrintf("eraseCheque sql:%s \n",strList);
+        //LogPrintf("eraseCheque sql:%s \n",&strList[0]);
         psqliteDB->Delete("table_unspent","link",strList,"IN");
     }
     //LogPrintf("UpdateSqliteDB40 \n");
@@ -1361,7 +1361,48 @@ void GetBlockSenderDomains(const CBlock& block,const vector<vector<pair<CScript,
     }
 }
 void GetBlockChequeUpdates(const CBlock& block,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,vector<CCheque>& vChequeAdd,vector<int64_t>& vChequeErase,bool fReverse)
-{   
+{   if(fReverse)
+    {
+        for ( int ii = (int)block.vtx.size()-1; ii >=0; ii--)
+        {
+            const CTransaction &tx = block.vtx[ii];  
+            uint256 txid=tx.GetHash();
+            //LogPrintf("UpdateScriptCoinDB txid:%s\n",txid.GetHex());
+            if(!tx.IsCoinBase())
+            {        
+                for(unsigned int i=0;i<tx.vin.size();i++) 
+                {              
+                    const COutPoint &prevout = tx.vin[i].prevout;   
+
+                    {
+                        CCheque cheque;
+                        cheque.nLockTime=vPrevouts[ii][i].second;
+                        cheque.nOut=prevout.n;
+                        cheque.nValue=tx.vin[i].prevout.nValue;
+                        cheque.scriptPubKey=vPrevouts[ii][i].first;
+                        cheque.txid=prevout.hash;
+                        psqliteDB->GetTxIndex(cheque.txid,cheque.txIndex);
+                        vChequeAdd.push_back(cheque);
+                        //pScriptCoinDBView->Insert(cheque);
+                    }
+
+                }
+            }
+            for(unsigned int i=0;i<tx.vout.size();i++) {
+                //if address is empty don't record it
+                if (tx.vout[i].scriptPubKey.size()==0||tx.vout[i].nValue==0)
+                    continue;       
+
+                {
+                    uint64_t link=((int64_t)block.nBlockHeight<<32)+(ii<<16)+i;
+                    vChequeErase.push_back(link);
+                    //pScriptCoinDBView->Erase(txid,i);
+                }
+
+            }
+        }
+    }
+    return;
     for (unsigned int ii = 0; ii < block.vtx.size(); ii++)
     {
         const CTransaction &tx = block.vtx[ii];  
@@ -1372,28 +1413,20 @@ void GetBlockChequeUpdates(const CBlock& block,const vector<vector<pair<CScript,
             for(unsigned int i=0;i<tx.vin.size();i++) 
             {              
                 const COutPoint &prevout = tx.vin[i].prevout;   
-                if(fReverse)
-                {
-                    CCheque cheque;
-                    cheque.nLockTime=vPrevouts[ii][i].second;
-                    cheque.nOut=prevout.n;
-                    cheque.nValue=tx.vin[i].prevout.nValue;
-                    cheque.scriptPubKey=vPrevouts[ii][i].first;
-                    cheque.txid=prevout.hash;
-                    psqliteDB->GetTxIndex(cheque.txid,cheque.txIndex);
-                    vChequeAdd.push_back(cheque);
-                    //pScriptCoinDBView->Insert(cheque);
-                }
-                else
+                
                 {
                     uint64_t link;
                     int64_t txIndex;
-                    psqliteDB->GetTxIndex(prevout.hash,txIndex);
-                    link=txIndex;
-                    link<<=16;
-                    link|=prevout.n;                    
-                    vChequeErase.push_back(link);
-                    //pScriptCoinDBView->Erase(prevout.hash,prevout.n);
+                    
+                    if(psqliteDB->GetTxIndex(prevout.hash,txIndex))
+                    {
+                    
+                    link=(txIndex<<16)+prevout.n;
+                     //LogPrintf("GetBlockChequeUpdates link to erase %lld %lld \n",txIndex,link);
+                    vChequeErase.push_back(link);      
+                    }
+                    else
+                       LogPrintf("GetBlockChequeUpdates txindex not found txid reverse:%s \n",HexStr(prevout.hash.begin(),prevout.hash.end())); 
                 }
             }
         }
@@ -1401,13 +1434,7 @@ void GetBlockChequeUpdates(const CBlock& block,const vector<vector<pair<CScript,
             //if address is empty don't record it
             if (tx.vout[i].scriptPubKey.size()==0||tx.vout[i].nValue==0)
                 continue;        
-            if(fReverse)
-            {
-                uint64_t link=((int64_t)block.nBlockHeight<<32)+(ii<<16)+i;
-                vChequeErase.push_back(link);
-                //pScriptCoinDBView->Erase(txid,i);
-            }
-            else
+            
             {
                 CCheque cheque;
                 cheque.nLockTime=tx.vout[i].nLockTime;
@@ -1421,6 +1448,7 @@ void GetBlockChequeUpdates(const CBlock& block,const vector<vector<pair<CScript,
             }
         }
     }
+    
 }
  bool SearchPromotedContents(const vector<CScript>& vSenders,const vector<int>& vCCs,const vector<string>& vTags,vector<CContentDBItem>& vContents,const int nMaxResults,const int nOffset)
  {
