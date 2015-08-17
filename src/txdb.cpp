@@ -974,7 +974,7 @@ bool  CScriptCoinDB::ClearTables()
 }
 bool UpdateSqliteDB(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >& vPos,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,bool fErase)
 {
-    //LogPrintf("UpdateSqliteDB blockheight:%i,txs:%i \n",block.nBlockHeight,block.vtx.size());
+   // LogPrintf("UpdateSqliteDB blockheight:%i,txs:%i \n",block.nBlockHeight,block.vtx.size());
     map<CScript,vector<CTxPosItem> > mapScript2TxPos;
     map<CScript,int64_t> mapScriptIndex;
     //vector<CScript> vScriptNew;
@@ -1002,11 +1002,11 @@ bool UpdateSqliteDB(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >
         FindBlockTagIDAndNewTags(vTags,mapTags,vTagNew);
         //LogPrintf("UpdateSqliteDB6 \n");
     }
-   // LogPrintf("UpdateSqliteDB7 \n");
+    //LogPrintf("UpdateSqliteDB7 \n");
     PrePareBlockTxIndex(block,mapTxIndex);
     //LogPrintf("UpdateSqliteDB8 \n");
     GetBlockScript2TxPosList(block,vPos,vPrevouts,mapScript2TxPos,fErase);
-   // LogPrintf("UpdateSqliteDB9 \n");
+    //LogPrintf("UpdateSqliteDB9 \n");
         //step3:flush script2txpos list,taglist,txindex
     psqliteDB->BeginBatch();
     //LogPrintf("UpdateSqliteDB10 \n");
@@ -1014,29 +1014,29 @@ bool UpdateSqliteDB(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >
     {
         //LogPrintf("UpdateSqliteDB11 \n");
         pScript2TxPosDB->RemoveTxs(mapScript2TxPos);
-       // LogPrintf("UpdateSqliteDB12 \n");
+        //LogPrintf("UpdateSqliteDB12 \n");
     }
     else
     {
-        //LogPrintf("UpdateSqliteDB13 \n");
+       //LogPrintf("UpdateSqliteDB13 \n");
         pScript2TxPosDB->AddNewTxs(mapScript2TxPos);
         //LogPrintf("UpdateSqliteDB14 \n");
         pTagDBView->InsertTags(vTagNew);
-       // LogPrintf("UpdateSqliteDB15 \n");
+        //LogPrintf("UpdateSqliteDB15 \n");
          psqliteDB->InsertTxIndice(mapTxIndex);
        //  LogPrintf("UpdateSqliteDB16 \n");
     } 
-    //LogPrintf("UpdateSqliteDB17 \n");
+   // LogPrintf("UpdateSqliteDB17 \n");
     psqliteDB->EndBatch();
-    //LogPrintf("UpdateSqliteDB18 \n");
+   // LogPrintf("UpdateSqliteDB18 \n");
     //step4 get script index,tagindex
     if(!fErase)
     {
-       // LogPrintf("UpdateSqliteDB19 \n");
+      //  LogPrintf("UpdateSqliteDB19 \n");
         vector<string> vTagTmp;
-       // LogPrintf("UpdateSqliteDB20 \n");
+      //  LogPrintf("UpdateSqliteDB20 \n");
         FindBlockTagIDAndNewTags(vTagNew,mapTags,vTagTmp);
-       // LogPrintf("UpdateSqliteDB21 \n");
+      //  LogPrintf("UpdateSqliteDB21 \n");
     }
    // LogPrintf("UpdateSqliteDB22 \n");
     GetBlockScriptIndice(mapScript2TxPos,mapScriptIndex);
@@ -1047,29 +1047,29 @@ bool UpdateSqliteDB(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >
     {
        // LogPrintf("UpdateSqliteDB24 \n");
         GetBlockSenderDomains(block,vPrevouts,mapBlockDomains);
-      //  LogPrintf("UpdateSqliteDB GetBlockSenderDomains %i \n",mapBlockDomains.size());
+       // LogPrintf("UpdateSqliteDB GetBlockSenderDomains %i \n",mapBlockDomains.size());
     }
-   // LogPrintf("UpdateSqliteDB26 \n");
+    ///LogPrintf("UpdateSqliteDB26 \n");
     GetBlockChequeUpdates(block,vPrevouts,vChequeAdd,vChequeErase,fErase);
-   // LogPrintf("UpdateSqliteDB27 \n");
+    //LogPrintf("UpdateSqliteDB27 \n");
     //step6 flush domains4block,domains,cheques,contents,content tags, domain tags
     // clearexpired domains per 120blocks(aprox.6 hours)
     psqliteDB->BeginBatch();  
-   // LogPrintf("UpdateSqliteDB28 \n");
+    //LogPrintf("UpdateSqliteDB28 \n");
     if(!fErase)
     {
-        //LogPrintf("UpdateSqliteDB29 \n");
+       // LogPrintf("UpdateSqliteDB29 \n");
         pBlockPosDB->Write(vPos[0].second.nFile,vPos[0].second.nPos,block.GetHash(),block.nBlockHeight);
-     //   LogPrintf("UpdateSqliteDB30 \n");
+      //  LogPrintf("UpdateSqliteDB30 \n");
         pDomainDBView->WriteBlockDomains(block.GetHash(),mapBlockDomains);
       //  LogPrintf("UpdateSqliteDB31 \n");
         for(unsigned int i=0;i<vDomains.size();i++)
         {
-        //    LogPrintf("UpdateSqliteDB32 \n");
+          //  LogPrintf("UpdateSqliteDB32 \n");
             pDomainDBView->Write(vDomains[i].first,vDomains[i].second);
-        //    LogPrintf("UpdateSqliteDB33 \n");
+          //  LogPrintf("UpdateSqliteDB33 \n");
             pDomainDBView->WriteTags(vDomains[i].first, mapTags);
-        //    LogPrintf("UpdateSqliteDB34 \n");
+          //  LogPrintf("UpdateSqliteDB34 \n");
         } 
        // LogPrintf("UpdateSqliteDB35 \n");
         psqliteDB->InsertContents(vContents,mapScriptIndex);
@@ -1077,24 +1077,27 @@ bool UpdateSqliteDB(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >
         pTagDBView->InsertContentTags(vContents,mapTags);
        // LogPrintf("UpdateSqliteDB37 \n");
     }
-    //LogPrintf("UpdateSqliteDB38 \n");
+   // LogPrintf("UpdateSqliteDB38 \n");
     psqliteDB->BatchInsertCheque(vChequeAdd,mapScriptIndex);
-    //LogPrintf("UpdateSqliteDB39 \n");
-    
-    if(vChequeErase.size()>0)
+   // LogPrintf("UpdateSqliteDB39 \n");
+    int ii=0;
+    while(ii<(int)vChequeErase.size())
     {
-        char strList[vChequeErase.size()*20];
+       // LogPrintf("eraseCheques %i \n",ii);
+        char strList[2000];
         string tmp;
-        sprintf(strList,"(%lld",vChequeErase[0]);
+        sprintf(strList,"(%lld",vChequeErase[ii]);
         tmp.assign(strList);
-        for(unsigned int i=1;i<vChequeErase.size();i++)
+        int nBatch=min((int)vChequeErase.size()-ii,100);
+        for( int i=1;i<nBatch;i++)
         {            
-            sprintf(strList,"%s,%lld",tmp.c_str(),vChequeErase[i]);
+            sprintf(strList,"%s,%lld",tmp.c_str(),vChequeErase[ii+i]);
             tmp.assign(strList);
         }        
         sprintf(strList,"%s)",tmp.c_str());
-        //LogPrintf("eraseCheque sql:%s \n",&strList[0]);
+       // LogPrintf("eraseCheque sql:%s \n",&strList[0]);
         psqliteDB->Delete("table_unspent","link",strList,"IN");
+        ii+=nBatch;
     }
     //LogPrintf("UpdateSqliteDB40 \n");
     if(block.nBlockHeight%120==0)
@@ -1102,7 +1105,7 @@ bool UpdateSqliteDB(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >
         pDomainDBView->ClearExpired(GetAdjustedTime());
         pTagDBView->ClearExpired(GetAdjustedTime());
     }
-    //LogPrintf("UpdateSqliteDB41 \n");
+   // LogPrintf("UpdateSqliteDB41 \n");
     psqliteDB->EndBatch();
     //LogPrintf("UpdateSqliteDB42 \n");
     return true;
@@ -1138,7 +1141,7 @@ void GetBlockScript2TxPosList(const CBlock& block,const vector<pair<uint256, CDi
         }
         else    
             posItem.nFlags|=1<<TXITEMFLAG_COINBASE;
-        posItem.nFlags&=~1<<TXITEMFLAG_SENDER;
+        posItem.nFlags&=~(1<<TXITEMFLAG_SENDER);
         posItem.nFlags |=1<<TXITEMFLAG_RECEIVER;
         map<CScript,CTxPosItem> mapReceiver;
         //bool fHasLockTime=false;

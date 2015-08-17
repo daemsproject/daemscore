@@ -1351,11 +1351,14 @@ Value getmessages(const json_spirit::Array& params, bool fHelp)
     }
     std::vector<CTransaction> vMemTx;
     std::vector<CTxPosItem> vTxPos;
+    int64_t startTime=GetTimeMillis();
     GetDiskTxPoses(vIDsLocal, vTxPos);
+    LogPrintf("getmsgs time after getdistxposes:%i,%i,%i \n",startTime,GetTimeMillis(),GetTimeMillis()-startTime);
     if (fIncludeMempool)
         mempool.GetUnconfirmedTransactions(vIDsLocal, vMemTx);
     //LogPrintf("getmessages mempooltxs:%u \n", vMemTx.size());
     //LogPrintf("getmessages blockchaintxs:%u \n", vTxPos.size());
+    LogPrintf("getmsgs time after get memepool:%i,%i,%i \n",startTime,GetTimeMillis(),GetTimeMillis()-startTime);
     if (vIDsForeign.size() > 0)
     {
         std::vector<CTxPosItem> vTxPosForeign;
@@ -1392,21 +1395,22 @@ Value getmessages(const json_spirit::Array& params, bool fHelp)
             arrMsg.push_back(msg.ToJson(fLinkOnly));
         }
     }
+    LogPrintf("getmsgs time after get memepool msg:%i,%i,%i \n",startTime,GetTimeMillis(),GetTimeMillis()-startTime);
     vMessages.clear();
     for (int i = vTxPos.size() - 1; i >= 0; i--)
     {
         if (nPos >= nOffset + nCount)
             break;
-        if((((vTxPos[i].nFlags&1<<TXITEMFLAG_SENDCONTENT)==0)&&((vTxPos[i].nFlags&1<<TXITEMFLAG_RECEIVECONTENT)==0))||
-                (nDirectionFilter == OUTPUT_ONLY&&((vTxPos[i].nFlags&1<<TXITEMFLAG_SENDCONTENT)==0))||
-                (nDirectionFilter == INCOMING_ONLY&&((vTxPos[i].nFlags&1<<TXITEMFLAG_RECEIVECONTENT)==0)))
+        if((((vTxPos[i].nFlags&(1<<TXITEMFLAG_SENDCONTENT))==0)&&((vTxPos[i].nFlags&(1<<TXITEMFLAG_RECEIVECONTENT))==0))||
+                (nDirectionFilter == OUTPUT_ONLY&&((vTxPos[i].nFlags&(1<<TXITEMFLAG_SENDCONTENT))==0))||
+                (nDirectionFilter == INCOMING_ONLY&&((vTxPos[i].nFlags&(1<<TXITEMFLAG_RECEIVECONTENT))==0)))
                 continue;
         CTransaction tx;
         uint256 hashBlock;
         int nHeight = -1;
         int nTime = GetTime();
         int nTx = -1;
-        //LogPrintf("getmessages txpos   file:%i,pos:%u,txpos:%i\n",vTxPos[i].nFile,vTxPos[i].nPos,vTxPos[i].nTxOffset);
+        LogPrintf("getmessages txpos   file:%i,pos:%u,flags:%i\n",vTxPos[i].nFile,vTxPos[i].nPos,vTxPos[i].nFlags);
         if (GetTransaction(vTxPos[i], tx)) 
         {
             pBlockPosDB->GetByPos(vTxPos[i].nFile,vTxPos[i].nPos,hashBlock,nHeight);
@@ -1513,14 +1517,15 @@ void GetMessagesFromTx(std::vector<CMessage>& vMessages, const CTransaction& tx,
     for (unsigned int i = 0; i < tx.vout.size(); i++)
     {
         CTxOut txout = tx.vout[i];
-        if (txout.strContent.size() >= 39)
+        CContent ctt(txout.strContent);
+        if (txout.strContent.size() >= 39&&ctt.GetFirstCc()==CC_MESSAGE_P)
         {
             std::vector<std::pair<int, string> > vContent;
-            if (CContent(txout.strContent).Decode(vContent))
+            if (ctt.Decode(vContent))
             {
                 for (unsigned int j = 0; j < vContent.size(); j++)
                 {
-                    if (vContent[j].first == CC_MESSAGE_P)
+                   // if (vContent[j].first == CC_MESSAGE_P)
                     {
                         //LogPrintf("getmessagesFromtx:effective msg found:%s\n",vContent[j].second);
                         std::vector<std::pair<int, string> > vInnerContent;

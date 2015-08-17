@@ -888,12 +888,16 @@ QString WalletModel::EncryptMessages(Array params)
 
 QString WalletModel::SendMessage(Array arrData)
 {
-    if ( arrData.size() !=3)
+    if ( arrData.size() <3)
         throw runtime_error("");
     string idLocal=arrData[0].get_str();
     string idForeign=arrData[1].get_str();
     CContent msg=_create_text_content(arrData[2].get_str());    
-    CPaymentOrder pr=MessageRequestToPaymentRequest(idLocal,idForeign,msg);
+    double  feerate=1000  ; 
+            
+    if(arrData.size()>3)
+         feerate=(double)arrData[3].get_real();
+    CPaymentOrder pr=MessageRequestToPaymentRequest(idLocal,idForeign,msg,feerate);
     CWalletTx tx;
     string strError;    
     CPubKey pub;

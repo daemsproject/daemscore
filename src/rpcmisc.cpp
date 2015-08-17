@@ -527,7 +527,7 @@ CPaymentOrder ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJso
     return pr;
     //valtmp=find_value(obj, "vins");
 }
-CPaymentOrder MessageRequestToPaymentRequest(const std::string idLocal,const std::string idForeign,const CContent msg)
+CPaymentOrder MessageRequestToPaymentRequest(const std::string idLocal,const std::string idForeign,const CContent msg, const double feeRate )
 {
     CPaymentOrder pr;
     pr.fIsValid=false;    
@@ -545,7 +545,8 @@ CPaymentOrder MessageRequestToPaymentRequest(const std::string idLocal,const std
     }
     LogPrintf("rpcmist MessageRequestToPaymentRequest vout scriptpubkey:%s\n",scriptPubKey.ToString());        
     CAmount amount=0;
-    pr.vout.push_back(CTxOut(amount,scriptPubKey,msg));            
+    pr.vout.push_back(CTxOut(amount,scriptPubKey,msg));   
+    pr.dFeeRate=feeRate;
     pr.fIsValid=true;
     return pr;
     //valtmp=find_value(obj, "vins");
