@@ -186,7 +186,7 @@ QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
     json_spirit::Value valData;
     json_spirit::Array arrData;
     json_spirit::Value valResult;
-    
+    string strCmd=command.toStdString();
     try {
         if (dataJson.size()>0){            
             if (!json_spirit::read_string(dataJson.toStdString(),valData))
@@ -194,46 +194,46 @@ QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
             if (valData.type()!=json_spirit::array_type)
                 return QString("{\"error\":\"data is not json array\"}");
             arrData=valData.get_array();
-            if (command.toStdString()==string("requestpayment"))
+            if (strCmd==string("requestpayment"))
                 return walletModel->HandlePaymentRequest(arrData);
-            if (command.toStdString()==string("requestpayment2"))
+            if (strCmd==string("requestpayment2"))
                 return walletModel->HandlePaymentRequest2(arrData);
-            if (command.toStdString()==string("encryptmessages"))
+            if (strCmd==string("encryptmessages"))
                 return walletModel->EncryptMessages(arrData);
-            if (command.toStdString()==string("sendmessage"))
+            if (strCmd==string("sendmessage"))
             {
                 if(nPageID==MESSENGERPAGE_ID)
                 return walletModel->SendMessage(arrData);
                 else
                     throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid pageID, send message out of messenger is forbidden");
             }
-            if (command.toStdString()==string("registerdomain"))
+            if (strCmd==string("registerdomain"))
                 return walletModel->RegisterDomain(arrData);
-            if (command.toStdString()==string("renewdomain"))
+            if (strCmd==string("renewdomain"))
                 return walletModel->RenewDomain(arrData);
-            if (command.toStdString()==string("updatedomain"))
+            if (strCmd==string("updatedomain"))
                 return walletModel->UpdateDomain(arrData);
-            if (command.toStdString()==string("transferdomain"))
+            if (strCmd==string("transferdomain"))
                 return walletModel->TransferDomain(arrData);
-            if (command.toStdString()==string("publishproduct"))
+            if (strCmd==string("publishproduct"))
                 return walletModel->PublishProduct(arrData);
-            if (command.toStdString()==string("buyproduct"))
+            if (strCmd==string("buyproduct"))
                 return walletModel->BuyProduct(arrData);
-            if (command.toStdString()==string("publishpackage"))
+            if (strCmd==string("publishpackage"))
                 return walletModel->PublishPackage(arrData);
-            if (command.toStdString()==string("signmessage"))
+            if (strCmd==string("signmessage"))
                 return walletModel->SignMessage(arrData);
              
-            if (command.toStdString()==string("gotocustompage"))
+            if (strCmd==string("gotocustompage"))
                 return GoToCustomPage(arrData,nPageID);
-            if(command.toStdString()==string("setlang"))
+            if(strCmd==string("setlang"))
             {
                 if (nPageID!=SETTINGPAGE_ID)
                     throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid pageID, lang setting is forbidden");
                 return SetLang(arrData);
             }
-            if (command.toStdString()==string("writefile")||command.toStdString()==string("readfile")
-                    ||command.toStdString()==string("getconf")||command.toStdString()==string("setconf"))
+            if (strCmd==string("writefile")||strCmd==string("readfile")
+                    ||strCmd==string("getconf")||strCmd==string("setconf"))
             {
                 if(arrData[0].type()!=str_type)
                     throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, expected string");
@@ -246,15 +246,25 @@ QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
             
                 
         }
-        if(command.toStdString()==string("getlang"))
+        if(strCmd==string("getlang"))
                 return GetLang();
               
-        if (command.toStdString()==string("getsettings")||command.toStdString()==string("updatesettings"))
+        if (strCmd==string("getsettings")||strCmd==string("updatesettings"))
             {
                 if(nPageID!=SETTINGPAGE_ID)
                     throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid pageID, getettings is forbidden");                
             }
-        if (command.toStdString()==string("clearcache"))
+        if (strCmd==string("getidlist")||strCmd==string("getmainid")||strCmd==string("getnewid")||strCmd==string("listunspent"))
+            {
+                if(nPageID>HELPPAGE_ID)
+                    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid pageID, get id is forbidden");                
+            }
+        if (strCmd==string("listtransactions")&&(nPageID>HELPPAGE_ID))
+            {
+                if (dataJson.size()==0||arrData[0].get_str()=="")
+                    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid pageID, get id is forbidden");                
+            }
+        if (strCmd==string("clearcache"))
             {
                 if(nPageID!=SETTINGPAGE_ID)
                     throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid pageID, getettings is forbidden");
@@ -262,7 +272,7 @@ QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
                 return QString("OK");
             }
         //return QString("{\"error\":\"empty data\"}");
-        valResult= tableRPC.execute(command.toStdString(),arrData);            
+        valResult= tableRPC.execute(strCmd,arrData);            
         
     }
     catch (Object& objError)

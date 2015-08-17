@@ -109,7 +109,8 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn,const int nHeightIn
     }
     else
         pindexPrev = chainActive[nHeightIn-1];
-    int nHeight = pindexPrev->nHeight + 1;
+    int nHeight = pindexPrev->nBlockHeight + 1;
+    pblock->nBlockHeight=nHeight;
     // -regtest only: allow overriding block.nVersion with
     // -blockversion=N to test forking scenarios
     if (Params().MineBlocksOnDemand())
@@ -434,7 +435,7 @@ void BitcoinMiner(CWallet *pwallet,bool fExtendID)
             CBlock *pblock = &pblocktemplate->block;
             //IncrementExtraNonce(pblock, pindexPrev, nExtraNonce);
             pblock->hashMerkleRoot = pblock->BuildMerkleTree();
-            pblock->nBlockHeight=pindexPrev->nHeight+1;
+            //pblock->nBlockHeight=pindexPrev->nBlockHeight+1;
             unsigned int rounds=(unsigned int)int(16*sqrt((double)pblock->nBlockHeight));
             LogPrintf("Running FaicoinMiner with %u transactions in block (%u bytes),%u rounds mhash\n", pblock->vtx.size(),
                 ::GetSerializeSize(*pblock, SER_NETWORK, PROTOCOL_VERSION),rounds);            

@@ -28,7 +28,7 @@ typedef vector<unsigned char> valtype;
 bool Sign1(const CPubKey& address, const CKeyStore& keystore, uint256 hash, int nHashType, CScript& scriptSigRet)
 {
     CKey key;
-    LogPrintf("sign.cpp sign1,keyIn:%s \n",HexStr(address.begin(),address.end()));
+    //LogPrintf("sign.cpp sign1,keyIn:%s \n",HexStr(address.begin(),address.end()));
     if (!keystore.GetKey(address, key)){
          LogPrintf("Sign1 keystore::GetKey failed\n");
         return false;

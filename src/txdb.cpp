@@ -389,36 +389,36 @@ CDomainViewDB::CDomainViewDB(CSqliteWrapper* dbIn,bool fWipe) : db(dbIn)
 
 bool CDomainViewDB::GetUpdateDomain(const CScript ownerIn,const string& strDomainContent,const uint64_t lockedValue,const uint32_t nLockTimeIn,const CLink link,CDomain& domainOut,bool&fHasRecord)
 {
-    LogPrintf("txdb CDomainViewDB Update %s %s\n",CContent(strDomainContent).ToHumanString(),link.ToString());
+    //LogPrintf("txdb CDomainViewDB Update %s %s\n",CContent(strDomainContent).ToHumanString(),link.ToString());
     CDomain domain;
     bool fRegister=false;
     bool fForward=false;
     //bool fHasRecord=false;
     if(!domain.SetContent(CContent(strDomainContent),ownerIn,fRegister,fForward))
         return false;
-    LogPrintf("update domain name %s \n", domain.strDomain);    
+    //LogPrintf("update domain name %s \n", domain.strDomain);    
     if(domain.strDomain=="")
             return false;
     CDomain existingDomain;
     if(domain.IsLevel2())
     {
-        LogPrintf("update domain level2 \n");    
+       // LogPrintf("update domain level2 \n");    
         CDomain level1Domain;               
         if(!GetDomainByName(GetLevel1Domain(domain.strDomain),level1Domain)||GetLockLasting(level1Domain.nExpireTime)==0)
             return false;
-        LogPrintf("update domain level2 level1 found\n");    
+       // LogPrintf("update domain level2 level1 found\n");    
         if(ownerIn!=level1Domain.owner)
             return false;
-        LogPrintf("update domain level2 owner:%S\n",ownerIn.ToString());    
+        //LogPrintf("update domain level2 owner:%S\n",ownerIn.ToString());    
         //this is extremely important:skip the checking of ownership of level2 domains, so as to save huge work when there's a fallback
         domain.owner=level1Domain.owner;
     }    
     fHasRecord=GetDomainByName(domain.strDomain,existingDomain);
     if(fHasRecord)
-    LogPrintf("update domain expiretime:%i timeleft:%i \n",existingDomain.nExpireTime,GetLockLasting(existingDomain.nExpireTime));
+   // LogPrintf("update domain expiretime:%i timeleft:%i \n",existingDomain.nExpireTime,GetLockLasting(existingDomain.nExpireTime));
     if(fHasRecord&&(GetLockLasting(existingDomain.nExpireTime)>0))
     {
-        LogPrintf("update domain exists \n");
+       // LogPrintf("update domain exists \n");
         if(existingDomain.owner!=ownerIn&&!domain.IsLevel2())//for level2, don't check owner here,it's already checked above
             return false;
         
@@ -426,7 +426,7 @@ bool CDomainViewDB::GetUpdateDomain(const CScript ownerIn,const string& strDomai
         {
             if(nLockTimeIn==0||LockTimeToTime(nLockTimeIn)<LockTimeToTime(existingDomain.nExpireTime))//renew time earlier than current time
                 return false;
-            LogPrintf("update domain renew\n");
+         //   LogPrintf("update domain renew\n");
             if(lockedValue<(domain.nDomainGroup==DOMAIN_10000?(domain.IsLevel2()?100*COIN:10000*COIN):100*COIN))
                 return false;
             existingDomain=domain;
@@ -437,27 +437,27 @@ bool CDomainViewDB::GetUpdateDomain(const CScript ownerIn,const string& strDomai
         {
         
             existingDomain.SetContent(CContent(strDomainContent),ownerIn,fRegister,fForward);
-            LogPrintf("update domain exists content set \n");
+         //   LogPrintf("update domain exists content set \n");
         }
             
     }
     else if(fRegister)//new registration
     {        
-        LogPrintf("update domain register value%i,time:%i\n",lockedValue,nLockTimeIn); 
+        //LogPrintf("update domain register value%i,time:%i\n",lockedValue,nLockTimeIn); 
         if(lockedValue<(domain.nDomainGroup==DOMAIN_10000?(domain.IsLevel2()?100*COIN:10000*COIN):100*COIN))
             return false;
         if(GetLockLasting(nLockTimeIn)==0)
         {
-            LogPrintf("update domain register locktime too short\n"); 
+       //     LogPrintf("update domain register locktime too short\n"); 
             return false;
         }
-        LogPrintf("update domain register value passed\n"); 
+      //  LogPrintf("update domain register value passed\n"); 
         existingDomain=domain;
         existingDomain.owner=ownerIn;
         //if(existingDomain.nExpireTime<nLockTimeIn)//there's possiblilty that renew time is closer to previous lock time
             existingDomain.nExpireTime=LockTimeToTime(nLockTimeIn);
             existingDomain.nLockValue=lockedValue;
-        LogPrintf("update domain register done\n"); 
+      //  LogPrintf("update domain register done\n"); 
         //
         
     }
@@ -465,20 +465,20 @@ bool CDomainViewDB::GetUpdateDomain(const CScript ownerIn,const string& strDomai
         return false;
     if (fForward)
     {
-        LogPrintf("update domain forward\n"); 
+      //  LogPrintf("update domain forward\n"); 
         if(existingDomain.redirectType==CC_LINK_TYPE_SCRIPTPUBKEY)
         {
             string id;
             existingDomain.redirectID.assign(existingDomain.redirectTo.begin(),existingDomain.redirectTo.end());
             ScriptPubKeyToString(existingDomain.redirectID,id);
             string strMessage=existingDomain.strDomain+"->"+id;
-            LogPrintf("update domain forward type:scriptpubkey msg4sig:%s,sig:%s\n",strMessage,HexStr(existingDomain.forwardsig.begin(),existingDomain.forwardsig.end())); 
+         //   LogPrintf("update domain forward type:scriptpubkey msg4sig:%s,sig:%s\n",strMessage,HexStr(existingDomain.forwardsig.begin(),existingDomain.forwardsig.end())); 
             CHashWriter ss(SER_GETHASH, 0);
             ss << strMessage;
             CPubKey pubkey;            
             if (!pubkey.RecoverCompact(ss.GetHash(), existingDomain.forwardsig)||CBitcoinAddress(pubkey).ToString()!=id)
             {
-                LogPrintf("update domain forward verify sig failed,recovered id:%s,original id:%s\n",CBitcoinAddress(pubkey).ToString(),id); 
+          //      LogPrintf("update domain forward verify sig failed,recovered id:%s,original id:%s\n",CBitcoinAddress(pubkey).ToString(),id); 
                 return false;
             }
             
@@ -974,7 +974,7 @@ bool  CScriptCoinDB::ClearTables()
 }
 bool UpdateSqliteDB(const CBlock& block,const vector<pair<uint256, CDiskTxPos> >& vPos,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,bool fErase)
 {
-    //LogPrintf("UpdateSqliteDB0 \n");
+    //LogPrintf("UpdateSqliteDB blockheight:%i,txs:%i \n",block.nBlockHeight,block.vtx.size());
     map<CScript,vector<CTxPosItem> > mapScript2TxPos;
     map<CScript,int64_t> mapScriptIndex;
     //vector<CScript> vScriptNew;
@@ -1272,19 +1272,19 @@ void FindBlockTagIDAndNewTags(const vector<string>& vTags,map<string,int64_t>& m
 }
 void PrePareBlockTxIndex(const CBlock& block,map<uint256,int64_t>& mapTxIndex)
 {
+   // LogPrintf("PrePareBlockTxIndex %i:txs:%i \n",block.nBlockHeight,block.vtx.size());
     for (unsigned int i = 0; i < block.vtx.size(); i++)
     {
         const CTransaction &tx = block.vtx[i];
         uint256 txid=tx.GetHash();
         
-        int64_t txIndex=block.GetBlockHeader().nBlockHeight;
+        int64_t txIndex=block.nBlockHeight;
         ///if(chainActive.Tip()->GetBlockHash()==block.hashPrevBlock)
        //     txIndex=chainActive.Tip()->nBlockHeight+1;        
         txIndex<<=16;
         txIndex|=i;
         mapTxIndex[txid]=txIndex;        
-        if(block.GetBlockHeader().nBlockHeight==763||block.GetBlockHeader().nBlockHeight==846)
-            LogPrintf("PrePareBlockTxIndex 763:txid:%s,ixIndex:%i\n",txid.GetHex(),txIndex);
+         //   LogPrintf("PrePareBlockTxIndex %i:txid:%s,ixIndex:%i\n",block.nBlockHeight,txid.GetHex(),txIndex);
     }
 }
 void GetBlockDomainUpdateList(const CBlock& block,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,vector<pair<CDomain,bool> >& vDomains,bool fReverse)

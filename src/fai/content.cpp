@@ -583,15 +583,15 @@ bool CContent::DecodeDomainForward(int& redirectType, string& redirectTo,vector<
     for (unsigned int i = 0; i < vDecoded.size(); i++) 
     {
         cc = vDecoded[i].first;
-        LogPrintf("CContent DecodeLink,cc:%s\n",GetCcName((cctype)cc));
+       // LogPrintf("CContent DecodeLink,cc:%s\n",GetCcName((cctype)cc));
         if (cc >= CC_LINK_TYPESTRING && cc <= CC_LINK_TYPE_UNKNOWN) 
         {
-            LogPrintf("CContent DecodeLink,haslinktype:%s\n",GetCcName((cctype)cc));
+         //   LogPrintf("CContent DecodeLink,haslinktype:%s\n",GetCcName((cctype)cc));
             fHasLinkType = true;
             nLinkType = cc;
         } else if (cc == CC_LINK) 
         {
-            LogPrintf("CContent DecodeLink content:%s\n",vDecoded[i].second);
+          //  LogPrintf("CContent DecodeLink content:%s\n",vDecoded[i].second);
             str = vDecoded[i].second;
             if (str.size() > 64)
                 return false;

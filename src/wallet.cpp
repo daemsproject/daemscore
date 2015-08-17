@@ -1751,7 +1751,7 @@ bool CWallet::CreateTransactionUnsigned(const CPaymentOrder& pr,
 }
 bool CWallet::SignTransaction(const CWalletTx& wtxIn,CWalletTx& wtxSigned,int nSigType)
 {
-                LogPrintf("wallet.cpp:signtransaction");
+               // LogPrintf("wallet.cpp:signtransaction");
     CMutableTransaction txSigned=CMutableTransaction(wtxIn);    
                 unsigned int nIn = 0;
                 BOOST_FOREACH(CTxIn in, wtxIn.vin){

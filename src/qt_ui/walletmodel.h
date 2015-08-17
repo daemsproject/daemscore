@@ -86,7 +86,6 @@ public:
     // Wallet encryption
     bool setWalletEncrypted(bool encrypted, const SecureString &passphrase);
     // Passphrase only needed when unlocking
-    bool setWalletLocked(bool locked, const SecureString &passPhrase=SecureString());
     bool changePassphrase(const SecureString &oldPass, const SecureString &newPass);
     // Wallet backup
     bool backupWallet(const QString &filename);
@@ -97,6 +96,7 @@ public:
     bool switchToAccount(QString ID);
     bool exportAccount(QString ID);
     bool importAccount();
+    bool setWalletLocked(bool locked, const SecureString &passPhrase=SecureString(),int nUnlockTime=3600);  
     QString HandlePaymentRequest(const json_spirit::Array arrData);    
     QString HandlePaymentRequest2(const json_spirit::Array arrData);  
     QString DoPayment(const CPaymentOrder& pr);
@@ -192,9 +192,12 @@ signals:
 private slots:
     void notifyEcMinerResult(const CPubKey basePub,const CKey stepKey,const std::string strHeader);
     void notifyAccountSwitched(const std::string id);
+    void unlockTimeOut();
 public slots:
     /* Wallet status might have changed */
     void updateStatus();
+    
+  
     /* New transaction, or transaction changed status */
     //void updateTransaction();
     /* New, updated or removed address book entry */

@@ -106,7 +106,7 @@ bool GetDomainLink (const string strDomain,CLink& link)
     }
     return false;
 }
-bool GetFileFromLinks(const vector<CLink>& vlinks,string& strFile)
+bool GetFileFromLinks(const vector<CLink>& vlinks,string& strFile,int timeOut)
 {
     LogPrintf("GetFileFromLinks \n");
     if(vlinks.size()==0)
@@ -119,6 +119,7 @@ bool GetFileFromLinks(const vector<CLink>& vlinks,string& strFile)
             return false;
         return content.DecodeFileString(strFile);   
     }    
+    int64_t startTime=GetTimeMillis();
     for(unsigned int i=0;i<vlinks.size();i++)
     {
         CContent content;
@@ -135,13 +136,17 @@ bool GetFileFromLinks(const vector<CLink>& vlinks,string& strFile)
             if(!CContent(vDecoded[0].second).Decode(vDecoded1))
                 return false;
             bool fFound=false;
+            
             for(unsigned int i=0;i<vDecoded1.size();i++)
                 if(vDecoded1[i].first==CC_FILE_PART)  
                 {
                     fFound=true;
                     strFile+=vDecoded[0].second;
+                     
                     break;
                 }
+            if((GetTimeMillis()-startTime)>timeOut)
+                return false;
             if (!fFound)
                 return false;            
         }

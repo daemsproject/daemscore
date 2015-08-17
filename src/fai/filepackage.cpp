@@ -168,7 +168,7 @@ bool CFilePackage::InstallPackage(const string strDirName,const bool fInternal,i
      {
          LogPrintf("InstallPackage filename %s link:%s\n",it->first,it->second[0].ToString());
          string strFilecontent;
-        if(GetFileFromLinks(it->second,strFilecontent))
+        if(GetFileFromLinks(it->second,strFilecontent,timeOut))
         {
             LogPrintf("InstallPackage filename %s length:%i\n",it->first,strFilecontent.size());
             boost::filesystem::path fpFile=fpPath / it->first;

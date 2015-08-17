@@ -594,7 +594,7 @@ Value getblocktemplate(const Array& params, bool fHelp)
     //LogPrintf("rpcmining6 \n");
     CBlock* pblock = &pblocktemplate->block; // pointer for convenience
     pblock->hashMerkleRoot = pblock->BuildMerkleTree();
-    pblock->nBlockHeight=pindexPrev->nHeight+1;
+    //pblock->nBlockHeight=pindexPrev->nHeight+1;
     // Update nTime
     UpdateTime(pblock, pindexPrev);
     pblock->nNonce = 0;

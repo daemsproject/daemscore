@@ -25,7 +25,7 @@ class uint256;
 extern bool GetContentByLink(const CLink clink,CContent& content);
 extern bool GetContentByLink(const CLinkUni clink,CContent& content);
 extern bool GetDomainLink (const string strDomain,CLink& link);
-extern bool GetFileFromLinks(const vector<CLink>& vlinks,string& strFile);
+extern bool GetFileFromLinks(const vector<CLink>& vlinks,string& strFile,int timeOut=5000);
 extern bool GetBlockByHeight(const int nHeight, CBlock& blockOut, CBlockIndex*& pblockindex);
 extern bool GetTxFromBlock(const CBlock& block, const int nTx, CTransaction& txOut);
 extern bool GetVoutFromTx(const CTransaction& tx, const int nVout, CTxOut& vout);

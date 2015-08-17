@@ -15,14 +15,14 @@
 using namespace std;
 bool CDomain::SetContent(const CContent content,const CScript ownerIn,bool& fRegister,bool& fForward)
 {
-    LogPrintf("SetContent \n"); 
+    //LogPrintf("SetContent \n"); 
     fRegister=false;
     fForward=false;
     std::vector<std::pair<int, string> > vDecoded;
     CContent c=content;
     if(!c.Decode(vDecoded))
         return false;
-    LogPrintf("SetContent vDecoded %i\n",vDecoded.size());     
+    //LogPrintf("SetContent vDecoded %i\n",vDecoded.size());     
     bool fHasDomain=false;
     //CDomain tmpDomain;
     for(unsigned int i=0;i<vDecoded.size();i++)
@@ -32,7 +32,7 @@ bool CDomain::SetContent(const CContent content,const CScript ownerIn,bool& fReg
         {
             if(strDomain==str)
             {
-                LogPrintf("SetContent domain found %s\n",str);    
+               // LogPrintf("SetContent domain found %s\n",str);    
                 fHasDomain=true;
                 break;
             }
@@ -44,7 +44,7 @@ bool CDomain::SetContent(const CContent content,const CScript ownerIn,bool& fReg
             if(nDomainGroup==0)
                 return false;
                     
-            LogPrintf("SetContent nDomainGroup %i,domain %s\n",nDomainGroup,str); 
+           // LogPrintf("SetContent nDomainGroup %i,domain %s\n",nDomainGroup,str); 
             fHasDomain=true;
             strDomain=str;//.substr(0,str.size()-nDomainGroup=DOMAIN_EXTENSION_F?2:4);
         }
@@ -54,7 +54,7 @@ bool CDomain::SetContent(const CContent content,const CScript ownerIn,bool& fReg
     if(ownerIn!=CScript())
     {
         owner=ownerIn;
-        LogPrintf("SetContent owner %s\n",owner.ToString()); 
+     //   LogPrintf("SetContent owner %s\n",owner.ToString()); 
     }
     for(unsigned int i=0;i<vDecoded.size();i++)
     {
@@ -62,9 +62,9 @@ bool CDomain::SetContent(const CContent content,const CScript ownerIn,bool& fReg
         vector<unsigned char>vuc;
         switch (vDecoded[i].first)
         {
-            LogPrintf("SetContent cc code %i\n",vDecoded[i].first); 
+          //  LogPrintf("SetContent cc code %i\n",vDecoded[i].first); 
             case CC_DOMAIN_FORWARD_P:     
-                LogPrintf("SetContent forward\n"); 
+              //  LogPrintf("SetContent forward\n"); 
                 if(str.size()==0)
                 {
                     redirectType=CC_NULL;
@@ -73,15 +73,15 @@ bool CDomain::SetContent(const CContent content,const CScript ownerIn,bool& fReg
                 }
                 else if(CContent(str).DecodeDomainForward(redirectType,redirectTo,forwardsig))
                     fForward=true;
-                LogPrintf("SetContent forward %i %s\n",redirectType,HexStr(redirectTo.begin(),redirectTo.end()));
+              //  LogPrintf("SetContent forward %i %s\n",redirectType,HexStr(redirectTo.begin(),redirectTo.end()));
                 break;
             case CC_DOMAIN_INFO_P:
-                LogPrintf("SetContent info\n"); 
+              //  LogPrintf("SetContent info\n"); 
                 CContent(str).DecodeDomainInfo(strAlias,strIntro,iconLink,vTags);    
-                LogPrintf("SetContent info\n");
+              //  LogPrintf("SetContent info\n");
                 break;
             case CC_DOMAIN_TRANSFER:
-                LogPrintf("SetContent CC_TRANSFER %s\n",HexStr(str));
+              //  LogPrintf("SetContent CC_TRANSFER %s\n",HexStr(str));
                 //fTransfer=true;
                 if(IsLevel2())//no transfer for level2
                     break;                
@@ -91,11 +91,11 @@ bool CDomain::SetContent(const CContent content,const CScript ownerIn,bool& fReg
                     break;
                 owner.resize(str.size());
                 owner.assign(str.begin(),str.end());
-                LogPrintf("SetContent CC_TRANSFER owner %s,%s\n",HexStr(owner.begin(),owner.end()),owner.ToString());
+              //  LogPrintf("SetContent CC_TRANSFER owner %s,%s\n",HexStr(owner.begin(),owner.end()),owner.ToString());
                 break;
             case CC_DOMAIN_REG:
                 fRegister=true;
-                LogPrintf("SetContent CC_DOMAIN_REGISTER\n");
+             //   LogPrintf("SetContent CC_DOMAIN_REGISTER\n");
                 break;
             default:
                 break;

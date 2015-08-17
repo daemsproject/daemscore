@@ -84,13 +84,16 @@ AccountDialog::AccountDialog(Mode mode,QWidget *parent,WalletModel* walletModelI
             setWindowTitle(tr("Encrypt wallet"));
             break;
         case Unlock: // Ask passphrase
+        {
             ui->warningLabel->setText(tr("This operation needs your wallet passphrase to unlock the wallet."));            
             ui->passLabel2->hide();
             ui->passEdit2->hide();
             ui->passLabel3->hide();
             ui->passEdit3->hide();
-            ui->headerLabel->hide();
-            ui->headerEdit->hide();            
+            ui->headerLabel->setText(tr("Unlock for(minutes):"));      
+            QValidator *validator = new QIntValidator(1, 1440, this);
+            ui->headerEdit->setValidator(validator);
+            ui->headerEdit->setText("60");             
             ui->timeLabel->hide();
             ui->timeDisplay->hide();
             ui->checkBoxHeader->hide();
@@ -99,7 +102,9 @@ AccountDialog::AccountDialog(Mode mode,QWidget *parent,WalletModel* walletModelI
             ui->checkBoxEncrypt->hide();
             ui->Button3->hide();
             ui->Button2->setText("OK");
-            setWindowTitle(tr("Lock wallet"));
+            ui->passEdit1->setFocus();
+            setWindowTitle(tr("Unlock wallet"));
+        }
             break;
         case Lock: // Ask passphrase
             ui->warningLabel->setText(tr("This operation will lock the wallet."));
@@ -119,7 +124,7 @@ AccountDialog::AccountDialog(Mode mode,QWidget *parent,WalletModel* walletModelI
             ui->checkBoxEncrypt->hide();
             ui->Button3->hide();
             ui->Button2->setText("OK");
-            setWindowTitle(tr("Unlock wallet"));
+            setWindowTitle(tr("Lock wallet"));
             break;
         case Decrypt:   // Ask passphrase
             ui->warningLabel->setText(tr("This operation needs your wallet passphrase to decrypt the wallet."));
@@ -243,7 +248,9 @@ void AccountDialog::textChanged()
     case Encrypt: // New passphrase x2
         acceptable = !ui->passEdit2->text().isEmpty() && !ui->passEdit3->text().isEmpty();
         break;
-    case Unlock: // Old passphrase x1        
+    case Unlock: // Old passphrase x1    
+        acceptable = (!ui->passEdit1->text().isEmpty())&&(!ui->headerEdit->text().isEmpty()&&ui->headerEdit->text().toInt()>0);
+        break;
     case Decrypt:
         acceptable = !ui->passEdit1->text().isEmpty();
         break;
@@ -388,7 +395,7 @@ void AccountDialog::DoAccountAction(bool fSwitchTo)
              break;
          case Unlock:
              oldpass.assign(ui->passEdit1->text().toStdString().c_str());
-             walletModel->setWalletLocked(false, oldpass);
+             walletModel->setWalletLocked(false, oldpass,ui->headerEdit->text().toInt()*60000);
              QDialog::accept(); 
              break;
          case Lock:

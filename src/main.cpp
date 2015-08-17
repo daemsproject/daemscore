@@ -2043,6 +2043,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     // verify that the view's current state corresponds to the previous block
     uint256 hashPrevBlock = pindex->pprev == NULL ? uint256(0) : pindex->pprev->GetBlockHash();
     //LogPrintf("connectblock:block%i,hashprevblock%s,bestblock:%s \n",block.nBlockHeight,hashPrevBlock.GetHex(),view.GetBestBlock().GetHex());
+   //LogPrintf("connectblock:block%i,chainactive:%i \n",block.GetBlockHeader().nBlockHeight,chainActive.Height());
     assert(hashPrevBlock == view.GetBestBlock());
 
     // Special case for the genesis block, skipping connection of its transactions
@@ -2978,7 +2979,12 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
     assert(pindexPrev);
 
     int nHeight = pindexPrev->nHeight+1;
-
+    if((int)block.nBlockHeight!=nHeight)
+    {
+        LogPrintf("wrong header:chain height %i,header height:%i \n",nHeight,block.nBlockHeight);
+        return state.DoS(100, error("%s : incorrect blockheight", __func__),
+                         REJECT_INVALID, "bad-height");
+    }
     // Check proof of work
     if ((!Params().SkipProofOfWorkCheck()) &&
        (block.nBits != GetNextWorkRequired(pindexPrev, &block)))

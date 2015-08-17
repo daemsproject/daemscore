@@ -525,7 +525,7 @@ bool CSqliteWrapper::SearchInts(const char* tableName,const char* searchByColumn
     sqlite3_stmt  *stmt = NULL;
     int rc;
     rc = sqlite3_prepare_v2(pdb , sql , strlen(sql) , &stmt , NULL);
-    LogPrintf("CSqliteWrapper SearchInts sql %s rc:%i\n",sql,rc); 
+    //LogPrintf("CSqliteWrapper SearchInts sql %s rc:%i\n",sql,rc); 
     if(rc != SQLITE_OK)
     {
         if(stmt)        

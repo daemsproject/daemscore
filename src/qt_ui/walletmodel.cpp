@@ -106,17 +106,23 @@ bool WalletModel::setWalletEncrypted(bool encrypted, const SecureString &passphr
    
 }
 
-bool WalletModel::setWalletLocked(bool locked, const SecureString &passPhrase)
+bool WalletModel::setWalletLocked(bool locked, const SecureString &passPhrase,int nUnlockTime)
 {
     if(locked)   
         // Lock
         return wallet->Lock();
    
-    else
+    //else
         // Unlock
+    {        
+        QTimer::singleShot(nUnlockTime, this, SLOT(unlockTimeOut()));
         return wallet->Unlock(passPhrase);   
+    }
 }
-
+void WalletModel::unlockTimeOut()
+{
+    wallet->Lock();    
+}
 bool WalletModel::changePassphrase(const SecureString &oldPass, const SecureString &newPass)
 {
     bool retval;
