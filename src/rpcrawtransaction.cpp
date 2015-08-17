@@ -721,7 +721,7 @@ Value signrawtransaction(const Array& params, bool fHelp)
         );
 
     RPCTypeCheck(params, list_of(str_type)(array_type) (array_type) (str_type), true);
-    int64_t startTime=GetTimeMillis();
+   // int64_t startTime=GetTimeMillis();
     vector<unsigned char> txData(ParseHexV(params[0], "argument 1"));
     CDataStream ssData(txData, SER_NETWORK, PROTOCOL_VERSION);
     vector<CMutableTransaction> txVariants;
@@ -748,7 +748,7 @@ Value signrawtransaction(const Array& params, bool fHelp)
     // starts as a clone of the rawtx:
     CMutableTransaction mergedTx(txVariants[0]);
     bool fComplete = true;
- LogPrintf("rpc signrawtransacxtion tx prepared %ld \n",GetTimeMillis()-startTime);
+ //LogPrintf("rpc signrawtransacxtion tx prepared %ld \n",GetTimeMillis()-startTime);
     // Fetch previous transactions (inputs):
     CCoinsView viewDummy;
     CCoinsViewCache view(&viewDummy);
@@ -767,7 +767,7 @@ Value signrawtransaction(const Array& params, bool fHelp)
 
         view.SetBackend(viewDummy); // switch back to avoid locking mempool for too long
     }
- LogPrintf("rpc signrawtransacxtion prevouts fetched %ld \n",GetTimeMillis()-startTime);
+ //LogPrintf("rpc signrawtransacxtion prevouts fetched %ld \n",GetTimeMillis()-startTime);
     bool fGivenKeys = false;
     CBasicKeyStore tempKeystore;
     if (params.size() > 2 && params[2].type() != null_type) {
@@ -875,7 +875,7 @@ Value signrawtransaction(const Array& params, bool fHelp)
         
     }
     bool fHashSingle = ((nHashType & ~SIGHASH_ANYONECANPAY) == SIGHASH_SINGLE);
- LogPrintf("rpc signrawtransacxtion tx other params prepared %ld \n",GetTimeMillis()-startTime);
+ //LogPrintf("rpc signrawtransacxtion tx other params prepared %ld \n",GetTimeMillis()-startTime);
     // Sign what we can:
     for (unsigned int i = 0; i < mergedTx.vin.size(); i++) {
         CTxIn& txin = mergedTx.vin[i];
@@ -885,7 +885,7 @@ Value signrawtransaction(const Array& params, bool fHelp)
             continue;
         }
         const CScript& prevScriptPubKey = coins->vout[txin.prevout.n].scriptPubKey;
-         LogPrintf("rpc signrawtransacxtion prevoutscript %ld \n",GetTimeMillis()-startTime);
+     //    LogPrintf("rpc signrawtransacxtion prevoutscript %ld \n",GetTimeMillis()-startTime);
         txin.scriptSig.clear();
         // Only sign SIGHASH_SINGLE if there's a corresponding output:
         if (!fHashSingle || (i < mergedTx.vout.size()))
@@ -897,12 +897,12 @@ Value signrawtransaction(const Array& params, bool fHelp)
         }
 
         // ... and merge in other signatures:
-         LogPrintf("rpc signrawtransacxtion signed %ld \n",GetTimeMillis()-startTime);
+     //    LogPrintf("rpc signrawtransacxtion signed %ld \n",GetTimeMillis()-startTime);
         BOOST_FOREACH(const CMutableTransaction& txv, txVariants)
         {
             txin.scriptSig = CombineSignatures(prevScriptPubKey, mergedTx, i, txin.scriptSig, txv.vin[i].scriptSig);
         }
-         LogPrintf("rpc signrawtransacxtion tx merged %ld \n",GetTimeMillis()-startTime);
+       //  LogPrintf("rpc signrawtransacxtion tx merged %ld \n",GetTimeMillis()-startTime);
         if (!VerifyScript(txin.scriptSig, prevScriptPubKey, STANDARD_SCRIPT_VERIFY_FLAGS, MutableTransactionSignatureChecker(&mergedTx, i)))
             fComplete = false;
     }

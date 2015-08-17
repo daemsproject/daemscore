@@ -1096,7 +1096,7 @@ bool AppInit2(boost::thread_group& threadGroup)
 
                 uiInterface.InitMessage(_("Verifying blocks..."));
                 if (!CVerifyDB().VerifyDB(pcoinsdbview, GetArg("-checklevel", 3),
-                              GetArg("-checkblocks", 288))) {
+                              GetArg("-checkblocks", 20))) {
                     strLoadError = _("Corrupted block database detected");
                     break;
                 }

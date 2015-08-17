@@ -917,7 +917,7 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
             uint256 hashBlock;
             int nHeight;
             pBlockPosDB->GetByPos(it->nFile, it->nPos, hashBlock, nHeight);
-            if ((fAsc ? nHeight <= fbh : nHeight >= fbh) && std::abs(nHeight - fbh) > total)
+            if ((fAsc ? nHeight <= fbh : nHeight >= fbh) || std::abs(nHeight - fbh) > total)
                 continue;
             CTransaction tx;
 
@@ -973,7 +973,7 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
             uint256 hashBlock;
             int nHeight;
             pBlockPosDB->GetByPos(it->nFile, it->nPos, hashBlock, nHeight);
-            if ((fAsc ? nHeight <= fbh : nHeight >= fbh) && std::abs(nHeight - fbh) > total)
+            if ((fAsc ? nHeight <= fbh : nHeight >= fbh) || std::abs(nHeight - fbh) > total)
                 continue;
             CTransaction tx;
 

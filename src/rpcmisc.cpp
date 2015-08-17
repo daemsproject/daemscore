@@ -598,7 +598,7 @@ CPaymentOrder GetPublisherPaymentRequest(const std::string idLocal, const std::s
 //    r.push_back(Pair("paymentRequest", EncodeHexTx(pr)));
 //    return r;
 //}
-CPaymentOrder GetRegisterDomainPaymentRequest(const string id, const std::string domain, const uint32_t nLockTime)
+CPaymentOrder GetRegisterDomainPaymentRequest(const string id, const std::string domain, const uint32_t nLockTime,const double dFeeRate)
 {
     CPaymentOrder pr;
     pr.fIsValid = false;
@@ -625,6 +625,7 @@ CPaymentOrder GetRegisterDomainPaymentRequest(const string id, const std::string
     pr.nRequestType=PR_DOMAIN_REGISTER;
     pr.info["domain"]=domain;
     pr.fIsValid = true;
+    pr.dFeeRate=dFeeRate;
     return pr;
 }
 CPaymentOrder GetPublishProductPaymentRequest(const Array arr)
@@ -663,7 +664,13 @@ CPaymentOrder GetPublishProductPaymentRequest(const Array arr)
         strError="product data is empty";
         throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
     }
-    
+    if(arr.size()>2)
+    {
+        if(arr[2].type()==int_type)
+        pr.dFeeRate=(double)arr[2].get_int();
+        if(arr[2].type()==real_type)
+        pr.dFeeRate=arr[2].get_real();
+    }
     for(unsigned int i=0;i<arrProducts.size();i++)
     {
         Object obj=arrProducts[i].get_obj();
@@ -823,6 +830,17 @@ CPaymentOrder GetUpdateDomainPaymentRequest(const Array arr)
     LogPrintf("rpcmisc GetUpdateDomainPaymentRequest script %s\n", scriptPubKey.ToString());
     pr.vFrom.push_back(scriptPubKey);    
     
+    if(arr.size()>3)
+    {
+        if (arr[3].type() == int_type)              
+        {
+
+            pr.dFeeRate=(double)arr[3].get_int();
+        } else if(arr[3].type() == real_type)
+        {
+             pr.dFeeRate=arr[3].get_real();
+        }
+    }
     //std::vector<std::pair<int,string> > vcInfo;
     //std::vector<std::pair<int,string> > vcForward;
     Object obj=arr[2].get_obj();
@@ -898,7 +916,7 @@ CPaymentOrder GetUpdateDomainPaymentRequest(const Array arr)
             LogPrintf("domain info request tag %s\n",arrTags[i].get_str());
         }
     } 
-
+    
     std::vector<std::pair<int,string> > vcc;
     vcc.push_back(make_pair(CC_DOMAIN,arr[1].get_str()));
     if(cForward.size()>0)
@@ -911,6 +929,8 @@ CPaymentOrder GetUpdateDomainPaymentRequest(const Array arr)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "no info available");
     CContent ctt;
     ctt.EncodeP(CC_DOMAIN_P,vcc);    
+    
+    
     pr.vout.push_back(CTxOut(0, CScript(), ctt));
     pr.nRequestType=PR_DOMAIN_UPDATE;
     pr.info["domain"]=arr[1].get_str();
@@ -948,6 +968,13 @@ CPaymentOrder GetBuyProductPaymentRequest(const Array arr)
         throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
     }
     Array arrProducts=arr[1].get_array();
+    if(arr.size()>2)
+    {
+        if(arr[2].type()==int_type)
+        pr.dFeeRate=(double)arr[2].get_int();
+        if(arr[2].type()==real_type)
+        pr.dFeeRate=arr[2].get_real();
+    }
     if(arrProducts.size()==0)
     {
         strError="product data is empty";

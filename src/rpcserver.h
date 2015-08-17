@@ -328,7 +328,7 @@ class CWallet;
 extern CPaymentOrder ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJson,int nType=0);
 extern CPaymentOrder MessageRequestToPaymentRequest(const std::string idLocal,const  std::string idForeign,const CContent msg, const double feeRate = 1000.0);
 extern CPaymentOrder GetPublisherPaymentRequest(const std::string idLocal,const  std::string idForeign,const CContent& ctt, const double feeRate = 1000.0, const CAmount deposit = 0, const uint32_t nLockTime = 0);
-extern CPaymentOrder GetRegisterDomainPaymentRequest(const std::string id, const std::string domain, const uint32_t nLockTime);
+extern CPaymentOrder GetRegisterDomainPaymentRequest(const std::string id, const std::string domain, const uint32_t nLockTime,const double dFeeRate=1000);
 extern CPaymentOrder GetUpdateDomainPaymentRequest(const Array arr);
 extern CPaymentOrder GetRenewPaymentRequest(const Array arr);
 extern CPaymentOrder GetTransferPaymentRequest(const Array arr);

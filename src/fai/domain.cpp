@@ -62,7 +62,7 @@ bool CDomain::SetContent(const CContent content,const CScript ownerIn,bool& fReg
         vector<unsigned char>vuc;
         switch (vDecoded[i].first)
         {
-          //  LogPrintf("SetContent cc code %i\n",vDecoded[i].first); 
+            //LogPrintf("SetContent cc code %i\n",vDecoded[i].first); 
             case CC_DOMAIN_FORWARD_P:     
               //  LogPrintf("SetContent forward\n"); 
                 if(str.size()==0)
@@ -95,7 +95,7 @@ bool CDomain::SetContent(const CContent content,const CScript ownerIn,bool& fReg
                 break;
             case CC_DOMAIN_REG:
                 fRegister=true;
-             //   LogPrintf("SetContent CC_DOMAIN_REGISTER\n");
+               // LogPrintf("SetContent CC_DOMAIN_REGISTER\n");
                 break;
             default:
                 break;

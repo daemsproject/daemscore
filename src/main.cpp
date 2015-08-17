@@ -1200,7 +1200,7 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
                     REJECT_INVALID, "insufficient fees");
         // Check against previous transactions
         // This is done last to help prevent CPU exhaustion denial-of-service attacks.
-        LogPrintf("AcceptToMemoryPool: : feerate threshould %i, fee rate %d",pool.getEntranceFeeRate(MEMPOOL_ENTRANCE_THRESHOLD),tx.GetFeeRate());
+        //LogPrintf("AcceptToMemoryPool: : feerate threshould %i, fee rate %d",pool.getEntranceFeeRate(MEMPOOL_ENTRANCE_THRESHOLD),tx.GetFeeRate());
         if (!CheckInputs(tx,tx4CheckVins, state, view, false,true, STANDARD_SCRIPT_VERIFY_FLAGS, true))
         {
             return error("AcceptToMemoryPool: : ConnectInputs failed %s", hash.ToString());
@@ -1981,9 +1981,9 @@ bool DisconnectBlock(CBlock& block, CValidationState& state, CBlockIndex* pindex
             std::cout<<"disconnect block tx pos not found:"<<hash.GetHex()<<"\n";
          vPos.insert(vPos.begin(),make_pair(hash,postx));
     }
-    LogPrintf("disconnectblock set best block %s \n",pindex->pprev->GetBlockHash().GetHex());
+   // LogPrintf("disconnectblock set best block %s \n",pindex->pprev->GetBlockHash().GetHex());
     UpdateSqliteDB(block,vPos,vPrevouts,true);    
-    LogPrintf("disconnect block:UpdateSqliteDB done \n");
+    //LogPrintf("disconnect block:UpdateSqliteDB done \n");
     // move best block pointer to prevout block
     
     view.SetBestBlock(pindex->pprev->GetBlockHash());
@@ -3508,21 +3508,21 @@ bool CVerifyDB::VerifyDB(CCoinsView *coinsview, int nCheckLevel, int nCheckDepth
     for (CBlockIndex* pindex = chainActive.Tip(); pindex && pindex->pprev; pindex = pindex->pprev)
     {
         boost::this_thread::interruption_point();
-        LogPrintf("Verifying blocks %i\n", pindex->nHeight);
+       // LogPrintf("Verifying blocks %i\n", pindex->nHeight);
         uiInterface.ShowProgress(_("Verifying blocks..."), std::max(1, std::min(99, (int)(((double)(chainActive.Height() - pindex->nHeight)) / (double)nCheckDepth * (nCheckLevel >= 3 ? 50 : 100)))));
         if (pindex->nHeight < chainActive.Height()-nCheckDepth)
             break;
         CBlock block;
-        LogPrintf("Verifying blocks 2\n");
+        //LogPrintf("Verifying blocks 2\n");
         // check level 0: read from disk        
         if (!ReadBlockFromDisk(block, pindex))
             return error("VerifyDB() : *** ReadBlockFromDisk failed at %d, hash=%s", pindex->nHeight, pindex->GetBlockHash().ToString());
-        LogPrintf("Verifying blocks 3\n");
+       // LogPrintf("Verifying blocks 3\n");
         // check level 1: verify block validity
         if (nCheckLevel >= 1 && !CheckBlock(block, state))
             return error("VerifyDB() : *** found bad block at %d, hash=%s\n", pindex->nHeight, pindex->GetBlockHash().ToString());
         // check level 2: verify undo validity
-        LogPrintf("Verifying blocks 4\n");
+        //LogPrintf("Verifying blocks 4\n");
         if (nCheckLevel >= 2 && pindex) {
             CBlockUndo undo;
             CDiskBlockPos pos = pindex->GetUndoPos();
@@ -3531,7 +3531,7 @@ bool CVerifyDB::VerifyDB(CCoinsView *coinsview, int nCheckLevel, int nCheckDepth
                     return error("VerifyDB() : *** found bad undo data at %d, hash=%s\n", pindex->nHeight, pindex->GetBlockHash().ToString());
             }
         }
-         LogPrintf("Verifying blocks 5\n");
+       //  LogPrintf("Verifying blocks 5\n");
         // check level 3: check for inconsistencies during memory-only disconnect of tip blocks
         if (nCheckLevel >= 3 && pindex == pindexState && (coins.GetCacheSize() + pcoinsTip->GetCacheSize()) <= nCoinCacheSize) {
             bool fClean = true;
@@ -3544,7 +3544,7 @@ bool CVerifyDB::VerifyDB(CCoinsView *coinsview, int nCheckLevel, int nCheckDepth
             } else
                 nGoodTransactions += block.vtx.size();
         }
-         LogPrintf("Verifying blocks 6\n");
+       //  LogPrintf("Verifying blocks 6\n");
         if (ShutdownRequested())
             return true;
     }

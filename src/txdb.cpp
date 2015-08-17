@@ -389,20 +389,20 @@ CDomainViewDB::CDomainViewDB(CSqliteWrapper* dbIn,bool fWipe) : db(dbIn)
 
 bool CDomainViewDB::GetUpdateDomain(const CScript ownerIn,const string& strDomainContent,const uint64_t lockedValue,const uint32_t nLockTimeIn,const CLink link,CDomain& domainOut,bool&fHasRecord)
 {
-    //LogPrintf("txdb CDomainViewDB Update %s %s\n",CContent(strDomainContent).ToHumanString(),link.ToString());
+    LogPrintf("txdb CDomainViewDB Update %s %s\n",ownerIn.ToString(),link.ToString());
     CDomain domain;
     bool fRegister=false;
     bool fForward=false;
     //bool fHasRecord=false;
     if(!domain.SetContent(CContent(strDomainContent),ownerIn,fRegister,fForward))
         return false;
-    //LogPrintf("update domain name %s \n", domain.strDomain);    
+    //LogPrintf("update domain name %s ,owner:%s,fRegister:%b\n", domain.strDomain,domain.owner.ToString(),fRegister);    
     if(domain.strDomain=="")
             return false;
     CDomain existingDomain;
     if(domain.IsLevel2())
     {
-       // LogPrintf("update domain level2 \n");    
+        //LogPrintf("update domain level2 \n");    
         CDomain level1Domain;               
         if(!GetDomainByName(GetLevel1Domain(domain.strDomain),level1Domain)||GetLockLasting(level1Domain.nExpireTime)==0)
             return false;
@@ -414,8 +414,6 @@ bool CDomainViewDB::GetUpdateDomain(const CScript ownerIn,const string& strDomai
         domain.owner=level1Domain.owner;
     }    
     fHasRecord=GetDomainByName(domain.strDomain,existingDomain);
-    if(fHasRecord)
-   // LogPrintf("update domain expiretime:%i timeleft:%i \n",existingDomain.nExpireTime,GetLockLasting(existingDomain.nExpireTime));
     if(fHasRecord&&(GetLockLasting(existingDomain.nExpireTime)>0))
     {
        // LogPrintf("update domain exists \n");
@@ -491,6 +489,7 @@ bool CDomainViewDB::GetUpdateDomain(const CScript ownerIn,const string& strDomai
         }
     }
     domainOut=existingDomain;
+    //LogPrintf("update domain name %s ,owner:%s\n", domainOut.strDomain,domainOut.owner.ToString());    
 //    LogPrintf("update domain to write\n"); 
 //    if(fHasRecord)
 //    {
@@ -1322,9 +1321,9 @@ void GetBlockDomainUpdateList(const CBlock& block,const vector<vector<pair<CScri
                         CLink link(block.nBlockHeight,ii,i);
                         CDomain domain;
                         bool fExists;
-                        if(pDomainDBView->GetUpdateDomain(vPrevouts[ii][i].first,vContent[0].second,(uint64_t)tx.vout[i].nValue,IsFrozen(tx,i,block.nBlockHeight,block.nTime)?tx.vout[i].nLockTime:0,link,domain,fExists))
+                        if(pDomainDBView->GetUpdateDomain(vPrevouts[ii][0].first,vContent[0].second,(uint64_t)tx.vout[i].nValue,IsFrozen(tx,i,block.nBlockHeight,block.nTime)?tx.vout[i].nLockTime:0,link,domain,fExists))
                         {
-                            
+                            LogPrintf("domain owner:%s",domain.owner.ToString());
                             vDomains.push_back(make_pair(domain,fExists));  
                         }
                         else

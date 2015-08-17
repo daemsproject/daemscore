@@ -1119,14 +1119,19 @@ QString WalletModel::getSignMsgAlertMessage(const string add,const string msg)co
 QString WalletModel::RegisterDomain(json_spirit::Array arrData)
 {
     LogPrintf("walletmodel:RegisterDomain");
-    if ( arrData.size() !=3)
-        throw runtime_error("");
+    if ( arrData.size() <4)
+        throw runtime_error("wrong array size");
     CPubKey id=AccountFromValue(arrData[0]);
     CScript scriptPubKey;
     StringToScriptPubKey(arrData[0].get_str(),scriptPubKey);
     string strDomain=arrData[1].get_str();
-    uint32_t nLockTime=(uint32_t)arrData[2].get_int();    
-    CPaymentOrder pr = GetRegisterDomainPaymentRequest(arrData[0].get_str(), strDomain, nLockTime);   
+    uint32_t nLockTime=(uint32_t)arrData[2].get_int();  
+    double dFeeRate;
+    if(arrData[3].type()==int_type)
+        dFeeRate=(double)arrData[3].get_int();
+        if(arrData[3].type()==real_type)
+        dFeeRate=arrData[3].get_real();
+    CPaymentOrder pr = GetRegisterDomainPaymentRequest(arrData[0].get_str(), strDomain, nLockTime,dFeeRate);   
     
     CDomain cdomain;
     if(pDomainDBView->GetDomainByName(strDomain,cdomain)&&(GetLockLasting(cdomain.nExpireTime)>0))
@@ -1148,8 +1153,8 @@ QString WalletModel::RegisterDomain(json_spirit::Array arrData)
 QString WalletModel::UpdateDomain(json_spirit::Array arrData)
 {
     LogPrintf("walletmodel:UpdateDomain \n");
-    if ( arrData.size() !=3)
-        throw runtime_error("");
+    if ( arrData.size() <3)
+        throw runtime_error("wrong array size");
     CPubKey id=AccountFromValue(arrData[0]);
     CScript scriptPubKey;
     StringToScriptPubKey(arrData[0].get_str(),scriptPubKey);
@@ -1179,8 +1184,8 @@ QString WalletModel::UpdateDomain(json_spirit::Array arrData)
 QString WalletModel::RenewDomain(json_spirit::Array arrData)
 {
       LogPrintf("walletmodel:RenewDomain \n");
-    if ( arrData.size() !=3)
-        throw runtime_error("");
+    if ( arrData.size() <3)
+        throw runtime_error("wrong array size");
     CPubKey id=AccountFromValue(arrData[0]);
     CScript scriptPubKey;
     StringToScriptPubKey(arrData[0].get_str(),scriptPubKey);    
@@ -1210,8 +1215,8 @@ QString WalletModel::RenewDomain(json_spirit::Array arrData)
 QString WalletModel::TransferDomain(json_spirit::Array arrData)
 {
      LogPrintf("walletmodel:TransferDomain \n");
-    if ( arrData.size() !=3)
-        throw runtime_error("");
+    if ( arrData.size() <3)
+        throw runtime_error("wrong array size");
     //CPubKey id=AccountFromValue(arrData[0]);
     CScript scriptPubKey;
     StringToScriptPubKey(arrData[0].get_str(),scriptPubKey);    
