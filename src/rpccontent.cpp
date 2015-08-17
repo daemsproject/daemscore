@@ -124,8 +124,9 @@ Value createcontent(const Array& params, bool fHelp)
     }
     CContent ctt = _create_content(params);
     Object result;
+    int nMaxCC=STANDARD_CONTENT_MAX_CC;
     result.push_back(Pair("hex", HexStr(ctt)));
-    result.push_back(Pair("human_string", ctt.ToHumanString()));
+    result.push_back(Pair("human_string", ctt.ToHumanString(nMaxCC)));
 
     return result;
 }
@@ -169,7 +170,8 @@ Value encodecontentunit(const Array& params, bool fHelp)
         throw JSONRPCError(RPC_CONTENT_ERROR, "Error creating content unit");
     Object result;
     result.push_back(Pair("hex", HexStr(ctt)));
-    result.push_back(Pair("human_string", ctt.ToHumanString()));
+    int nMaxCC=STANDARD_CONTENT_MAX_CC;
+    result.push_back(Pair("human_string", ctt.ToHumanString(nMaxCC)));
 
     return result;
 }
@@ -205,8 +207,9 @@ Value decodecontentunit(const Array& params, bool fHelp)
     }
     CContent ctt(cttStr);
     Object result;
-    result.push_back(Pair("json", ctt.ToJson(STR_FORMAT_HEX, false)));
-    result.push_back(Pair("string", ctt.ToHumanString()));
+    int nMaxCC=STANDARD_CONTENT_MAX_CC;
+    result.push_back(Pair("json", ctt.ToJson(nMaxCC,STR_FORMAT_HEX, false)));
+    result.push_back(Pair("string", ctt.ToHumanString(nMaxCC)));
     return result;
 }
 
@@ -218,9 +221,12 @@ Object _decode_content(const Array& params)
         return error;
     vector<unsigned char> str2(ParseHex(str));
     CContent ctt(str2);
-    Object jsonObj;
-    jsonObj.push_back(Pair("json", ctt.ToJson()));
-    jsonObj.push_back(Pair("string", ctt.ToHumanString()));
+    int nMaxCC=STANDARD_CONTENT_MAX_CC;
+    if(params.size()>1)
+        nMaxCC=params[1].get_int();
+    Object jsonObj;    
+    jsonObj.push_back(Pair("json", ctt.ToJson(nMaxCC)));
+    jsonObj.push_back(Pair("string", ctt.ToHumanString(nMaxCC)));
     return jsonObj;
 }
 
@@ -291,7 +297,7 @@ Object _voutToJson(const CTxOut& txout)
     return out;
 }
 
-Object _output_content(const CContent& cttIn, const int& cformat, const unsigned char& cttf, const CLink& clinkIn, const CBitcoinAddress& posterAddress, const CDomain& domain, const CAmount nValue, const CScript& scriptPubKey)
+Object _output_content(const CContent& cttIn, const int& cformat, const unsigned char& cttf, const CLink& clinkIn, const CBitcoinAddress& posterAddress, const CDomain& domain, const CAmount nValue, const CScript& scriptPubKey,int nMaxCCIn=STANDARD_CONTENT_MAX_CC)
 {
     CLink clink = clinkIn;
     CContent ctt = cttIn;
@@ -325,6 +331,7 @@ Object _output_content(const CContent& cttIn, const int& cformat, const unsigned
             r.push_back(Pair("addr", addr));
         }
     }
+    int nMaxCC=nMaxCCIn;
     switch (cformat)
     {
         case CONTENT_FORMAT_STR_HEX:r.push_back(Pair("content", HexStr(ctt)));
@@ -333,19 +340,19 @@ Object _output_content(const CContent& cttIn, const int& cformat, const unsigned
             break;
         case CONTENT_FORMAT_STR_B64:r.push_back(Pair("content", EncodeBase64(ctt)));
             break;
-        case CONTENT_FORMAT_JSON_HEX:r.push_back(Pair("content", ctt.ToJson(STR_FORMAT_HEX)));
+        case CONTENT_FORMAT_JSON_HEX:r.push_back(Pair("content", ctt.ToJson(nMaxCC,STR_FORMAT_HEX)));
             break;
-        case CONTENT_FORMAT_JSON_BIN:r.push_back(Pair("content", ctt.ToJson(STR_FORMAT_BIN)));
+        case CONTENT_FORMAT_JSON_BIN:r.push_back(Pair("content", ctt.ToJson(nMaxCC,STR_FORMAT_BIN)));
             break;
-        case CONTENT_FORMAT_JSON_B64:r.push_back(Pair("content", ctt.ToJson(STR_FORMAT_B64)));
+        case CONTENT_FORMAT_JSON_B64:r.push_back(Pair("content", ctt.ToJson(nMaxCC,STR_FORMAT_B64)));
             break;
-        case CONTENT_FORMAT_JSON_BIN_SUM:r.push_back(Pair("content", ctt.ToJson(STR_FORMAT_BIN_SUM)));
+        case CONTENT_FORMAT_JSON_BIN_SUM:r.push_back(Pair("content", ctt.ToJson(nMaxCC,STR_FORMAT_BIN_SUM)));
             break;
-        case CONTENT_FORMAT_JSON_HEX_SUM:r.push_back(Pair("content", ctt.ToJson(STR_FORMAT_HEX_SUM)));
+        case CONTENT_FORMAT_JSON_HEX_SUM:r.push_back(Pair("content", ctt.ToJson(nMaxCC,STR_FORMAT_HEX_SUM)));
             break;
-        case CONTENT_FORMAT_JSON_B64_SUM:r.push_back(Pair("content", ctt.ToJson(STR_FORMAT_B64_SUM)));
+        case CONTENT_FORMAT_JSON_B64_SUM:r.push_back(Pair("content", ctt.ToJson(nMaxCC,STR_FORMAT_B64_SUM)));
             break;
-        case CONTENT_FORMAT_HUMAN_STR:r.push_back(Pair("content", ctt.ToHumanString()));
+        case CONTENT_FORMAT_HUMAN_STR:r.push_back(Pair("content", ctt.ToHumanString(nMaxCC)));
             break;
         case CONTENT_FORMAT_SIZE:
         default:
@@ -752,7 +759,7 @@ bool _parse_getpromotedcontents_params(const Array& params, int& maxc,int& nOffs
 
 // true if have one in firstcc array, and one in withcc array, and none in withoutcc array
 
-bool _check_cc(const CContent& ctt, const Array& withcc, const Array& withoutcc, const Array& firstcc)
+bool _check_cc(const CContent& ctt, const Array& withcc, const Array& withoutcc, const Array& firstcc,int nMaxCC)
 {
     if (withcc.size() == 0 && withoutcc.size() == 0 && firstcc.size() == 0)
         return true;
@@ -777,7 +784,7 @@ bool _check_cc(const CContent& ctt, const Array& withcc, const Array& withoutcc,
     BOOST_FOREACH(const Value& ccName_v, withcc)
     {
         cctype cc = GetCcValue(ccName_v.get_str());
-        if (cttcopy.HasCc(cc))
+        if (cttcopy.HasCc(cc,nMaxCC))
         {
             rw = true;
             break;
@@ -789,7 +796,7 @@ bool _check_cc(const CContent& ctt, const Array& withcc, const Array& withoutcc,
     BOOST_FOREACH(const Value& ccName_v, withoutcc)
     {
         cctype cc = GetCcValue(ccName_v.get_str());
-        if (cttcopy.HasCc(cc))
+        if (cttcopy.HasCc(cc,nMaxCC))
             return false;
     }
 
@@ -806,6 +813,7 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
     int maxc;
     int maxb;
     int blkc;
+    int nMaxCC=STANDARD_CONTENT_MAX_CC;
     Array withcc;
     Array withoutcc;
     Array firstcc;
@@ -860,10 +868,10 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
                         if (c > maxc || b > maxb)
                             return r;
                         CContent ctt(out.strContent);
-                        if (_check_cc(ctt, withcc, withoutcc, firstcc))
+                        if (_check_cc(ctt, withcc, withoutcc, firstcc,nMaxCC))
                         {
                             CLink clink(nHeight, nTx, nVout);
-                            Object cttr = _output_content(ctt, cformat, cflag, clink, address, domain, out.nValue, out.scriptPubKey);
+                            Object cttr = _output_content(ctt, cformat, cflag, clink, address, domain, out.nValue, out.scriptPubKey,nMaxCC);
                             r.push_back(cttr);
                             c++;
                         } else
@@ -948,13 +956,13 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
                 b += ctt.size();
                 if (b > maxb)
                     return r;
-                if (!_check_cc(ctt, withcc, withoutcc, firstcc))
+                if (!_check_cc(ctt, withcc, withoutcc, firstcc,nMaxCC))
                 {
                     b -= ctt.size();
                     continue;
                 }
                     
-                Object cttr = _output_content(ctt, cformat, cflag, clink, address, domain, tx.vout[nVout].nValue, tx.vout[nVout].scriptPubKey);
+                Object cttr = _output_content(ctt, cformat, cflag, clink, address, domain, tx.vout[nVout].nValue, tx.vout[nVout].scriptPubKey,nMaxCC);
                 r.push_back(cttr);
                 c++;
             }
@@ -1004,12 +1012,12 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
                                 b += ctt.size();
                 if (b > maxb)
                                     return r;
-                if (!_check_cc(ctt, withcc, withoutcc, firstcc))
+                if (!_check_cc(ctt, withcc, withoutcc, firstcc,nMaxCC))
                  {
                     b -= ctt.size();
                     continue;
                 }
-                Object cttr = _output_content(ctt, cformat, cflag, clink, address, domain, tx.vout[nVout].nValue, tx.vout[nVout].scriptPubKey);
+                Object cttr = _output_content(ctt, cformat, cflag, clink, address, domain, tx.vout[nVout].nValue, tx.vout[nVout].scriptPubKey,nMaxCC);
                                     r.push_back(cttr);
                                     c++;
                             }

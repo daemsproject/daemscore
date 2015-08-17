@@ -51,7 +51,7 @@ public:
     {
         SetJson(cttJson);
     }
-    Array ToJson(stringformat fFormat = STR_FORMAT_BIN, bool fRecursive = true)const;
+    Array ToJson(int& nMaxCC,stringformat fFormat = STR_FORMAT_BIN, bool fRecursive = true)const;
     bool ToJsonString(std::string& entry)const;
     bool SetEmpty();
     bool IsEmpty()const;
@@ -60,7 +60,7 @@ public:
     bool SetJson(const Array& cttJson);
     bool SetUnit(const cctype& cc, const std::string& cttStr);
     bool SetUnit(const std::string& ccname, const std::string& cttStr);
-    std::string ToHumanString();
+    std::string ToHumanString(int& nMaxCC);
     bool GetCcUnit(const_iterator& pc, cctype& ccRet, std::string& content) const;
     bool ReadVarInt(const_iterator& pc, uint64_t& n)const;
     bool ReadCompactSize(const_iterator& pc, uint64_t& n)const;
@@ -72,7 +72,7 @@ public:
     bool WriteData(const std::string str);
     bool WriteData(const std::string str, int len);
 
-    bool HasCc(const cctype& cc,const bool requireStandard = true)const; // if requireStandard = false, this function will be very costly
+    bool HasCc(const cctype& cc,const bool requireStandard = true ,int nMaxCC=STANDARD_CONTENT_MAX_CC)const; // if requireStandard = false, this function will be very costly
     bool FirstCc(const cctype& cc)const;
     bool FirstNCc(std::vector<cctype>& ccv,bool& countOverN,const unsigned int n = STANDARD_CONTENT_MAX_CC)const;
     int GetFirstCc(int nIteratrions=0)const;

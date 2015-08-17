@@ -76,15 +76,16 @@ bool FilterCc(const cctype cc, const std::string contentStr, Object& ccUnit)
     return true;
 }
 
-Array CContent::ToJson(stringformat fFormat, bool fRecursive)const
+Array CContent::ToJson(int& nMaxCC,stringformat fFormat, bool fRecursive)const
 {
     const_iterator pc = begin();
-    Array result;
+    Array result;    
     while (pc < end()) {
         cctype cc;
         CContent contentStr;
         if (!GetCcUnit(pc, cc, contentStr))
             break;
+        nMaxCC--;        
         Object ccUnit;
         std::string ccName;
         ccName = GetCcName(cc);
@@ -96,7 +97,7 @@ Array CContent::ToJson(stringformat fFormat, bool fRecursive)const
             return result;
         if (IsCcParent(cc) && fRecursive) {
             if (contentStr.IsStandard())
-                ccUnit.push_back(Pair("content", contentStr.ToJson(fFormat)));
+                ccUnit.push_back(Pair("content", contentStr.ToJson(nMaxCC,fFormat,true)));
             else
                 ccUnit.push_back(Pair("content", "non-standard"));
         } else {
@@ -127,6 +128,14 @@ Array CContent::ToJson(stringformat fFormat, bool fRecursive)const
 
         }
         result.push_back(ccUnit);
+        if(nMaxCC<=0)
+        {
+            result.clear();
+            Object rObj;
+            rObj.push_back(Pair("content", "cc count over limit"));
+            result.push_back(rObj);
+        }
+            
     }
     if (pc > end()) {
         result.clear();
@@ -152,7 +161,7 @@ std::string CContent::TrimToHumanString(const std::string& str)const
     return str2;
 }
 
-std::string CContent::ToHumanString()
+std::string CContent::ToHumanString(int& nMaxCC)
 {
     std::string ccUnit;
     const_iterator pc = begin();
@@ -161,17 +170,20 @@ std::string CContent::ToHumanString()
         CContent contentStr;
         if (!GetCcUnit(pc, cc, contentStr))
             break;
+        nMaxCC--;
         std::string ccName;
         ccName = GetCcName(cc);
         ccUnit += ccName;
         if (IsCcParent(cc)) {
             if (contentStr.IsStandard())
-                ccUnit += " " + contentStr.ToHumanString() + " ";
+                ccUnit += " " + contentStr.ToHumanString(nMaxCC) + " ";
             else
                 ccUnit = strpatch::to_string(size()) + " bytes binary";
         } else {
             ccUnit += " " + TrimToHumanString(contentStr) + " ";
         }
+        if(nMaxCC<=0)
+            return strpatch::to_string(size()) + " bytes binary";
     }
     if (pc > end()) {
         return strpatch::to_string(size()) + " bytes binary";
@@ -180,14 +192,16 @@ std::string CContent::ToHumanString()
     return ccUnit;
 }
 
-bool CContent::HasCc(const cctype& ccIn, const bool requireStandard) const// Very costly for nunstandard conent
+bool CContent::HasCc(const cctype& ccIn, const bool requireStandard,int nMaxCC) const// Very costly for nunstandard conent
 {
     std::vector<cctype> ccv;
     bool countOverN = false;
     if (requireStandard)
-        FirstNCc(ccv, countOverN, STANDARD_CONTENT_MAX_CC);
+        FirstNCc(ccv, countOverN, nMaxCC);
     else
-        FirstNCc(ccv, countOverN, CONTENT_MAXSIZE);
+        FirstNCc(ccv, countOverN, nMaxCC);
+    if(countOverN)
+        return false;
     return std::find(ccv.begin(), ccv.end(), ccIn) != ccv.end();
         }
 
@@ -845,8 +859,9 @@ Value CMessage::ToJson(bool fLinkOnly)const
     obj.push_back(Pair("nBlockHeight", Value(nBlockHeight)));
     obj.push_back(Pair("nTime", Value((uint64_t) nTime)));
     obj.push_back(Pair("nTx", Value(nTx)));
+    int nMaxCC=STANDARD_CONTENT_MAX_CC;
     if (content != CContent())
-        obj.push_back(Pair("content", content.ToJson(fLinkOnly ? STR_FORMAT_B64_SUM : STR_FORMAT_B64)));
+        obj.push_back(Pair("content", content.ToJson(nMaxCC,fLinkOnly ? STR_FORMAT_B64_SUM : STR_FORMAT_B64)));
     return Value(obj);
 }
 

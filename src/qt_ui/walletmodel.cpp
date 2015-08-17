@@ -528,8 +528,8 @@ QString WalletModel::getPublishContentMessage(const CWalletTx& tx, const CPaymen
 
     foreach(const CTxOut &rcp, tx.vout)
     {
-
-        QString content = QString().fromStdString(CContent(rcp.strContent).ToHumanString());
+        int nMaxCC=STANDARD_CONTENT_MAX_CC;
+        QString content = QString().fromStdString(CContent(rcp.strContent).ToHumanString(nMaxCC));
         if (content.size() > 300)
             content = content.left(300) + "...";
         if (content.size() > 0)
@@ -615,8 +615,8 @@ QString WalletModel::getPaymentAlertMessage(const CWalletTx& tx)
             }
 
         formatted.append(recipientElement);
-        
-        QString content=QString().fromStdString(CContent(rcp.strContent).ToHumanString());
+        int nMaxCC=STANDARD_CONTENT_MAX_CC;
+        QString content=QString().fromStdString(CContent(rcp.strContent).ToHumanString(nMaxCC));
         if (content.size()>100)
             content=content.left(100);
         if (content.size()>0){
@@ -874,7 +874,8 @@ QString WalletModel::EncryptMessages(Array params)
         Array arrMsg;
         for(unsigned int i=0;i<it->second.size();i++)
         {
-            arrMsg.push_back(CContent(it->second[i]).ToJson(STR_FORMAT_B64));
+            int nMaxCC=STANDARD_CONTENT_MAX_CC;
+            arrMsg.push_back(CContent(it->second[i]).ToJson(nMaxCC,STR_FORMAT_B64));
         }
         objMsg.push_back(Pair("messages",arrMsg));
         arrResult.push_back(objMsg);
@@ -1078,7 +1079,8 @@ QString WalletModel::getSMSAlertMessage(const CPaymentOrder& pr)
         address.append("</span>");
         //LogPrintf(address.toStdString());
         QString recipientElement;
-        QString content=QString().fromStdString(CContent(rcp.strContent).ToHumanString());
+        int nMaxCC=STANDARD_CONTENT_MAX_CC;
+        QString content=QString().fromStdString(CContent(rcp.strContent).ToHumanString(nMaxCC));
         if (content.size()>100)
             content=content.left(100);
         recipientElement = tr("%1 to %2").arg(content, address);           

@@ -1304,7 +1304,8 @@ void GetBlockDomainUpdateList(const CBlock& block,const vector<vector<pair<CScri
             //LogPrintf("GetBlockDomainUpdateList cc:%s \n",GetCcName((cctype)cc)); 
             if(cc==CC_DOMAIN_P)
             {
-                LogPrintf("GetBlockDomainUpdateList  content:%s \n",CContent(tx.vout[i].strContent).ToHumanString()); 
+                int nMaxCC=STANDARD_CONTENT_MAX_CC;
+                LogPrintf("GetBlockDomainUpdateList  content:%s \n",CContent(tx.vout[i].strContent).ToHumanString(nMaxCC)); 
                 std::vector<std::pair<int,std::string> >vContent; 
                 if(CContent(tx.vout[i].strContent).Decode(vContent))
                 {

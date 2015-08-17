@@ -67,7 +67,8 @@ void ScriptPubKeyToJSON(const CScript& scriptPubKey, Object& out, bool fIncludeH
 std::string GetContentCode(const std::string& content)
 {
     CContent ctt(content);
-    return ctt.ToHumanString();
+    int nMaxCC=STANDARD_CONTENT_MAX_CC;
+    return ctt.ToHumanString(nMaxCC);
 }
 
 std::string GetBinaryContent(const std::string& content)
