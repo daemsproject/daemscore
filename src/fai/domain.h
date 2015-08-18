@@ -81,6 +81,7 @@ int GetDomainGroup(const string strDomain);
 bool IsLevel2Domain(const string strDomain);
 std::string GetLevel1Domain(const string strDomain);
 bool IsValidDomainFormat(const string strDomain);
+bool CheckDomainName(const string str);
 /** Abstract view on the open CDomain dataset. */
 class CDomainView
 {

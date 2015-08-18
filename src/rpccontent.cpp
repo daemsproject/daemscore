@@ -912,12 +912,57 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
         GetDiskTxPoses(vFrIds, vTxPosFr);
         std::vector<CTxPosItem> vTxPosTo;
         GetDiskTxPoses(vToIds, vTxPosTo);
+        int nBeginDataPos;
+        int nBeginFile;
+        int nEndDataPos;
+        int nEndFile;
+        if(fbh>chainActive.Height())
+            fbh=chainActive.Height();
+        int nEndHeight;        
+        if(fAsc)
+        {
+            nBeginFile=chainActive[fbh]->nFile;
+            nBeginDataPos=chainActive[fbh]->nDataPos;
+            nEndHeight=fbh+blkc;
+            if(nEndHeight>=chainActive.Height())       
+            {
+                nEndFile=chainActive.Tip()->nFile+1;
+                nEndDataPos=0;
+            }
+            else
+            {
+                nEndFile=chainActive[nEndHeight+1]->nFile;
+                nEndDataPos=chainActive[nEndHeight+1]->nDataPos;
+            }
+        }
+        else
+        {            
+            nEndFile=chainActive[fbh]->nFile;
+            if(fbh==chainActive.Height())
+                 nEndDataPos=chainActive[fbh]->nDataPos+DEFAULT_BLOCK_MAX_SIZE;
+            else
+                nEndDataPos=chainActive[fbh+1]->nDataPos;
+            nEndHeight=fbh-blkc;
+            if(nEndHeight<=0)
+            {
+               nBeginFile=0;
+                nBeginDataPos=0; 
+            }
+            else
+            {
+                nBeginFile=chainActive[nEndHeight-1]->nFile;
+                nBeginDataPos=chainActive[nEndHeight-1]->nDataPos;
+            }
+        }
         for (std::vector<CTxPosItem>::iterator it = vTxPosFr.begin(); it != vTxPosFr.end(); it++)
             {
             uint256 hashBlock;
             int nHeight;
+            if ((it->nFile < nBeginFile)||((it->nFile==nBeginFile)&&(it->nPos<nBeginDataPos))
+                    ||(it->nFile > nEndFile)||((it->nFile==nEndFile)&&(it->nPos>nEndDataPos)))
+                continue;
             pBlockPosDB->GetByPos(it->nFile, it->nPos, hashBlock, nHeight);
-            if ((fAsc ? nHeight <= fbh : nHeight >= fbh) || std::abs(nHeight - fbh) > total)
+            if ((fAsc ? nHeight < fbh : nHeight > fbh) || std::abs(nHeight - fbh) > total)
                 continue;
             CTransaction tx;
 
@@ -970,10 +1015,11 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
         }
         for (std::vector<CTxPosItem>::iterator it = vTxPosTo.begin(); it != vTxPosTo.end(); it++)
                         {
+            
             uint256 hashBlock;
             int nHeight;
             pBlockPosDB->GetByPos(it->nFile, it->nPos, hashBlock, nHeight);
-            if ((fAsc ? nHeight <= fbh : nHeight >= fbh) || std::abs(nHeight - fbh) > total)
+            if ((fAsc ? nHeight < fbh : nHeight > fbh) || std::abs(nHeight - fbh) > total)
                 continue;
             CTransaction tx;
 

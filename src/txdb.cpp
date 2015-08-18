@@ -11,7 +11,7 @@
 #include "fai/domain.h"
 #include "fai/contentutil.h"
 #include <stdint.h>
-
+#include <boost/algorithm/string.hpp>  
 #include <boost/thread.hpp>
 #include <bits/stl_vector.h>
 
@@ -396,7 +396,7 @@ bool CDomainViewDB::GetUpdateDomain(const CScript ownerIn,const string& strDomai
     //bool fHasRecord=false;
     if(!domain.SetContent(CContent(strDomainContent),ownerIn,fRegister,fForward))
         return false;
-    //LogPrintf("update domain name %s ,owner:%s,fRegister:%b\n", domain.strDomain,domain.owner.ToString(),fRegister);    
+    LogPrintf("update domain name %s ,owner:%s,fRegister:%b\n", domain.strDomain,domain.owner.ToString(),fRegister);    
     if(domain.strDomain=="")
             return false;
     CDomain existingDomain;
@@ -639,12 +639,14 @@ bool CDomainViewDB::GetDomainByName(const string strDomainName,CDomain& domain,b
     const char* searchValue;//NOte: for varchar, need to add'' arround value
     
     //const char* tableName=(GetDomainGroup(strDomainName)==DOMAIN_10000?"domainf":"domainfai");
-    string tableName=(GetDomainGroup(strDomainName)==DOMAIN_10000?"domain10000":"domain100");
+    string strDomaintmp=strDomainName;
+    boost::algorithm::to_lower(strDomaintmp);
+    string tableName=(GetDomainGroup(strDomaintmp)==DOMAIN_10000?"domain10000":"domain100");
 //    char** result;
 //    int nRow;
 //    int nColumn;    
     string str2="'";
-    str2.append(strDomainName).append("'");
+    str2.append(strDomaintmp).append("'");
     searchValue=str2.c_str();
     std::vector<CDomain> vDomain;
     
@@ -1323,7 +1325,7 @@ void GetBlockDomainUpdateList(const CBlock& block,const vector<vector<pair<CScri
                         bool fExists;
                         if(pDomainDBView->GetUpdateDomain(vPrevouts[ii][0].first,vContent[0].second,(uint64_t)tx.vout[i].nValue,IsFrozen(tx,i,block.nBlockHeight,block.nTime)?tx.vout[i].nLockTime:0,link,domain,fExists))
                         {
-                            LogPrintf("domain owner:%s",domain.owner.ToString());
+                            //LogPrintf("domain owner:%s",domain.owner.ToString());
                             vDomains.push_back(make_pair(domain,fExists));  
                         }
                         else

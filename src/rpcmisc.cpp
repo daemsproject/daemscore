@@ -24,6 +24,7 @@
 #include <stdint.h>
 
 #include <boost/assign/list_of.hpp>
+#include <bits/basic_string.h>
 #include "json/json_spirit_utils.h"
 #include "json/json_spirit_value.h"
 #include "json/json_spirit_reader_template.h"
@@ -617,7 +618,7 @@ CPaymentOrder GetRegisterDomainPaymentRequest(const string id, const std::string
     vcc.push_back(make_pair(CC_DOMAIN_REG,""));
     ctt.EncodeP(CC_DOMAIN_P,vcc);
     CAmount amount = GetDomainGroup(domain)*COIN;
-    if(amount==0)
+    if(domain.find("/")!=domain.npos||amount==0)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "invalid domain name");
     pr.vout.push_back(CTxOut(amount, scriptPubKey, ctt,nLockTime));
     if(GetBlocksToMaturity(nLockTime)<480)

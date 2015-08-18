@@ -11,8 +11,35 @@
 #include <assert.h>
 #include <util.h>
 #include "json/json_spirit_writer_template.h"
+#include <boost/algorithm/string.hpp>   
 
 using namespace std;
+bool CheckDomainName(const string str)
+{
+    if(str.find("-")==0||str.find(".")==0)
+        return false;
+    if(str.find("--")!=str.npos)
+        return false;
+    if(str.find("-.")!=str.npos||str.find(".-")!=str.npos)
+        return false;
+    if(str.find("..")!=str.npos)
+        return false;
+    const char* pszBaseDomain = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-";  
+    const char* ch=str.c_str();
+    for(int i=0;i<(int)str.size();i++)
+    {
+        const char* v = strchr(pszBaseDomain, *ch);
+    
+       // LogPrintf("%s ",ch);
+        if (v == NULL)
+        {
+            LogPrintf("check domain failed:%s \n",str);
+            return false;    
+        }   
+         ch++;
+    }
+    return true;
+}
 bool CDomain::SetContent(const CContent content,const CScript ownerIn,bool& fRegister,bool& fForward)
 {
     //LogPrintf("SetContent \n"); 
@@ -30,21 +57,25 @@ bool CDomain::SetContent(const CContent content,const CScript ownerIn,bool& fReg
         string str=vDecoded[i].second;
         if(vDecoded[i].first==CC_DOMAIN)
         {
+            if(strDomain!="")
+                return false;
+            if(str.size()<3||str.size()>64)
+                return false;
+            if(!CheckDomainName(str))
+                return false;
+            boost::algorithm::to_lower(str);
             if(strDomain==str)
             {
                // LogPrintf("SetContent domain found %s\n",str);    
                 fHasDomain=true;
                 break;
-            }
-            if(strDomain!="")
-                return false;
-            if(str.size()<3||str.size()>64)
-                return false;
+            }            
+            
             nDomainGroup=GetDomainGroup(str);
             if(nDomainGroup==0)
                 return false;
                     
-           // LogPrintf("SetContent nDomainGroup %i,domain %s\n",nDomainGroup,str); 
+            LogPrintf("SetContent nDomainGroup %i,domain %s\n",nDomainGroup,str); 
             fHasDomain=true;
             strDomain=str;//.substr(0,str.size()-nDomainGroup=DOMAIN_EXTENSION_F?2:4);
         }
@@ -228,7 +259,11 @@ bool IsValidDomainFormat(const string strDomain){//TODO:enable extension
 }
 int GetDomainGroup(const string strDomain)
 {
+    
     string str=strDomain.substr(0,strDomain.find("/"));
+    if(!CheckDomainName(str))
+        return 0;
+    boost::algorithm::to_lower(str);
     if(str.substr(str.size()-2)==".f")
     {
         if(!IsLevel2Domain(str))
