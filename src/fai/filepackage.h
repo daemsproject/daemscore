@@ -46,7 +46,7 @@ public:
     bool IsValid(){return fValid;}
     string FileToContent(const string strFileName) const;
 };
-bool ReadFilePackageList(const std::string strFileList,std::string& strMainFile,json_spirit::Array& arrFiles);
+bool ReadFilePackageList(const std::string strFileList,std::string& strMainFile,json_spirit::Object& objFiles);
 bool GetFilePackageMain(const string packageName,string& path,const bool fInternal=false);
 bool CheckFilePackage(const string packageName);
 bool GetFilePackageUrl(const CLink link,string& url);

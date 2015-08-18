@@ -225,16 +225,13 @@ void MainView::installWebPage(const string strPageName)
     boost::filesystem::create_directories(fpPath);
     // boost::filesystem::remove_all(fpPath);
     string str=qrcFileToString(":/"+strPageName+".package.json");
-    json_spirit::Array arrFiles;
+    json_spirit::Object objFiles;
     std::string strMainFile;
     StringToFile(filename,str);
-    ReadFilePackageList(str,strMainFile,arrFiles);
-    for(unsigned int i=0;i<arrFiles.size();i++)
-            {
-                Object obj=arrFiles[i].get_obj();
-        
-        copyQrcToDisc(obj[0].name_,obj[0].value_.get_str());
-    }
+    ReadFilePackageList(str,strMainFile,objFiles);
+    for(unsigned int i=0;i<objFiles.size();i++)           
+        copyQrcToDisc(objFiles[i].name_,objFiles[i].value_.get_str());
+   
 }
 
 std::string MainView::qrcFileToString(const std::string fileName)

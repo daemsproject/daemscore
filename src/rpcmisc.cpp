@@ -1033,18 +1033,28 @@ CPaymentOrder GetPublishPackagetPaymentRequest(const Array arr)
     LogPrintf("rpcmisc GetPublishPackagetPaymentRequest from ID %s\n", scriptPubKey.ToString());
     pr.vFrom.push_back(scriptPubKey);    
     CAmount lockValue=0;
+    pr.dFeeRate=1000;
     if(arr.size()>2)
     {
-        lockValue=AmountFromValue(arr[2]);
+        if(arr[2].type()==int_type)
+            pr.dFeeRate=arr[2].get_int();
+        if(arr[2].type()==real_type)
+            pr.dFeeRate=arr[2].get_real();
     }
-    uint32_t nLockTime=0;
+    LogPrintf("rpcmisc GetPublishPackagetPaymentRequest feerate %f\n", pr.dFeeRate);
     if(arr.size()>3)
     {
-        nLockTime=(uint32_t)arr[3].get_int64();
+        lockValue=AmountFromValue(arr[3]);
+    }
+    uint32_t nLockTime=0;
+    if(arr.size()>4)
+    {
+        nLockTime=(uint32_t)arr[4].get_int64();
     }
     Value valfp;
     if(arr[1].type()==str_type)
     {
+        LogPrintf("publish package:%s \n",arr[1].get_str());
         json_spirit::read_string(arr[1].get_str(),valfp);
     }
     else

@@ -153,7 +153,7 @@ extern uint64_t nMaxMempoolSize;
 extern CSettings settings;
 /** Best header we've seen so far (used for getheaders queries' starting points). */
 extern CBlockIndex *pindexBestHeader;
-
+static int nLastBlockFile = 0;
 /** Minimum disk space required - used in CheckDiskSpace() */
 static const uint64_t nMinDiskSpace = 52428800;
 

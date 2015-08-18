@@ -350,9 +350,11 @@ bool _ParseContentUrl(const CLinkUni link,const CContent content,string& urlOut,
    switch ((int)content.GetFirstCc())
     {
         case CC_FILE_PACKAGE_P:
-            if(!CFilePackage(link).InstallPackage(link.ToString(),true,settings.maxFilePageInstallTime))
+            if(GetFilePackageMain(link.ToString(),urlOut,false))
+                return true;
+            if(!CFilePackage(link).InstallPackage(link.ToString(),false,settings.maxFilePageInstallTime))
                 return false;            
-            return GetFilePackageMain(link.ToString(),urlOut,true);        
+            return GetFilePackageMain(link.ToString(),urlOut,false);        
         default:
             GetNativeLink("fai:browser",urlOut,nPageID);    
             urlOut+=("?link="+link.ToString());

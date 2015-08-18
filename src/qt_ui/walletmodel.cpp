@@ -1264,8 +1264,7 @@ QString WalletModel::BuyProduct(json_spirit::Array arrData)
     return DoPayment(po); 
 }
 QString WalletModel::PublishPackage(json_spirit::Array arrData)
-{     
-    
+{   
     CPaymentOrder pr = GetPublishPackagetPaymentRequest(arrData); 
     return DoPayment(pr); 
 }

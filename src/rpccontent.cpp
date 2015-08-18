@@ -972,8 +972,8 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
 
             if (!GetTransaction(*it, tx))
                 throw JSONRPCError(RPC_INTERNAL_ERROR, "Get transaction failed");
-            int nTx = GetNTx(tx.GetHash());
-            if (nHeight == fbh && nTx < fntx)
+            //int nTx = GetNTx(tx.GetHash());
+            if (nHeight == fbh && it->nTx < fntx)
                 continue;
             string address;
             CDomain domain;
@@ -989,11 +989,11 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
                     domain = posters[address];
                 }
             }
-            for (int nVout = (nHeight == fbh && nTx == fntx) ? fnout : 0; nVout < (int) tx.vout.size(); nVout++)
+            for (int nVout = (nHeight == fbh && it->nTx == fntx) ? fnout : 0; nVout < (int) tx.vout.size(); nVout++)
                 {
                     if (c >= maxc)
                         return r;
-                CLink clink(nHeight, nTx, nVout);
+                CLink clink(nHeight, it->nTx, nVout);
                         CContent ctt;
                 if (!GetContentFromVout(tx, nVout, ctt))
                     continue;
@@ -1033,8 +1033,8 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
 
             if (!GetTransaction(*it, tx))
                 throw JSONRPCError(RPC_INTERNAL_ERROR, "Get transaction failed");
-            int nTx = GetNTx(tx.GetHash());
-            if (nHeight == fbh && nTx < fntx)
+            //int nTx = GetNTx(tx.GetHash());
+            if (nHeight == fbh && it->nTx < fntx)
                 continue;
             string address;
             CDomain domain;
@@ -1050,11 +1050,11 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
                     domain = posters[address];
                 }
             }
-            for (int nVout = (nHeight == fbh && nTx == fntx) ? fnout : 0; nVout < (int) tx.vout.size(); nVout++)
+            for (int nVout = (nHeight == fbh && it->nTx == fntx) ? fnout : 0; nVout < (int) tx.vout.size(); nVout++)
                             {
                 if (c >= maxc)
                     return r;
-                CLink clink(nHeight, nTx, nVout);
+                CLink clink(nHeight, it->nTx, nVout);
                 CContent ctt;
                 if (!GetContentFromVout(tx, nVout, ctt))
                     continue;

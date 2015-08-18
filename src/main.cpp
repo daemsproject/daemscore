@@ -121,7 +121,7 @@ namespace {
 
     CCriticalSection cs_LastBlockFile;
     std::vector<CBlockFileInfo> vinfoBlockFile;
-    int nLastBlockFile = 0;
+    
 
     /**
      * Every received block is assigned a unique and increasing identifier, so we
@@ -2831,7 +2831,7 @@ bool FindBlockPos(CValidationState &state, CDiskBlockPos &pos, unsigned int nAdd
         pos.nFile = nFile;
         pos.nPos = vinfoBlockFile[nFile].nSize;
     }
-
+    if (nFile>nLastBlockFile)
     nLastBlockFile = nFile;
         vinfoBlockFile[nFile].AddBlock(nHeight, nTime);
     if (fKnown)
