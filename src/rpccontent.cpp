@@ -912,9 +912,9 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
         GetDiskTxPoses(vFrIds, vTxPosFr);
         std::vector<CTxPosItem> vTxPosTo;
         GetDiskTxPoses(vToIds, vTxPosTo);
-        int nBeginDataPos;
+        unsigned int nBeginDataPos;
         int nBeginFile;
-        int nEndDataPos;
+        unsigned int nEndDataPos;
         int nEndFile;
         if(fbh>chainActive.Height())
             fbh=chainActive.Height();
@@ -958,6 +958,8 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
             {
             uint256 hashBlock;
             int nHeight;
+            if (!(it->nFlags & 1 << TXITEMFLAG_SENDCONTENT))
+                continue;
             if ((it->nFile < nBeginFile)||((it->nFile==nBeginFile)&&(it->nPos<nBeginDataPos))
                     ||(it->nFile > nEndFile)||((it->nFile==nEndFile)&&(it->nPos>nEndDataPos)))
                 continue;
@@ -966,8 +968,7 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
                 continue;
             CTransaction tx;
 
-            if (!(it->nFlags & 1 << TXITEMFLAG_SENDCONTENT))
-                continue;
+            
 
             if (!GetTransaction(*it, tx))
                 throw JSONRPCError(RPC_INTERNAL_ERROR, "Get transaction failed");
@@ -1018,13 +1019,17 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
             
             uint256 hashBlock;
             int nHeight;
+             if (!(it->nFlags & 1 << TXITEMFLAG_RECEIVECONTENT))
+                continue;
+            if ((it->nFile < nBeginFile)||((it->nFile==nBeginFile)&&(it->nPos<nBeginDataPos))
+                    ||(it->nFile > nEndFile)||((it->nFile==nEndFile)&&(it->nPos>nEndDataPos)))
+                continue;
             pBlockPosDB->GetByPos(it->nFile, it->nPos, hashBlock, nHeight);
             if ((fAsc ? nHeight < fbh : nHeight > fbh) || std::abs(nHeight - fbh) > total)
                 continue;
             CTransaction tx;
 
-            if (!(it->nFlags & 1 << TXITEMFLAG_RECEIVECONTENT))
-                continue;
+           
 
             if (!GetTransaction(*it, tx))
                 throw JSONRPCError(RPC_INTERNAL_ERROR, "Get transaction failed");
