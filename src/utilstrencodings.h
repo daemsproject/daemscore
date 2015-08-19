@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
-#include <boost/regex.hpp>
+//#include <boost/regex.hpp>
 using namespace std;
 #define BEGIN(a)            ((char*)&(a))
 #define END(a)              ((char*)&((&(a))[1]))
