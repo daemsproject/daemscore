@@ -1415,8 +1415,8 @@ void GetBlockChequeUpdates(const CBlock& block,const vector<vector<pair<CScript,
 
             }
         }
-    }
-    return;
+        return;
+    }    
     for (unsigned int ii = 0; ii < block.vtx.size(); ii++)
     {
         const CTransaction &tx = block.vtx[ii];  

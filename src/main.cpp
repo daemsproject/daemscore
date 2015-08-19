@@ -5012,7 +5012,7 @@ bool ProcessMessages(CNode* pfrom)
 
         // get next message
         CNetMessage& msg = *it;
-
+        //LogPrintf("msg recieved:%s \n",HexStr(it->vRecv.begin(),it->vRecv.end()));
         //if (fDebug)
         //    LogPrintf("ProcessMessages(message %u msgsz, %u bytes, complete:%s)\n",
         //            msg.hdr.nMessageSize, msg.vRecv.size(),

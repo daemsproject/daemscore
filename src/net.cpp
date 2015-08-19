@@ -557,7 +557,7 @@ void CNode::copyStats(CNodeStats &stats)
 bool CNode::ReceiveMsgBytes(const char *pch, unsigned int nBytes)
 {
     while (nBytes > 0) {
-
+       // LogPrintf("recieved message:%s \n",HexStr(pch,pch+nBytes));
         // get current incomplete message, or create a new one
         if (vRecvMsg.empty() ||
             vRecvMsg.back().complete())

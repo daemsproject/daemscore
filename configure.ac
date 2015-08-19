@@ -507,7 +507,7 @@ AC_SUBST(LIBLEVELDB)
 AC_SUBST(LIBMEMENV)
 
  if test x$enable_wallet != xno; then
-     Check for libdb_cxx only if wallet enabled
+     dnl Check for libdb_cxx only if wallet enabled
      BITCOIN_FIND_BDB48
  fi
 

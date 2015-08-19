@@ -446,6 +446,7 @@ Value broadcastmessage(const Array& params, bool fHelp)
     {
         std::vector<unsigned char> data = ParseHexV(params[1], "parameter 1");
         CDataStream s(data,SER_NETWORK, PROTOCOL_VERSION);
+        LogPrintf("broadcastmessage:data %s \n",HexStr(data.begin(),data.end()));
         if(params.size()>2)
         {
             BOOST_FOREACH(CNode* pnode, vNodes)
@@ -456,15 +457,8 @@ Value broadcastmessage(const Array& params, bool fHelp)
                 pnode->PushMessage(s,strCommand.c_str());
     }
     else
-    {
-        if(params.size()>2)
-        {
-            BOOST_FOREACH(CNode* pnode, vNodes)
-            if(pnode->addr.ToStringIP()==params[2].get_str())
-                pnode->PushMessage(strCommand.c_str());
-        }else 
             BOOST_FOREACH(CNode* pnode, vNodes)
                  pnode->PushMessage(strCommand.c_str());
-    }
+    
     return Value("sent");
 }
