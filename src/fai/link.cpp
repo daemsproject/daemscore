@@ -64,42 +64,41 @@ bool CLink::SetString(const std::string linkStr)
     // Process link content
     std::size_t posFirstDot = str.find(URI_SEPERATOR);
     if (posFirstDot == std::string::npos) {
-        LogPrintf("CLink %s: Non-standard link %s\n", __func__,linkStr);
+        LogPrintf("CLink %s: Non-standard link %s\n", __func__, linkStr);
         return false;
     }
     std::string nHeightS = str.substr(0, posFirstDot);
     std::size_t posSecondDot = str.find(".", posFirstDot + 1);
     std::string nTxS = (posSecondDot == std::string::npos) ? str.substr(posFirstDot + 1) :
             str.substr(posFirstDot + 1, posSecondDot - posFirstDot - 1);
-//    if (nHeightS.substr(0, 1) == URI_HEX_HEADER) {
-//        nHeight = HexStringToInt(nHeightS.substr(1));
-//        nTx = (unsigned short) HexStringToInt(nTxS);
-//        if (posSecondDot == std::string::npos) {
-//            nVout = 0;
-//        } else {
-//            std::string nVoutS = str.substr(posSecondDot + 1);
-//            nVout = (unsigned short) HexStringToInt(nVoutS);
-//        }
-//    } else
-//        if (nHeightS.substr(0, 1) == URI_B32_HEADER) {
-//        nHeight = DecodeBase32ToInt(nHeightS.substr(1));
-//        nTx = (unsigned short) DecodeBase32ToInt(nTxS);
-//        if (posSecondDot == std::string::npos) {
-//            nVout = 0;
-//        } else {
-//            std::string nVoutS = str.substr(posSecondDot + 1);
-//            nVout = (unsigned short) DecodeBase32ToInt(nVoutS);
-//        }
-//    } else 
+    //    if (nHeightS.substr(0, 1) == URI_HEX_HEADER) {
+    //        nHeight = HexStringToInt(nHeightS.substr(1));
+    //        nTx = (unsigned short) HexStringToInt(nTxS);
+    //        if (posSecondDot == std::string::npos) {
+    //            nVout = 0;
+    //        } else {
+    //            std::string nVoutS = str.substr(posSecondDot + 1);
+    //            nVout = (unsigned short) HexStringToInt(nVoutS);
+    //        }
+    //    } else
+    //        if (nHeightS.substr(0, 1) == URI_B32_HEADER) {
+    //        nHeight = DecodeBase32ToInt(nHeightS.substr(1));
+    //        nTx = (unsigned short) DecodeBase32ToInt(nTxS);
+    //        if (posSecondDot == std::string::npos) {
+    //            nVout = 0;
+    //        } else {
+    //            std::string nVoutS = str.substr(posSecondDot + 1);
+    //            nVout = (unsigned short) DecodeBase32ToInt(nVoutS);
+    //        }
+    //    } else 
     {
         if (!IsStringInteger(nHeightS)) {
             LogPrintf("%s: Non-standard link (nHeight) \n", __func__);
             return false;
         }
         nHeight = atoi(nHeightS.c_str());
-        if (!IsStringInteger(nTxS))
-        {
-             LogPrintf("%s: Non-standard link (nTx) \n", __func__);
+        if (!IsStringInteger(nTxS)) {
+            LogPrintf("%s: Non-standard link (nTx) \n", __func__);
             return false;
         }
         nTx = (unsigned short) atoi(nTxS.c_str());
@@ -129,23 +128,26 @@ string CLink::Serialize()const
     //LogPrintf("CLink::Serialize() %s", HexStr(str.begin(), str.end()));
     return str;
 }
+
 int64_t CLink::SerializeInt()const
 {
     int64_t nLink;
-    nLink=nHeight;
-    nLink<<=16;
-    nLink|=nTx;
-    nLink<<=16;
-    nLink|=nVout;
+    nLink = nHeight;
+    nLink <<= 16;
+    nLink |= nTx;
+    nLink <<= 16;
+    nLink |= nVout;
     return nLink;
 }
+
 bool CLink::Unserialize(const int64_t nLink)
 {
-    nVout=nLink&0xffff;
-    nTx=nLink>>16&0xffff;
-    nHeight=nLink>>32;
+    nVout = nLink & 0xffff;
+    nTx = nLink >> 16 & 0xffff;
+    nHeight = nLink >> 32;
     return true;
 }
+
 bool CLink::Unserialize(string& str)
 {
     //    if(str.size()!=8)
@@ -170,11 +172,13 @@ bool CLink::Unserialize(string& str)
     //LogPrintf("CLink::UnSerialize() %i,%i,%i \n", nHeight, nTx, nVout);
     return true;
 }
+
 bool CLink::UnserializeConst(const string& str)
 {
-    string strlink=str;
+    string strlink = str;
     return Unserialize(strlink);
 }
+
 bool CLink::WriteVarInt(const int nIn, string& str) const
 {
     int n = nIn;
@@ -227,9 +231,9 @@ std::string CLink::ToString(const linkformat linkFormat)const
     if (IsEmpty())
         return "";
     std::string r;
-    if(linkFormat!=LINK_FORMAT_DEC_NOSCHEMA)
-        r= URI_SCHEME_NAME + URI_COLON;
-    
+    if (linkFormat != LINK_FORMAT_DEC_NOSCHEMA)
+        r = URI_SCHEME_NAME + URI_COLON;
+
     std::string nHeightS;
     std::string nTxS;
     std::string nVoutS;
@@ -274,95 +278,88 @@ std::string CLink::ToString(const linkformat linkFormat)const
 
 bool CLinkUni::SetString(const std::string linkStr)
 {
-    strLink=linkStr;
-    if(IsValidFileFormat(linkStr))
-    {        
-        linkType=CC_LINK_TYPE_FILE; 
+    strLink = linkStr;
+    if (IsValidFileFormat(linkStr)) {
+        linkType = CC_LINK_TYPE_FILE;
         return true;
     }
-    if(IsValidHttpFormat(linkStr))   
-    {
+    if (IsValidHttpFormat(linkStr)) {
         LogPrintf("valid http link \n");
-        linkType=CC_LINK_TYPE_HTTP;        
+        linkType = CC_LINK_TYPE_HTTP;
         return true;
     }
-    if(linkStr.find("ftp:")==0)
-    {
-        linkType=CC_LINK_TYPE_FTP; 
+    if (linkStr.find("ftp:") == 0) {
+        linkType = CC_LINK_TYPE_FTP;
         return true;
     }
-    if(linkStr.find("//")!=linkStr.npos)
-    {
-        linkType=CC_LINK_TYPE_UNKNOWN; 
+    if (linkStr.find("//") != linkStr.npos) {
+        linkType = CC_LINK_TYPE_UNKNOWN;
         return true;
     }
     // 
-    
-    if(SetStringNative(strLink))
+
+    if (SetStringNative(strLink))
         return true;
-    if(SetStringBlockChain(strLink))
-    return true;
-    if(SetStringTxidOut(strLink))
-    return true;
-    if(SetStringScriptPubKey(strLink))
-    return true;
-//    if(strLink.size()>64)
-//        return false;
-    if(IsValidDomainFormat(strLink))
-    {
-        linkType=CC_LINK_TYPE_DOMAIN;
-        if(linkStr.find("/")!=linkStr.npos)
-        {
-        strDomain=linkStr.substr(0,linkStr.find("/"));      
-        strDomainExtension=linkStr.substr(linkStr.find("/"));
-        }
-        else
-            strDomain=strLink;
+    if (SetStringBlockChain(strLink))
         return true;
-    }    
-    
-    else if(linkStr.find("magnet:")==0)
-        linkType=CC_LINK_TYPE_MAGNET; 
-    else if(linkStr.find("mailto:")==0)
-        linkType=CC_LINK_TYPE_MAILTO; 
-    
+    if (SetStringTxidOut(strLink))
+        return true;
+    if (SetStringScriptPubKey(strLink))
+        return true;
+    //    if(strLink.size()>64)
+    //        return false;
+    if (IsValidDomainFormat(strLink)) {
+        linkType = CC_LINK_TYPE_DOMAIN;
+        if (linkStr.find("/") != linkStr.npos) {
+            strDomain = linkStr.substr(0, linkStr.find("/"));
+            strDomainExtension = linkStr.substr(linkStr.find("/"));
+        } else
+            strDomain = strLink;
+        return true;
+    }
+
+    else if (linkStr.find("magnet:") == 0)
+        linkType = CC_LINK_TYPE_MAGNET;
+    else if (linkStr.find("mailto:") == 0)
+        linkType = CC_LINK_TYPE_MAILTO;
+
     else
-        linkType=CC_LINK_TYPE_UNKNOWN; 
-    return true;    
+        linkType = CC_LINK_TYPE_UNKNOWN;
+    return true;
 }
+
 bool CLinkUni::SetStringNative(const std::string linkStr)
 {
     std::size_t posColon = linkStr.find(URI_COLON);
     std::string str;
-    if (posColon != std::string::npos) 
-    { // full link with colon
+    if (posColon != std::string::npos) { // full link with colon
         std::string sn = linkStr.substr(0, posColon);
-        if (sn == URI_SCHEME_NAME) 
-        {//fai url, to be parsed as app or link.
+        if (sn == URI_SCHEME_NAME) {//fai url, to be parsed as app or link.
             str = linkStr.substr(posColon + 1);
-            str=str.substr(0,str.find("/"));   
-            for(int i=1;i<=HELPPAGE_ID;i++)            
-                if (str==mapPageNames[i])
-                {
-                    linkType=CC_LINK_TYPE_NATIVE;            
+            str = str.substr(0, str.find("/"));
+            for (int i = 1; i <= HELPPAGE_ID; i++)
+                if (str == mapPageNames[i]) {
+                    linkType = CC_LINK_TYPE_NATIVE;
                     return true;
                 }
         }
     }
-        return false;
+    return false;
 }
+
 bool CLinkUni::SetStringBlockChain(const std::string linkStr)
 {
-    LogPrintf("CLinkUni::SetStringBlockChain  linkStr %s\n",linkStr);
+    LogPrintf("CLinkUni::SetStringBlockChain  linkStr %s\n", linkStr);
     CLink link;
-    if(!link.SetString(linkStr))           
-        return false;           
-    nHeight=link.nHeight;
-    nTx=link.nTx;
-    nVout=link.nVout; 
-    linkType=CC_LINK_TYPE_BLOCKCHAIN;
+    if (!link.SetString(linkStr))
+        return false;
+    nHeight = link.nHeight;
+    nTx = link.nTx;
+    nVout = link.nVout;
+    linkType = CC_LINK_TYPE_BLOCKCHAIN;
     return true;
 }
+
 bool CLinkUni::SetStringTxidOut(const std::string linkStr)
 {
     std::size_t posColon = linkStr.find(URI_COLON);
@@ -376,30 +373,29 @@ bool CLinkUni::SetStringTxidOut(const std::string linkStr)
         str = linkStr.substr(posColon + 1);
     } else
         str = linkStr;
-    if(str.size()<64)
+    if (str.size() < 64)
         return false;
     std::string strTxidHex = str.substr(0, 64);
-    if(!IsHex(strTxidHex))
-        return false;    
-    txid.SetHex(strTxidHex);    
-    if(str.size()==64)
-    {
-        nVout=0;
-        linkType=CC_LINK_TYPE_TXIDOUT;
+    if (!IsHex(strTxidHex))
+        return false;
+    txid.SetHex(strTxidHex);
+    if (str.size() == 64) {
+        nVout = 0;
+        linkType = CC_LINK_TYPE_TXIDOUT;
         return true;
     }
-    if(str.substr(64,1)!=URI_SEPERATOR)
+    if (str.substr(64, 1) != URI_SEPERATOR)
         return false;
-    str=str.substr(65);
-    if (!IsStringInteger(str))
-    {
-                LogPrintf("%s: Non-standard link (nVout)", __func__);
-                return false;
-            }
-    nVout = (unsigned short) atoi(str.c_str());  
-    linkType=CC_LINK_TYPE_TXIDOUT;
+    str = str.substr(65);
+    if (!IsStringInteger(str)) {
+        LogPrintf("%s: Non-standard link (nVout)", __func__);
+        return false;
+    }
+    nVout = (unsigned short) atoi(str.c_str());
+    linkType = CC_LINK_TYPE_TXIDOUT;
     return true;
 }
+
 bool CLinkUni::SetStringScriptPubKey(const std::string linkStr)
 {
     std::size_t posColon = linkStr.find(URI_COLON);
@@ -413,30 +409,31 @@ bool CLinkUni::SetStringScriptPubKey(const std::string linkStr)
         str = linkStr.substr(posColon + 1);
     } else
         str = linkStr;
-    if(!StringToScriptPubKey(str,scriptPubKey))
+    if (!StringToScriptPubKey(str, scriptPubKey))
         return false;
-//    if(scriptPubKey.size()>64)
-//        return false;
-    linkType=CC_LINK_TYPE_SCRIPTPUBKEY;
+    //    if(scriptPubKey.size()>64)
+    //        return false;
+    linkType = CC_LINK_TYPE_SCRIPTPUBKEY;
     return true;
 }
+
 bool CLinkUni::UnserializeConst(const string& str)
 {
     CLink link;
-    if(!link.UnserializeConst(str))
-        return false; 
-    nHeight=link.nHeight;
-    nTx=link.nTx;
-    nVout=link.nVout; 
-    linkType=CC_LINK_TYPE_BLOCKCHAIN;
+    if (!link.UnserializeConst(str))
+        return false;
+    nHeight = link.nHeight;
+    nTx = link.nTx;
+    nVout = link.nVout;
+    linkType = CC_LINK_TYPE_BLOCKCHAIN;
     return true;
 }
+
 std::string CLinkUni::ToString(const linkformat linkFormat)const
 {
     if (IsEmpty())
         return "";
-    switch (linkType)
-    {
+    switch (linkType) {
         case CC_LINK_TYPE_BLOCKCHAIN:
             return ToStringBlockChain(linkFormat);
         case CC_LINK_TYPE_TXIDOUT:
@@ -444,11 +441,12 @@ std::string CLinkUni::ToString(const linkformat linkFormat)const
         case CC_LINK_TYPE_SCRIPTPUBKEY:
             return ToStringScriptPubKey();
         case CC_LINK_TYPE_DOMAIN:
-            return strDomain+strDomainExtension;
+            return strDomain + strDomainExtension;
         default:
-            return strLink;            
+            return strLink;
     }
 }
+
 std::string CLinkUni::ToStringBlockChain(const linkformat linkFormat)const
 {
     std::string r = URI_SCHEME_NAME;
@@ -491,100 +489,97 @@ std::string CLinkUni::ToStringBlockChain(const linkformat linkFormat)const
     }
     return r;
 }
+
 std::string CLinkUni::ToStringTxidOut()const
 {
     std::string r = URI_SCHEME_NAME;
-    r += URI_COLON; 
-    r += txid.GetHex();   
+    r += URI_COLON;
+    r += txid.GetHex();
     if (nVout > 0) {
-        r += URI_SEPERATOR;       
-        r += strpatch::to_string(nVout);                
+        r += URI_SEPERATOR;
+        r += strpatch::to_string(nVout);
     }
     return r;
 }
+
 std::string CLinkUni::ToStringScriptPubKey()const
-{    
+{
     string str;
-     ScriptPubKeyToString(scriptPubKey,str);
-     return str;
+    ScriptPubKeyToString(scriptPubKey, str);
+    return str;
 }
+
 bool CLinkUni::SetContent(const string& str)
 {
     LogPrintf("CLinkUni SetContent \n");
     std::vector<std::pair<int, string> > vDecoded;
-    CContent c=str;
-    if(!c.Decode(vDecoded))
+    CContent c = str;
+    if (!c.Decode(vDecoded))
         return false;
-    LogPrintf("SetContent vDecoded %i\n",vDecoded.size()); 
-    switch(vDecoded[0].first)
-    {
-        case  CC_LINK:
+    LogPrintf("SetContent vDecoded %i\n", vDecoded.size());
+    switch (vDecoded[0].first) {
+        case CC_LINK:
         {
             CLink link;
-            if(!link.UnserializeConst(vDecoded[0].second))
+            if (!link.UnserializeConst(vDecoded[0].second))
                 return false;
-            nHeight=link.nHeight;
-            nTx=link.nTx;
-            nVout=link.nVout;
-            linkType=CC_LINK_TYPE_BLOCKCHAIN;
+            nHeight = link.nHeight;
+            nTx = link.nTx;
+            nVout = link.nVout;
+            linkType = CC_LINK_TYPE_BLOCKCHAIN;
             return true;
         }
-        case  CC_LINK_P:
+        case CC_LINK_P:
         {
             std::vector<std::pair<int, string> > vDecoded2;
-            if(!CContent(vDecoded[0].second).Decode(vDecoded2))
+            if (!CContent(vDecoded[0].second).Decode(vDecoded2))
                 return false;
-            bool fHasType=false;
-            for(unsigned int i=0;i<vDecoded2.size();i++)
-            {
-                if(vDecoded[i].first>=CC_LINK_TYPESTRING&&vDecoded[i].first<=CC_LINK_TYPE_UNKNOWN)
-                {
-                    fHasType=true;
-                    linkType=(cctype)vDecoded[i].first;
+            bool fHasType = false;
+            for (unsigned int i = 0; i < vDecoded2.size(); i++) {
+                if (vDecoded[i].first >= CC_LINK_TYPESTRING && vDecoded[i].first <= CC_LINK_TYPE_UNKNOWN) {
+                    fHasType = true;
+                    linkType = (cctype) vDecoded[i].first;
                     break;
                 }
             }
-            if(!fHasType)
+            if (!fHasType)
                 return false;
-            bool fHasLink=false;
-            for(unsigned int i=0;i<vDecoded2.size();i++)
-            {
-                string str1=vDecoded2[i].second;
-                switch (vDecoded2[i].first)
-                {
+            bool fHasLink = false;
+            for (unsigned int i = 0; i < vDecoded2.size(); i++) {
+                string str1 = vDecoded2[i].second;
+                switch (vDecoded2[i].first) {
                     case CC_LINK:
                     {
-                        strLink=str1;
-                        switch ((int)linkType)
-                        {
+                        strLink = str1;
+                        switch ((int) linkType) {
                             case CC_LINK_TYPE_BLOCKCHAIN:
                             {
                                 CLink link;
-                                if(!link.UnserializeConst(vDecoded[0].second))
+                                if (!link.UnserializeConst(vDecoded[0].second))
                                     return false;
-                                nHeight=link.nHeight;
-                                nTx=link.nTx;
-                                nVout=link.nVout;  
+                                nHeight = link.nHeight;
+                                nTx = link.nTx;
+                                nVout = link.nVout;
                                 break;
                             }
                             case CC_LINK_TYPE_TXIDOUT:
                             {
-                                if(str1.size()<33)
+                                if (str1.size() < 33)
                                     return false;
-                                memcpy(txid.begin(),(unsigned char*)&str1[0],32);
-                                str1=str1.substr(32);
+                                memcpy(txid.begin(), (unsigned char*) &str1[0], 32);
+                                str1 = str1.substr(32);
                                 uint64_t n;
-                                if(!DecodeVarInt(str1,n))
+                                if (!DecodeVarInt(str1, n))
                                     return false;
-                                nVout=(unsigned short)n;
+                                nVout = (unsigned short) n;
                                 break;
                             }
                             case CC_LINK_TYPE_SCRIPTPUBKEY:
-                                scriptPubKey.assign(str1.begin(),str1.end());
-                                break;   
+                                scriptPubKey.assign(str1.begin(), str1.end());
+                                break;
                             case CC_LINK_TYPE_DOMAIN:
-                                strDomain=str1.substr(0,str1.find("/"));
-                                strDomainExtension=str1.substr(str1.find("/"));
+                                strDomain = str1.substr(0, str1.find("/"));
+                                strDomainExtension = str1.substr(str1.find("/"));
                                 break;
                             default:
                                 break;
@@ -592,205 +587,194 @@ bool CLinkUni::SetContent(const string& str)
                         break;
                     }
                     case CC_NAME:
-                        strLinkName=str1;
+                        strLinkName = str1;
                         break;
                     case CC_TAG:
                         vTags.push_back(str1);
                         break;
                     case CC_TAG_P:
-                        CContent(str1).GetDataByCC(CC_TAG,vTags,true,true);
+                        CContent(str1).GetDataByCC(CC_TAG, vTags, true, true);
                         break;
                     default:
                         break;
                 }
             }
             return fHasLink;
-        }        
+        }
         default:
             return false;
     }
 }
-    
+
 string CLinkUni::ToContent()const
 {
-    std::vector<std::pair<int,string> > vcc;
-    vcc.push_back(make_pair(linkType,""));    
-    switch ((int)linkType)
-    {
+    std::vector<std::pair<int, string> > vcc;
+    vcc.push_back(make_pair(linkType, ""));
+    switch ((int) linkType) {
         case CC_LINK_TYPE_BLOCKCHAIN:
         {
-            CLink link(nHeight,nTx,nVout);
-            vcc.push_back(make_pair(CC_LINK,link.Serialize()));  
+            CLink link(nHeight, nTx, nVout);
+            vcc.push_back(make_pair(CC_LINK, link.Serialize()));
         }
             break;
         case CC_LINK_TYPE_TXIDOUT:
         {
-            string str(txid.begin(),txid.end());                                
-            EncodeVarInt((uint64_t)nVout,str);
-            vcc.push_back(make_pair(CC_LINK,str));  
+            string str(txid.begin(), txid.end());
+            EncodeVarInt((uint64_t) nVout, str);
+            vcc.push_back(make_pair(CC_LINK, str));
         }
-            break;                        
+            break;
         case CC_LINK_TYPE_SCRIPTPUBKEY:
-            vcc.push_back(make_pair(CC_LINK,string(scriptPubKey.begin(),scriptPubKey.end())));  
+            vcc.push_back(make_pair(CC_LINK, string(scriptPubKey.begin(), scriptPubKey.end())));
             break;
         case CC_LINK_TYPE_DOMAIN:
-            vcc.push_back(make_pair(CC_LINK,strDomain)); 
+            vcc.push_back(make_pair(CC_LINK, strDomain));
             break;
         default:
-            return strLink; 
+            return strLink;
     }
-    if(strLinkName.size()>0)
-       vcc.push_back(make_pair(CC_NAME,strLinkName));   
-    if(vTags.size()>0)
-            vcc.push_back(make_pair(CC_TAG_P,EncodeContentUnitArray(CC_TAG,vTags))); 
+    if (strLinkName.size() > 0)
+        vcc.push_back(make_pair(CC_NAME, strLinkName));
+    if (vTags.size() > 0)
+        vcc.push_back(make_pair(CC_TAG_P, EncodeContentUnitArray(CC_TAG, vTags)));
     CContent ctt;
-    ctt.EncodeP(CC_LINK_P,vcc); 
+    ctt.EncodeP(CC_LINK_P, vcc);
     return ctt;
-} 
-bool CLinkUni::SetJson(const Object& obj,string& strError)
+}
+
+bool CLinkUni::SetJson(const Object& obj, string& strError)
 {
-   Value tmp = find_value(obj, "linktype");
-    if (tmp.type() != str_type)
-    {            
-        strError="invalid link type";
+    Value tmp = find_value(obj, "linktype");
+    if (tmp.type() != str_type) {
+        strError = "invalid link type";
         return false;
-    }     
-    linkType=GetCcValue(tmp.get_str());
+    }
+    linkType = GetCcValue(tmp.get_str());
     LogPrintf("CLinkUni::SetJson linkType %s\n", GetCcName(linkType));
     tmp = find_value(obj, "link");
-    if (tmp.type() != str_type)
-    {            
-        strError="invalid payment items type";
+    if (tmp.type() != str_type) {
+        strError = "invalid payment items type";
         return false;
-    }    
-    strLink=tmp.get_str();
-    switch ((int)linkType)
-    {
-        case CC_LINK_TYPE_BLOCKCHAIN:              
-            if(!SetStringBlockChain(strLink))
-            {
-                strError="invalid blockchai link format";
+    }
+    strLink = tmp.get_str();
+    switch ((int) linkType) {
+        case CC_LINK_TYPE_BLOCKCHAIN:
+            if (!SetStringBlockChain(strLink)) {
+                strError = "invalid blockchai link format";
                 return false;
             }
             break;
         case CC_LINK_TYPE_TXIDOUT:
-            if(!SetStringTxidOut(strLink))
-               {
-                strError="invalid txidout link format";
+            if (!SetStringTxidOut(strLink)) {
+                strError = "invalid txidout link format";
                 return false;
             }
             break;
         case CC_LINK_TYPE_SCRIPTPUBKEY:
-            if(!SetStringScriptPubKey(strLink))
-                {
-                strError="invalid scriptpubkey link format";
+            if (!SetStringScriptPubKey(strLink)) {
+                strError = "invalid scriptpubkey link format";
                 return false;
             }
-            break;   
+            break;
         case CC_LINK_TYPE_DOMAIN:
         {
-            if(!IsValidDomainFormat(strLink))
-                {
-                strError="invalid domain link format";
+            if (!IsValidDomainFormat(strLink)) {
+                strError = "invalid domain link format";
                 return false;
             }
-            string str2=strLink.substr(0,strDomain.find("/"));
-            strDomain=str2;
-            strDomainExtension=str2.substr(strDomain.find("/"));  
+            string str2 = strLink.substr(0, strDomain.find("/"));
+            strDomain = str2;
+            strDomainExtension = str2.substr(strDomain.find("/"));
         }
             break;
         case CC_LINK_TYPE_HTTP:
-            if(!IsValidHttpFormat(strLink))   
-            {
-                strError="invalid domain link format";
+            if (!IsValidHttpFormat(strLink)) {
+                strError = "invalid domain link format";
                 return false;
             }
         default:
             break;
     }
     tmp = find_value(obj, "tags");
-    if (tmp.type() != null_type)
-    {            
-        if(tmp.type() != array_type)
-        {
-            strError="tags is not array type";
+    if (tmp.type() != null_type) {
+        if (tmp.type() != array_type) {
+            strError = "tags is not array type";
             return false;
         }
-        Array arrTags=tmp.get_array();
-        for(unsigned int j=0;j<arrTags.size();j++)
-        {
-            if(arrTags[j].type()!=str_type)
-            {
-                strError="tag is not str type";
+        Array arrTags = tmp.get_array();
+        for (unsigned int j = 0; j < arrTags.size(); j++) {
+            if (arrTags[j].type() != str_type) {
+                strError = "tag is not str type";
                 return false;
             }
-            if(arrTags[j].get_str()!="")
-            {
+            if (arrTags[j].get_str() != "") {
                 vTags.push_back(arrTags[j].get_str());
                 LogPrintf("linkuni::SetJson tag %s\n", arrTags[j].get_str());
             }
         }
     }
     tmp = find_value(obj, "linkname");
-    if (tmp.type() == str_type)    
-        strLinkName=tmp.get_str();  
-    return true; 
+    if (tmp.type() == str_type)
+        strLinkName = tmp.get_str();
+    return true;
 }
+
 Value CLinkUni::ToJson(const linkformat linkFormat)const
 {
     json_spirit::Object obj;
-    obj.push_back(Pair("linktype",Value(GetCcName(linkType))));
-    switch ((int)linkType)
-    {
+    obj.push_back(Pair("linktype", Value(GetCcName(linkType))));
+    switch ((int) linkType) {
         case CC_LINK_TYPE_BLOCKCHAIN:
-            obj.push_back(Pair("link",ToStringBlockChain(linkFormat)));
+            obj.push_back(Pair("link", ToStringBlockChain(linkFormat)));
         case CC_LINK_TYPE_TXIDOUT:
-            obj.push_back(Pair("link",ToStringTxidOut()));
+            obj.push_back(Pair("link", ToStringTxidOut()));
         case CC_LINK_TYPE_SCRIPTPUBKEY:
-            obj.push_back(Pair("link",ToStringScriptPubKey()));
+            obj.push_back(Pair("link", ToStringScriptPubKey()));
         case CC_LINK_TYPE_DOMAIN:
-           obj.push_back(Pair("link",strDomain+strDomainExtension));
+            obj.push_back(Pair("link", strDomain + strDomainExtension));
         default:
-            obj.push_back(Pair("link",strLink));            
+            obj.push_back(Pair("link", strLink));
     }
-    if(strLinkName.size()>0)    
-        obj.push_back(Pair("linkname",Value(strLinkName)));    
-    
-    if(vTags.size()>0)
-    {
+    if (strLinkName.size() > 0)
+        obj.push_back(Pair("linkname", Value(strLinkName)));
+
+    if (vTags.size() > 0) {
         Array arr;
-        for(unsigned int i=0;i<vTags.size();i++)        
+        for (unsigned int i = 0; i < vTags.size(); i++)
             arr.push_back(vTags[i]);
-       
-        obj.push_back(Pair("tags",arr)); 
+
+        obj.push_back(Pair("tags", arr));
     }
     return Value(obj);
 }
+
 string CLinkUni::ToJsonString(const linkformat linkFormat)const
-{ 
+{
     return write_string(ToJson(linkFormat), false);
 }
+
 void CLinkUni::SetEmpty()
 {
-    linkType=CC_NULL;
+    linkType = CC_NULL;
 }
+
 bool CLinkUni::IsEmpty() const
 {
-    return linkType==CC_NULL;
+    return linkType == CC_NULL;
 }
+
 bool operator==(const CLinkUni& a, const CLinkUni& b)
 {
-    if(a.linkType!=b.linkType)
+    if (a.linkType != b.linkType)
         return false;
-    switch ((int)a.linkType)
-    {
+    switch ((int) a.linkType) {
         case CC_LINK_TYPE_BLOCKCHAIN:
-            return a.nHeight==b.nHeight&&a.nTx==b.nTx&&a.nVout==b.nVout;
+            return a.nHeight == b.nHeight && a.nTx == b.nTx && a.nVout == b.nVout;
         case CC_LINK_TYPE_TXIDOUT:
-            return a.txid==b.txid&&a.nVout==b.nVout;
+            return a.txid == b.txid && a.nVout == b.nVout;
         case CC_LINK_TYPE_SCRIPTPUBKEY:
-            return a.scriptPubKey==b.scriptPubKey;        
+            return a.scriptPubKey == b.scriptPubKey;
         default:
-            return a.strLink==b.strLink;
+            return a.strLink == b.strLink;
     }
 }
