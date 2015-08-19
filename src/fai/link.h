@@ -28,6 +28,7 @@ enum linkformat
     LINK_FORMAT_DEC = 0,
     LINK_FORMAT_HEX = 1,
     LINK_FORMAT_B32 = 2,
+    LINK_FORMAT_DEC_NOSCHEMA = 128,
 };
 class CLink
 {

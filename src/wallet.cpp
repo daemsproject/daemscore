@@ -1822,8 +1822,13 @@ bool SignAndSendTx(CWallet* pwallet,const CWalletTx& tx,const int nSigType, cons
      RelayTransaction(wtxSigned);
      pwallet->addUnconfirmedTx(wtxSigned);
      LogPrintf("SignAndSendTx:sendtx :%s\n",wtxSigned.GetHash().GetHex());
+     if(nOP==1)
+     {
+         pwallet->ClearPassword();
+     }
      if(fDelete)
         delete pwallet;
+     
     result= ("{\"success\":\"tx sent\"}");
     return true;            
 }

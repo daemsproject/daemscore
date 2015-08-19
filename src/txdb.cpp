@@ -391,14 +391,14 @@ CDomainViewDB::CDomainViewDB(CSqliteWrapper* dbIn,bool fWipe) : db(dbIn)
 
 bool CDomainViewDB::GetUpdateDomain(const CScript ownerIn,const string& strDomainContent,const uint64_t lockedValue,const uint32_t nLockTimeIn,const CLink link,CDomain& domainOut,bool&fHasRecord)
 {
-    LogPrintf("txdb CDomainViewDB Update %s %s\n",ownerIn.ToString(),link.ToString());
+    //LogPrintf("txdb CDomainViewDB Update %s %s\n",ownerIn.ToString(),link.ToString());
     CDomain domain;
     bool fRegister=false;
     bool fForward=false;
     //bool fHasRecord=false;
     if(!domain.SetContent(CContent(strDomainContent),ownerIn,fRegister,fForward))
         return false;
-    LogPrintf("update domain name %s ,owner:%s,fRegister:%b\n", domain.strDomain,domain.owner.ToString(),fRegister);    
+    LogPrintf("update domain name %s ,owner:%s,fRegister:%b,fForward:%b\n", domain.strDomain,domain.owner.ToString(),fRegister,fForward);    
     if(domain.strDomain=="")
             return false;
     CDomain existingDomain;
@@ -426,7 +426,7 @@ bool CDomainViewDB::GetUpdateDomain(const CScript ownerIn,const string& strDomai
         {
             if(nLockTimeIn==0||LockTimeToTime(nLockTimeIn)<LockTimeToTime(existingDomain.nExpireTime))//renew time earlier than current time
                 return false;
-         //   LogPrintf("update domain renew\n");
+            LogPrintf("update domain renew\n");
             if(lockedValue<(domain.nDomainGroup==DOMAIN_10000?(domain.IsLevel2()?100*COIN:10000*COIN):100*COIN))
                 return false;
             existingDomain=domain;
@@ -437,7 +437,7 @@ bool CDomainViewDB::GetUpdateDomain(const CScript ownerIn,const string& strDomai
         {
         
             existingDomain.SetContent(CContent(strDomainContent),ownerIn,fRegister,fForward);
-         //   LogPrintf("update domain exists content set \n");
+         //   LogPrintf("update domain exists content set,fForward:%b \n",fForward);
         }
             
     }
@@ -457,7 +457,7 @@ bool CDomainViewDB::GetUpdateDomain(const CScript ownerIn,const string& strDomai
         //if(existingDomain.nExpireTime<nLockTimeIn)//there's possiblilty that renew time is closer to previous lock time
             existingDomain.nExpireTime=LockTimeToTime(nLockTimeIn);
             existingDomain.nLockValue=lockedValue;
-      //  LogPrintf("update domain register done\n"); 
+        LogPrintf("update domain register done\n"); 
         //
         
     }
@@ -472,13 +472,13 @@ bool CDomainViewDB::GetUpdateDomain(const CScript ownerIn,const string& strDomai
             existingDomain.redirectID.assign(existingDomain.redirectTo.begin(),existingDomain.redirectTo.end());
             ScriptPubKeyToString(existingDomain.redirectID,id);
             string strMessage=existingDomain.strDomain+"->"+id;
-         //   LogPrintf("update domain forward type:scriptpubkey msg4sig:%s,sig:%s\n",strMessage,HexStr(existingDomain.forwardsig.begin(),existingDomain.forwardsig.end())); 
+            LogPrintf("update domain forward type:scriptpubkey msg4sig:%s,sig:%s\n",strMessage,HexStr(existingDomain.forwardsig.begin(),existingDomain.forwardsig.end())); 
             CHashWriter ss(SER_GETHASH, 0);
             ss << strMessage;
             CPubKey pubkey;            
             if (!pubkey.RecoverCompact(ss.GetHash(), existingDomain.forwardsig)||CBitcoinAddress(pubkey).ToString()!=id)
             {
-          //      LogPrintf("update domain forward verify sig failed,recovered id:%s,original id:%s\n",CBitcoinAddress(pubkey).ToString(),id); 
+                LogPrintf("update domain forward verify sig failed,recovered id:%s,original id:%s\n",CBitcoinAddress(pubkey).ToString(),id); 
                 return false;
             }
             
@@ -658,6 +658,7 @@ bool CDomainViewDB::GetDomainByName(const string strDomainName,CDomain& domain,b
         domain=vDomain[0];
         return true;
     }
+    LogPrintf ("CDomainViewDB::GetDomainByName:domain not found \n");
     return false;
     
 //    

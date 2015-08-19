@@ -282,10 +282,16 @@ bool ParseUrl(const string urlIn,string& urlOut,int& nPageID)
         }
         case CC_LINK_TYPE_TXIDOUT:       
             {       
-                CContent content;
-                if(!GetContentByTxidOut(link.txid,link.nVout, content))
+                CContent content;               
+//                if(!GetContentByTxidOut(link.txid,link.nVout, content))
+//                    return false;
+                CLink link1;
+                 if(!TxidOutLink2BlockChainLink(link.txid,link.nVout,link1))
                     return false;
-                return _ParseContentUrl(link,content,urlOut,nPageID);
+                CLinkUni link3(link1.nHeight,link1.nTx,link1.nVout);
+                if(!GetContentByLink(link3,content))
+                return false;
+                return _ParseContentUrl(link3,content,urlOut,nPageID);
             }
         case CC_LINK_TYPE_SCRIPTPUBKEY:
             {

@@ -145,7 +145,13 @@ Array CContent::ToJson(int& nMaxCC,stringformat fFormat, bool fRecursive)const
     }
     return result;
 }
+bool CContent::ToJsonString(std::string& entry)const
+{
+    int nMaxCC=32;
+    entry= write_string(Value(ToJson(nMaxCC)), false);
+    return true;
 
+}
 std::string CContent::TrimToHumanString(const std::string& str)const
 {
     std::string lenStr = " ... (";
@@ -161,7 +167,7 @@ std::string CContent::TrimToHumanString(const std::string& str)const
     return str2;
 }
 
-std::string CContent::ToHumanString(int& nMaxCC)
+std::string CContent::ToHumanString(int& nMaxCC)const
 {
     std::string ccUnit;
     const_iterator pc = begin();
@@ -585,7 +591,7 @@ bool CContent::Decode(std::vector<std::pair<int, string> >& vDecoded)const
 
 bool CContent::DecodeDomainForward(int& redirectType, string& redirectTo,vector<unsigned char>& forwardsig)const
 {
-    //LogPrintf("CContent DecodeLink\n");
+    LogPrintf("CContent DecodeDomainForward\n");
     std::vector<std::pair<int, string> > vDecoded;
     Decode(vDecoded);
     //LogPrintf("CContent DecodeLink1\n");
@@ -597,7 +603,7 @@ bool CContent::DecodeDomainForward(int& redirectType, string& redirectTo,vector<
     for (unsigned int i = 0; i < vDecoded.size(); i++) 
     {
         cc = vDecoded[i].first;
-       // LogPrintf("CContent DecodeLink,cc:%s\n",GetCcName((cctype)cc));
+       LogPrintf("CContent DecodeDomainForward cc,cc:%s\n",GetCcName((cctype)cc));
         if (cc >= CC_LINK_TYPESTRING && cc <= CC_LINK_TYPE_UNKNOWN) 
         {
          //   LogPrintf("CContent DecodeLink,haslinktype:%s\n",GetCcName((cctype)cc));

@@ -60,7 +60,7 @@ public:
     bool SetJson(const Array& cttJson);
     bool SetUnit(const cctype& cc, const std::string& cttStr);
     bool SetUnit(const std::string& ccname, const std::string& cttStr);
-    std::string ToHumanString(int& nMaxCC);
+    std::string ToHumanString(int& nMaxCC)const;
     bool GetCcUnit(const_iterator& pc, cctype& ccRet, std::string& content) const;
     bool ReadVarInt(const_iterator& pc, uint64_t& n)const;
     bool ReadCompactSize(const_iterator& pc, uint64_t& n)const;

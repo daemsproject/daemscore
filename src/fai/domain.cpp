@@ -42,7 +42,10 @@ bool CheckDomainName(const string str)
 }
 bool CDomain::SetContent(const CContent content,const CScript ownerIn,bool& fRegister,bool& fForward)
 {
-    //LogPrintf("SetContent \n"); 
+    string str;
+    content.ToJsonString(str);
+    
+    //LogPrintf("SetContent %s\n",str.c_str()); 
     fRegister=false;
     fForward=false;
     std::vector<std::pair<int, string> > vDecoded;
@@ -57,25 +60,32 @@ bool CDomain::SetContent(const CContent content,const CScript ownerIn,bool& fReg
         string str=vDecoded[i].second;
         if(vDecoded[i].first==CC_DOMAIN)
         {
-            if(strDomain!="")
-                return false;
+            //LogPrintf("domain SetContent  cc_domain 1\n");    
+            
+              
             if(str.size()<3||str.size()>64)
                 return false;
+           // LogPrintf("domain SetContent  cc_domain 3\n");    
             if(!CheckDomainName(str))
                 return false;
+            //LogPrintf("domain SetContent  cc_domain 4\n");    
             boost::algorithm::to_lower(str);
             if(strDomain==str)
             {
                // LogPrintf("SetContent domain found %s\n",str);    
                 fHasDomain=true;
                 break;
-            }            
+            }           
             
+            if(strDomain!="")//if domain name in is different from existing one, and existing is not null ,reture false
+                return false;
+            //LogPrintf("domain SetContent  cc_domain 5\n");    
             nDomainGroup=GetDomainGroup(str);
+           // LogPrintf("domain SetContent  cc_domain 6\n");    
             if(nDomainGroup==0)
                 return false;
                     
-            LogPrintf("SetContent nDomainGroup %i,domain %s\n",nDomainGroup,str); 
+           // LogPrintf("SetContent nDomainGroup %i,domain %s\n",nDomainGroup,str); 
             fHasDomain=true;
             strDomain=str;//.substr(0,str.size()-nDomainGroup=DOMAIN_EXTENSION_F?2:4);
         }
@@ -93,9 +103,9 @@ bool CDomain::SetContent(const CContent content,const CScript ownerIn,bool& fReg
         vector<unsigned char>vuc;
         switch (vDecoded[i].first)
         {
-            //LogPrintf("SetContent cc code %i\n",vDecoded[i].first); 
+          //  LogPrintf("SetContent cc code %s\n",GetCcName((cctype)vDecoded[i].first)); 
             case CC_DOMAIN_FORWARD_P:     
-              //  LogPrintf("SetContent forward\n"); 
+           //     LogPrintf("SetContent forward\n"); 
                 if(str.size()==0)
                 {
                     redirectType=CC_NULL;
@@ -104,7 +114,7 @@ bool CDomain::SetContent(const CContent content,const CScript ownerIn,bool& fReg
                 }
                 else if(CContent(str).DecodeDomainForward(redirectType,redirectTo,forwardsig))
                     fForward=true;
-              //  LogPrintf("SetContent forward %i %s\n",redirectType,HexStr(redirectTo.begin(),redirectTo.end()));
+           //     LogPrintf("SetContent forward %i %s\n",redirectType,HexStr(redirectTo.begin(),redirectTo.end()));
                 break;
             case CC_DOMAIN_INFO_P:
               //  LogPrintf("SetContent info\n"); 

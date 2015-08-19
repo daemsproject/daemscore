@@ -226,12 +226,15 @@ std::string CLink::ToString(const linkformat linkFormat)const
 {
     if (IsEmpty())
         return "";
-    std::string r = URI_SCHEME_NAME;
-    r += URI_COLON;
+    std::string r;
+    if(linkFormat!=LINK_FORMAT_DEC_NOSCHEMA)
+        r= URI_SCHEME_NAME + URI_COLON;
+    
     std::string nHeightS;
     std::string nTxS;
     std::string nVoutS;
     switch (linkFormat) {
+        case LINK_FORMAT_DEC_NOSCHEMA:
         case LINK_FORMAT_DEC:
             nHeightS = strpatch::to_string(nHeight);
             nTxS = strpatch::to_string(nTx);

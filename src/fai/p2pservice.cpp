@@ -33,6 +33,7 @@ bool ProcessP2PServiceRequest(CNode* pfrom,CDataStream& vRecv, int64_t nTimeRece
     int sc;
     int msgID;//an id for client to distingish requests
     vRecv>>sc>>msgID;
+    LogPrintf("ProcessP2PServiceRequest sc:%s,msgID:%i \n",sc,msgID);
     switch (sc)
     {
         case SC_FULLNODEPLUS_C_GETTX_BYTXID:

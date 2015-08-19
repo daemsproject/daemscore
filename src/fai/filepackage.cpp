@@ -158,7 +158,35 @@ bool CFilePackage::InstallPackage(const string strDirName, const bool fInternal,
         string strFilecontent;
         if (GetFileFromLinks(it->second, strFilecontent, timeOut)) {
             LogPrintf("InstallPackage filename %s length:%i\n", it->first, strFilecontent.size());
-            boost::filesystem::path fpFile = fpPath / it->first;
+            boost::filesystem::path fpFile= fpPath;
+            //parse path included in file name
+            string strFileName=it->first;
+            if(strFileName.find("..")!=strFileName.npos||strFileName.find("//")!=strFileName.npos)
+                return false;
+            while(strFileName.find("/")==0)
+            {
+                if(strFileName.size()==1)
+                    return false;
+                strFileName=strFileName.substr(1);
+            }
+            
+            while(true)
+            {
+                int pos=strFileName.find("/");
+                if(pos==(int)strFileName.size()-1)
+                    return false;
+                if(pos==(int)strFileName.npos)
+                {                    
+                    break;
+                }
+                else
+                {
+                    fpFile /=strFileName.substr(0,pos);
+                    strFileName=strFileName.substr(pos+1);
+                }            
+            }
+            boost::filesystem::create_directories(fpFile);
+            fpFile /=strFileName;
             if (!StringToFile(fpFile.string(), strFilecontent))
                 return false;
         } else
@@ -417,7 +445,7 @@ Value CFilePackage::ToJson()const
 
 bool GetFilePackageUrl(const CLink link, string& url)
 {
-    string packageName = link.ToString();
+    string packageName = link.ToString(LINK_FORMAT_DEC_NOSCHEMA);    
     if (GetFilePackageMain(packageName, url, false))
         return true;
     CFilePackage package(link);
