@@ -1145,13 +1145,13 @@ bool AppInit2(boost::thread_group& threadGroup)
         mempool.ReadFeeEstimates(est_filein);
     fFeeEstimatesInitialized = true;
     //added codes to ensure nLastBlockFile is pointing to the last block file
-    while(true)
-    {
-        CDiskBlockPos pos(nLastBlockFile+1, 0);
-        if (!boost::filesystem::exists(GetBlockPosFilename(pos, "blk")))
-            break;
-        nLastBlockFile++;
-    }
+//    while(true)
+//    {
+//        CDiskBlockPos pos(nLastBlockFile+1, 0);
+//        if (!boost::filesystem::exists(GetBlockPosFilename(pos, "blk")))
+//            break;
+//        nLastBlockFile++;
+//    }
     
     // ********************************************************* Step 8: load wallet
     

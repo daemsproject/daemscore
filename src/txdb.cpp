@@ -244,14 +244,16 @@ CBlockPosDB::CBlockPosDB(CSqliteWrapper* dbIn,bool fWipe) : db(dbIn)
 }
 bool CBlockPosDB::Write(const int nFile,const int nPos,const uint256 hashBlock,const int nHeight)
 {
-    int64_t nPosDB=(int64_t)nFile<<32|nPos;    
+    int64_t nPosDB=(((int64_t)nFile)<<32)|nPos;
+    
     return db->WriteBlockPos(nPosDB,hashBlock,nHeight);
     //return db->Insert("table_blockpos","blockheight",SQLITEDATATYPE_INT,nHeight,"blockhash",SQLITEDATATYPE_BLOB,vch,"pos",SQLITEDATATYPE_INT64,nPosDB,true);
     
 }
 bool CBlockPosDB::GetByPos(const int nFile,const int nPos,uint256& hashBlock,int& nHeight)
 {
-    int64_t nPosDB=(int64_t)nFile<<32|nPos;
+    int64_t nPosDB=(((int64_t)nFile)<<32)|nPos;
+    //LogPrintf("CBlockPosDB::GetByPos :%lld \n",nPosDB);
     return db->GetBlockPosItem(nPosDB,hashBlock,nHeight);    
 }
 CScript2TxPosDB::CScript2TxPosDB(CSqliteWrapper* dbIn,bool fWipe) : db(dbIn)

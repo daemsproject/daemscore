@@ -177,7 +177,7 @@ bool CSqliteWrapper::CreateBlockDomainTable()
     char* zErrMsg=0;    
     string tableName="blockdomaintable";
     char sql[2000];
-    const string createtablestatement="CREATE TABLE IF NOT EXISTS %s( blockheight BLOB(32) PRIMARY KEY, mapdomains BLOB);";    
+    const string createtablestatement="CREATE TABLE IF NOT EXISTS %s( blockhash BLOB(32) PRIMARY KEY, mapdomains BLOB);";    
     sprintf(sql,createtablestatement.c_str(),tableName.c_str());
     LogPrintf("CSqliteWrapper CreateBlockDomainTable statement %s \n",sql);
     sqlite3_exec(pdb,sql,0,0,&zErrMsg);
@@ -576,13 +576,14 @@ bool CSqliteWrapper::GetBlockDomains(const uint256 blockHash,CDataStream& sBlock
     //LogPrintf("CSqliteWrapper GetBlockDomains \n");
     //char* zErrMsg=0;
     char sql[2000]; 
-    const char* selectstatement="SELECT mapdomains FROM blockdomaintable WHERE blockheight = x'%s';";
-    sprintf(sql,selectstatement,blockHash.GetHex().c_str());
+    const char* selectstatement="SELECT mapdomains FROM blockdomaintable WHERE blockhash = ?;";
+    //sprintf(sql,selectstatement,blockHash.GetHex().c_str());
     
     //LogPrintf("CSqliteWrapper GetBlockDomains sql %s\n",sql); 
     sqlite3_stmt  *stmt = NULL;
     int rc;
-    rc = sqlite3_prepare_v2(pdb , sql , strlen(sql) , &stmt , NULL);
+    rc = sqlite3_prepare_v2(pdb , selectstatement , strlen(selectstatement) , &stmt , NULL);
+    rc= sqlite3_bind_blob( stmt, 1, (char*)blockHash.begin(), 32, NULL );   
     if(rc != SQLITE_OK)
     {
         if(stmt)        
@@ -1401,15 +1402,16 @@ bool CSqliteWrapper::GetScriptIndex(const CScript script,int64_t& scriptIndex) c
 {
     //LogPrintf("CSqliteWrapper GetScriptIndex \n");
     //char* zErrMsg=0;
-    char sql[2000]; 
-    const string selectstatement="SELECT scriptindex FROM table_script2txpos WHERE script = x'%s';";  
-    string strScript=HexStr(script.begin(),script.end());    
-    sprintf(sql,selectstatement.c_str(),strScript.c_str());
+    //char sql[2000]; 
+    const char* sql="SELECT scriptindex FROM table_script2txpos WHERE script = ?;";  
+    //string strScript=HexStr(script.begin(),script.end());    
+    //sprintf(sql,selectstatement.c_str(),strScript.c_str());
     
     //LogPrintf("CSqliteWrapper GetScriptIndex sql %s\n",sql); 
     sqlite3_stmt  *stmt = NULL;
     int rc;
     rc = sqlite3_prepare_v2(pdb , sql , strlen(sql) , &stmt , NULL);
+    rc=sqlite3_bind_blob( stmt, 1, (char*)&script[0], script.size(), NULL ); 
     if(rc != SQLITE_OK)
     {
         LogPrintf("CSqliteWrapper GetScriptIndex failed %i\n",rc);
@@ -1499,10 +1501,9 @@ bool CSqliteWrapper::GetTxIndex(const uint256 txid,int64_t& txIndex) const
 {
     //LogPrintf("CSqliteWrapper GetTxIndex \n");
     //char* zErrMsg=0;
-    char sql[2000]; 
-    const string selectstatement="SELECT txindex FROM txindextable WHERE txid = ?;";  
+    const char* sql="SELECT txindex FROM txindextable WHERE txid = ?;";  
     //string strTxid=txid.GetHex();
-    sprintf(sql,selectstatement.c_str());//,strTxid.c_str());
+    //sprintf(sql,selectstatement.c_str());//,strTxid.c_str());
     
     //LogPrintf("CSqliteWrapper GetTxIndex sql %s\n",sql); 
     sqlite3_stmt  *stmt = NULL;
@@ -1743,27 +1744,31 @@ bool CSqliteWrapper::GetCheques(const vector<CScript>& vScript,vector<CCheque> &
 
 bool CSqliteWrapper::GetBlockPosItem(const int64_t nPosDB,uint256& hashBlock,int& nHeight)
 {
-    char sql[2000]; 
+    //char sql[2000]; 
     string tableName="table_blockpos";
-    const char* selectstatement="SELECT blockhash,blockheight FROM table_blockpos WHERE pos< %i ORDER BY pos DESC LIMIT 1;";    
-     sprintf(sql,selectstatement,nPosDB);
-    //LogPrintf("CSqliteWrapper GetTagID sql %s\n",sql); 
+    const char* sql="SELECT blockhash,blockheight FROM table_blockpos WHERE pos< ? ORDER BY pos DESC LIMIT 1;";    
+    // sprintf(sql,selectstatement,nPosDB);
+    //LogPrintf("CSqliteWrapper GetBlockPosItem sql %s\n",sql); 
+    
     sqlite3_stmt  *stmt = NULL;
     int rc;
-    rc = sqlite3_prepare_v2(pdb , sql , strlen(sql) , &stmt , NULL);
+    rc = sqlite3_prepare_v2(pdb , sql , strlen(sql) , &stmt , NULL);    
     if(rc != SQLITE_OK)
     {
         if(stmt)        
             sqlite3_finalize(stmt);               
         return false;
     }
+    rc=sqlite3_bind_int64( stmt, 1, nPosDB); 
     rc = sqlite3_step(stmt);
     if(rc == SQLITE_ROW)
     {
-        string strHash=string((char*)sqlite3_column_blob(stmt,0),(char*)sqlite3_column_blob(stmt,0)+sqlite3_column_bytes(stmt,0));                    
-        hashBlock.SetHex(HexStr(strHash.begin(),strHash.end()));
+        //string strHash=string((char*)sqlite3_column_blob(stmt,0),(char*)sqlite3_column_blob(stmt,0)+sqlite3_column_bytes(stmt,0));                    
+        //hashBlock.SetHex(HexStr(strHash.begin(),strHash.end()));
         //LogPrintf("GetBlockPosItem:hash:%s \n",hashBlock.GetHex());
-        nHeight=   sqlite3_column_int(stmt,  1);     
+        memcpy(hashBlock.begin(),(unsigned char*)sqlite3_column_blob(stmt,  0),32);
+        nHeight=   sqlite3_column_int(stmt,  1); 
+        //LogPrintf("GetBlockPosItem: height:%i \n",nHeight);
         sqlite3_finalize(stmt);
         return true;
     }
@@ -1782,9 +1787,10 @@ bool CSqliteWrapper::WriteBlockPos(const int64_t nPosDB,const uint256& hashBlock
    //LogPrintf("WriteBlockPos %i\n",result);   
     result=sqlite3_bind_int( stat, 1, nHeight);    
     //LogPrintf("WriteBlockPos %i\n",result);   
-    std::vector<unsigned char> vch=ParseHex(hashBlock.GetHex());
+    //std::vector<unsigned char> vch=ParseHex(hashBlock.GetHex());
     //LogPrintf("WriteBlockPos %i\n",result);   
-    result=sqlite3_bind_blob( stat, 2, &vch[0], 32, NULL );
+    //result=sqlite3_bind_blob( stat, 2, &vch[0], 32, NULL );
+    result=sqlite3_bind_blob( stat, 2, hashBlock.begin(), 32, NULL );
     result=sqlite3_bind_int64( stat, 3, nPosDB);    
     result=sqlite3_step( stat );
     if(result!=0&&result!=101)

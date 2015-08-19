@@ -63,7 +63,7 @@ bool fCheckBlockIndex = false;
 unsigned int nCoinCacheSize = 5000;
 bool fAlerts = DEFAULT_ALERTS;
 uint64_t nMaxMempoolSize=DEFAULT_BLOCK_MAX_SIZE * 960;
-
+int nLastBlockFile = 0;
 CFeeRate minRelayTxFee = CFeeRate(1000);
 
 CTxMemPool mempool(::minRelayTxFee);
@@ -3161,6 +3161,7 @@ bool AcceptBlock(CBlock& block, CValidationState& state, CBlockIndex** ppindex, 
         if (dbp == NULL)
             if (!WriteBlockToDisk(block, blockPos))
                 return state.Abort("Failed to write block");
+        LogPrintf("accpetblock pos:%i,%i",blockPos.nFile,blockPos.nPos);
         if (!ReceivedBlockTransactions(block, state, pindex, blockPos))
             return error("AcceptBlock() : ReceivedBlockTransactions failed");
     } catch(std::runtime_error &e) {
@@ -3424,14 +3425,18 @@ bool static LoadBlockIndexDB()
         pblocktree->ReadBlockFileInfo(nFile, vinfoBlockFile[nFile]);
     }
     LogPrintf("%s: last block file info: %s\n", __func__, vinfoBlockFile[nLastBlockFile].ToString());
-    for (int nFile = nLastBlockFile + 1; true; nFile++) {
+    //for (int nFile = nLastBlockFile + 1; true; nFile++) {
+    while(true)
+    {
         CBlockFileInfo info;
-        if (pblocktree->ReadBlockFileInfo(nFile, info)) {
+        if (pblocktree->ReadBlockFileInfo(nLastBlockFile+1, info)) {
             vinfoBlockFile.push_back(info);
+            nLastBlockFile++;
         } else {
             break;
         }
     }
+    
 
     // Check presence of blk files
     LogPrintf("Checking all blk files are present...\n");
