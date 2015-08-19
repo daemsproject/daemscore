@@ -2831,7 +2831,7 @@ bool FindBlockPos(CValidationState &state, CDiskBlockPos &pos, unsigned int nAdd
         pos.nFile = nFile;
         pos.nPos = vinfoBlockFile[nFile].nSize;
     }
-    if (nFile>nLastBlockFile)
+    if ((int)nFile>nLastBlockFile)
     nLastBlockFile = nFile;
         vinfoBlockFile[nFile].AddBlock(nHeight, nTime);
     if (fKnown)
@@ -4780,12 +4780,15 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         if (vInv.size() > 0)
             pfrom->PushMessage("inv", vInv);
     }
-    else if (strCommand == "service"&&settings.nServiceFlags>>3&1)
+    else if (strCommand == "service")
     {
-        LOCK(cs_main);
-        return ProcessP2PServiceRequest(pfrom, vRecv,  nTimeReceived);
+        LogPrintf("process messgaes,service command recieved:%s \n",HexStr(vRecv.begin(),vRecv.end()));
+        if(settings.nServiceFlags>>3&1)
+        {
+            LOCK(cs_main);
+            return ProcessP2PServiceRequest(pfrom, vRecv,  nTimeReceived);
+        }
     }
-
     else if (strCommand == "ping")
     {
         if (pfrom->nVersion > BIP0031_VERSION)

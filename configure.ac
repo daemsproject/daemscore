@@ -181,7 +181,7 @@ AC_ARG_WITH([libs],
   [AS_HELP_STRING([--with-libs],
   [build libraries (default=yes)])],
   [build_bitcoin_libs=$withval],
-  [build_bitcoin_libs=yes])
+  [build_bitcoin_libs=no])
 
 AC_ARG_WITH([daemon],
   [AS_HELP_STRING([--with-daemon],
@@ -285,10 +285,10 @@ case $host in
            PKG_CONFIG_PATH="$openssl_prefix/lib/pkgconfig:$PKG_CONFIG_PATH"
            export PKG_CONFIG_PATH
          fi
-         dnl if test x$bdb_prefix != x; then
-         dnl   CPPFLAGS="$CPPFLAGS -I$bdb_prefix/include"
-         dnl   LIBS="$LIBS -L$bdb_prefix/lib"
-         dnl fi
+          if test x$bdb_prefix != x; then
+            CPPFLAGS="$CPPFLAGS -I$bdb_prefix/include"
+            LIBS="$LIBS -L$bdb_prefix/lib"
+          fi
          if test x$qt5_prefix != x; then
            PKG_CONFIG_PATH="$qt5_prefix/lib/pkgconfig:$PKG_CONFIG_PATH"
            export PKG_CONFIG_PATH
