@@ -182,7 +182,7 @@ void JsInterface::notifyNewExtendedKey(const std::string id)
 //    SERVICEPAGE_ID=8
 //};
 //static const std::string appNames[9]={"null","wallet","browser","publisher","messenger","miner","domainname","setting","service"};
-QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
+QString JsInterface::jscall(const QString command,const QString dataJson,const int nPageID,const int nPageIndex){
     json_spirit::Value valData;
     json_spirit::Array arrData;
     json_spirit::Value valResult;
@@ -190,58 +190,58 @@ QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
     try {
         if (dataJson.size()>0){            
             if (!json_spirit::read_string(dataJson.toStdString(),valData))
-                return QString("{\"error\":\"data is not json format\"}");
+                return tr("{\"error\":\"data is not json format\"}");
             if (valData.type()!=json_spirit::array_type)
-                return QString("{\"error\":\"data is not json array\"}");
+                return tr("{\"error\":\"data is not json array\"}");
             arrData=valData.get_array();
             if (strCmd==string("requestpayment"))
-                return walletModel->HandlePaymentRequest(arrData);
+                return walletModel->HandlePaymentRequest(arrData,nPageIndex);
             if (strCmd==string("requestpayment2"))
-                return walletModel->HandlePaymentRequest2(arrData);
+                return walletModel->HandlePaymentRequest2(arrData,nPageIndex);
             if (strCmd==string("encryptmessages"))
-                return walletModel->EncryptMessages(arrData);
+                return walletModel->EncryptMessages(arrData,nPageIndex);
             if (strCmd==string("sendmessage"))
             {
                 if(nPageID==MESSENGERPAGE_ID)
-                return walletModel->SendMessage(arrData);
+                return walletModel->SendMessage(arrData,nPageIndex);
                 else
-                    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid pageID, send message out of messenger is forbidden");
+                    return tr("Invalid pageID, send message out of messenger is forbidden");
             }
             if (strCmd==string("registerdomain"))
-                return walletModel->RegisterDomain(arrData);
+                return walletModel->RegisterDomain(arrData,nPageIndex);
             if (strCmd==string("renewdomain"))
-                return walletModel->RenewDomain(arrData);
+                return walletModel->RenewDomain(arrData,nPageIndex);
             if (strCmd==string("updatedomain"))
-                return walletModel->UpdateDomain(arrData);
+                return walletModel->UpdateDomain(arrData,nPageIndex);
             if (strCmd==string("transferdomain"))
-                return walletModel->TransferDomain(arrData);
+                return walletModel->TransferDomain(arrData,nPageIndex);
             if (strCmd==string("publishproduct"))
-                return walletModel->PublishProduct(arrData);
+                return walletModel->PublishProduct(arrData,nPageIndex);
             if (strCmd==string("buyproduct"))
-                return walletModel->BuyProduct(arrData);
+                return walletModel->BuyProduct(arrData,nPageIndex);
             if (strCmd==string("publishpackage"))
-                return walletModel->PublishPackage(arrData);
+                return walletModel->PublishPackage(arrData,nPageIndex);
             if (strCmd==string("signmessage"))
-                return walletModel->SignMessage(arrData);
+                return walletModel->SignMessage(arrData,nPageIndex);
              
             if (strCmd==string("gotocustompage"))
                 return GoToCustomPage(arrData,nPageID);
             if(strCmd==string("setlang"))
             {
                 if (nPageID!=SETTINGPAGE_ID)
-                    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid pageID, lang setting is forbidden");
+                    return tr("Invalid pageID, lang setting is forbidden");
                 return SetLang(arrData);
             }
             if (strCmd==string("writefile")||strCmd==string("readfile")
                     ||strCmd==string("getconf")||strCmd==string("setconf"))
             {
                 if(arrData[0].type()!=str_type)
-                    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, expected string");
+                    return tr("Invalid parameter, expected string");
                 std::string appName=arrData[0].get_str();
                 //if (nPageID==WALLETPAGE_ID)
                 //    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid pageID, wallet page setting is forbidden");
                 if (nPageID<=HELPPAGE_ID&&mapPageNames[nPageID]!=appName)
-                    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid appName, not corresponding to pageid");
+                    return tr("Invalid appName, not corresponding to pageid");
             }
             
                 
@@ -252,22 +252,22 @@ QString JsInterface::jscall(QString command,QString dataJson,int nPageID){
         if (strCmd==string("getsettings")||strCmd==string("updatesettings"))
             {
                 if(nPageID!=SETTINGPAGE_ID)
-                    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid pageID, getettings is forbidden");                
+                    return tr("Invalid pageID, getettings is forbidden");                
             }
         if (strCmd==string("getidlist")||strCmd==string("getmainid")||strCmd==string("getnewid")||strCmd==string("listunspent"))
             {
                 if(nPageID>HELPPAGE_ID)
-                    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid pageID, get id is forbidden");                
+                    return tr("Invalid pageID, get id is forbidden");                
             }
         if (strCmd==string("listtransactions")&&(nPageID>HELPPAGE_ID))
             {
                 if (dataJson.size()==0||arrData[0].get_str()=="")
-                    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid pageID, get id is forbidden");                
+                    return tr("Invalid pageID, get id is forbidden");                
             }
         if (strCmd==string("clearcache"))
             {
                 if(nPageID!=SETTINGPAGE_ID)
-                    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid pageID, getettings is forbidden");
+                    return tr("Invalid pageID, getettings is forbidden");
                 ClearFilePackageCache();
                 return QString("OK");
             }
@@ -315,15 +315,15 @@ QString JsInterface::GetLang()
 QString JsInterface::SetLang(Array arr)
 {
     if(arr.size()==0)
-        return QString("{\"error\":\"no data\"}");
+        return tr("{\"error\":\"no data\"}");
     Value val=arr[0];
     if(val.type()!=str_type)
-        return QString("{\"error\":\"data is not string\"}");
+        return tr("{\"error\":\"data is not string\"}");
     QSettings settings;
     settings.setValue("language",QString().fromStdString(val.get_str()));
     return QString("OK");
 }
-QString JsInterface::jscallasync(QString command,QString dataJson,QString successfunc,QString errorfunc,int nPageID){
+QString JsInterface::jscallasync(const QString command,const QString dataJson,const QString successfunc,const QString errorfunc,const int nPageID,const int nPageIndex){
     LogPrintf("jsinterface:jscallasync command %s\n",command.toStdString());
    
 
@@ -335,9 +335,9 @@ QString JsInterface::jscallasync(QString command,QString dataJson,QString succes
     mapAsync.insert(make_pair(strToken,make_pair(successfunc,errorfunc)));
     try {        
         if (!json_spirit::read_string(dataJson.toStdString(),valData))
-            return QString("{\"error\":\"data is not json format\"}");
+            return tr("{\"error\":\"data is not json format\"}");
         if (valData.type()!=json_spirit::array_type)
-            return QString("{\"error\":\"data is not json array\"}");
+            return tr("{\"error\":\"data is not json array\"}");
         arrData=valData.get_array();           
 
     }
@@ -348,8 +348,8 @@ QString JsInterface::jscallasync(QString command,QString dataJson,QString succes
      }
    
    
-    jscallback("0",false,QString().fromStdString("{\"error\":\"command not found\"}"));
-    return QString("{\"error\":\"command not found\"}");
+    jscallback("0",false,tr("{\"error\":\"command not found\"}"));
+    return tr("{\"error\":\"command not found\"}");
    
     //QString result=jscall(command,dataJson);
     
@@ -381,9 +381,9 @@ void JsInterface::jscallback(std::string strToken,bool fSuccess,QString dataJson
 QString JsInterface::GoToCustomPage(Array arr,int nPageID)
 {
     if(arr.size()<1)
-        return QString("{\"error\":\"params less than 1\"}");
+        return tr("{\"error\":\"params less than 1\"}");
     if(arr[0].type()!=str_type)
-        return QString("{\"error\":\"param 1 is not str\"}");
+        return tr("{\"error\":\"param 1 is not str\"}");
     emit gotoCustomPage(QUrl(QString().fromStdString(arr[0].get_str())),nPageID);
     return QString("OK");
     

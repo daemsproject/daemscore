@@ -97,10 +97,10 @@ public:
     bool exportAccount(QString ID);
     bool importAccount();
     bool setWalletLocked(bool locked, const SecureString &passPhrase=SecureString(),int nUnlockTime=3600);  
-    QString HandlePaymentRequest(const json_spirit::Array arrData);    
-    QString HandlePaymentRequest2(const json_spirit::Array arrData);  
-    QString DoPayment(const CPaymentOrder& pr);
-    QString EncryptMessages(json_spirit::Array params);
+    QString HandlePaymentRequest(const json_spirit::Array arrData,const int nPageIndex=-1);    
+    QString HandlePaymentRequest2(const json_spirit::Array arrData,const int nPageIndex=-1);  
+    QString DoPayment(const CPaymentOrder& pr,const int nPageIndex=-1);
+    QString EncryptMessages(json_spirit::Array params,const int nPageIndex=-1);
     //bool handlePaymentRequest(CWalletTx tx,int nOP,string strError,SecureString& ssInput);  
     QString getPublishContentMessage(const CWalletTx& tx,const CPaymentOrder& pr);  
     QString getPaymentAlertMessage(const CWalletTx& tx);
@@ -109,17 +109,17 @@ public:
     QString getDomainUpdateAlertMessage(const CWalletTx& tx,const CPaymentOrder& pr);
     QString getDomainTransferAlertMessage(const CWalletTx& tx,const CPaymentOrder& pr);
     QString getDomainRenewAlertMessage(const CWalletTx& tx,const CPaymentOrder& pr);
-    QString SendMessage(json_spirit::Array arrData);
-    QString SignMessage(json_spirit::Array arrData);
-    QString RegisterDomain(json_spirit::Array arrData);
-    QString UpdateDomain(json_spirit::Array arrData);
-    QString RenewDomain(json_spirit::Array arrData);
-    QString TransferDomain(json_spirit::Array arrData);
-    QString PublishProduct(json_spirit::Array arrData);
-    QString BuyProduct(json_spirit::Array arrData);
+    QString SendMessage(json_spirit::Array arrData,const int nPageIndex=-1);
+    QString SignMessage(json_spirit::Array arrData,const int nPageIndex=-1);
+    QString RegisterDomain(json_spirit::Array arrData,const int nPageIndex=-1);
+    QString UpdateDomain(json_spirit::Array arrData,const int nPageIndex=-1);
+    QString RenewDomain(json_spirit::Array arrData,const int nPageIndex=-1);
+    QString TransferDomain(json_spirit::Array arrData,const int nPageIndex=-1);
+    QString PublishProduct(json_spirit::Array arrData,const int nPageIndex=-1);
+    QString BuyProduct(json_spirit::Array arrData,const int nPageIndex=-1);
     QString getSMSAlertMessage(const CPaymentOrder& pr);
     QString getSignMsgAlertMessage(const string add,const string msg)const;
-    QString PublishPackage(json_spirit::Array arrData);
+    QString PublishPackage(json_spirit::Array arrData,const int nPageIndex=-1);
     // RAI object for unlocking wallet, returned by requestUnlock()
     class UnlockContext
     {

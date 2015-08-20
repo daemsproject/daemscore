@@ -29,8 +29,8 @@ public:
 public slots:    
     void notifyAccountSwitched(const std::string id);
     Q_INVOKABLE    
-    QString jscall(QString command,QString dataJson,int nPageID=0);
-    QString jscallasync(QString command,QString dataJson,QString successfunc,QString errorfunc,int nPageID=0);
+    QString jscall(const QString command,const QString dataJson,const int nPageID=0,const int nPageIndex=-1);
+    QString jscallasync(const QString command,const QString dataJson,const QString successfunc,const QString errorfunc,const int nPageID=0,const int nPageIndex=-1);
     void jscallback(std::string strToken,bool fSuccess,QString dataJson);
     
 signals:

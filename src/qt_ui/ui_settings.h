@@ -115,7 +115,6 @@ public:
         tabWidget->setObjectName(QStringLiteral("tabWidget"));
         tab = new QWidget();
         tab->setObjectName(QStringLiteral("tab"));
-        tab->setGeometry(QRect(0, 0, 627, 243));
         gridLayout_4 = new QGridLayout(tab);
         gridLayout_4->setObjectName(QStringLiteral("gridLayout_4"));
         label_3 = new QLabel(tab);
@@ -184,7 +183,6 @@ public:
         tabWidget->addTab(tab, QString());
         tab_3 = new QWidget();
         tab_3->setObjectName(QStringLiteral("tab_3"));
-        tab_3->setGeometry(QRect(0, 0, 627, 243));
         gridLayout_3 = new QGridLayout(tab_3);
         gridLayout_3->setObjectName(QStringLiteral("gridLayout_3"));
         label_5 = new QLabel(tab_3);
@@ -235,7 +233,6 @@ public:
         tabWidget->addTab(tab_3, QString());
         tab_2 = new QWidget();
         tab_2->setObjectName(QStringLiteral("tab_2"));
-        tab_2->setGeometry(QRect(0, 0, 627, 243));
         verticalLayout_3 = new QVBoxLayout(tab_2);
         verticalLayout_3->setObjectName(QStringLiteral("verticalLayout_3"));
         groupBox = new QGroupBox(tab_2);
@@ -303,7 +300,6 @@ public:
         tabWidget->addTab(tab_2, QString());
         tab_4 = new QWidget();
         tab_4->setObjectName(QStringLiteral("tab_4"));
-        tab_4->setGeometry(QRect(0, 0, 627, 243));
         verticalLayout = new QVBoxLayout(tab_4);
         verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
         proxySupport = new QGroupBox(tab_4);
@@ -408,7 +404,7 @@ public:
         QObject::connect(buttonBox, SIGNAL(accepted()), Settings, SLOT(accept()));
         QObject::connect(buttonBox, SIGNAL(rejected()), Settings, SLOT(reject()));
 
-        tabWidget->setCurrentIndex(0);
+        tabWidget->setCurrentIndex(4);
 
 
         QMetaObject::connectSlotsByName(Settings);

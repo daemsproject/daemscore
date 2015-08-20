@@ -30,5 +30,11 @@ RESOURCES += \
     browser.qrc \
     browser_locale.qrc
 
+CODECFORTR = UTF-8
+
+TRANSLATIONS += \
+   locale/bitcoin_en.ts \
+    locale/bitcoin_zh_CN.ts
+
 include(../faicoin.pri)
 include(qt.pri)

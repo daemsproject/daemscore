@@ -19,6 +19,7 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
+#include <QtWidgets/QPushButton>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 
@@ -35,6 +36,7 @@ public:
     QWidget *verticalLayoutWidget;
     QVBoxLayout *verticalLayout;
     QLabel *label_message;
+    QPushButton *btn_blockpage;
 
     void setupUi(QDialog *UserConfirmDialog)
     {
@@ -49,7 +51,7 @@ public:
         UserConfirmDialog->setSizeGripEnabled(false);
         buttonBox = new QDialogButtonBox(UserConfirmDialog);
         buttonBox->setObjectName(QStringLiteral("buttonBox"));
-        buttonBox->setGeometry(QRect(20, 260, 601, 31));
+        buttonBox->setGeometry(QRect(19, 260, 611, 31));
         buttonBox->setOrientation(Qt::Horizontal);
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
         buttonBox->setCenterButtons(true);
@@ -87,6 +89,9 @@ public:
 
         verticalLayout->addWidget(label_message);
 
+        btn_blockpage = new QPushButton(UserConfirmDialog);
+        btn_blockpage->setObjectName(QStringLiteral("btn_blockpage"));
+        btn_blockpage->setGeometry(QRect(20, 263, 99, 27));
 
         retranslateUi(UserConfirmDialog);
         QObject::connect(buttonBox, SIGNAL(accepted()), UserConfirmDialog, SLOT(accept()));
@@ -100,6 +105,7 @@ public:
         UserConfirmDialog->setWindowTitle(QApplication::translate("UserConfirmDialog", "Dialog", 0));
         label_7->setText(QApplication::translate("UserConfirmDialog", "Please input password:", 0));
         label_message->setText(QApplication::translate("UserConfirmDialog", "TextLabel", 0));
+        btn_blockpage->setText(QApplication::translate("UserConfirmDialog", "Block Page", 0));
     } // retranslateUi
 
 };

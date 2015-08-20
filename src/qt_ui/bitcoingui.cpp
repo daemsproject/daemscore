@@ -206,7 +206,7 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle *networkStyle,QString languageIn,  QWi
     jsInterface=new JsInterface(this);
     GUIUtil::restoreWindowGeometry("nWindow", QSize(850, 550), this);
 
-    QString windowTitle = tr("Faicoin Browser");
+    QString windowTitle = tr("Φ DeskTop Client");
 #ifdef ENABLE_WALLET
     /* if compiled with wallet support, -disablewallet can still disable the wallet */
     enableWallet = !GetBoolArg("-disablewallet", false);
@@ -230,7 +230,7 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle *networkStyle,QString languageIn,  QWi
 #endif
 #ifndef QT_NO_OPENSSL
     if (!QSslSocket::supportsSsl()) {
-    QMessageBox::information(0, "FAI Browser",
+    QMessageBox::information(0, "Φ DeskTop Client",
                  "This system does not support OpenSSL. SSL websites will not be available.");
     }
 #endif
@@ -570,7 +570,7 @@ LogPrintf("bitcoingui:createactions 2 \n");
 //    showHideTabBarAction->setStatusTip(tr("Show/Hide tab bar"));
 //    showHideTabBarAction->setCheckable(true);
     showHelpMessageAction = new QAction(QApplication::style()->standardIcon(QStyle::SP_MessageBoxInformation), tr("&Command-line options"), this);
-    showHelpMessageAction->setStatusTip(tr("Show the Faicoin Core help message to get a list with possible Faicoin command-line options"));
+    showHelpMessageAction->setStatusTip(tr("Show the Φ DeskTop Client help message to get a list with possible Fai command-line options"));
     settingsAction = new QAction(QIcon(":/icons/key"), tr("&Settings"), this);
     settingsAction->setStatusTip(tr("Settings"));
     settingsAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_S)); 
@@ -779,25 +779,25 @@ void BitcoinGUI::createMenuBar()
     appMenuBar->addMenu(historyMenu);
     QList<QAction*> historyActions;
 
-    m_historyBack = new QAction(tr("Back"), this);
+    m_historyBack = new QAction(tr("&Back"), this);
     mainView->addWebAction(m_historyBack, QWebPage::Back);
     m_historyBack->setShortcuts(QKeySequence::Back);
     m_historyBack->setIconVisibleInMenu(false);
     historyActions.append(m_historyBack);
 
-    m_historyForward = new QAction(tr("Forward"), this);
+    m_historyForward = new QAction(tr("&Forward"), this);
     mainView->addWebAction(m_historyForward, QWebPage::Forward);
     m_historyForward->setShortcuts(QKeySequence::Forward);
     m_historyForward->setIconVisibleInMenu(false);
     historyActions.append(m_historyForward);
 
-    QAction *m_historyHome = new QAction(tr("Home"), this);
+    QAction *m_historyHome = new QAction(tr("H&ome"), this);
     connect(m_historyHome, SIGNAL(triggered()), this, SLOT(slotHome()));
     m_historyHome->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_H));
     historyActions.append(m_historyHome);
 
 //#if defined(QWEBHISTORY_RESTORESESSION)
-    m_restoreLastSession = new QAction(tr("Restore Last Session"), this);
+    m_restoreLastSession = new QAction(tr("&Restore Last Session"), this);
     connect(m_restoreLastSession, SIGNAL(triggered()), this, SLOT(restoreLastSession()));
     m_restoreLastSession->setEnabled(canRestoreSession());
     historyActions.append(mainView->recentlyClosedTabsAction());
@@ -816,7 +816,7 @@ void BitcoinGUI::createMenuBar()
 
     QList<QAction*> bookmarksActions;
 
-    QAction *showAllBookmarksAction = new QAction(tr("Show All Bookmarks"), this);
+    QAction *showAllBookmarksAction = new QAction(tr("&Show All Bookmarks"), this);
     connect(showAllBookmarksAction, SIGNAL(triggered()), this, SLOT(slotShowBookmarksDialog()));
     m_addBookmark = new QAction(QIcon(QLatin1String(":addbookmark.png")), tr("Add Bookmark..."), this);
     m_addBookmark->setIconVisibleInMenu(false);
@@ -1029,7 +1029,7 @@ void BitcoinGUI::createTrayIcon(const NetworkStyle *networkStyle)
 {
 #ifndef Q_OS_MAC
     trayIcon = new QSystemTrayIcon(this);
-    QString toolTip = tr("Faicoin browser client") + " " + networkStyle->getTitleAddText();
+    QString toolTip = tr("Φ DeskTop Client") + " " + networkStyle->getTitleAddText();
     trayIcon->setToolTip(toolTip);
     trayIcon->setIcon(networkStyle->getAppIcon());
     trayIcon->show();
@@ -1336,7 +1336,7 @@ void BitcoinGUI::setNumConnections(int count)
     default: icon = ":/icons/connect_4"; break;
     }
     labelConnectionsIcon->setPixmap(QIcon(icon).pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
-    labelConnectionsIcon->setToolTip(tr("%n active connection(s) to Faicoin network", "", count));
+    labelConnectionsIcon->setToolTip(tr("%n active connection(s) to Φ network", "", count));
 }
 
 void BitcoinGUI::setNumBlocks(int count)
@@ -1451,7 +1451,7 @@ void BitcoinGUI::setNumBlocks(int count)
 
 void BitcoinGUI::message(const QString &title, const QString &message, unsigned int style, bool *ret)
 {
-    QString strTitle = tr("Faicoin"); // default title
+    QString strTitle = tr("Φ DeskTop Client"); // default title
     // Default to information icon
     int nMBoxIcon = QMessageBox::Information;
     int nNotifyIcon = Notificator::Information;
@@ -1804,31 +1804,40 @@ void BitcoinGUI::unsubscribeFromCoreSignals()
 //        //optionsModel->setDisplayUnit(action->data());
 //    }
 //}
-bool BitcoinGUI::handleUserConfirm(QString title,QString message,int nOP,string& strError,SecureString& ssInput){
+bool BitcoinGUI::handleUserConfirm(QString title,QString message,int nOP,string& strError,SecureString& ssInput,const int nPageIndex){
     //LogPrintf("bitcoingui handleUserConfirm received: \n");    
-        UserConfirmDialog dlg(this);
-        dlg.setWindowTitle(title);
-        dlg.ui->label_message->setText(message);
-        dlg.ui->label_message->setWordWrap(true);
+        UserConfirmDialog *dlg=new UserConfirmDialog(this,nPageIndex);
+        dlg->setWindowTitle(title);
+        dlg->ui->label_message->setText(message);
+        dlg->ui->label_message->setWordWrap(true);
         if (nOP!=1){
-            dlg.ui->label_7->hide();
-            dlg.ui->passwordEdit->hide();
-        }
-        
-        if(dlg.exec()){
+            dlg->ui->label_7->hide();
+            dlg->ui->passwordEdit->hide();
+        }        
+        //connect(dlg,SIGNAL(killPage(int)),mainView,SLOT(closeTab(int)));
+        bool fConfirm=dlg->exec();
+        delete dlg;
+        if(dlg->nPageIndex==-2)            
+            mainView->getWebView(nPageIndex)->fBlocked=true;
+        if(fConfirm){
+            //disconnect(dlg,SIGNAL(killPage(int)),mainView,SLOT(closeTab(int)));
             if(nOP==1){
                 ssInput.reserve(MAX_PASSPHRASE_SIZE);    
-                ssInput.assign(dlg.ui->passwordEdit->text().toStdString().c_str());           
+                ssInput.assign(dlg->ui->passwordEdit->text().toStdString().c_str());           
             }
-            LogPrintf("bitcoingui handleUserConfirm ok pressed, \n");             
+            LogPrintf("bitcoingui handleUserConfirm ok pressed, \n");  
+             
             return true;//QString("{\"success\":\"tx sent\"}");
             //emit sendMoneyResult(strToken,true,dlg.ui->passwordEdit->text());
         }else{
+            //LogPrintf("bitcoingui handleUserConfirm return value,%i \n",dlg->nPageIndex); 
+            //disconnect(dlg,SIGNAL(killPage(int)),mainView,SLOT(closeTab(int)));
             LogPrintf("bitcoingui handleUserConfirm cancel pressed \n"); 
-            strError="user cancelled";
+            strError="user cancelled";            
             return false;//QString("{\"error\":\"payment request cancelled\"}");
             //emit sendMoneyResult(strToken,false,QString().fromStdString("{\"result\":\"dialogue opened\"}"));
         }
+       
 }
 void BitcoinGUI::subscribeToCoreSignalsJs()
 {
@@ -1836,7 +1845,7 @@ void BitcoinGUI::subscribeToCoreSignalsJs()
 }
 void BitcoinGUI::updateToolbarActionText(bool visible)
 {
-    m_viewToolbar->setText(!visible ? tr("Show Navigate bar") : tr("Hide Navigate lbar"));
+    m_viewToolbar->setText(!visible ? tr("Show Navigate bar") : tr("Hide Navigate bar"));
 }
 void BitcoinGUI::slotAboutToShowBackMenu()
 {
@@ -2152,12 +2161,12 @@ void BitcoinGUI::slotUpdateWindowTitle(const QString &title)
 {
     //LogPrintf("slot triggered:BitcoinGUI::slotUpdateWindowTitle \n");
     if (title.isEmpty()) {
-        setWindowTitle(tr("FAI Browser"));
+        setWindowTitle(tr("Φ DeskTop Client"));
     } else {
 #if defined(Q_OS_OSX)
         setWindowTitle(title);
 #else
-        setWindowTitle(tr("%1 - fai Browser", "Page title and Browser name").arg(title));
+        setWindowTitle(tr("%1 - Φ DeskTop Client", "Page title and Browser name").arg(title));
 #endif
     }
 }
@@ -2385,7 +2394,7 @@ void BitcoinGUI::slotAboutApplication()
 {
     QMessageBox::about(this, tr("About"), tr(
         "Version %1"
-        "FAI Browser"
+        "Φ DeskTop Client"
         ).arg(QCoreApplication::applicationVersion()));
 }
 void BitcoinGUI::slotDownloadManager()

@@ -32,9 +32,10 @@ class UserConfirmDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit UserConfirmDialog(QWidget *parent );
+    explicit UserConfirmDialog(QWidget *parent ,int nPageIndexIn=-1);
     ~UserConfirmDialog();
     Ui::UserConfirmDialog *ui;
+    int nPageIndex;
     //QWidget *setupTabChain(QWidget *prev);
 
     //bool HandlePaymentRequest(std::string strToken,CPaymentOrder pr, CWalletTx tx,bool fRequestPassword);
@@ -54,6 +55,7 @@ private:
 
 
 private slots:
+    void on_blockPageClicked();
     //void on_sendButton_clicked();
     //void on_cancelButton_clicked();
 
@@ -61,6 +63,7 @@ private slots:
 signals:
     // Fired when a message should be reported to the user
     void message(const QString &title, const QString &message, unsigned int style);
+    //void killPage(int nPageIndex);
 };
 
 #endif // BITCOIN_QT_SENDCOINSDIALOG_H

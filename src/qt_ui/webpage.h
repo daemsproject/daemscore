@@ -73,14 +73,14 @@ public:
     int nPageID;    
     int nFromPageID;   
     WebPage *webPage() const { return m_page; }
-
+    bool fBlocked=false;
     void loadUrl(const QUrl &url);
     QUrl url() const;
     QIcon icon() const;
 
     QString lastStatusBarText() const;
     inline int progress() const { return m_progress; }
-
+    int GetTabIndex();
 private slots:    
     void addJSObject();
     void setProgress(int progress);
@@ -111,6 +111,7 @@ public slots:
     Q_INVOKABLE    
     QString jscall(QString command,QString dataJson);
     QString jscallasync(QString command,QString dataJson,QString successfunc,QString errorfunc);
+    //void block();
 signals:
     //Q_SIGNAL
     void feedback(QString str,QString func);    

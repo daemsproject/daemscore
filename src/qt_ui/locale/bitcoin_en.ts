@@ -1,327 +1,395 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="en">
+<TS version="2.1" language="en">
 <context>
-    <name>AddressBookPage</name>
+    <name>AccountDialog</name>
     <message>
-        <location filename="../forms/addressbookpage.ui" line="+30"/>
-        <source>Right-click to edit address or label</source>
+        <location filename="../forms/accountdialog.ui" line="+26"/>
+        <source>Passphrase Dialog</source>
+        <translation type="unfinished">Passphrase Dialog</translation>
+    </message>
+    <message>
+        <location line="+36"/>
+        <source>Preset NameKey Header</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+27"/>
-        <source>Create a new address</source>
-        <translation>Create a new address</translation>
+        <location line="+7"/>
+        <source>NameKey Header</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
-        <source>&amp;New</source>
+        <location line="+10"/>
+        <source>Estimated Calculating time:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>0</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Select Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Password Encryption</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Enter passphrase</source>
+        <translation type="unfinished">Enter passphrase</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Enter new passphrase</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+14"/>
-        <source>Copy the currently selected address to the system clipboard</source>
-        <translation>Copy the currently selected address to the system clipboard</translation>
+        <source>Repeat new passphrase</source>
+        <translation type="unfinished">Repeat new passphrase</translation>
+    </message>
+    <message>
+        <location line="+62"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Create</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>CreateAndSwitchTo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Encrypt wallet</source>
+        <translation type="obsolete">Encrypt wallet</translation>
+    </message>
+    <message>
+        <source>This operation needs your wallet passphrase to unlock the wallet.</source>
+        <translation type="obsolete">This operation needs your wallet passphrase to unlock the wallet.</translation>
+    </message>
+    <message>
+        <location filename="../accountdialog.cpp" line="+93"/>
+        <source>Unlock for(minutes):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unlock wallet</source>
+        <translation type="obsolete">Unlock wallet</translation>
+    </message>
+    <message>
+        <source>This operation needs your wallet passphrase to decrypt the wallet.</source>
+        <translation type="obsolete">This operation needs your wallet passphrase to decrypt the wallet.</translation>
+    </message>
+    <message>
+        <source>Decrypt wallet</source>
+        <translation type="obsolete">Decrypt wallet</translation>
+    </message>
+    <message>
+        <location line="+55"/>
+        <source>Change passphrase</source>
+        <translation type="unfinished">Change passphrase</translation>
+    </message>
+    <message>
+        <source>Enter the old and new passphrase to the wallet.</source>
+        <translation type="obsolete">Enter the old and new passphrase to the wallet.</translation>
+    </message>
+    <message>
+        <location line="-77"/>
+        <source>Enter the new passphrase to the account.&lt;br/&gt;Please use a passphrase of &lt;b&gt;ten or more random characters&lt;/b&gt;, or &lt;b&gt;eight or more words&lt;/b&gt;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Encrypt Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>This operation needs your account passphrase to unlock the account.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Unlock Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>This operation will lock the account.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Lock Account</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+3"/>
-        <source>&amp;Copy</source>
+        <source>This operation needs your account passphrase to decrypt the account.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+67"/>
-        <source>C&amp;lose</source>
+        <location line="+15"/>
+        <source>Decrypt account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../addressbookpage.cpp" line="+74"/>
-        <source>&amp;Copy Address</source>
-        <translation>&amp;Copy Address</translation>
-    </message>
-    <message>
-        <location filename="../forms/addressbookpage.ui" line="-53"/>
-        <source>Delete the currently selected address from the list</source>
-        <translation>Delete the currently selected address from the list</translation>
-    </message>
-    <message>
-        <location line="+30"/>
-        <source>Export the data in the current tab to a file</source>
-        <translation>Export the data in the current tab to a file</translation>
+        <location line="+14"/>
+        <source>Enter the old and new passphrase to the account.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+3"/>
-        <source>&amp;Export</source>
-        <translation>&amp;Export</translation>
-    </message>
-    <message>
-        <location line="-30"/>
-        <source>&amp;Delete</source>
-        <translation>&amp;Delete</translation>
-    </message>
-    <message>
-        <location filename="../addressbookpage.cpp" line="-30"/>
-        <source>Choose the address to send coins to</source>
+        <source>Create New Account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Choose the address to receive coins with</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>C&amp;hoose</source>
+        <location line="+13"/>
+        <source>Please fill in the form to create a new account.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+6"/>
-        <source>Sending addresses</source>
+        <source>Switch Account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Receiving addresses</source>
+        <location line="+15"/>
+        <source>Please choose an account to switch to.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+8"/>
+        <source>Export Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Please choose an account to export.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+158"/>
+        <source>Calculating NameKey header,please wait...</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>AddBookmarkDialog</name>
+    <message>
+        <location filename="../forms/addbookmarkdialog.ui" line="+13"/>
+        <source>Add Bookmark</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Type a name for the bookmark, and choose where to keep it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>AddressBookPage</name>
+    <message>
+        <source>Create a new address</source>
+        <translation type="vanished">Create a new address</translation>
+    </message>
+    <message>
+        <source>Copy the currently selected address to the system clipboard</source>
+        <translation type="vanished">Copy the currently selected address to the system clipboard</translation>
+    </message>
+    <message>
+        <source>&amp;Copy Address</source>
+        <translation type="vanished">&amp;Copy Address</translation>
+    </message>
+    <message>
+        <source>Delete the currently selected address from the list</source>
+        <translation type="vanished">Delete the currently selected address from the list</translation>
+    </message>
+    <message>
+        <source>Export the data in the current tab to a file</source>
+        <translation type="vanished">Export the data in the current tab to a file</translation>
+    </message>
+    <message>
+        <source>&amp;Export</source>
+        <translation type="vanished">&amp;Export</translation>
+    </message>
+    <message>
+        <source>&amp;Delete</source>
+        <translation type="vanished">&amp;Delete</translation>
+    </message>
+    <message>
         <source>These are your Faicoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation>These are your Faicoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</translation>
+        <translation type="vanished">These are your Faicoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>These are your Faicoin addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
         <source>Copy &amp;Label</source>
-        <translation>Copy &amp;Label</translation>
+        <translation type="vanished">Copy &amp;Label</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;Edit</source>
-        <translation>&amp;Edit</translation>
+        <translation type="vanished">&amp;Edit</translation>
     </message>
     <message>
-        <location line="+194"/>
-        <source>Export Address List</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Comma separated file (*.csv)</source>
-        <translation>Comma separated file (*.csv)</translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Exporting Failed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>There was an error trying to save the address list to %1. Please try again.</source>
-        <translation type="unfinished"></translation>
+        <translation type="vanished">Comma separated file (*.csv)</translation>
     </message>
 </context>
 <context>
     <name>AddressTableModel</name>
     <message>
-        <location filename="../addresstablemodel.cpp" line="+168"/>
         <source>Label</source>
-        <translation>Label</translation>
+        <translation type="vanished">Label</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Address</source>
-        <translation>Address</translation>
+        <translation type="vanished">Address</translation>
     </message>
     <message>
-        <location line="+36"/>
         <source>(no label)</source>
-        <translation>(no label)</translation>
+        <translation type="vanished">(no label)</translation>
     </message>
 </context>
 <context>
     <name>AskPassphraseDialog</name>
     <message>
-        <location filename="../forms/askpassphrasedialog.ui" line="+26"/>
         <source>Passphrase Dialog</source>
-        <translation>Passphrase Dialog</translation>
+        <translation type="vanished">Passphrase Dialog</translation>
     </message>
     <message>
-        <location line="+30"/>
         <source>Enter passphrase</source>
-        <translation>Enter passphrase</translation>
+        <translation type="vanished">Enter passphrase</translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>New passphrase</source>
-        <translation>New passphrase</translation>
+        <translation type="vanished">New passphrase</translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>Repeat new passphrase</source>
-        <translation>Repeat new passphrase</translation>
+        <translation type="vanished">Repeat new passphrase</translation>
     </message>
     <message>
-        <location filename="../askpassphrasedialog.cpp" line="+45"/>
         <source>Encrypt wallet</source>
-        <translation>Encrypt wallet</translation>
+        <translation type="vanished">Encrypt wallet</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>This operation needs your wallet passphrase to unlock the wallet.</source>
-        <translation>This operation needs your wallet passphrase to unlock the wallet.</translation>
+        <translation type="vanished">This operation needs your wallet passphrase to unlock the wallet.</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Unlock wallet</source>
-        <translation>Unlock wallet</translation>
+        <translation type="vanished">Unlock wallet</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>This operation needs your wallet passphrase to decrypt the wallet.</source>
-        <translation>This operation needs your wallet passphrase to decrypt the wallet.</translation>
+        <translation type="vanished">This operation needs your wallet passphrase to decrypt the wallet.</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Decrypt wallet</source>
-        <translation>Decrypt wallet</translation>
+        <translation type="vanished">Decrypt wallet</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Change passphrase</source>
-        <translation>Change passphrase</translation>
+        <translation type="vanished">Change passphrase</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Enter the old and new passphrase to the wallet.</source>
-        <translation>Enter the old and new passphrase to the wallet.</translation>
+        <translation type="vanished">Enter the old and new passphrase to the wallet.</translation>
     </message>
     <message>
-        <location line="+45"/>
         <source>Confirm wallet encryption</source>
-        <translation>Confirm wallet encryption</translation>
+        <translation type="vanished">Confirm wallet encryption</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR LITECOINS&lt;/b&gt;!</source>
-        <translation>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR LITECOINS&lt;/b&gt;!</translation>
+        <translation type="vanished">Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR LITECOINS&lt;/b&gt;!</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Are you sure you wish to encrypt your wallet?</source>
-        <translation>Are you sure you wish to encrypt your wallet?</translation>
+        <translation type="vanished">Are you sure you wish to encrypt your wallet?</translation>
     </message>
     <message>
-        <location line="+15"/>
         <source>IMPORTANT: Any previous backups you have made of your wallet file should be replaced with the newly generated, encrypted wallet file. For security reasons, previous backups of the unencrypted wallet file will become useless as soon as you start using the new, encrypted wallet.</source>
-        <translation>IMPORTANT: Any previous backups you have made of your wallet file should be replaced with the newly generated, encrypted wallet file. For security reasons, previous backups of the unencrypted wallet file will become useless as soon as you start using the new, encrypted wallet.</translation>
+        <translation type="vanished">IMPORTANT: Any previous backups you have made of your wallet file should be replaced with the newly generated, encrypted wallet file. For security reasons, previous backups of the unencrypted wallet file will become useless as soon as you start using the new, encrypted wallet.</translation>
     </message>
     <message>
-        <location line="+100"/>
-        <location line="+24"/>
         <source>Warning: The Caps Lock key is on!</source>
-        <translation>Warning: The Caps Lock key is on!</translation>
+        <translation type="vanished">Warning: The Caps Lock key is on!</translation>
     </message>
     <message>
-        <location line="-130"/>
-        <location line="+58"/>
         <source>Wallet encrypted</source>
-        <translation>Wallet encrypted</translation>
+        <translation type="vanished">Wallet encrypted</translation>
     </message>
     <message>
-        <location line="-136"/>
-        <source>Enter the new passphrase to the wallet.&lt;br/&gt;Please use a passphrase of &lt;b&gt;ten or more random characters&lt;/b&gt;, or &lt;b&gt;eight or more words&lt;/b&gt;.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+80"/>
         <source>Faicoin will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your faicoins from being stolen by malware infecting your computer.</source>
-        <translation>Faicoin will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your faicoins from being stolen by malware infecting your computer.</translation>
+        <translation type="vanished">Faicoin will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your faicoins from being stolen by malware infecting your computer.</translation>
     </message>
     <message>
-        <location line="+13"/>
-        <location line="+7"/>
-        <location line="+42"/>
-        <location line="+6"/>
         <source>Wallet encryption failed</source>
-        <translation>Wallet encryption failed</translation>
+        <translation type="vanished">Wallet encryption failed</translation>
     </message>
     <message>
-        <location line="-54"/>
         <source>Wallet encryption failed due to an internal error. Your wallet was not encrypted.</source>
-        <translation>Wallet encryption failed due to an internal error. Your wallet was not encrypted.</translation>
+        <translation type="vanished">Wallet encryption failed due to an internal error. Your wallet was not encrypted.</translation>
     </message>
     <message>
-        <location line="+7"/>
-        <location line="+48"/>
         <source>The supplied passphrases do not match.</source>
-        <translation>The supplied passphrases do not match.</translation>
+        <translation type="vanished">The supplied passphrases do not match.</translation>
     </message>
     <message>
-        <location line="-37"/>
         <source>Wallet unlock failed</source>
-        <translation>Wallet unlock failed</translation>
+        <translation type="vanished">Wallet unlock failed</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <location line="+11"/>
-        <location line="+19"/>
         <source>The passphrase entered for the wallet decryption was incorrect.</source>
-        <translation>The passphrase entered for the wallet decryption was incorrect.</translation>
+        <translation type="vanished">The passphrase entered for the wallet decryption was incorrect.</translation>
     </message>
     <message>
-        <location line="-20"/>
         <source>Wallet decryption failed</source>
-        <translation>Wallet decryption failed</translation>
+        <translation type="vanished">Wallet decryption failed</translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>Wallet passphrase was successfully changed.</source>
-        <translation>Wallet passphrase was successfully changed.</translation>
+        <translation type="vanished">Wallet passphrase was successfully changed.</translation>
     </message>
 </context>
 <context>
     <name>BitcoinGUI</name>
     <message>
-        <location filename="../bitcoingui.cpp" line="+311"/>
         <source>Sign &amp;message...</source>
-        <translation>Sign &amp;message...</translation>
+        <translation type="vanished">Sign &amp;message...</translation>
     </message>
     <message>
-        <location line="+339"/>
+        <location filename="../bitcoingui.cpp" line="+1354"/>
         <source>Synchronizing with network...</source>
         <translation>Synchronizing with network...</translation>
     </message>
     <message>
-        <location line="-407"/>
         <source>&amp;Overview</source>
-        <translation>&amp;Overview</translation>
+        <translation type="vanished">&amp;Overview</translation>
     </message>
     <message>
-        <location line="-129"/>
-        <source>Node</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+130"/>
         <source>Show general overview of wallet</source>
-        <translation>Show general overview of wallet</translation>
+        <translation type="vanished">Show general overview of wallet</translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>&amp;Transactions</source>
-        <translation>&amp;Transactions</translation>
+        <translation type="vanished">&amp;Transactions</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Browse transaction history</source>
-        <translation>Browse transaction history</translation>
+        <translation type="vanished">Browse transaction history</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="-841"/>
         <source>E&amp;xit</source>
         <translation>E&amp;xit</translation>
     </message>
@@ -331,58 +399,65 @@
         <translation>Quit application</translation>
     </message>
     <message>
-        <location line="+7"/>
-        <location line="+2"/>
         <source>About &amp;Qt</source>
-        <translation>About &amp;Qt</translation>
+        <translation type="vanished">About &amp;Qt</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Show information about Qt</source>
-        <translation>Show information about Qt</translation>
+        <translation type="vanished">Show information about Qt</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>&amp;Options...</source>
-        <translation>&amp;Options...</translation>
+        <translation type="vanished">&amp;Options...</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>&amp;Encrypt Wallet...</source>
-        <translation>&amp;Encrypt Wallet...</translation>
+        <translation type="vanished">&amp;Encrypt Wallet...</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>&amp;Backup Wallet...</source>
-        <translation>&amp;Backup Wallet...</translation>
+        <translation type="vanished">&amp;Backup Wallet...</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+26"/>
         <source>&amp;Change Passphrase...</source>
         <translation>&amp;Change Passphrase...</translation>
     </message>
     <message>
-        <location line="+10"/>
-        <source>&amp;Sending addresses...</source>
+        <location line="+242"/>
+        <source>&amp;Back</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>&amp;Receiving addresses...</source>
+        <location line="+6"/>
+        <source>&amp;Forward</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
-        <source>Open &amp;URI...</source>
+        <location line="+6"/>
+        <source>H&amp;ome</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+172"/>
-        <source>Faicoin Core client</source>
+        <location line="+6"/>
+        <source>&amp;Restore Last Session</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+157"/>
+        <location line="+19"/>
+        <source>&amp;Show All Bookmarks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <location line="+520"/>
+        <source>%n active connection(s) to Φ network</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message>
+        <location line="+18"/>
         <source>Importing blocks from disk...</source>
         <translation>Importing blocks from disk...</translation>
     </message>
@@ -392,67 +467,53 @@
         <translation>Reindexing blocks on disk...</translation>
     </message>
     <message>
-        <location line="-405"/>
         <source>Send coins to a Faicoin address</source>
-        <translation>Send coins to a Faicoin address</translation>
+        <translation type="vanished">Send coins to a Faicoin address</translation>
     </message>
     <message>
-        <location line="+48"/>
         <source>Modify configuration options for Faicoin</source>
-        <translation>Modify configuration options for Faicoin</translation>
+        <translation type="vanished">Modify configuration options for Faicoin</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>Backup wallet to another location</source>
-        <translation>Backup wallet to another location</translation>
+        <translation type="vanished">Backup wallet to another location</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="-819"/>
         <source>Change the passphrase used for wallet encryption</source>
         <translation>Change the passphrase used for wallet encryption</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>&amp;Debug window</source>
-        <translation>&amp;Debug window</translation>
+        <translation type="vanished">&amp;Debug window</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Open debugging and diagnostic console</source>
-        <translation>Open debugging and diagnostic console</translation>
+        <translation type="vanished">Open debugging and diagnostic console</translation>
     </message>
     <message>
-        <location line="-4"/>
         <source>&amp;Verify message...</source>
-        <translation>&amp;Verify message...</translation>
+        <translation type="vanished">&amp;Verify message...</translation>
     </message>
     <message>
-        <location line="+437"/>
         <source>Faicoin</source>
-        <translation>Faicoin</translation>
+        <translation type="vanished">Faicoin</translation>
     </message>
     <message>
-        <location line="-638"/>
+        <location line="-98"/>
         <source>Wallet</source>
         <translation>Wallet</translation>
     </message>
     <message>
-        <location line="+138"/>
         <source>&amp;Send</source>
-        <translation>&amp;Send</translation>
+        <translation type="vanished">&amp;Send</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>&amp;Receive</source>
-        <translation>&amp;Receive</translation>
+        <translation type="vanished">&amp;Receive</translation>
     </message>
     <message>
-        <location line="+32"/>
-        <source>Show information about Faicoin Core</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+12"/>
+        <location line="+87"/>
         <source>&amp;Show / Hide</source>
         <translation>&amp;Show / Hide</translation>
     </message>
@@ -462,90 +523,65 @@
         <translation>Show or hide the main Window</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Encrypt the private keys that belong to your wallet</source>
-        <translation>Encrypt the private keys that belong to your wallet</translation>
+        <translation type="vanished">Encrypt the private keys that belong to your wallet</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Sign messages with your Faicoin addresses to prove you own them</source>
-        <translation>Sign messages with your Faicoin addresses to prove you own them</translation>
+        <translation type="vanished">Sign messages with your Faicoin addresses to prove you own them</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Verify messages to ensure they were signed with specified Faicoin addresses</source>
-        <translation>Verify messages to ensure they were signed with specified Faicoin addresses</translation>
+        <translation type="vanished">Verify messages to ensure they were signed with specified Faicoin addresses</translation>
     </message>
     <message>
-        <location line="+48"/>
+        <location line="+103"/>
         <source>&amp;File</source>
         <translation>&amp;File</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="-60"/>
+        <location line="+258"/>
         <source>&amp;Settings</source>
         <translation>&amp;Settings</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="-623"/>
+        <location line="+823"/>
+        <location line="+422"/>
+        <location line="+710"/>
+        <source>Φ DeskTop Client</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-1587"/>
+        <location line="+271"/>
         <source>&amp;Help</source>
         <translation>&amp;Help</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="-587"/>
         <source>Tabs toolbar</source>
         <translation>Tabs toolbar</translation>
     </message>
     <message>
-        <location line="-297"/>
         <source>Faicoin Core</source>
-        <translation type="unfinished">Faicoin Core</translation>
+        <translation type="obsolete">Faicoin Core</translation>
     </message>
     <message>
-        <location line="+155"/>
-        <source>Request payments (generates QR codes and faicoin: URIs)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+30"/>
-        <source>&amp;About Faicoin Core</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+32"/>
-        <source>Show the list of used sending addresses and labels</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Show the list of used receiving addresses and labels</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Open a faicoin: URI or payment request</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
+        <location line="+311"/>
         <source>&amp;Command-line options</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <location line="+1"/>
-        <source>Show the Faicoin Core help message to get a list with possible Faicoin command-line options</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message numerus="yes">
-        <location line="+307"/>
         <source>%n active connection(s) to Faicoin network</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>%n active connection to Faicoin network</numerusform>
             <numerusform>%n active connections to Faicoin network</numerusform>
         </translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+792"/>
         <source>No block source available...</source>
         <translation>No block source available...</translation>
     </message>
@@ -622,8 +658,429 @@
         <source>Up to date</source>
         <translation>Up to date</translation>
     </message>
+    <message>
+        <location line="-1109"/>
+        <source>Navigation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+174"/>
+        <source>Show wallet page</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Browser</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show browser page</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Publisher</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show publisher page</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>&amp;Messenger</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show messenger page</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>&amp;Miner</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show miner page</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>&amp;Shop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>shop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>&amp;Downloader</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show downloader page</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>&amp;Apps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Apps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>&amp;Tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>&amp;About Faicoin Browser</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show information about Faicoin Browser</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>&amp;Encrypt Account...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Encrypt the private keys that belong to your Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Decrypt Account...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Decrypt the private keys that belong to your Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Export account...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>export account to another location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>&amp;Create new account...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Create new account...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Switch Account...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>switch account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Unlock Account...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>unlock account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Lock Account...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Lock account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>&amp;Domain name manage...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Domain name manage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>&amp;Export Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Import Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Import Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Show the Φ DeskTop Client help message to get a list with possible Fai command-line options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Help</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>&amp;Service Manager</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Service Manager</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+58"/>
+        <source>P&amp;rint Preview...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Print...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>&amp;Open File...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Open &amp;Location...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>&amp;Save As...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Download List</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>&amp;Edit</source>
+        <translation type="unfinished">&amp;Edit</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Undo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>&amp;Redo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Cu&amp;t</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>&amp;Copy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>&amp;Paste</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>&amp;Find</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>&amp;Find Next</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>&amp;Find Previous</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>&amp;View</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Shift+Ctrl+B</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Ctrl+|</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Ctrl+/</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>&amp;Stop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Reload Page</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Zoom &amp;In</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Zoom &amp;Out</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Reset &amp;Zoom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Page S&amp;ource</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Ctrl+Alt+U</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Full Screen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Private &amp;Browsing...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>&amp;Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>&amp;Applications</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>&amp;History</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1070"/>
+        <source>Hide Navigate bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+321"/>
+        <source>%1 - Φ DeskTop Client</source>
+        <comment>Page title and Browser name</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+226"/>
+        <source>Version %1Φ DeskTop Client</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-1581"/>
+        <source>&amp;Bookmarks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Add Bookmark...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>&amp;Preferences</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Ctrl+,</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Enable Web &amp;Inspector</source>
+        <translation type="unfinished"></translation>
+    </message>
     <message numerus="yes">
-        <location line="-5"/>
+        <location line="+538"/>
         <source>Processed %n blocks of transaction history.</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -636,7 +1093,12 @@
         <translation>Catching up...</translation>
     </message>
     <message>
-        <location line="+126"/>
+        <location line="+111"/>
+        <source>Are you sure you want to close the window?  There are %1 tabs open</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+30"/>
         <source>Sent transaction</source>
         <translation>Sent transaction</translation>
     </message>
@@ -659,14 +1121,253 @@ Address: %4
 </translation>
     </message>
     <message>
-        <location line="+68"/>
+        <location line="+60"/>
         <source>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently &lt;b&gt;unlocked&lt;/b&gt;</source>
         <translation>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently &lt;b&gt;unlocked&lt;/b&gt;</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+11"/>
         <source>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently &lt;b&gt;locked&lt;/b&gt;</source>
         <translation>Wallet is &lt;b&gt;encrypted&lt;/b&gt; and currently &lt;b&gt;locked&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <location line="+212"/>
+        <source>Show Navigate bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+297"/>
+        <source>Stop loading the current page</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Reload the current page</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+35"/>
+        <source>Open Web Resource</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Web Resources (*.html *.htm *.svg *.png *.gif *.svgz);;All files (*.*)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+35"/>
+        <source>Are you sure you want to turn on private browsing?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&lt;b&gt;%1&lt;/b&gt;&lt;br&gt;&lt;br&gt;When private browsing in turned on, webpages are not added to the history, items are automatically removed from the Downloads window, new cookies are not stored, current cookies can&apos;t be accessed, site icons wont be stored, session wont be saved,  and searches are not added to the pop-up menu in the Google search box.  Until you close the window, you can still click the Back and Forward buttons to return to the webpages you have opened.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+32"/>
+        <source>Find</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Text:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+108"/>
+        <source>Page Source of %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Web Inspector</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The web inspector will only work correctly for pages that were loaded after enabling.
+Do you want to reload all pages?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>About</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+38"/>
+        <source>Print Document</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Show Bookmarks bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Hide Bookmarks bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Show Status Bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Hide Status Bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>&quot;%1&quot; not found.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../browser.cpp" line="+400"/>
+        <source>A fatal error occurred. Faicoin can no longer continue safely and will quit.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>BookmarksDialog</name>
+    <message>
+        <location filename="../forms/bookmarks.ui" line="+13"/>
+        <source>Bookmarks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <source>&amp;Remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Add Folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../bookmarks.cpp" line="+854"/>
+        <source>Open</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>New Folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>BookmarksManager</name>
+    <message>
+        <location line="-772"/>
+        <location line="+160"/>
+        <source>Error when loading bookmarks on line %1, column %2:
+%3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-149"/>
+        <source>Toolbar Bookmarks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Menu</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+131"/>
+        <source>Open File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+21"/>
+        <source>XBEL (*.xbel *.xml)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-8"/>
+        <source>Imported %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Save File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>%1 Bookmarks.xbel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Export error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>error saving bookmarks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Remove Bookmark</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>Insert Bookmark</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Name Change</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Address Change</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>BookmarksModel</name>
+    <message>
+        <location line="+95"/>
+        <source>Title</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Address</source>
+        <translation type="unfinished">Address</translation>
+    </message>
+</context>
+<context>
+    <name>BookmarksToolBar</name>
+    <message>
+        <location line="+447"/>
+        <source>Bookmark</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ClearButton</name>
+    <message>
+        <location filename="../searchlineedit.cpp" line="+56"/>
+        <source>Clear</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -680,350 +1381,362 @@ Address: %4
 <context>
     <name>CoinControlDialog</name>
     <message>
-        <location filename="../forms/coincontroldialog.ui" line="+14"/>
-        <source>Coin Selection</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+34"/>
-        <source>Quantity:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+29"/>
-        <source>Bytes:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+45"/>
-        <source>Amount:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+29"/>
-        <source>Priority:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+45"/>
-        <source>Fee:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+32"/>
-        <source>Dust:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+48"/>
-        <source>After Fee:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+32"/>
-        <source>Change:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+56"/>
-        <source>(un)select all</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Tree mode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>List mode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+56"/>
         <source>Amount</source>
-        <translation type="unfinished">Amount</translation>
+        <translation type="obsolete">Amount</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>Received with label</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Received with address</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
         <source>Date</source>
-        <translation type="unfinished">Date</translation>
+        <translation type="obsolete">Date</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>Confirmations</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
         <source>Confirmed</source>
-        <translation type="unfinished">Confirmed</translation>
+        <translation type="obsolete">Confirmed</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>Priority</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../coincontroldialog.cpp" line="+44"/>
         <source>Copy address</source>
-        <translation type="unfinished">Copy address</translation>
+        <translation type="obsolete">Copy address</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Copy label</source>
-        <translation type="unfinished">Copy label</translation>
+        <translation type="obsolete">Copy label</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <location line="+26"/>
         <source>Copy amount</source>
-        <translation type="unfinished">Copy amount</translation>
+        <translation type="obsolete">Copy amount</translation>
     </message>
     <message>
-        <location line="-25"/>
         <source>Copy transaction ID</source>
-        <translation type="unfinished">Copy transaction ID</translation>
+        <translation type="obsolete">Copy transaction ID</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Lock unspent</source>
-        <translation type="unfinished"></translation>
+        <source>(no label)</source>
+        <translation type="obsolete">(no label)</translation>
     </message>
+</context>
+<context>
+    <name>CookieExceptionsModel</name>
     <message>
-        <location line="+1"/>
-        <source>Unlock unspent</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+22"/>
-        <source>Copy quantity</source>
+        <location filename="../cookiejar.cpp" line="+552"/>
+        <source>Website</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+2"/>
-        <source>Copy fee</source>
+        <source>Status</source>
+        <translation type="unfinished">Status</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Allow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Copy after fee</source>
+        <location line="+9"/>
+        <source>Block</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Copy bytes</source>
+        <location line="+9"/>
+        <source>Allow For Session</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CookieModel</name>
+    <message>
+        <location line="-194"/>
+        <source>Website</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Copy priority</source>
+        <location line="+2"/>
+        <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Copy dust</source>
+        <location line="+2"/>
+        <source>Path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Copy change</source>
+        <location line="+2"/>
+        <source>Secure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+347"/>
-        <source>highest</source>
+        <location line="+2"/>
+        <source>Expires</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>higher</source>
+        <location line="+2"/>
+        <source>Contents</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CookiesDialog</name>
+    <message>
+        <location filename="../forms/cookies.ui" line="+13"/>
+        <source>Cookies</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>high</source>
+        <location line="+27"/>
+        <source>&amp;Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>medium-high</source>
+        <location line="+7"/>
+        <source>Remove &amp;All Cookies</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CookiesExceptionsDialog</name>
+    <message>
+        <location filename="../forms/cookiesexceptions.ui" line="+13"/>
+        <source>Cookie Exceptions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>medium</source>
+        <location line="+6"/>
+        <source>New Exception</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>low-medium</source>
+        <location line="+8"/>
+        <source>Domain:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>low</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>lower</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>lowest</source>
+        <location line="+30"/>
+        <source>Block</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+10"/>
-        <source>(%1 locked)</source>
+        <source>Allow For Session</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+28"/>
-        <source>none</source>
+        <location line="+10"/>
+        <source>Allow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+165"/>
-        <source>Can vary +/- %1 satoshi(s) per input.</source>
+        <location line="+12"/>
+        <source>Exceptions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-32"/>
-        <source>yes</source>
+        <location line="+25"/>
+        <source>&amp;Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+0"/>
-        <source>no</source>
+        <location line="+7"/>
+        <source>Remove &amp;All</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DownloadDialog</name>
+    <message>
+        <location filename="../forms/downloads.ui" line="+13"/>
+        <source>Downloads</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+16"/>
-        <source>This label turns red, if the transaction size is greater than 1000 bytes.</source>
+        <location line="+20"/>
+        <source>Clean up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <location line="+5"/>
-        <source>This means a fee of at least %1 per kB is required.</source>
+        <location line="+22"/>
+        <source>0 Items</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DownloadItem</name>
+    <message>
+        <location filename="../forms/downloaditem.ui" line="+13"/>
+        <source>Form</source>
+        <translation type="unfinished">Form</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Ico</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-4"/>
-        <source>Can vary +/- 1 byte per input.</source>
+        <location line="+15"/>
+        <source>Filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Transactions with higher priority are more likely to get included into a block.</source>
+        <location line="+47"/>
+        <source>Try Again</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>This label turns red, if the priority is smaller than &quot;medium&quot;.</source>
+        <location line="+7"/>
+        <source>Stop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Open</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../downloadmanager.cpp" line="+130"/>
+        <source>Save File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+3"/>
-        <source>This label turns red, if any recipient receives an amount smaller than %1.</source>
+        <source>Download canceled: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+55"/>
-        <location line="+61"/>
-        <source>(no label)</source>
-        <translation type="unfinished">(no label)</translation>
-    </message>
-    <message>
-        <location line="-7"/>
-        <source>change from %1 (%2)</source>
+        <location line="+81"/>
+        <source>Error opening save file: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>(change)</source>
+        <location line="+9"/>
+        <source>Error saving: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Network Error: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>seconds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>minutes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>- %4 %5 remaining</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>%1 of %2 (%3/sec) %4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>%1 of %2 - Stopped</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>bytes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>kB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>MB</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DownloadManager</name>
+    <message>
+        <location line="+229"/>
+        <source>1 Download</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>%1 Downloads</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>EditAddressDialog</name>
     <message>
-        <location filename="../forms/editaddressdialog.ui" line="+14"/>
         <source>Edit Address</source>
-        <translation>Edit Address</translation>
+        <translation type="vanished">Edit Address</translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>&amp;Label</source>
-        <translation>&amp;Label</translation>
+        <translation type="vanished">&amp;Label</translation>
     </message>
     <message>
-        <location line="+10"/>
-        <source>The label associated with this address list entry</source>
+        <source>&amp;Address</source>
+        <translation type="vanished">&amp;Address</translation>
+    </message>
+    <message>
+        <source>New receiving address</source>
+        <translation type="vanished">New receiving address</translation>
+    </message>
+    <message>
+        <source>New sending address</source>
+        <translation type="vanished">New sending address</translation>
+    </message>
+    <message>
+        <source>Edit receiving address</source>
+        <translation type="vanished">Edit receiving address</translation>
+    </message>
+    <message>
+        <source>Edit sending address</source>
+        <translation type="vanished">Edit sending address</translation>
+    </message>
+    <message>
+        <source>The entered address &quot;%1&quot; is already in the address book.</source>
+        <translation type="vanished">The entered address &quot;%1&quot; is already in the address book.</translation>
+    </message>
+    <message>
+        <source>The entered address &quot;%1&quot; is not a valid Faicoin address.</source>
+        <translation type="vanished">The entered address &quot;%1&quot; is not a valid Faicoin address.</translation>
+    </message>
+    <message>
+        <source>Could not unlock wallet.</source>
+        <translation type="vanished">Could not unlock wallet.</translation>
+    </message>
+    <message>
+        <source>New key generation failed.</source>
+        <translation type="vanished">New key generation failed.</translation>
+    </message>
+</context>
+<context>
+    <name>FeaturePermissionBar</name>
+    <message>
+        <location filename="../featurepermissionbar.cpp" line="+81"/>
+        <source>Allow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Deny</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+17"/>
-        <source>The address associated with this address list entry. This can only be modified for sending addresses.</source>
+        <source>%1 wants to use %2.</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-10"/>
-        <source>&amp;Address</source>
-        <translation>&amp;Address</translation>
-    </message>
-    <message>
-        <location filename="../editaddressdialog.cpp" line="+28"/>
-        <source>New receiving address</source>
-        <translation>New receiving address</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>New sending address</source>
-        <translation>New sending address</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Edit receiving address</source>
-        <translation>Edit receiving address</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Edit sending address</source>
-        <translation>Edit sending address</translation>
-    </message>
-    <message>
-        <location line="+76"/>
-        <source>The entered address &quot;%1&quot; is already in the address book.</source>
-        <translation>The entered address &quot;%1&quot; is already in the address book.</translation>
-    </message>
-    <message>
-        <location line="-5"/>
-        <source>The entered address &quot;%1&quot; is not a valid Faicoin address.</source>
-        <translation>The entered address &quot;%1&quot; is not a valid Faicoin address.</translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Could not unlock wallet.</source>
-        <translation>Could not unlock wallet.</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>New key generation failed.</source>
-        <translation>New key generation failed.</translation>
     </message>
 </context>
 <context>
@@ -1074,7 +1787,7 @@ Address: %4
     </message>
     <message>
         <location line="+5"/>
-        <source>About Faicoin Core</source>
+        <source>About Φ DeskTop Client</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1124,6 +1837,78 @@ Address: %4
     </message>
 </context>
 <context>
+    <name>HistoryDialog</name>
+    <message>
+        <location filename="../forms/history.ui" line="+13"/>
+        <source>History</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <source>&amp;Remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Remove &amp;All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../history.cpp" line="+728"/>
+        <source>Open</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Copy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>HistoryMenu</name>
+    <message>
+        <location line="-77"/>
+        <source>Show All History</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Clear History</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>HistoryModel</name>
+    <message>
+        <location line="-232"/>
+        <source>Title</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Address</source>
+        <translation type="unfinished">Address</translation>
+    </message>
+</context>
+<context>
+    <name>HistoryTreeModel</name>
+    <message>
+        <location line="+639"/>
+        <source>Earlier Today</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>%1 items</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>Intro</name>
     <message>
         <location filename="../forms/intro.ui" line="+14"/>
@@ -1132,17 +1917,17 @@ Address: %4
     </message>
     <message>
         <location line="+9"/>
-        <source>Welcome to Faicoin Core.</source>
+        <source>Welcome to Fai Desktop Client.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+26"/>
-        <source>As this is the first time the program is launched, you can choose where Faicoin Core will store its data.</source>
+        <source>As this is the first time the program is launched, you can choose where Fai Desktop Client will store its data.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+10"/>
-        <source>Faicoin Core will download and store a copy of the Faicoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
+        <source>Fai Desktop Client will download and store a copy of the Fai block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1156,9 +1941,13 @@ Address: %4
         <translation>Use a custom data directory:</translation>
     </message>
     <message>
-        <location filename="../intro.cpp" line="+82"/>
         <source>Faicoin Core</source>
-        <translation type="unfinished">Faicoin Core</translation>
+        <translation type="obsolete">Faicoin Core</translation>
+    </message>
+    <message>
+        <location filename="../intro.cpp" line="+82"/>
+        <source>Φ DeskTop Client</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1188,537 +1977,359 @@ Address: %4
     </message>
 </context>
 <context>
-    <name>OpenURIDialog</name>
+    <name>JsInterface</name>
     <message>
-        <location filename="../forms/openuridialog.ui" line="+14"/>
-        <source>Open URI</source>
+        <location filename="../jsinterface.cpp" line="+193"/>
+        <location line="+145"/>
+        <source>{&quot;error&quot;:&quot;data is not json format&quot;}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Open payment request from URI or file</source>
+        <location line="-143"/>
+        <location line="+145"/>
+        <source>{&quot;error&quot;:&quot;data is not json array&quot;}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-132"/>
+        <source>Invalid pageID, send message out of messenger is forbidden</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Invalid pageID, lang setting is forbidden</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Invalid parameter, expected string</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Invalid appName, not corresponding to pageid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <location line="+15"/>
+        <source>Invalid pageID, getettings is forbidden</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-10"/>
+        <location line="+5"/>
+        <source>Invalid pageID, get id is forbidden</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+53"/>
+        <source>{&quot;error&quot;:&quot;no data&quot;}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>{&quot;error&quot;:&quot;data is not string&quot;}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <location line="+1"/>
+        <source>{&quot;error&quot;:&quot;command not found&quot;}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+32"/>
+        <source>{&quot;error&quot;:&quot;params less than 1&quot;}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>{&quot;error&quot;:&quot;param 1 is not str&quot;}</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MainView</name>
+    <message>
+        <location filename="../mainview.cpp" line="+83"/>
+        <source>New &amp;Tab</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>&amp;Close Tab</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Show Next Tab</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+9"/>
-        <source>URI:</source>
+        <source>Show Previous Tab</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
-        <source>Select payment request file</source>
+        <location line="+14"/>
+        <source>Recently Closed Tabs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../openuridialog.cpp" line="+47"/>
-        <source>Select payment request file to open</source>
+        <location line="+279"/>
+        <source>(Untitled)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+29"/>
+        <source>Do you really want to close this page?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>You have modified this page and when closing it you would lose the modification.
+Do you really want to close this page?
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>NetworkAccessManager</name>
+    <message>
+        <location filename="../networkaccessmanager.cpp" line="+149"/>
+        <source>SSL Errors:
+
+%1
+
+%2
+
+Do you want to ignore these errors for this host?</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>OptionsDialog</name>
     <message>
-        <location filename="../forms/optionsdialog.ui" line="+14"/>
         <source>Options</source>
-        <translation>Options</translation>
+        <translation type="vanished">Options</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>&amp;Main</source>
-        <translation>&amp;Main</translation>
+        <translation type="vanished">&amp;Main</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Automatically start Faicoin after logging in to the system.</source>
-        <translation>Automatically start Faicoin after logging in to the system.</translation>
+        <translation type="vanished">Automatically start Faicoin after logging in to the system.</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>&amp;Start Faicoin on system login</source>
-        <translation>&amp;Start Faicoin on system login</translation>
+        <translation type="vanished">&amp;Start Faicoin on system login</translation>
     </message>
     <message>
-        <location line="+9"/>
-        <source>Size of &amp;database cache</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>MB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+27"/>
-        <source>Number of script &amp;verification threads</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+114"/>
-        <source>Accept connections from outside</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Allow incoming connections</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+44"/>
-        <source>IP address of the proxy (e.g. IPv4: 127.0.0.1 / IPv6: ::1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+164"/>
-        <location line="+13"/>
-        <source>Third party URLs (e.g. a block explorer) that appear in the transactions tab as context menu items. %s in the URL is replaced by transaction hash. Multiple URLs are separated by vertical bar |.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-10"/>
-        <source>Third party transaction URLs</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+41"/>
-        <source>Active command-line options that override above options:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+43"/>
         <source>Reset all client options to default.</source>
-        <translation>Reset all client options to default.</translation>
+        <translation type="vanished">Reset all client options to default.</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>&amp;Reset Options</source>
-        <translation>&amp;Reset Options</translation>
+        <translation type="vanished">&amp;Reset Options</translation>
     </message>
     <message>
-        <location line="-317"/>
         <source>&amp;Network</source>
-        <translation>&amp;Network</translation>
+        <translation type="vanished">&amp;Network</translation>
     </message>
     <message>
-        <location line="-85"/>
-        <source>(0 = auto, &lt;0 = leave that many cores free)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+36"/>
-        <source>W&amp;allet</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Expert</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Enable coin &amp;control features</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>If you disable the spending of unconfirmed change, the change from a transaction cannot be used until that transaction has at least one confirmation. This also affects how your balance is computed.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>&amp;Spend unconfirmed change</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+30"/>
         <source>Automatically open the Faicoin client port on the router. This only works when your router supports UPnP and it is enabled.</source>
-        <translation>Automatically open the Faicoin client port on the router. This only works when your router supports UPnP and it is enabled.</translation>
+        <translation type="vanished">Automatically open the Faicoin client port on the router. This only works when your router supports UPnP and it is enabled.</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Map port using &amp;UPnP</source>
-        <translation>Map port using &amp;UPnP</translation>
+        <translation type="vanished">Map port using &amp;UPnP</translation>
     </message>
     <message>
-        <location line="+17"/>
-        <source>Connect to the Faicoin network through a SOCKS5 proxy.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>&amp;Connect through SOCKS5 proxy (default proxy):</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
         <source>Proxy &amp;IP:</source>
-        <translation>Proxy &amp;IP:</translation>
+        <translation type="vanished">Proxy &amp;IP:</translation>
     </message>
     <message>
-        <location line="+32"/>
         <source>&amp;Port:</source>
-        <translation>&amp;Port:</translation>
+        <translation type="vanished">&amp;Port:</translation>
     </message>
     <message>
-        <location line="+25"/>
         <source>Port of the proxy (e.g. 9050)</source>
-        <translation>Port of the proxy (e.g. 9050)</translation>
+        <translation type="vanished">Port of the proxy (e.g. 9050)</translation>
     </message>
     <message>
-        <location line="+36"/>
         <source>&amp;Window</source>
-        <translation>&amp;Window</translation>
+        <translation type="vanished">&amp;Window</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Show only a tray icon after minimizing the window.</source>
-        <translation>Show only a tray icon after minimizing the window.</translation>
+        <translation type="vanished">Show only a tray icon after minimizing the window.</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>&amp;Minimize to the tray instead of the taskbar</source>
-        <translation>&amp;Minimize to the tray instead of the taskbar</translation>
+        <translation type="vanished">&amp;Minimize to the tray instead of the taskbar</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Minimize instead of exit the application when the window is closed. When this option is enabled, the application will be closed only after selecting Quit in the menu.</source>
-        <translation>Minimize instead of exit the application when the window is closed. When this option is enabled, the application will be closed only after selecting Quit in the menu.</translation>
+        <translation type="vanished">Minimize instead of exit the application when the window is closed. When this option is enabled, the application will be closed only after selecting Quit in the menu.</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>M&amp;inimize on close</source>
-        <translation>M&amp;inimize on close</translation>
+        <translation type="vanished">M&amp;inimize on close</translation>
     </message>
     <message>
-        <location line="+21"/>
         <source>&amp;Display</source>
-        <translation>&amp;Display</translation>
+        <translation type="vanished">&amp;Display</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>User Interface &amp;language:</source>
-        <translation>User Interface &amp;language:</translation>
+        <translation type="vanished">User Interface &amp;language:</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>The user interface language can be set here. This setting will take effect after restarting Faicoin.</source>
-        <translation>The user interface language can be set here. This setting will take effect after restarting Faicoin.</translation>
+        <translation type="vanished">The user interface language can be set here. This setting will take effect after restarting Faicoin.</translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>&amp;Unit to show amounts in:</source>
-        <translation>&amp;Unit to show amounts in:</translation>
+        <translation type="vanished">&amp;Unit to show amounts in:</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>Choose the default subdivision unit to show in the interface and when sending coins.</source>
-        <translation>Choose the default subdivision unit to show in the interface and when sending coins.</translation>
+        <translation type="vanished">Choose the default subdivision unit to show in the interface and when sending coins.</translation>
     </message>
     <message>
-        <location line="-253"/>
-        <source>Whether to show coin control features or not.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+415"/>
         <source>&amp;OK</source>
-        <translation>&amp;OK</translation>
+        <translation type="vanished">&amp;OK</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>&amp;Cancel</source>
-        <translation>&amp;Cancel</translation>
+        <translation type="vanished">&amp;Cancel</translation>
     </message>
     <message>
-        <location filename="../optionsdialog.cpp" line="+76"/>
         <source>default</source>
-        <translation>default</translation>
+        <translation type="vanished">default</translation>
     </message>
     <message>
-        <location line="+60"/>
-        <source>none</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+76"/>
         <source>Confirm options reset</source>
-        <translation>Confirm options reset</translation>
+        <translation type="vanished">Confirm options reset</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <location line="+29"/>
-        <source>Client restart required to activate changes.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-29"/>
-        <source>Client will be shutdown, do you want to proceed?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+33"/>
-        <source>This change would require a client restart.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+25"/>
         <source>The supplied proxy address is invalid.</source>
-        <translation>The supplied proxy address is invalid.</translation>
+        <translation type="vanished">The supplied proxy address is invalid.</translation>
     </message>
 </context>
 <context>
     <name>OverviewPage</name>
     <message>
-        <location filename="../forms/overviewpage.ui" line="+14"/>
         <source>Form</source>
-        <translation>Form</translation>
+        <translation type="vanished">Form</translation>
     </message>
     <message>
-        <location line="+53"/>
-        <location line="+372"/>
         <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Faicoin network after a connection is established, but this process has not completed yet.</source>
-        <translation>The displayed information may be out of date. Your wallet automatically synchronizes with the Faicoin network after a connection is established, but this process has not completed yet.</translation>
+        <translation type="vanished">The displayed information may be out of date. Your wallet automatically synchronizes with the Faicoin network after a connection is established, but this process has not completed yet.</translation>
     </message>
     <message>
-        <location line="-133"/>
-        <source>Watch-only:</source>
+        <source>Your current spendable balance</source>
+        <translation type="vanished">Your current spendable balance</translation>
+    </message>
+    <message>
+        <source>Total of transactions that have yet to be confirmed, and do not yet count toward the spendable balance</source>
+        <translation type="vanished">Total of transactions that have yet to be confirmed, and do not yet count toward the spendable balance</translation>
+    </message>
+    <message>
+        <source>Immature:</source>
+        <translation type="vanished">Immature:</translation>
+    </message>
+    <message>
+        <source>Mined balance that has not yet matured</source>
+        <translation type="vanished">Mined balance that has not yet matured</translation>
+    </message>
+    <message>
+        <source>Total:</source>
+        <translation type="vanished">Total:</translation>
+    </message>
+    <message>
+        <source>Your current total balance</source>
+        <translation type="vanished">Your current total balance</translation>
+    </message>
+    <message>
+        <source>out of sync</source>
+        <translation type="vanished">out of sync</translation>
+    </message>
+</context>
+<context>
+    <name>PasswordDialog</name>
+    <message>
+        <location filename="../forms/passworddialog.ui" line="+13"/>
+        <source>Authentication Required</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>DUMMY ICON</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>INTRO TEXT DUMMY</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Username:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+10"/>
-        <source>Available:</source>
+        <source>Password:</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Your current spendable balance</source>
-        <translation>Your current spendable balance</translation>
-    </message>
-    <message>
-        <location line="+41"/>
-        <source>Pending:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-236"/>
-        <source>Total of transactions that have yet to be confirmed, and do not yet count toward the spendable balance</source>
-        <translation>Total of transactions that have yet to be confirmed, and do not yet count toward the spendable balance</translation>
-    </message>
-    <message>
-        <location line="+112"/>
-        <source>Immature:</source>
-        <translation>Immature:</translation>
-    </message>
-    <message>
-        <location line="-29"/>
-        <source>Mined balance that has not yet matured</source>
-        <translation>Mined balance that has not yet matured</translation>
-    </message>
-    <message>
-        <location line="-163"/>
-        <source>Balances</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+147"/>
-        <source>Total:</source>
-        <translation>Total:</translation>
-    </message>
-    <message>
-        <location line="+61"/>
-        <source>Your current total balance</source>
-        <translation>Your current total balance</translation>
-    </message>
-    <message>
-        <location line="+92"/>
-        <source>Your current balance in watch-only addresses</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>Spendable:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+49"/>
-        <source>Recent transactions</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-317"/>
-        <source>Unconfirmed transactions to watch-only addresses</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+50"/>
-        <source>Mined balance in watch-only addresses that has not yet matured</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+128"/>
-        <source>Current total balance in watch-only addresses</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../overviewpage.cpp" line="+131"/>
-        <location line="+1"/>
-        <source>out of sync</source>
-        <translation>out of sync</translation>
     </message>
 </context>
 <context>
     <name>PaymentServer</name>
     <message>
-        <location filename="../paymentserver.cpp" line="+422"/>
-        <location line="+14"/>
-        <location line="+7"/>
         <source>URI handling</source>
-        <translation type="unfinished">URI handling</translation>
-    </message>
-    <message>
-        <location line="-7"/>
-        <source>Invalid payment address %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+91"/>
-        <location line="+9"/>
-        <location line="+32"/>
-        <source>Payment request rejected</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-41"/>
-        <source>Payment request network doesn&apos;t match client network.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Payment request has expired.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Payment request is not initialized.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+34"/>
-        <source>Requested payment amount of %1 is too small (considered dust).</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-260"/>
-        <location line="+226"/>
-        <location line="+34"/>
-        <location line="+110"/>
-        <location line="+14"/>
-        <location line="+18"/>
-        <source>Payment request error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-401"/>
-        <source>Cannot start faicoin: click-to-pay handler</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+105"/>
-        <source>Payment request fetch URL is invalid: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+21"/>
-        <source>URI cannot be parsed! This can be caused by an invalid Faicoin address or malformed URI parameters.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Payment request file handling</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Payment request file cannot be read! This can be caused by an invalid payment request file.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+111"/>
-        <source>Unverified payment requests to custom payment scripts are unsupported.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+58"/>
-        <source>Refund from %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+43"/>
-        <source>Payment request %2 is too large (%3 bytes, allowed %4 bytes).</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Payment request DoS protection</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Error communicating with %1: %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+20"/>
-        <source>Payment request cannot be parsed!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Bad response from server %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+33"/>
-        <source>Payment acknowledged</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-11"/>
-        <source>Network request error</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">URI handling</translation>
     </message>
 </context>
 <context>
-    <name>PeerTableModel</name>
+    <name>ProxyDialog</name>
     <message>
-        <location filename="../peertablemodel.cpp" line="+118"/>
-        <source>User Agent</source>
+        <location filename="../forms/proxy.ui" line="+13"/>
+        <source>Proxy Authentication</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+0"/>
-        <source>Address/Hostname</source>
+        <location line="+6"/>
+        <source>ICON</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+0"/>
-        <source>Ping Time</source>
+        <location line="+7"/>
+        <source>Connect to proxy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Username:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Password:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../faicoinunits.cpp" line="+194"/>
+        <location filename="../bitcoinunits.cpp" line="+194"/>
         <source>Amount</source>
         <translation type="unfinished">Amount</translation>
     </message>
     <message>
-        <location filename="../guiutil.cpp" line="+106"/>
-        <source>Enter a Faicoin address (e.g. %1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+698"/>
+        <location filename="../guiutil.cpp" line="+827"/>
         <source>%1 d</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1762,990 +2373,552 @@ Address: %4
         <source>%1 ms</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../browser.cpp" line="+80"/>
+        <location line="+7"/>
+        <location line="+13"/>
+        <source>Faicoin Core</source>
+        <translation type="unfinished">Faicoin Core</translation>
+    </message>
+    <message>
+        <location line="-19"/>
+        <source>Error: Specified data directory &quot;%1&quot; does not exist.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Error: Cannot parse configuration file: %1. Only use key=value syntax.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Error: Invalid combination of -regtest and -testnet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+58"/>
+        <source>Faicoin Core didn&apos;t yet exit safely...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../featurepermissionbar.cpp" line="-43"/>
+        <source>desktop notifications</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>your position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../xbel.cpp" line="+141"/>
+        <source>The file is not an XBEL version 1.0 file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+78"/>
+        <source>Unknown title</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QRImageWidget</name>
     <message>
-        <location filename="../receiverequestdialog.cpp" line="+36"/>
-        <source>&amp;Save Image...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>&amp;Copy Image</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+32"/>
         <source>Save QR Code</source>
-        <translation type="unfinished">Save QR Code</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>PNG Image (*.png)</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Save QR Code</translation>
     </message>
 </context>
 <context>
     <name>RPCConsole</name>
     <message>
-        <location filename="../forms/rpcconsole.ui" line="+46"/>
         <source>Client name</source>
-        <translation>Client name</translation>
+        <translation type="vanished">Client name</translation>
     </message>
     <message>
-        <location line="+10"/>
-        <location line="+23"/>
-        <location line="+26"/>
-        <location line="+26"/>
-        <location line="+23"/>
-        <location line="+23"/>
-        <location line="+36"/>
-        <location line="+23"/>
-        <location line="+36"/>
-        <location line="+23"/>
-        <location line="+465"/>
-        <location line="+23"/>
-        <location line="+23"/>
-        <location line="+23"/>
-        <location line="+23"/>
-        <location line="+23"/>
-        <location line="+23"/>
-        <location line="+23"/>
-        <location line="+23"/>
-        <location line="+23"/>
-        <location line="+23"/>
-        <location line="+23"/>
-        <location line="+23"/>
         <source>N/A</source>
-        <translation>N/A</translation>
+        <translation type="vanished">N/A</translation>
     </message>
     <message>
-        <location line="-967"/>
         <source>Client version</source>
-        <translation>Client version</translation>
+        <translation type="vanished">Client version</translation>
     </message>
     <message>
-        <location line="-45"/>
         <source>&amp;Information</source>
-        <translation>&amp;Information</translation>
+        <translation type="vanished">&amp;Information</translation>
     </message>
     <message>
-        <location line="-10"/>
-        <source>Debug window</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+25"/>
-        <source>General</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+53"/>
         <source>Using OpenSSL version</source>
-        <translation>Using OpenSSL version</translation>
+        <translation type="vanished">Using OpenSSL version</translation>
     </message>
     <message>
-        <location line="+26"/>
-        <source>Using BerkeleyDB version</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+49"/>
         <source>Startup time</source>
-        <translation>Startup time</translation>
+        <translation type="vanished">Startup time</translation>
     </message>
     <message>
-        <location line="+29"/>
         <source>Network</source>
-        <translation>Network</translation>
+        <translation type="vanished">Network</translation>
     </message>
     <message>
-        <location line="+7"/>
-        <source>Name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
         <source>Number of connections</source>
-        <translation>Number of connections</translation>
+        <translation type="vanished">Number of connections</translation>
     </message>
     <message>
-        <location line="+29"/>
         <source>Block chain</source>
-        <translation>Block chain</translation>
+        <translation type="vanished">Block chain</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Current number of blocks</source>
-        <translation>Current number of blocks</translation>
+        <translation type="vanished">Current number of blocks</translation>
     </message>
     <message>
-        <location line="+303"/>
-        <source>Received</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+80"/>
-        <source>Sent</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+41"/>
-        <source>&amp;Peers</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+39"/>
-        <location filename="../rpcconsole.cpp" line="+236"/>
-        <location line="+327"/>
-        <source>Select a peer to view detailed information.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+25"/>
-        <source>Direction</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>Version</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>User Agent</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>Services</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>Starting Height</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>Sync Height</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>Ban Score</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>Connection Time</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>Last Send</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>Last Receive</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>Bytes Sent</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>Bytes Received</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>Ping Time</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-741"/>
         <source>Last block time</source>
-        <translation>Last block time</translation>
+        <translation type="vanished">Last block time</translation>
     </message>
     <message>
-        <location line="+52"/>
         <source>&amp;Open</source>
-        <translation>&amp;Open</translation>
+        <translation type="vanished">&amp;Open</translation>
     </message>
     <message>
-        <location line="+24"/>
         <source>&amp;Console</source>
-        <translation>&amp;Console</translation>
+        <translation type="vanished">&amp;Console</translation>
     </message>
     <message>
-        <location line="+72"/>
-        <source>&amp;Network Traffic</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+52"/>
-        <source>&amp;Clear</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Totals</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../rpcconsole.cpp" line="-165"/>
-        <source>In:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Out:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../forms/rpcconsole.ui" line="-357"/>
         <source>Build date</source>
-        <translation>Build date</translation>
+        <translation type="vanished">Build date</translation>
     </message>
     <message>
-        <location line="+183"/>
         <source>Debug log file</source>
-        <translation>Debug log file</translation>
+        <translation type="vanished">Debug log file</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Open the Faicoin debug log file from the current data directory. This can take a few seconds for large log files.</source>
-        <translation>Open the Faicoin debug log file from the current data directory. This can take a few seconds for large log files.</translation>
+        <translation type="vanished">Open the Faicoin debug log file from the current data directory. This can take a few seconds for large log files.</translation>
     </message>
     <message>
-        <location line="+76"/>
         <source>Clear console</source>
-        <translation>Clear console</translation>
+        <translation type="vanished">Clear console</translation>
     </message>
     <message>
-        <location filename="../rpcconsole.cpp" line="-35"/>
         <source>Welcome to the Faicoin RPC console.</source>
-        <translation>Welcome to the Faicoin RPC console.</translation>
+        <translation type="vanished">Welcome to the Faicoin RPC console.</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Use up and down arrows to navigate history, and &lt;b&gt;Ctrl-L&lt;/b&gt; to clear screen.</source>
-        <translation>Use up and down arrows to navigate history, and &lt;b&gt;Ctrl-L&lt;/b&gt; to clear screen.</translation>
+        <translation type="vanished">Use up and down arrows to navigate history, and &lt;b&gt;Ctrl-L&lt;/b&gt; to clear screen.</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Type &lt;b&gt;help&lt;/b&gt; for an overview of available commands.</source>
-        <translation>Type &lt;b&gt;help&lt;/b&gt; for an overview of available commands.</translation>
-    </message>
-    <message>
-        <location line="+134"/>
-        <source>%1 B</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>%1 KB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>%1 MB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>%1 GB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+95"/>
-        <source>via %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <location line="+1"/>
-        <source>never</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Inbound</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Outbound</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Unknown</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <location line="+1"/>
-        <source>Fetching...</source>
-        <translation type="unfinished"></translation>
+        <translation type="vanished">Type &lt;b&gt;help&lt;/b&gt; for an overview of available commands.</translation>
     </message>
 </context>
 <context>
     <name>ReceiveCoinsDialog</name>
     <message>
-        <location filename="../forms/receivecoinsdialog.ui" line="+107"/>
-        <source>&amp;Amount:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-16"/>
         <source>&amp;Label:</source>
-        <translation type="unfinished">&amp;Label:</translation>
+        <translation type="obsolete">&amp;Label:</translation>
     </message>
     <message>
-        <location line="-37"/>
-        <source>&amp;Message:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-20"/>
-        <source>Reuse one of the previously used receiving addresses. Reusing addresses has security and privacy issues. Do not use this unless re-generating a payment request made before.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>R&amp;euse an existing receiving address (not recommended)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <location line="+23"/>
-        <source>An optional message to attach to the payment request, which will be displayed when the request is opened. Note: The message will not be sent with the payment over the Faicoin network.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-7"/>
-        <location line="+21"/>
-        <source>An optional label to associate with the new receiving address.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-7"/>
-        <source>Use this form to request payments. All fields are &lt;b&gt;optional&lt;/b&gt;.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <location line="+22"/>
-        <source>An optional amount to request. Leave this empty or zero to not request a specific amount.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+32"/>
-        <source>Clear all fields of the form.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Clear</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+75"/>
-        <source>Requested payments history</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-95"/>
-        <source>&amp;Request payment</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+120"/>
-        <source>Show the selected request (does the same as double clicking an entry)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Show</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>Remove the selected entries from the list</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Remove</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../receivecoinsdialog.cpp" line="+39"/>
         <source>Copy label</source>
-        <translation type="unfinished">Copy label</translation>
+        <translation type="obsolete">Copy label</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Copy message</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Copy amount</source>
-        <translation type="unfinished">Copy amount</translation>
+        <translation type="obsolete">Copy amount</translation>
     </message>
 </context>
 <context>
     <name>ReceiveRequestDialog</name>
     <message>
-        <location filename="../forms/receiverequestdialog.ui" line="+29"/>
-        <source>QR Code</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+46"/>
-        <source>Copy &amp;URI</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Copy &amp;Address</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>&amp;Save Image...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../receiverequestdialog.cpp" line="+65"/>
-        <source>Request payment to %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Payment information</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>URI</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
         <source>Address</source>
-        <translation type="unfinished">Address</translation>
+        <translation type="obsolete">Address</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Amount</source>
-        <translation type="unfinished">Amount</translation>
+        <translation type="obsolete">Amount</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Label</source>
-        <translation type="unfinished">Label</translation>
+        <translation type="obsolete">Label</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Message</source>
-        <translation type="unfinished">Message</translation>
+        <translation type="obsolete">Message</translation>
     </message>
     <message>
-        <location line="+10"/>
         <source>Resulting URI too long, try to reduce the text for label / message.</source>
-        <translation type="unfinished">Resulting URI too long, try to reduce the text for label / message.</translation>
+        <translation type="obsolete">Resulting URI too long, try to reduce the text for label / message.</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Error encoding URI into QR Code.</source>
-        <translation type="unfinished">Error encoding URI into QR Code.</translation>
+        <translation type="obsolete">Error encoding URI into QR Code.</translation>
     </message>
 </context>
 <context>
     <name>RecentRequestsTableModel</name>
     <message>
-        <location filename="../recentrequeststablemodel.cpp" line="+28"/>
         <source>Date</source>
-        <translation type="unfinished">Date</translation>
+        <translation type="obsolete">Date</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Label</source>
-        <translation type="unfinished">Label</translation>
+        <translation type="obsolete">Label</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Message</source>
-        <translation type="unfinished">Message</translation>
+        <translation type="obsolete">Message</translation>
     </message>
     <message>
-        <location line="+99"/>
         <source>Amount</source>
-        <translation type="unfinished">Amount</translation>
+        <translation type="obsolete">Amount</translation>
     </message>
     <message>
-        <location line="-59"/>
         <source>(no label)</source>
-        <translation type="unfinished">(no label)</translation>
+        <translation type="obsolete">(no label)</translation>
     </message>
+</context>
+<context>
+    <name>SearchLineEdit</name>
     <message>
-        <location line="+9"/>
-        <source>(no message)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>(no amount)</source>
+        <location filename="../searchlineedit.cpp" line="+118"/>
+        <source>Search</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>SendCoinsDialog</name>
     <message>
-        <location filename="../forms/sendcoinsdialog.ui" line="+14"/>
-        <location filename="../sendcoinsdialog.cpp" line="+533"/>
         <source>Send Coins</source>
-        <translation>Send Coins</translation>
+        <translation type="vanished">Send Coins</translation>
     </message>
     <message>
-        <location line="+76"/>
-        <source>Coin Control Features</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+20"/>
-        <source>Inputs...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>automatically selected</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+19"/>
-        <source>Insufficient funds!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+89"/>
-        <source>Quantity:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+35"/>
-        <source>Bytes:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+48"/>
-        <source>Amount:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+32"/>
-        <source>Priority:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+48"/>
-        <source>Fee:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+80"/>
-        <source>After Fee:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+32"/>
-        <source>Change:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+44"/>
-        <source>If this is activated, but the change address is empty or invalid, change will be sent to a newly generated address.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Custom change address</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+206"/>
-        <source>Transaction Fee:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>Choose...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>collapse fee-settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Minimize</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+78"/>
-        <source>If the custom fee is set to 1000 satoshis and the transaction is only 250 bytes, then &quot;per kilobyte&quot; only pays 250 satoshis in fee, while &quot;at least&quot; pays 1000 satoshis. For transactions bigger than a kilobyte both pay by kilobyte.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>per kilobyte</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>If the custom fee is set to 1000 satoshis and the transaction is only 250 bytes, then &quot;per kilobyte&quot; only pays 250 satoshis in fee, while &quot;total at least&quot; pays 1000 satoshis. For transactions bigger than a kilobyte both pay by kilobyte.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>total at least</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+30"/>
-        <location line="+13"/>
-        <source>Paying only the minimum fee is just fine as long as there is less transaction volume than space in the blocks. But be aware that this can end up in a never confirming transaction once there is more demand for faicoin transactions than the network can process.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>(read the tooltip)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+29"/>
-        <source>Recommended:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+30"/>
-        <source>Custom:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+52"/>
-        <source>(Smart fee not initialized yet. This usually takes a few blocks...)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+29"/>
-        <source>Confirmation time:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+60"/>
-        <source>normal</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+20"/>
-        <source>fast</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+38"/>
-        <source>Send as zero-fee transaction if possible</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>(confirmation may take longer)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+110"/>
         <source>Send to multiple recipients at once</source>
-        <translation>Send to multiple recipients at once</translation>
+        <translation type="vanished">Send to multiple recipients at once</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Add &amp;Recipient</source>
-        <translation>Add &amp;Recipient</translation>
+        <translation type="vanished">Add &amp;Recipient</translation>
     </message>
     <message>
-        <location line="-20"/>
-        <source>Clear all fields of the form.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-858"/>
-        <source>Dust:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+861"/>
         <source>Clear &amp;All</source>
-        <translation>Clear &amp;All</translation>
+        <translation type="vanished">Clear &amp;All</translation>
     </message>
     <message>
-        <location line="+55"/>
         <source>Balance:</source>
-        <translation>Balance:</translation>
+        <translation type="vanished">Balance:</translation>
     </message>
     <message>
-        <location line="-84"/>
         <source>Confirm the send action</source>
-        <translation>Confirm the send action</translation>
+        <translation type="vanished">Confirm the send action</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>S&amp;end</source>
-        <translation>S&amp;end</translation>
+        <translation type="vanished">S&amp;end</translation>
     </message>
     <message>
-        <location filename="../sendcoinsdialog.cpp" line="-221"/>
         <source>Confirm send coins</source>
-        <translation>Confirm send coins</translation>
+        <translation type="vanished">Confirm send coins</translation>
     </message>
     <message>
-        <location line="-77"/>
-        <location line="+5"/>
-        <location line="+5"/>
-        <location line="+4"/>
-        <source>%1 to %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-193"/>
-        <source>Copy quantity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Copy amount</source>
-        <translation type="unfinished">Copy amount</translation>
+        <translation type="obsolete">Copy amount</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Copy fee</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Copy after fee</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Copy bytes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Copy priority</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Copy change</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+245"/>
-        <source>Total Amount %1 (= %2)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>or</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+192"/>
         <source>The recipient address is not valid, please recheck.</source>
-        <translation>The recipient address is not valid, please recheck.</translation>
+        <translation type="vanished">The recipient address is not valid, please recheck.</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>The amount to pay must be larger than 0.</source>
-        <translation>The amount to pay must be larger than 0.</translation>
+        <translation type="vanished">The amount to pay must be larger than 0.</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>The amount exceeds your balance.</source>
-        <translation>The amount exceeds your balance.</translation>
+        <translation type="vanished">The amount exceeds your balance.</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>The total exceeds your balance when the %1 transaction fee is included.</source>
-        <translation>The total exceeds your balance when the %1 transaction fee is included.</translation>
+        <translation type="vanished">The total exceeds your balance when the %1 transaction fee is included.</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Duplicate address found, can only send to each address once per send operation.</source>
-        <translation>Duplicate address found, can only send to each address once per send operation.</translation>
+        <translation type="vanished">Duplicate address found, can only send to each address once per send operation.</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <source>Transaction creation failed!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>The transaction was rejected! This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>A fee higher than %1 is considered an insanely high fee.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+87"/>
-        <source>Pay only the minimum fee of %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+22"/>
-        <source>Estimated to begin confirmation within %1 block(s).</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+107"/>
-        <source>Warning: Invalid Faicoin address</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+20"/>
         <source>(no label)</source>
-        <translation type="unfinished">(no label)</translation>
-    </message>
-    <message>
-        <location line="-11"/>
-        <source>Warning: Unknown change address</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-688"/>
-        <source>Copy dust</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+222"/>
-        <source>Are you sure you want to send?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>added as transaction fee</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">(no label)</translation>
     </message>
 </context>
 <context>
     <name>SendCoinsEntry</name>
     <message>
-        <location filename="../forms/sendcoinsentry.ui" line="+131"/>
-        <location line="+521"/>
-        <location line="+536"/>
         <source>A&amp;mount:</source>
-        <translation>A&amp;mount:</translation>
+        <translation type="vanished">A&amp;mount:</translation>
     </message>
     <message>
-        <location line="-1152"/>
         <source>Pay &amp;To:</source>
-        <translation>Pay &amp;To:</translation>
+        <translation type="vanished">Pay &amp;To:</translation>
     </message>
     <message>
-        <location filename="../sendcoinsentry.cpp" line="+30"/>
         <source>Enter a label for this address to add it to your address book</source>
-        <translation>Enter a label for this address to add it to your address book</translation>
+        <translation type="vanished">Enter a label for this address to add it to your address book</translation>
     </message>
     <message>
-        <location filename="../forms/sendcoinsentry.ui" line="+75"/>
         <source>&amp;Label:</source>
-        <translation>&amp;Label:</translation>
+        <translation type="vanished">&amp;Label:</translation>
     </message>
     <message>
-        <location line="-50"/>
-        <source>Choose previously used address</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-40"/>
-        <source>This is a normal payment.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+33"/>
-        <source>The Faicoin address to send the payment to</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+17"/>
         <source>Alt+A</source>
-        <translation>Alt+A</translation>
+        <translation type="vanished">Alt+A</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Paste address from clipboard</source>
-        <translation>Paste address from clipboard</translation>
+        <translation type="vanished">Paste address from clipboard</translation>
+    </message>
+    <message>
+        <source>Alt+P</source>
+        <translation type="vanished">Alt+P</translation>
+    </message>
+</context>
+<context>
+    <name>Settings</name>
+    <message>
+        <location filename="../forms/settings.ui" line="+14"/>
+        <source>Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>General</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Home:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Set to current page</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Remove history items:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>After one day</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>After one week</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>After two weeks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>After one month</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>After one year</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Manually</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Save downloads to:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Open links from applications:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>In a tab in the current window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>In a new window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Enable Scroll Animator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Appearance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Standard font:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Times 16</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+10"/>
-        <source>Alt+P</source>
-        <translation>Alt+P</translation>
+        <location line="+30"/>
+        <source>Select...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-23"/>
+        <source>Fixed-width font:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Courier 13</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+31"/>
+        <source>Privacy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Web Content</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Enable Plugins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Enable Javascript</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Cookies</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Accept Cookies:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Always</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Never</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Only from sites you navigate to</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Exceptions...</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+7"/>
-        <location line="+524"/>
-        <location line="+536"/>
-        <source>Remove this entry</source>
+        <source>Keep until:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1008"/>
-        <source>Message:</source>
+        <location line="+11"/>
+        <source>They expire</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+968"/>
-        <source>This is a verified payment request.</source>
+        <location line="+5"/>
+        <source>I exit the application</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-991"/>
-        <source>Enter a label for this address to add it to the list of used addresses</source>
+        <location line="+5"/>
+        <source>At most 90 days</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Cookies...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Proxy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Enable proxy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Type:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Socks5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Http</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Host:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Port:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+33"/>
-        <source>A message that was attached to the faicoin: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the Faicoin network.</source>
+        <source>User Name:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+426"/>
-        <source>This is an unverified payment request.</source>
+        <location line="+13"/>
+        <source>Password:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+18"/>
-        <location line="+532"/>
-        <source>Pay To:</source>
+        <location line="+34"/>
+        <source>Advanced</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-498"/>
-        <location line="+536"/>
-        <source>Memo:</source>
+        <location line="+6"/>
+        <source>Style Sheet:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2753,7 +2926,7 @@ Address: %4
     <name>ShutdownWindow</name>
     <message>
         <location filename="../utilitydialog.cpp" line="+47"/>
-        <source>Faicoin Core is shutting down...</source>
+        <source>Φ DeskTop Client is shutting down...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2765,195 +2938,144 @@ Address: %4
 <context>
     <name>SignVerifyMessageDialog</name>
     <message>
-        <location filename="../forms/signverifymessagedialog.ui" line="+14"/>
         <source>Signatures - Sign / Verify a Message</source>
-        <translation>Signatures - Sign / Verify a Message</translation>
+        <translation type="vanished">Signatures - Sign / Verify a Message</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>&amp;Sign Message</source>
-        <translation>&amp;Sign Message</translation>
+        <translation type="vanished">&amp;Sign Message</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>You can sign messages with your addresses to prove you own them. Be careful not to sign anything vague, as phishing attacks may try to trick you into signing your identity over to them. Only sign fully-detailed statements you agree to.</source>
-        <translation>You can sign messages with your addresses to prove you own them. Be careful not to sign anything vague, as phishing attacks may try to trick you into signing your identity over to them. Only sign fully-detailed statements you agree to.</translation>
+        <translation type="vanished">You can sign messages with your addresses to prove you own them. Be careful not to sign anything vague, as phishing attacks may try to trick you into signing your identity over to them. Only sign fully-detailed statements you agree to.</translation>
     </message>
     <message>
-        <location line="+18"/>
-        <source>The Faicoin address to sign the message with</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <location line="+210"/>
-        <source>Choose previously used address</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-200"/>
-        <location line="+210"/>
         <source>Alt+A</source>
-        <translation>Alt+A</translation>
+        <translation type="vanished">Alt+A</translation>
     </message>
     <message>
-        <location line="-200"/>
         <source>Paste address from clipboard</source>
-        <translation>Paste address from clipboard</translation>
+        <translation type="vanished">Paste address from clipboard</translation>
     </message>
     <message>
-        <location line="+10"/>
         <source>Alt+P</source>
-        <translation>Alt+P</translation>
+        <translation type="vanished">Alt+P</translation>
     </message>
     <message>
-        <location line="+12"/>
         <source>Enter the message you want to sign here</source>
-        <translation>Enter the message you want to sign here</translation>
+        <translation type="vanished">Enter the message you want to sign here</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Signature</source>
-        <translation>Signature</translation>
+        <translation type="vanished">Signature</translation>
     </message>
     <message>
-        <location line="+27"/>
         <source>Copy the current signature to the system clipboard</source>
-        <translation>Copy the current signature to the system clipboard</translation>
+        <translation type="vanished">Copy the current signature to the system clipboard</translation>
     </message>
     <message>
-        <location line="+21"/>
         <source>Sign the message to prove you own this Faicoin address</source>
-        <translation>Sign the message to prove you own this Faicoin address</translation>
+        <translation type="vanished">Sign the message to prove you own this Faicoin address</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Sign &amp;Message</source>
-        <translation>Sign &amp;Message</translation>
+        <translation type="vanished">Sign &amp;Message</translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>Reset all sign message fields</source>
-        <translation>Reset all sign message fields</translation>
+        <translation type="vanished">Reset all sign message fields</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location line="+143"/>
         <source>Clear &amp;All</source>
-        <translation>Clear &amp;All</translation>
+        <translation type="vanished">Clear &amp;All</translation>
     </message>
     <message>
-        <location line="-84"/>
         <source>&amp;Verify Message</source>
-        <translation>&amp;Verify Message</translation>
+        <translation type="vanished">&amp;Verify Message</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Enter the signing address, message (ensure you copy line breaks, spaces, tabs, etc. exactly) and signature below to verify the message. Be careful not to read more into the signature than what is in the signed message itself, to avoid being tricked by a man-in-the-middle attack.</source>
-        <translation>Enter the signing address, message (ensure you copy line breaks, spaces, tabs, etc. exactly) and signature below to verify the message. Be careful not to read more into the signature than what is in the signed message itself, to avoid being tricked by a man-in-the-middle attack.</translation>
+        <translation type="vanished">Enter the signing address, message (ensure you copy line breaks, spaces, tabs, etc. exactly) and signature below to verify the message. Be careful not to read more into the signature than what is in the signed message itself, to avoid being tricked by a man-in-the-middle attack.</translation>
     </message>
     <message>
-        <location line="+21"/>
-        <source>The Faicoin address the message was signed with</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+37"/>
         <source>Verify the message to ensure it was signed with the specified Faicoin address</source>
-        <translation>Verify the message to ensure it was signed with the specified Faicoin address</translation>
+        <translation type="vanished">Verify the message to ensure it was signed with the specified Faicoin address</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Verify &amp;Message</source>
-        <translation>Verify &amp;Message</translation>
+        <translation type="vanished">Verify &amp;Message</translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>Reset all verify message fields</source>
-        <translation>Reset all verify message fields</translation>
+        <translation type="vanished">Reset all verify message fields</translation>
     </message>
     <message>
-        <location filename="../signverifymessagedialog.cpp" line="+29"/>
         <source>Click &quot;Sign Message&quot; to generate signature</source>
-        <translation>Click &quot;Sign Message&quot; to generate signature</translation>
+        <translation type="vanished">Click &quot;Sign Message&quot; to generate signature</translation>
     </message>
     <message>
-        <location line="+83"/>
-        <location line="+80"/>
         <source>The entered address is invalid.</source>
-        <translation>The entered address is invalid.</translation>
+        <translation type="vanished">The entered address is invalid.</translation>
     </message>
     <message>
-        <location line="-80"/>
-        <location line="+8"/>
-        <location line="+72"/>
-        <location line="+8"/>
         <source>Please check the address and try again.</source>
-        <translation>Please check the address and try again.</translation>
+        <translation type="vanished">Please check the address and try again.</translation>
     </message>
     <message>
-        <location line="-80"/>
-        <location line="+80"/>
         <source>The entered address does not refer to a key.</source>
-        <translation>The entered address does not refer to a key.</translation>
+        <translation type="vanished">The entered address does not refer to a key.</translation>
     </message>
     <message>
-        <location line="-72"/>
         <source>Wallet unlock was cancelled.</source>
-        <translation>Wallet unlock was cancelled.</translation>
+        <translation type="vanished">Wallet unlock was cancelled.</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>Private key for the entered address is not available.</source>
-        <translation>Private key for the entered address is not available.</translation>
+        <translation type="vanished">Private key for the entered address is not available.</translation>
     </message>
     <message>
-        <location line="+12"/>
         <source>Message signing failed.</source>
-        <translation>Message signing failed.</translation>
+        <translation type="vanished">Message signing failed.</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Message signed.</source>
-        <translation>Message signed.</translation>
+        <translation type="vanished">Message signed.</translation>
     </message>
     <message>
-        <location line="+58"/>
         <source>The signature could not be decoded.</source>
-        <translation>The signature could not be decoded.</translation>
+        <translation type="vanished">The signature could not be decoded.</translation>
     </message>
     <message>
-        <location line="+0"/>
-        <location line="+13"/>
         <source>Please check the signature and try again.</source>
-        <translation>Please check the signature and try again.</translation>
+        <translation type="vanished">Please check the signature and try again.</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>The signature did not match the message digest.</source>
-        <translation>The signature did not match the message digest.</translation>
+        <translation type="vanished">The signature did not match the message digest.</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Message verification failed.</source>
-        <translation>Message verification failed.</translation>
+        <translation type="vanished">Message verification failed.</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Message verified.</source>
-        <translation>Message verified.</translation>
+        <translation type="vanished">Message verified.</translation>
     </message>
 </context>
 <context>
     <name>SplashScreen</name>
     <message>
-        <location filename="../splashscreen.cpp" line="+35"/>
         <source>Faicoin Core</source>
-        <translation type="unfinished">Faicoin Core</translation>
+        <translation type="obsolete">Faicoin Core</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location filename="../splashscreen.cpp" line="+37"/>
         <source>The Bitcoin Core developers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The FAI developers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2963,1575 +3085,1086 @@ Address: %4
     </message>
 </context>
 <context>
-    <name>TrafficGraphWidget</name>
+    <name>TabBar</name>
     <message>
-        <location filename="../trafficgraphwidget.cpp" line="+79"/>
-        <source>KB/s</source>
+        <location filename="../mainview.cpp" line="+470"/>
+        <source>New &amp;Tab</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Clone Tab</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>&amp;Close Tab</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Close &amp;Other Tabs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Reload Tab</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Reload All Tabs</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ToolbarSearch</name>
+    <message>
+        <location filename="../toolbarsearch.cpp" line="+74"/>
+        <source>Google</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+64"/>
+        <source>No Recent Searches</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Recent Searches</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Clear Recent Searches</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>TransactionDesc</name>
     <message>
-        <location filename="../transactiondesc.cpp" line="+34"/>
         <source>Open until %1</source>
-        <translation>Open until %1</translation>
+        <translation type="vanished">Open until %1</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>conflicted</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
         <source>%1/offline</source>
-        <translation>%1/offline</translation>
+        <translation type="vanished">%1/offline</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>%1/unconfirmed</source>
-        <translation>%1/unconfirmed</translation>
+        <translation type="vanished">%1/unconfirmed</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>%1 confirmations</source>
-        <translation>%1 confirmations</translation>
+        <translation type="vanished">%1 confirmations</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>Status</source>
-        <translation>Status</translation>
+        <translation type="vanished">Status</translation>
     </message>
     <message numerus="yes">
-        <location line="+7"/>
         <source>, broadcast through %n node(s)</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>, broadcast through %n node</numerusform>
             <numerusform>, broadcast through %n nodes</numerusform>
         </translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Date</source>
-        <translation>Date</translation>
+        <translation type="vanished">Date</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Source</source>
-        <translation>Source</translation>
+        <translation type="vanished">Source</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Generated</source>
-        <translation>Generated</translation>
+        <translation type="vanished">Generated</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <location line="+13"/>
-        <location line="+72"/>
         <source>From</source>
-        <translation>From</translation>
+        <translation type="vanished">From</translation>
     </message>
     <message>
-        <location line="-71"/>
-        <location line="+20"/>
-        <location line="+69"/>
         <source>To</source>
-        <translation>To</translation>
+        <translation type="vanished">To</translation>
     </message>
     <message>
-        <location line="-87"/>
         <source>own address</source>
-        <translation>own address</translation>
+        <translation type="vanished">own address</translation>
     </message>
     <message>
-        <location line="+0"/>
-        <location line="+69"/>
-        <source>watch-only</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-67"/>
         <source>label</source>
-        <translation>label</translation>
+        <translation type="vanished">label</translation>
     </message>
     <message>
-        <location line="+34"/>
-        <location line="+12"/>
-        <location line="+53"/>
-        <location line="+26"/>
-        <location line="+53"/>
         <source>Credit</source>
-        <translation>Credit</translation>
+        <translation type="vanished">Credit</translation>
     </message>
     <message numerus="yes">
-        <location line="-142"/>
         <source>matures in %n more block(s)</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>matures in %n more block</numerusform>
             <numerusform>matures in %n more blocks</numerusform>
         </translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>not accepted</source>
-        <translation>not accepted</translation>
+        <translation type="vanished">not accepted</translation>
     </message>
     <message>
-        <location line="+59"/>
-        <location line="+25"/>
-        <location line="+53"/>
         <source>Debit</source>
-        <translation>Debit</translation>
+        <translation type="vanished">Debit</translation>
     </message>
     <message>
-        <location line="-68"/>
-        <source>Total debit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Total credit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
         <source>Transaction fee</source>
-        <translation>Transaction fee</translation>
+        <translation type="vanished">Transaction fee</translation>
     </message>
     <message>
-        <location line="+16"/>
         <source>Net amount</source>
-        <translation>Net amount</translation>
+        <translation type="vanished">Net amount</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <location line="+9"/>
         <source>Message</source>
-        <translation>Message</translation>
+        <translation type="vanished">Message</translation>
     </message>
     <message>
-        <location line="-7"/>
         <source>Comment</source>
-        <translation>Comment</translation>
+        <translation type="vanished">Comment</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Transaction ID</source>
-        <translation>Transaction ID</translation>
+        <translation type="vanished">Transaction ID</translation>
     </message>
     <message>
-        <location line="+18"/>
-        <source>Merchant</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Generated coins must mature %1 blocks before they can be spent. When you generated this block, it was broadcast to the network to be added to the block chain. If it fails to get into the chain, its state will change to &quot;not accepted&quot; and it won&apos;t be spendable. This may occasionally happen if another node generates a block within a few seconds of yours.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
         <source>Debug information</source>
-        <translation>Debug information</translation>
+        <translation type="vanished">Debug information</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>Transaction</source>
-        <translation>Transaction</translation>
+        <translation type="vanished">Transaction</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Inputs</source>
-        <translation>Inputs</translation>
+        <translation type="vanished">Inputs</translation>
     </message>
     <message>
-        <location line="+21"/>
         <source>Amount</source>
-        <translation>Amount</translation>
+        <translation type="vanished">Amount</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <location line="+1"/>
         <source>true</source>
-        <translation>true</translation>
+        <translation type="vanished">true</translation>
     </message>
     <message>
-        <location line="-1"/>
-        <location line="+1"/>
         <source>false</source>
-        <translation>false</translation>
+        <translation type="vanished">false</translation>
     </message>
     <message>
-        <location line="-242"/>
         <source>, has not been successfully broadcast yet</source>
-        <translation>, has not been successfully broadcast yet</translation>
+        <translation type="vanished">, has not been successfully broadcast yet</translation>
     </message>
     <message numerus="yes">
-        <location line="-36"/>
         <source>Open for %n more block(s)</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>Open for %n more block</numerusform>
             <numerusform>Open for %n more blocks</numerusform>
         </translation>
     </message>
     <message>
-        <location line="+67"/>
         <source>unknown</source>
-        <translation>unknown</translation>
+        <translation type="vanished">unknown</translation>
     </message>
 </context>
 <context>
     <name>TransactionDescDialog</name>
     <message>
-        <location filename="../forms/transactiondescdialog.ui" line="+14"/>
         <source>Transaction details</source>
-        <translation>Transaction details</translation>
+        <translation type="vanished">Transaction details</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>This pane shows a detailed description of the transaction</source>
-        <translation>This pane shows a detailed description of the transaction</translation>
+        <translation type="vanished">This pane shows a detailed description of the transaction</translation>
     </message>
 </context>
 <context>
     <name>TransactionTableModel</name>
     <message>
-        <location filename="../transactiontablemodel.cpp" line="+229"/>
         <source>Date</source>
-        <translation>Date</translation>
+        <translation type="vanished">Date</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Type</source>
-        <translation>Type</translation>
+        <translation type="vanished">Type</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Address</source>
-        <translation>Address</translation>
-    </message>
-    <message>
-        <location line="+79"/>
-        <source>Immature (%1 confirmations, will be available after %2)</source>
-        <translation type="unfinished"></translation>
+        <translation type="vanished">Address</translation>
     </message>
     <message numerus="yes">
-        <location line="-21"/>
         <source>Open for %n more block(s)</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>Open for %n more block</numerusform>
             <numerusform>Open for %n more blocks</numerusform>
         </translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Open until %1</source>
-        <translation>Open until %1</translation>
+        <translation type="vanished">Open until %1</translation>
     </message>
     <message>
-        <location line="+12"/>
         <source>Confirmed (%1 confirmations)</source>
-        <translation>Confirmed (%1 confirmations)</translation>
+        <translation type="vanished">Confirmed (%1 confirmations)</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>This block was not received by any other nodes and will probably not be accepted!</source>
-        <translation>This block was not received by any other nodes and will probably not be accepted!</translation>
+        <translation type="vanished">This block was not received by any other nodes and will probably not be accepted!</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Generated but not accepted</source>
-        <translation>Generated but not accepted</translation>
+        <translation type="vanished">Generated but not accepted</translation>
     </message>
     <message>
-        <location line="-21"/>
-        <source>Offline</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Unconfirmed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Confirming (%1 of %2 recommended confirmations)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Conflicted</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+48"/>
         <source>Received with</source>
-        <translation>Received with</translation>
+        <translation type="vanished">Received with</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Received from</source>
-        <translation>Received from</translation>
+        <translation type="vanished">Received from</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Sent to</source>
-        <translation>Sent to</translation>
+        <translation type="vanished">Sent to</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Payment to yourself</source>
-        <translation>Payment to yourself</translation>
+        <translation type="vanished">Payment to yourself</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Mined</source>
-        <translation>Mined</translation>
+        <translation type="vanished">Mined</translation>
     </message>
     <message>
-        <location line="+28"/>
-        <source>watch-only</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+15"/>
         <source>(n/a)</source>
-        <translation>(n/a)</translation>
+        <translation type="vanished">(n/a)</translation>
     </message>
     <message>
-        <location line="+210"/>
         <source>Transaction status. Hover over this field to show number of confirmations.</source>
-        <translation>Transaction status. Hover over this field to show number of confirmations.</translation>
+        <translation type="vanished">Transaction status. Hover over this field to show number of confirmations.</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Date and time that the transaction was received.</source>
-        <translation>Date and time that the transaction was received.</translation>
+        <translation type="vanished">Date and time that the transaction was received.</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Type of transaction.</source>
-        <translation>Type of transaction.</translation>
+        <translation type="vanished">Type of transaction.</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Whether or not a watch-only address is involved in this transaction.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
         <source>Destination address of transaction.</source>
-        <translation>Destination address of transaction.</translation>
+        <translation type="vanished">Destination address of transaction.</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Amount removed from or added to balance.</source>
-        <translation>Amount removed from or added to balance.</translation>
+        <translation type="vanished">Amount removed from or added to balance.</translation>
     </message>
 </context>
 <context>
     <name>TransactionView</name>
     <message>
-        <location filename="../transactionview.cpp" line="+67"/>
-        <location line="+16"/>
         <source>All</source>
-        <translation>All</translation>
+        <translation type="vanished">All</translation>
     </message>
     <message>
-        <location line="-15"/>
         <source>Today</source>
-        <translation>Today</translation>
+        <translation type="vanished">Today</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>This week</source>
-        <translation>This week</translation>
+        <translation type="vanished">This week</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>This month</source>
-        <translation>This month</translation>
+        <translation type="vanished">This month</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Last month</source>
-        <translation>Last month</translation>
+        <translation type="vanished">Last month</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>This year</source>
-        <translation>This year</translation>
+        <translation type="vanished">This year</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Range...</source>
-        <translation>Range...</translation>
+        <translation type="vanished">Range...</translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>Received with</source>
-        <translation>Received with</translation>
+        <translation type="vanished">Received with</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Sent to</source>
-        <translation>Sent to</translation>
+        <translation type="vanished">Sent to</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>To yourself</source>
-        <translation>To yourself</translation>
+        <translation type="vanished">To yourself</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Mined</source>
-        <translation>Mined</translation>
+        <translation type="vanished">Mined</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Other</source>
-        <translation>Other</translation>
+        <translation type="vanished">Other</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Enter address or label to search</source>
-        <translation>Enter address or label to search</translation>
+        <translation type="vanished">Enter address or label to search</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Min amount</source>
-        <translation>Min amount</translation>
+        <translation type="vanished">Min amount</translation>
     </message>
     <message>
-        <location line="+36"/>
         <source>Copy address</source>
-        <translation>Copy address</translation>
+        <translation type="vanished">Copy address</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Copy label</source>
-        <translation>Copy label</translation>
+        <translation type="vanished">Copy label</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Copy amount</source>
-        <translation>Copy amount</translation>
+        <translation type="vanished">Copy amount</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Copy transaction ID</source>
-        <translation>Copy transaction ID</translation>
+        <translation type="vanished">Copy transaction ID</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Edit label</source>
-        <translation>Edit label</translation>
+        <translation type="vanished">Edit label</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Show transaction details</source>
-        <translation>Show transaction details</translation>
+        <translation type="vanished">Show transaction details</translation>
     </message>
     <message>
-        <location line="+179"/>
-        <source>Export Transaction History</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <source>Watch-only</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Exporting Failed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>There was an error trying to save the transaction history to %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Exporting Successful</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>The transaction history was successfully saved to %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-24"/>
         <source>Comma separated file (*.csv)</source>
-        <translation>Comma separated file (*.csv)</translation>
+        <translation type="vanished">Comma separated file (*.csv)</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>Confirmed</source>
-        <translation>Confirmed</translation>
+        <translation type="vanished">Confirmed</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Date</source>
-        <translation>Date</translation>
+        <translation type="vanished">Date</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Type</source>
-        <translation>Type</translation>
+        <translation type="vanished">Type</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Label</source>
-        <translation>Label</translation>
+        <translation type="vanished">Label</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Address</source>
-        <translation>Address</translation>
+        <translation type="vanished">Address</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>ID</source>
-        <translation>ID</translation>
+        <translation type="vanished">ID</translation>
     </message>
     <message>
-        <location line="+116"/>
         <source>Range:</source>
-        <translation>Range:</translation>
+        <translation type="vanished">Range:</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>to</source>
-        <translation>to</translation>
+        <translation type="vanished">to</translation>
     </message>
 </context>
 <context>
-    <name>UnitDisplayStatusBarControl</name>
+    <name>UserConfirmDialog</name>
     <message>
-        <location filename="../bitcoingui.cpp" line="+106"/>
-        <source>Unit to show amounts in. Click to select another unit.</source>
+        <location filename="../forms/userconfirmdialog.ui" line="+20"/>
+        <source>Dialog</source>
         <translation type="unfinished"></translation>
     </message>
-</context>
-<context>
-    <name>WalletFrame</name>
     <message>
-        <location filename="../walletframe.cpp" line="+26"/>
-        <source>No wallet has been loaded.</source>
+        <location line="+37"/>
+        <source>Please input password:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+35"/>
+        <source>TextLabel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>Block Page</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>WalletModel</name>
     <message>
-        <location filename="../walletmodel.cpp" line="+276"/>
         <source>Send Coins</source>
-        <translation>Send Coins</translation>
+        <translation type="vanished">Send Coins</translation>
+    </message>
+    <message>
+        <location filename="../walletmodel.cpp" line="+390"/>
+        <location line="+15"/>
+        <source>Export Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <source>{&quot;error&quot;:&quot;wrong idfrom&quot;}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <location line="+390"/>
+        <location line="+89"/>
+        <source>{&quot;error&quot;:&quot;no private key&quot;}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-458"/>
+        <source>Publish Content</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Register Domain</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Renew Domain</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Update Domain</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Transfer Domain</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Request Payment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>{&quot;error&quot;:&quot;user canceled&quot;}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+43"/>
+        <source>Content :%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Locked %1 for %2 blocks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Locked %1 for %2 days</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <location line="+50"/>
+        <location line="+476"/>
+        <source>%1 to %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-520"/>
+        <source>Are you sure to publish?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <location line="+58"/>
+        <location line="+59"/>
+        <location line="+32"/>
+        <location line="+375"/>
+        <source>added as transaction fee</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-478"/>
+        <source>    message:%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Are you sure you want to send?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Total Amount %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Are you sure you want to decrypt messages related to IDs below?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Are you sure you want to encrypt messages related to IDs below?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <location line="+29"/>
+        <location line="+32"/>
+        <source>Domain name:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-56"/>
+        <location line="+29"/>
+        <source>Registered by:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-25"/>
+        <source>Please confirm to update domain info:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+29"/>
+        <source>Transfer to:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Please confirm to transfer domain:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>Register by:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Locked value:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Lock for:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>days</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Please check domain registration details:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+89"/>
+        <source>Confirm encrypt messages</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Confirm decrypt messages</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <location line="+88"/>
+        <location line="+110"/>
+        <source>{&quot;error&quot;:&quot;wrong password&quot;}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-193"/>
+        <location line="+5"/>
+        <location line="+108"/>
+        <source>{&quot;error&quot;:&quot;encryption failed&quot;}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-69"/>
+        <source>{&quot;error&quot;:&quot;wrong idlocal&quot;}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>{&quot;error&quot;:&quot;wrong idforeign&quot;}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>Request Send Message</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+58"/>
+        <source>{&quot;error&quot;:&quot;sign transaction failed&quot;}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>{&quot;error&quot;:&quot;tx rejected&quot;}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+36"/>
+        <source>{&quot;error&quot;:&quot;no privkey for signing&quot;}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Request Sign Message</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>{&quot;error&quot;:&quot;Private key not available&quot;}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>{&quot;error&quot;:&quot;Sign failed&quot;}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Are you sure you want to send message?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+44"/>
+        <source>{&quot;error&quot;:&quot;domain already registered&quot;}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <location line="+28"/>
+        <location line="+30"/>
+        <source>{&quot;error&quot;:&quot; level1 domain not exists&quot;}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-56"/>
+        <location line="+28"/>
+        <location line="+30"/>
+        <location line="+41"/>
+        <source>{&quot;error&quot;:&quot; level1 domain is not belonging to sending id&quot;}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-77"/>
+        <source>{&quot;error&quot;:&quot;domain not registered&quot;}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <location line="+29"/>
+        <location line="+42"/>
+        <source>{&quot;error&quot;:&quot;domain is not belonging to sending id&quot;}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-143"/>
+        <source>Are you sure you want to sign message?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>ID:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Message:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>WalletView</name>
     <message>
-        <location filename="../walletview.cpp" line="+44"/>
         <source>&amp;Export</source>
-        <translation>&amp;Export</translation>
+        <translation type="vanished">&amp;Export</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Export the data in the current tab to a file</source>
-        <translation>Export the data in the current tab to a file</translation>
+        <translation type="vanished">Export the data in the current tab to a file</translation>
     </message>
     <message>
-        <location line="+187"/>
         <source>Backup Wallet</source>
-        <translation>Backup Wallet</translation>
+        <translation type="vanished">Backup Wallet</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Wallet Data (*.dat)</source>
-        <translation>Wallet Data (*.dat)</translation>
+        <translation type="vanished">Wallet Data (*.dat)</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Backup Failed</source>
-        <translation>Backup Failed</translation>
+        <translation type="vanished">Backup Failed</translation>
     </message>
     <message>
-        <location line="+0"/>
-        <source>There was an error trying to save the wallet data to %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>The wallet data was successfully saved to %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
         <source>Backup Successful</source>
-        <translation>Backup Successful</translation>
+        <translation type="vanished">Backup Successful</translation>
+    </message>
+</context>
+<context>
+    <name>WebPage</name>
+    <message>
+        <location filename="../webpage.cpp" line="+208"/>
+        <source>&lt;qt&gt;Enter username and password for &quot;%1&quot; at %2&lt;/qt&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>&lt;qt&gt;Connect to proxy &quot;%1&quot; using:&lt;/qt&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>WebView</name>
+    <message>
+        <location line="+77"/>
+        <location line="+8"/>
+        <source>{&quot;error&quot;:&quot;page is blocked by user&quot;}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+79"/>
+        <source>Open in New Tab</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>bitcoin-core</name>
     <message>
-        <location filename="../bitcoinstrings.cpp" line="+241"/>
         <source>Options:</source>
-        <translation>Options:</translation>
+        <translation type="vanished">Options:</translation>
     </message>
     <message>
-        <location line="+29"/>
         <source>Specify data directory</source>
-        <translation>Specify data directory</translation>
+        <translation type="vanished">Specify data directory</translation>
     </message>
     <message>
-        <location line="-87"/>
         <source>Connect to a node to retrieve peer addresses, and disconnect</source>
-        <translation>Connect to a node to retrieve peer addresses, and disconnect</translation>
+        <translation type="vanished">Connect to a node to retrieve peer addresses, and disconnect</translation>
     </message>
     <message>
-        <location line="+90"/>
         <source>Specify your own public address</source>
-        <translation>Specify your own public address</translation>
+        <translation type="vanished">Specify your own public address</translation>
     </message>
     <message>
-        <location line="-106"/>
         <source>Accept command line and JSON-RPC commands</source>
-        <translation>Accept command line and JSON-RPC commands</translation>
+        <translation type="vanished">Accept command line and JSON-RPC commands</translation>
     </message>
     <message>
-        <location line="+87"/>
         <source>Run in the background as a daemon and accept commands</source>
-        <translation>Run in the background as a daemon and accept commands</translation>
+        <translation type="vanished">Run in the background as a daemon and accept commands</translation>
     </message>
     <message>
-        <location line="+36"/>
         <source>Use the test network</source>
-        <translation>Use the test network</translation>
+        <translation type="vanished">Use the test network</translation>
     </message>
     <message>
-        <location line="-122"/>
         <source>Accept connections from outside (default: 1 if no -proxy or -connect)</source>
-        <translation>Accept connections from outside (default: 1 if no -proxy or -connect)</translation>
+        <translation type="vanished">Accept connections from outside (default: 1 if no -proxy or -connect)</translation>
     </message>
     <message>
-        <location line="-146"/>
         <source>Bind to given address and always listen on it. Use [host]:port notation for IPv6</source>
-        <translation>Bind to given address and always listen on it. Use [host]:port notation for IPv6</translation>
+        <translation type="vanished">Bind to given address and always listen on it. Use [host]:port notation for IPv6</translation>
     </message>
     <message>
-        <location line="+19"/>
-        <source>Delete all wallet transactions and only recover those parts of the blockchain through -rescan on startup</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Distributed under the MIT software license, see the accompanying file COPYING or &lt;http://www.opensource.org/licenses/mit-license.php&gt;.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Enter regression test mode, which uses a special chain in which blocks can be solved instantly.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
         <source>Execute command when a wallet transaction changes (%s in cmd is replaced by TxID)</source>
-        <translation>Execute command when a wallet transaction changes (%s in cmd is replaced by TxID)</translation>
+        <translation type="vanished">Execute command when a wallet transaction changes (%s in cmd is replaced by TxID)</translation>
     </message>
     <message>
-        <location line="+20"/>
-        <source>In this mode -genproclimit controls how many blocks are generated immediately.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <source>Set the number of script verification threads (%u to %d, 0 = auto, &lt;0 = leave that many cores free, default: %d)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
         <source>This is a pre-release test build - use at your own risk - do not use for mining or merchant applications</source>
-        <translation>This is a pre-release test build - use at your own risk - do not use for mining or merchant applications</translation>
+        <translation type="vanished">This is a pre-release test build - use at your own risk - do not use for mining or merchant applications</translation>
     </message>
     <message>
-        <location line="+20"/>
-        <source>Unable to bind to %s on this computer. Faicoin Core is probably already running.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
         <source>Warning: -paytxfee is set very high! This is the transaction fee you will pay if you send a transaction.</source>
-        <translation>Warning: -paytxfee is set very high! This is the transaction fee you will pay if you send a transaction.</translation>
+        <translation type="vanished">Warning: -paytxfee is set very high! This is the transaction fee you will pay if you send a transaction.</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Warning: The network does not appear to fully agree! Some miners appear to be experiencing issues.</source>
-        <translation>Warning: The network does not appear to fully agree! Some miners appear to be experiencing issues.</translation>
+        <translation type="vanished">Warning: The network does not appear to fully agree! Some miners appear to be experiencing issues.</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Warning: We do not appear to fully agree with our peers! You may need to upgrade, or other nodes may need to upgrade.</source>
-        <translation>Warning: We do not appear to fully agree with our peers! You may need to upgrade, or other nodes may need to upgrade.</translation>
+        <translation type="vanished">Warning: We do not appear to fully agree with our peers! You may need to upgrade, or other nodes may need to upgrade.</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Warning: error reading wallet.dat! All keys read correctly, but transaction data or address book entries might be missing or incorrect.</source>
-        <translation>Warning: error reading wallet.dat! All keys read correctly, but transaction data or address book entries might be missing or incorrect.</translation>
+        <translation type="vanished">Warning: error reading wallet.dat! All keys read correctly, but transaction data or address book entries might be missing or incorrect.</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Warning: wallet.dat corrupt, data salvaged! Original wallet.dat saved as wallet.{timestamp}.bak in %s; if your balance or transactions are incorrect you should restore from a backup.</source>
-        <translation>Warning: wallet.dat corrupt, data salvaged! Original wallet.dat saved as wallet.{timestamp}.bak in %s; if your balance or transactions are incorrect you should restore from a backup.</translation>
+        <translation type="vanished">Warning: wallet.dat corrupt, data salvaged! Original wallet.dat saved as wallet.{timestamp}.bak in %s; if your balance or transactions are incorrect you should restore from a backup.</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>Whitelist peers connecting from the given netmask or IP address. Can be specified multiple times.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>(default: 1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>&lt;category&gt; can be:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
         <source>Attempt to recover private keys from a corrupt wallet.dat</source>
-        <translation>Attempt to recover private keys from a corrupt wallet.dat</translation>
+        <translation type="vanished">Attempt to recover private keys from a corrupt wallet.dat</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Block creation options:</source>
-        <translation>Block creation options:</translation>
+        <translation type="vanished">Block creation options:</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Connect only to the specified node(s)</source>
-        <translation>Connect only to the specified node(s)</translation>
+        <translation type="vanished">Connect only to the specified node(s)</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <source>Connection options:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
         <source>Corrupted block database detected</source>
-        <translation>Corrupted block database detected</translation>
+        <translation type="vanished">Corrupted block database detected</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Debugging/Testing options:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
         <source>Discover own IP address (default: 1 when listening and no -externalip)</source>
-        <translation>Discover own IP address (default: 1 when listening and no -externalip)</translation>
+        <translation type="vanished">Discover own IP address (default: 1 when listening and no -externalip)</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Do not load the wallet and disable wallet RPC calls</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Do you want to rebuild the block database now?</source>
-        <translation>Do you want to rebuild the block database now?</translation>
+        <translation type="vanished">Do you want to rebuild the block database now?</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Error initializing block database</source>
-        <translation>Error initializing block database</translation>
+        <translation type="vanished">Error initializing block database</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Error initializing wallet database environment %s!</source>
-        <translation>Error initializing wallet database environment %s!</translation>
+        <translation type="vanished">Error initializing wallet database environment %s!</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Error loading block database</source>
-        <translation>Error loading block database</translation>
+        <translation type="vanished">Error loading block database</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Error opening block database</source>
-        <translation>Error opening block database</translation>
+        <translation type="vanished">Error opening block database</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Error: A fatal internal error occured, see debug.log for details</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Error: Disk space is low!</source>
-        <translation>Error: Disk space is low!</translation>
+        <translation type="vanished">Error: Disk space is low!</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Failed to listen on any port. Use -listen=0 if you want this.</source>
-        <translation>Failed to listen on any port. Use -listen=0 if you want this.</translation>
+        <translation type="vanished">Failed to listen on any port. Use -listen=0 if you want this.</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>If &lt;category&gt; is not supplied, output all debugging information.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Importing...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
         <source>Incorrect or no genesis block found. Wrong datadir for network?</source>
-        <translation>Incorrect or no genesis block found. Wrong datadir for network?</translation>
+        <translation type="vanished">Incorrect or no genesis block found. Wrong datadir for network?</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>Invalid -onion address: &apos;%s&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+20"/>
         <source>Not enough file descriptors available.</source>
-        <translation>Not enough file descriptors available.</translation>
+        <translation type="vanished">Not enough file descriptors available.</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Only connect to nodes in network &lt;net&gt; (ipv4, ipv6 or onion)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
         <source>Rebuild block chain index from current blk000??.dat files</source>
-        <translation>Rebuild block chain index from current blk000??.dat files</translation>
+        <translation type="vanished">Rebuild block chain index from current blk000??.dat files</translation>
     </message>
     <message>
-        <location line="+11"/>
-        <source>Set database cache size in megabytes (%d to %d, default: %d)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Set maximum block size in bytes (default: %d)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
         <source>Specify wallet file (within data directory)</source>
-        <translation>Specify wallet file (within data directory)</translation>
+        <translation type="vanished">Specify wallet file (within data directory)</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>This is intended for regression testing tools and app development.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Use UPnP to map the listening port (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
         <source>Verifying blocks...</source>
-        <translation>Verifying blocks...</translation>
+        <translation type="vanished">Verifying blocks...</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Verifying wallet...</source>
-        <translation>Verifying wallet...</translation>
+        <translation type="vanished">Verifying wallet...</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Wallet %s resides outside data directory %s</source>
-        <translation>Wallet %s resides outside data directory %s</translation>
+        <translation type="vanished">Wallet %s resides outside data directory %s</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Wallet options:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
         <source>You need to rebuild the database using -reindex to change -txindex</source>
-        <translation>You need to rebuild the database using -reindex to change -txindex</translation>
+        <translation type="vanished">You need to rebuild the database using -reindex to change -txindex</translation>
     </message>
     <message>
-        <location line="-89"/>
         <source>Imports blocks from external blk000??.dat file</source>
-        <translation>Imports blocks from external blk000??.dat file</translation>
+        <translation type="vanished">Imports blocks from external blk000??.dat file</translation>
     </message>
     <message>
-        <location line="-197"/>
-        <source>Allow JSON-RPC connections from specified source. Valid for &lt;ip&gt; are a single IP (e.g. 1.2.3.4), a network/netmask (e.g. 1.2.3.4/255.255.255.0) or a network/CIDR (e.g. 1.2.3.4/24). This option can be specified multiple times</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>An error occurred while setting up the RPC address %s port %u for listening: %s</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Bind to given address and whitelist peers connecting to it. Use [host]:port notation for IPv6</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Bind to given address to listen for JSON-RPC connections. Use [host]:port notation for IPv6. This option can be specified multiple times (default: bind to all interfaces)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Cannot obtain a lock on data directory %s. Faicoin Core is probably already running.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Continuously rate-limit free transactions to &lt;n&gt;*1000 bytes per minute (default:%u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Create new files with system default permissions, instead of umask 077 (only effective with disabled wallet functionality)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <source>Error: Listening for incoming connections failed (listen returned error %s)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Error: Unsupported argument -socks found. Setting SOCKS version isn&apos;t possible anymore, only SOCKS5 proxies are supported.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
         <source>Execute command when a relevant alert is received or we see a really long fork (%s in cmd is replaced by message)</source>
-        <translation>Execute command when a relevant alert is received or we see a really long fork (%s in cmd is replaced by message)</translation>
+        <translation type="vanished">Execute command when a relevant alert is received or we see a really long fork (%s in cmd is replaced by message)</translation>
     </message>
     <message>
-        <location line="+9"/>
-        <source>Fees (in BTC/Kb) smaller than this are considered zero fee for relaying (default: %s)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Fees (in BTC/Kb) smaller than this are considered zero fee for transaction creation (default: %s)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>If paytxfee is not set, include enough fee so transactions begin confirmation on average within n blocks (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Invalid amount for -maxtxfee=&lt;amount&gt;: &apos;%s&apos; (must be at least the minrelay fee of %s to prevent stuck transactions)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Maximum size of data in data carrier transactions we relay and mine (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Maximum total fees to use in a single wallet transaction, setting too low may abort large transactions (default: %s)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Query for peer addresses via DNS lookup, if low on addresses (default: 1 unless -connect)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Set maximum size of high-priority/low-fee transactions in bytes (default: %d)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Set the number of threads for coin generation if enabled (-1 = all cores, default: %d)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit &lt;https://www.openssl.org/&gt; and cryptographic software written by Eric Young and UPnP software written by Thomas Bernard.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>To use faicoind, or the -server option to faicoin-qt, you must set an rpcpassword in the configuration file:
-%s
-It is recommended you use the following random password:
-rpcuser=faicoinrpc
-rpcpassword=%s
-(you do not need to remember this password)
-The username and password MUST NOT be the same.
-If the file does not exist, create it with owner-readable-only file permissions.
-It is also recommended to set alertnotify so you are notified of problems;
-for example: alertnotify=echo %%s | mail -s &quot;Faicoin Alert&quot; admin@foo.com
-</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+19"/>
-        <source>Warning: -maxtxfee is set very high! Fees this large could be paid on a single transaction.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Warning: Please check that your computer&apos;s date and time are correct! If your clock is wrong Faicoin Core will not work properly.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+19"/>
-        <source>Whitelisted peers cannot be DoS banned and their transactions are always relayed, even if they are already in the mempool, useful e.g. for a gateway</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Accept public REST requests (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Cannot resolve -whitebind address: &apos;%s&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Connect through SOCKS5 proxy</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Copyright (C) 2009-%i The Faicoin Core Developers</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Could not parse -rpcbind value %s as network address</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <source>Error loading wallet.dat: Wallet requires newer version of Faicoin Core</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Error: Unsupported argument -tor found, use -onion.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Fee (in BTC/kB) to add to transactions you send (default: %s)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
         <source>Information</source>
-        <translation>Information</translation>
+        <translation type="vanished">Information</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Initialization sanity check failed. Faicoin Core is shutting down.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Invalid amount for -maxtxfee=&lt;amount&gt;: &apos;%s&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Invalid amount for -minrelaytxfee=&lt;amount&gt;: &apos;%s&apos;</source>
-        <translation>Invalid amount for -minrelaytxfee=&lt;amount&gt;: &apos;%s&apos;</translation>
+        <translation type="vanished">Invalid amount for -minrelaytxfee=&lt;amount&gt;: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Invalid amount for -mintxfee=&lt;amount&gt;: &apos;%s&apos;</source>
-        <translation>Invalid amount for -mintxfee=&lt;amount&gt;: &apos;%s&apos;</translation>
+        <translation type="vanished">Invalid amount for -mintxfee=&lt;amount&gt;: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Invalid amount for -paytxfee=&lt;amount&gt;: &apos;%s&apos; (must be at least %s)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Invalid netmask specified in -whitelist: &apos;%s&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Keep at most &lt;n&gt; unconnectable transactions in memory (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Need to specify a port with -whitebind: &apos;%s&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Node relay options:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>RPC SSL options: (see the Faicoin Wiki for SSL setup instructions)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>RPC server options:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Randomly drop 1 of every &lt;n&gt; network messages</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Randomly fuzz 1 of every &lt;n&gt; network messages</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
         <source>Send trace/debug info to console instead of debug.log file</source>
-        <translation>Send trace/debug info to console instead of debug.log file</translation>
+        <translation type="vanished">Send trace/debug info to console instead of debug.log file</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Send transactions as zero-fee transactions if possible (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Show all debugging options (usage: --help -help-debug)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Shrink debug.log file on client startup (default: 1 when no -debug)</source>
-        <translation>Shrink debug.log file on client startup (default: 1 when no -debug)</translation>
+        <translation type="vanished">Shrink debug.log file on client startup (default: 1 when no -debug)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Signing transaction failed</source>
-        <translation>Signing transaction failed</translation>
+        <translation type="vanished">Signing transaction failed</translation>
     </message>
     <message>
-        <location line="+10"/>
-        <source>This is experimental software.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
         <source>Transaction amount too small</source>
-        <translation>Transaction amount too small</translation>
+        <translation type="vanished">Transaction amount too small</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Transaction amounts must be positive</source>
-        <translation>Transaction amounts must be positive</translation>
+        <translation type="vanished">Transaction amounts must be positive</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Transaction too large for fee policy</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Transaction too large</source>
-        <translation>Transaction too large</translation>
+        <translation type="vanished">Transaction too large</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Unable to bind to %s on this computer (bind returned error %s)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
         <source>Use UPnP to map the listening port (default: 1 when listening)</source>
-        <translation>Use UPnP to map the listening port (default: 1 when listening)</translation>
+        <translation type="vanished">Use UPnP to map the listening port (default: 1 when listening)</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Username for JSON-RPC connections</source>
-        <translation>Username for JSON-RPC connections</translation>
+        <translation type="vanished">Username for JSON-RPC connections</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>Wallet needed to be rewritten: restart Faicoin Core to complete</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
         <source>Warning</source>
-        <translation>Warning</translation>
+        <translation type="vanished">Warning</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Warning: This version is obsolete, upgrade required!</source>
-        <translation>Warning: This version is obsolete, upgrade required!</translation>
+        <translation type="vanished">Warning: This version is obsolete, upgrade required!</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Warning: Unsupported argument -benchmark ignored, use -debug=bench.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Warning: Unsupported argument -debugnet ignored, use -debug=net.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Zapping all transactions from wallet...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>on startup</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>wallet.dat corrupt, salvage failed</source>
-        <translation>wallet.dat corrupt, salvage failed</translation>
+        <translation type="vanished">wallet.dat corrupt, salvage failed</translation>
     </message>
     <message>
-        <location line="-62"/>
         <source>Password for JSON-RPC connections</source>
-        <translation>Password for JSON-RPC connections</translation>
+        <translation type="vanished">Password for JSON-RPC connections</translation>
     </message>
     <message>
-        <location line="-181"/>
         <source>Execute command when the best block changes (%s in cmd is replaced by block hash)</source>
-        <translation>Execute command when the best block changes (%s in cmd is replaced by block hash)</translation>
+        <translation type="vanished">Execute command when the best block changes (%s in cmd is replaced by block hash)</translation>
     </message>
     <message>
-        <location line="+225"/>
         <source>Upgrade wallet to latest format</source>
-        <translation>Upgrade wallet to latest format</translation>
+        <translation type="vanished">Upgrade wallet to latest format</translation>
     </message>
     <message>
-        <location line="-35"/>
         <source>Rescan the block chain for missing wallet transactions</source>
-        <translation>Rescan the block chain for missing wallet transactions</translation>
+        <translation type="vanished">Rescan the block chain for missing wallet transactions</translation>
     </message>
     <message>
-        <location line="+36"/>
         <source>Use OpenSSL (https) for JSON-RPC connections</source>
-        <translation>Use OpenSSL (https) for JSON-RPC connections</translation>
+        <translation type="vanished">Use OpenSSL (https) for JSON-RPC connections</translation>
     </message>
     <message>
-        <location line="-11"/>
         <source>This help message</source>
-        <translation>This help message</translation>
+        <translation type="vanished">This help message</translation>
     </message>
     <message>
-        <location line="-104"/>
         <source>Allow DNS lookups for -addnode, -seednode and -connect</source>
-        <translation>Allow DNS lookups for -addnode, -seednode and -connect</translation>
+        <translation type="vanished">Allow DNS lookups for -addnode, -seednode and -connect</translation>
     </message>
     <message>
-        <location line="+58"/>
         <source>Loading addresses...</source>
-        <translation>Loading addresses...</translation>
+        <translation type="vanished">Loading addresses...</translation>
     </message>
     <message>
-        <location line="-32"/>
         <source>Error loading wallet.dat: Wallet corrupted</source>
-        <translation>Error loading wallet.dat: Wallet corrupted</translation>
+        <translation type="vanished">Error loading wallet.dat: Wallet corrupted</translation>
     </message>
     <message>
-        <location line="-186"/>
-        <source>(1 = keep tx meta data e.g. account owner and payment request information, 2 = drop tx meta data)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+58"/>
-        <source>Flush database activity from memory pool to disk log every &lt;n&gt; megabytes (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>How thorough the block verification of -checkblocks is (0-4, default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Log transaction priority and fee per kB when mining blocks (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Maintain a full transaction index, used by the getrawtransaction rpc call (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Number of seconds to keep misbehaving peers from reconnecting (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Output debugging information (default: %u, supplying &lt;category&gt; is optional)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+36"/>
-        <source>Use separate SOCKS5 proxy to reach peers via Tor hidden services (default: %s)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+31"/>
-        <source>(default: %s)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Acceptable ciphers (default: %s)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Always query for peer addresses via DNS lookup (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Disable safemode, override a real safe mode event (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
         <source>Error loading wallet.dat</source>
-        <translation>Error loading wallet.dat</translation>
+        <translation type="vanished">Error loading wallet.dat</translation>
     </message>
     <message>
-        <location line="+10"/>
-        <source>Force safe mode (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Generate coins (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>How many blocks to check at startup (default: %u, 0 = all)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Include IP addresses in debug output (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
         <source>Invalid -proxy address: &apos;%s&apos;</source>
-        <translation>Invalid -proxy address: &apos;%s&apos;</translation>
+        <translation type="vanished">Invalid -proxy address: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="+8"/>
-        <source>Limit size of signature cache to &lt;n&gt; entries (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Listen for JSON-RPC connections on &lt;port&gt; (default: %u or testnet: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Listen for connections on &lt;port&gt; (default: %u or testnet: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Maintain at most &lt;n&gt; connections to peers (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Maximum per-connection receive buffer, &lt;n&gt;*1000 bytes (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Maximum per-connection send buffer, &lt;n&gt;*1000 bytes (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Only accept block chain matching built-in checkpoints (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Prepend debug output with timestamp (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Relay and mine data carrier transactions (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Relay non-P2SH multisig (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Run a thread to flush wallet periodically (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Server certificate file (default: %s)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Server private key (default: %s)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Set key pool size to &lt;n&gt; (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Set minimum block size in bytes (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Set the number of threads to service RPC calls (default: %d)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Sets the DB_PRIVATE flag in the wallet db environment (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Specify configuration file (default: %s)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Specify connection timeout in milliseconds (minimum: 1, default: %d)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Specify pid file (default: %s)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Spend unconfirmed change when sending transactions (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Stop running after importing blocks from disk (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Threshold for disconnecting misbehaving peers (default: %u)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
         <source>Unknown network specified in -onlynet: &apos;%s&apos;</source>
-        <translation>Unknown network specified in -onlynet: &apos;%s&apos;</translation>
+        <translation type="vanished">Unknown network specified in -onlynet: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="-108"/>
         <source>Cannot resolve -bind address: &apos;%s&apos;</source>
-        <translation>Cannot resolve -bind address: &apos;%s&apos;</translation>
+        <translation type="vanished">Cannot resolve -bind address: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Cannot resolve -externalip address: &apos;%s&apos;</source>
-        <translation>Cannot resolve -externalip address: &apos;%s&apos;</translation>
+        <translation type="vanished">Cannot resolve -externalip address: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="+46"/>
         <source>Invalid amount for -paytxfee=&lt;amount&gt;: &apos;%s&apos;</source>
-        <translation>Invalid amount for -paytxfee=&lt;amount&gt;: &apos;%s&apos;</translation>
+        <translation type="vanished">Invalid amount for -paytxfee=&lt;amount&gt;: &apos;%s&apos;</translation>
     </message>
     <message>
-        <location line="-7"/>
         <source>Insufficient funds</source>
-        <translation>Insufficient funds</translation>
+        <translation type="vanished">Insufficient funds</translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>Loading block index...</source>
-        <translation>Loading block index...</translation>
+        <translation type="vanished">Loading block index...</translation>
     </message>
     <message>
-        <location line="-60"/>
         <source>Add a node to connect to and attempt to keep the connection open</source>
-        <translation>Add a node to connect to and attempt to keep the connection open</translation>
+        <translation type="vanished">Add a node to connect to and attempt to keep the connection open</translation>
     </message>
     <message>
-        <location line="+61"/>
         <source>Loading wallet...</source>
-        <translation>Loading wallet...</translation>
+        <translation type="vanished">Loading wallet...</translation>
     </message>
     <message>
-        <location line="-56"/>
         <source>Cannot downgrade wallet</source>
-        <translation>Cannot downgrade wallet</translation>
+        <translation type="vanished">Cannot downgrade wallet</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Cannot write default address</source>
-        <translation>Cannot write default address</translation>
+        <translation type="vanished">Cannot write default address</translation>
     </message>
     <message>
-        <location line="+72"/>
         <source>Rescanning...</source>
-        <translation>Rescanning...</translation>
+        <translation type="vanished">Rescanning...</translation>
     </message>
     <message>
-        <location line="-59"/>
         <source>Done loading</source>
-        <translation>Done loading</translation>
+        <translation type="vanished">Done loading</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>Error</source>
-        <translation>Error</translation>
+        <translation type="vanished">Error</translation>
     </message>
 </context>
 </TS>

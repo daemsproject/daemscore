@@ -503,6 +503,9 @@ CPaymentOrder ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJso
              pr.dFeeRate=valtmp.get_real();
             break;
         }
+        case int_type:
+            pr.dFeeRate=valtmp.get_int();
+            break;
         case str_type:
         {
             pr.dFeeRate=atof(valtmp.get_str().c_str());

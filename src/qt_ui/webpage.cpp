@@ -78,7 +78,7 @@ BitcoinGUI *WebPage::mainWindow()
             return mw;
         w = w->parent();
     }
-    return 0;
+    
     return BitcoinApplication::instance()->getWindow();
 }
 #if defined(QWEBPAGE_ACCEPTNAVIGATIONREQUEST)
@@ -294,19 +294,39 @@ WebView::~WebView()
 {
    // delete ui;
 }
+//void WebView::block()
+//{
+//    fBlocked=true;
+//}
 void WebView::addJSObject() {    
     
     page()->mainFrame()->addToJavaScriptWindowObject(QString("jsinterface"), this);
 }
 QString WebView::jscall(QString command,QString dataJson)
 {
-    return jsInterface->jscall(command,dataJson,nPageID);
+    if(!fBlocked)
+    return jsInterface->jscall(command,dataJson,nPageID,GetTabIndex());
+    else
+        return  tr("{\"error\":\"page is blocked by user\"}");      
+        
 }
 QString WebView::jscallasync(QString command,QString dataJson,QString successfunc,QString errorfunc)
 {
-    return jsInterface->jscallasync(command,dataJson,successfunc,errorfunc,nPageID);
+    if(!fBlocked)
+    return jsInterface->jscallasync(command,dataJson,successfunc,errorfunc,nPageID,GetTabIndex());
+    else
+        return tr("{\"error\":\"page is blocked by user\"}"); 
 }
-
+int WebView::GetTabIndex()
+{
+    //LogPrintf("dexgetTabIn\n");
+    MainView *mv = m_page->mainWindow()->getMainView();//qobject_cast<MainView*>(parent());
+    //LogPrintf("getTabIndex2\n");
+    WebView *wv=this;
+   // LogPrintf("getTabIndex3\n");
+    return mv->webViewIndex(wv);
+   //LogPrintf("getTabIndex4\n");
+}
 void WebView::loadUrl(const QUrl &url)
 {
     m_initialUrl = url;

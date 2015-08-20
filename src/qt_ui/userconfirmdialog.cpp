@@ -25,7 +25,7 @@
 #include <QSettings>
 #include <QTextDocument>
 
-UserConfirmDialog::UserConfirmDialog(QWidget *parent) :
+UserConfirmDialog::UserConfirmDialog(QWidget *parent,int nPageIndexIn) :
     QDialog(parent),
     ui(new Ui::UserConfirmDialog)
         //gui(parent)
@@ -35,7 +35,8 @@ UserConfirmDialog::UserConfirmDialog(QWidget *parent) :
     //fFeeMinimized(true)
 {
     ui->setupUi(this);
-
+    nPageIndex=nPageIndexIn;
+    connect(ui->btn_blockpage,SIGNAL(clicked()),this,SLOT(on_blockPageClicked()));
 #ifdef Q_OS_MAC // Icons on push buttons are very uncommon on Mac
     //ui->addButton->setIcon(QIcon());
     //ui->clearButton->setIcon(QIcon());
@@ -65,6 +66,10 @@ UserConfirmDialog::~UserConfirmDialog()
 {
 
     delete ui;
+}
+void UserConfirmDialog::on_blockPageClicked()
+{    
+    nPageIndex=-2;
 }
 //void UserConfirmDialog::on_sendButton_clicked()
 //{}

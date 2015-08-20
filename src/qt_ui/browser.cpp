@@ -122,7 +122,7 @@ static void initTranslations(QTranslator &qtTranslatorBase, QTranslator &qtTrans
     // Convert to "de" only by truncating "_DE"
     QString lang = lang_territory;
     lang.truncate(lang_territory.lastIndexOf('_'));
-    cout<<"langauge setting:"<<lang.toStdString().c_str()<<"\n";;
+    cout<<"langauge setting short:"<<lang.toStdString().c_str()<<"\n";;
     // Load language files for configured locale:
     // - First load the translator for the base language, without territory
     // - Then load the more specific locale translator

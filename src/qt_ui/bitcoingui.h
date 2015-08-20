@@ -91,7 +91,7 @@ public:
 #endif // ENABLE_WALLET
     bool enableWallet;
     QString language;
-    bool handleUserConfirm(QString title,QString message,int nOP,string& strError,SecureString& ssInput);
+    bool handleUserConfirm(QString title,QString message,int nOP,string& strError,SecureString& ssInput,const int nPageIndex=-1);
     JsInterface* jsInterface;
     
     

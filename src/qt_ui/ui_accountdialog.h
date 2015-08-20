@@ -213,8 +213,8 @@ public:
     void retranslateUi(QDialog *AccountDialog)
     {
         AccountDialog->setWindowTitle(QApplication::translate("AccountDialog", "Passphrase Dialog", 0));
-        checkBoxHeader->setText(QApplication::translate("AccountDialog", "Preset PubKey Header", 0));
-        headerLabel->setText(QApplication::translate("AccountDialog", "PubKey Header", 0));
+        checkBoxHeader->setText(QApplication::translate("AccountDialog", "Preset NameKey Header", 0));
+        headerLabel->setText(QApplication::translate("AccountDialog", "NameKey Header", 0));
         timeLabel->setText(QApplication::translate("AccountDialog", "Estimated Calculating time:", 0));
         timeDisplay->setText(QApplication::translate("AccountDialog", "0", 0));
         selectLabel->setText(QApplication::translate("AccountDialog", "Select Account", 0));

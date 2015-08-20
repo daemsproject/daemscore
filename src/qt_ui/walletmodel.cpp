@@ -417,19 +417,19 @@ void WalletModel::notifyAccountSwitched(const std::string id)
      updateStatus();
 }
 
-QString WalletModel::HandlePaymentRequest(const Array arrData)
+QString WalletModel::HandlePaymentRequest(const Array arrData,const int nPageIndex)
 {
     CPaymentOrder pr=ParseJsonPaymentRequest(arrData[0],0);
-    return DoPayment(pr); 
+    return DoPayment(pr,nPageIndex); 
 }
-QString WalletModel::DoPayment(const CPaymentOrder& pr)
+QString WalletModel::DoPayment(const CPaymentOrder& pr,const int nPageIndex)
 {
     CWalletTx tx;
     string strError;    
     CPubKey id;    
     CTxDestination address;
     if(!ExtractDestination(pr.vFrom[0],address))        
-            return QString().fromStdString("{\"error\":\"wrong idfrom\"}");
+            return tr("{\"error\":\"wrong idfrom\"}");
     CBitcoinAddress pub;
     pub.Set(address);
     pub.GetKey(id);
@@ -446,7 +446,7 @@ QString WalletModel::DoPayment(const CPaymentOrder& pr)
     {
         if(fDelete)
                 delete pwallet;
-                return QString().fromStdString("{\"error\":\"no private key\"}"); 
+                return tr("{\"error\":\"no private key\"}"); 
         //nOP=2;
     }
         
@@ -488,10 +488,12 @@ QString WalletModel::DoPayment(const CPaymentOrder& pr)
         alert=getPaymentAlertMessage(tx); 
         title=QString(tr("Request Payment"));
     }
-    if (!gui->handleUserConfirm(title,alert,nOP,strError,ssInput)){
+    if (!gui->handleUserConfirm(title,alert,nOP,strError,ssInput,nPageIndex)){
+        LogPrintf("walletmodel:dopayment:user cancelled \n");
         if(fDelete)
         delete pwallet;
-        return QString().fromStdString("{\"error\":\"user canceled\"}");             
+        LogPrintf("walletmodel:dopayment:user cancelled \n");
+        return tr("{\"error\":\"user canceled\"}");             
     }  
     std::string result;
     CWalletTx wtxSigned; 
@@ -499,7 +501,7 @@ QString WalletModel::DoPayment(const CPaymentOrder& pr)
     SignAndSendTx(pwallet,tx,pr.nSigType,nOP,ssInput,fDelete,wtxSigned,result);
     return QString().fromStdString(result);
 }
-QString WalletModel::HandlePaymentRequest2(const Array arrData)
+QString WalletModel::HandlePaymentRequest2(const Array arrData,const int nPageIndex)
 {
     std::vector<unsigned char> raw = ParseHexV(arrData[2], "parameter 3");
     CContent ctt(raw);
@@ -516,7 +518,7 @@ QString WalletModel::HandlePaymentRequest2(const Array arrData)
         else
             pr = GetPublisherPaymentRequest(arrData[0].get_str(), arrData[1].get_str(), ctt, arrData[3].get_real(), arrData[4].get_int(), arrData[5].get_int());
     }
-    return DoPayment(pr);    
+    return DoPayment(pr,nPageIndex);    
 }
 
 QString WalletModel::getPublishContentMessage(const CWalletTx& tx, const CPaymentOrder& pr)
@@ -757,7 +759,7 @@ QString WalletModel::getDomainRegisterAlertMessage(const CWalletTx& tx,const CPa
     questionString.append("<hr />");    
     return questionString;
 }
-QString WalletModel::EncryptMessages(Array params)
+QString WalletModel::EncryptMessages(Array params,const int nPageIndex)
 {
     
     if (params.size() <2)
@@ -834,7 +836,7 @@ QString WalletModel::EncryptMessages(Array params)
         {
             if(!fIsWalletMain)
                 delete pwallet;
-            return QString().fromStdString("{\"error\":\"no private key\"}");
+            return tr("{\"error\":\"no private key\"}");
             //nOP=2;
         }
         else if (pwallet->IsCrypted())
@@ -843,7 +845,7 @@ QString WalletModel::EncryptMessages(Array params)
         QString title=QString(tr("Confirm encrypt messages"));
         if(!fEncrypt)
             title=QString(tr("Confirm decrypt messages"));
-        if (!gui->handleUserConfirm(title,alert,nOP,strError,ssInput)){
+        if (!gui->handleUserConfirm(title,alert,nOP,strError,ssInput,nPageIndex)){
             if(!fIsWalletMain)
             delete pwallet;
             return QString().fromStdString("{\"error\":\""+strError+"\"}");             
@@ -853,17 +855,17 @@ QString WalletModel::EncryptMessages(Array params)
         if(!pwallet->SetPassword(ssInput)){
             if(!fIsWalletMain)
             delete pwallet;
-            return QString().fromStdString("{\"error\":\"wrong password\"}");
+            return tr("{\"error\":\"wrong password\"}");
         }
     std::map<string,std::vector<string> > mapMsgOut;
     if(nOP==2){
         //TODO show json of messages to get decoded,and collect decoded messages from signer
-        return QString().fromStdString("{\"error\":\"encryption failed\"}");    
+        return tr("{\"error\":\"encryption failed\"}");    
     }
     else if(!pwallet->EncryptMessages(mapMessages, mapMsgOut,fEncrypt)){
         if(!fIsWalletMain)
         delete pwallet;
-        return QString().fromStdString("{\"error\":\"encryption failed\"}");            
+        return tr("{\"error\":\"encryption failed\"}");            
     }
     //Value result;
     Array arrResult;
@@ -886,7 +888,7 @@ QString WalletModel::EncryptMessages(Array params)
 }
 
 
-QString WalletModel::SendMessage(Array arrData)
+QString WalletModel::SendMessage(Array arrData,const int nPageIndex)
 {
     if ( arrData.size() <3)
         throw runtime_error("");
@@ -902,10 +904,10 @@ QString WalletModel::SendMessage(Array arrData)
     string strError;    
     CPubKey pub;
     if(!CBitcoinAddress(idLocal).GetKey(pub))    
-        return QString().fromStdString("{\"error\":\"wrong idlocal\"}");
+        return tr("{\"error\":\"wrong idlocal\"}");
     CPubKey pubForeign;         
     if(!CBitcoinAddress(idForeign).GetKey(pubForeign))    
-        return QString().fromStdString("{\"error\":\"wrong idforeign\"}");
+        return tr("{\"error\":\"wrong idforeign\"}");
     bool fIsWalletMain;
     CWallet* pwallet;
     //LogPrintf("jsinterface:hadlepaymentrequest:id%s,pwalletmain id:%s size:%i\n",HexStr(id.begin(),id.end()),HexStr(wallet->GetID().begin(),wallet->GetID().end()),wallet->GetID().size());
@@ -923,7 +925,7 @@ QString WalletModel::SendMessage(Array arrData)
             //nOP=2;
         if(!fIsWalletMain)
                 delete pwallet;
-            return QString().fromStdString("{\"error\":\"no private key\"}");
+            return tr("{\"error\":\"no private key\"}");
     }
         else if (pwallet->IsLocked())
             nOP=1;
@@ -931,7 +933,7 @@ QString WalletModel::SendMessage(Array arrData)
     {
         QString alert=getSMSAlertMessage(pr);  
         QString title=QString(tr("Request Send Message"));
-        if (!gui->handleUserConfirm(title,alert,nOP,strError,ssInput)){
+        if (!gui->handleUserConfirm(title,alert,nOP,strError,ssInput,nPageIndex)){
             if(!fIsWalletMain)
                 delete pwallet;
             return QString().fromStdString("{\"error\":\""+strError+"\"}");             
@@ -941,7 +943,7 @@ QString WalletModel::SendMessage(Array arrData)
         if(!pwallet->SetPassword(ssInput)){
             if(!fIsWalletMain)
             delete pwallet;
-            return QString().fromStdString("{\"error\":\"wrong password\"}");
+            return tr("{\"error\":\"wrong password\"}");
         }
     CWalletTx wtxSigned; 
     if(nOP==2){
@@ -971,7 +973,7 @@ QString WalletModel::SendMessage(Array arrData)
             LogPrintf("jsinterface:SendMessage:encryption failed\n");
             if(!fIsWalletMain)
                 delete pwallet;
-            return QString().fromStdString("{\"error\":\"encryption failed\"}");;
+            return tr("{\"error\":\"encryption failed\"}");;
         }
         //LogPrintf("jsinterface:SendMessage:encryption done:%s\n",mapMsgOut[idForeign].size());
         if(mapMsgOut[idForeign].size()>0)
@@ -988,7 +990,7 @@ QString WalletModel::SendMessage(Array arrData)
         {
             if(!fIsWalletMain)        
                 delete pwallet;
-            return QString().fromStdString("{\"error\":\"sign transaction failed\"}");  
+            return tr("{\"error\":\"sign transaction failed\"}");  
         }
     }
      //LogPrintf("jsinterface:SendMessage:signOK\n");
@@ -997,17 +999,17 @@ QString WalletModel::SendMessage(Array arrData)
             LogPrintf("jsinterface:SendMessage:sendtx : Error: Transaction not valid\n");
             if(!fIsWalletMain)    
                 delete pwallet;
-            return QString().fromStdString("{\"error\":\"tx rejected\"}");;
+            return tr("{\"error\":\"tx rejected\"}");;
         }
      //LogPrintf("jsinterface:SendMessage:acceptedto mempool\n");
      RelayTransaction(wtxSigned);
      LogPrintf("jsinterface:SendMessage:sendtx :%s\n",EncodeHexTx(CTransaction(wtxSigned)));
      if(!fIsWalletMain)
         delete pwallet;
-    return QString("{\"success\":\"tx sent\"}");
+    return QString().fromStdString("{\"success\":\""+tx.GetHash().GetHex()+"\"}");
             
 }
-QString WalletModel::SignMessage(Array arrData)
+QString WalletModel::SignMessage(Array arrData,const int nPageIndex)
 {
     if (arrData.size() <2)
         throw runtime_error("");
@@ -1033,7 +1035,7 @@ QString WalletModel::SignMessage(Array arrData)
     {
         if(!fIsWalletMain)
             delete pwallet;    
-        return QString().fromStdString("{\"error\":\"no privkey for signing\"}");
+        return tr("{\"error\":\"no privkey for signing\"}");
     }
             
     if (pwallet->IsLocked())
@@ -1041,7 +1043,7 @@ QString WalletModel::SignMessage(Array arrData)
     
     QString alert=getSignMsgAlertMessage(id,msg);  
     QString title=QString(tr("Request Sign Message"));
-    if (!gui->handleUserConfirm(title,alert,nOP,strError,ssInput)){
+    if (!gui->handleUserConfirm(title,alert,nOP,strError,ssInput,nPageIndex)){
         if(!fIsWalletMain)
             delete pwallet;
         return QString().fromStdString("{\"error\":\""+strError+"\"}");             
@@ -1051,14 +1053,14 @@ QString WalletModel::SignMessage(Array arrData)
         if(!pwallet->SetPassword(ssInput)){
             if(!fIsWalletMain)
             delete pwallet;
-            return QString().fromStdString("{\"error\":\"wrong password\"}");
+            return tr("{\"error\":\"wrong password\"}");
         }
     CKey key;
     if (!pwallet->GetKey(pub, key))
     {
         if(!fIsWalletMain)
             delete pwallet;
-        return QString().fromStdString("{\"error\":\"Private key not available\"}" );
+        return tr("{\"error\":\"Private key not available\"}" );
     }
     CHashWriter ss(SER_GETHASH, 0);    
     ss << msg;
@@ -1067,7 +1069,7 @@ QString WalletModel::SignMessage(Array arrData)
     {
         if(!fIsWalletMain)
             delete pwallet;
-        return QString().fromStdString("{\"error\":\"Sign failed\"}");
+        return tr("{\"error\":\"Sign failed\"}");
     }
     return QString().fromStdString("{\"signature\":\""+EncodeBase64(&vchSig[0], vchSig.size())+"\"}");
 }
@@ -1098,7 +1100,7 @@ QString WalletModel::getSMSAlertMessage(const CPaymentOrder& pr)
         questionString.append("<hr /><span style='color:#aa0000;'>");
         questionString.append(BitcoinUnits::formatHtmlWithUnit(0, txFee));
         questionString.append("</span> ");
-        questionString.append(tr("transaction fee"));
+        questionString.append(tr("added as transaction fee"));
     return questionString;
 }
 QString WalletModel::getSignMsgAlertMessage(const string add,const string msg)const
@@ -1116,7 +1118,7 @@ QString WalletModel::getSignMsgAlertMessage(const string add,const string msg)co
     questionString.append("</span><br />");
     return questionString;
 }
-QString WalletModel::RegisterDomain(json_spirit::Array arrData)
+QString WalletModel::RegisterDomain(json_spirit::Array arrData,const int nPageIndex)
 {
     LogPrintf("walletmodel:RegisterDomain");
     if ( arrData.size() <4)
@@ -1135,22 +1137,22 @@ QString WalletModel::RegisterDomain(json_spirit::Array arrData)
     
     CDomain cdomain;
     if(pDomainDBView->GetDomainByName(strDomain,cdomain)&&(GetLockLasting(cdomain.nExpireTime)>0))
-        return QString().fromStdString("{\"error:domain already registered\"}");  
+        return tr("{\"error\":\"domain already registered\"}");  
     if(IsLevel2Domain(strDomain))
     {
         LogPrintf("walletmodel:RegisterDomain level1domain:%s",GetLevel1Domain(strDomain));
         if(!pDomainDBView->GetDomainByName(GetLevel1Domain(strDomain),cdomain)||(GetLockLasting(cdomain.nExpireTime)==0))
-            return QString().fromStdString("{\"error: level1 domain not exists\"}");  
+            return tr("{\"error\":\" level1 domain not exists\"}");  
         if(cdomain.owner!=scriptPubKey)
-            return QString().fromStdString("{\"error: level1 domain not belonged to sending id\"}");  
+            return tr("{\"error\":\" level1 domain is not belonging to sending id\"}");  
     }
     else
     {
         
     }
-    return DoPayment(pr);
+    return DoPayment(pr,nPageIndex);
 }
-QString WalletModel::UpdateDomain(json_spirit::Array arrData)
+QString WalletModel::UpdateDomain(json_spirit::Array arrData,const int nPageIndex)
 {
     LogPrintf("walletmodel:UpdateDomain \n");
     if ( arrData.size() <3)
@@ -1164,24 +1166,24 @@ QString WalletModel::UpdateDomain(json_spirit::Array arrData)
     CPaymentOrder pr = GetUpdateDomainPaymentRequest(arrData);       
     CDomain cdomain;
     if(!pDomainDBView->GetDomainByName(strDomain,cdomain)||(GetLockLasting(cdomain.nExpireTime)==0))
-        return QString().fromStdString("{\"error:domain not registered\"}");  
+        return tr("{\"error\":\"domain not registered\"}");  
     if(IsLevel2Domain(strDomain))
     {
         if(!pDomainDBView->GetDomainByName(GetLevel1Domain(strDomain),cdomain)||(GetLockLasting(cdomain.nExpireTime)==0))
-            return QString().fromStdString("{\"error: level1 domain not exists\"}");  
+            return tr("{\"error\":\" level1 domain not exists\"}");  
         if(cdomain.owner!=scriptPubKey)
-            return QString().fromStdString("{\"error: level1 domain not belonged to sending id\"}");  
+            return tr("{\"error\":\" level1 domain is not belonging to sending id\"}");    
     }
     else
     {        
         LogPrintf("walletmodel:UpdateDomain scriptPubkey:%s \n",scriptPubKey.ToString());
         if(cdomain.owner!=scriptPubKey)
-            return QString().fromStdString("{\"error:domain not belonged to sending id\"}");  
+            return tr("{\"error\":\"domain is not belonging to sending id\"}");  
     }
-    return DoPayment(pr);      
+    return DoPayment(pr,nPageIndex);      
     
 }
-QString WalletModel::RenewDomain(json_spirit::Array arrData)
+QString WalletModel::RenewDomain(json_spirit::Array arrData,const int nPageIndex)
 {
       LogPrintf("walletmodel:RenewDomain \n");
     if ( arrData.size() <3)
@@ -1198,21 +1200,21 @@ QString WalletModel::RenewDomain(json_spirit::Array arrData)
     if(IsLevel2Domain(strDomain))
         {
             if(!pDomainDBView->GetDomainByName(GetLevel1Domain(strDomain),cdomain)||(GetLockLasting(cdomain.nExpireTime)==0))
-                return QString().fromStdString("{\"error: level1 domain not exists\"}");  
+                return tr("{\"error\":\" level1 domain not exists\"}");   
             if(cdomain.owner!=scriptPubKey)
-                return QString().fromStdString("{\"error: level1 domain not belonged to sending id\"}");  
+                return tr("{\"error\":\" level1 domain is not belonging to sending id\"}");  
         }
     if(pDomainDBView->GetDomainByName(strDomain,cdomain)&&(GetLockLasting(cdomain.nExpireTime)>0))
     {
         if(cdomain.owner!=scriptPubKey)
-                return QString().fromStdString("{\"error:domain not belonged to sending id\"}");  
+                return tr("{\"error\":\"domain is not belonging to sending id\"}"); 
         if(LockTimeToTime(nLockTime)<LockTimeToTime(cdomain.nExpireTime))
-            return QString().fromStdString("{\"error:domain renew time earlier than expire time\"}");  
+            return QString().fromStdString("{\"error\":\"domain renew time earlier than expire time\"}");  
         pr.nRequestType=PR_DOMAIN_RENEW;
     }
-    return DoPayment(pr);    
+    return DoPayment(pr,nPageIndex);    
 }
-QString WalletModel::TransferDomain(json_spirit::Array arrData)
+QString WalletModel::TransferDomain(json_spirit::Array arrData,const int nPageIndex)
 {
      LogPrintf("walletmodel:TransferDomain \n");
     if ( arrData.size() <3)
@@ -1225,7 +1227,7 @@ QString WalletModel::TransferDomain(json_spirit::Array arrData)
     string idTo=arrData[2].get_str();
     CScript scriptPubKey2;         
     if(!StringToScriptPubKey(idTo,scriptPubKey2))        
-        return QString().fromStdString("{\"error: tranfer target id invalid\"}");  
+        return QString().fromStdString("{\"error\":\" tranfer target id invalid\"}");  
     Object objInfo; 
     objInfo.push_back(Pair("transfer",idTo));
     Array arr=arrData;
@@ -1235,36 +1237,36 @@ QString WalletModel::TransferDomain(json_spirit::Array arrData)
     pr.info["transfer"]=arrData[2].get_str();
     CDomain cdomain;
     if(!pDomainDBView->GetDomainByName(strDomain,cdomain)||(GetLockLasting(cdomain.nExpireTime)==0))
-        return QString().fromStdString("{\"error:domain not registered\"}");  
+        return QString().fromStdString("{\"error\":\"domain not registered\"}");  
     if(IsLevel2Domain(strDomain))
     {
         if(!pDomainDBView->GetDomainByName(GetLevel1Domain(strDomain),cdomain)||(GetLockLasting(cdomain.nExpireTime)==0))
-            return QString().fromStdString("{\"error: level1 domain not exists\"}");  
+            return QString().fromStdString("{\"error\":\" level1 domain not exists\"}");  
         if(cdomain.owner!=scriptPubKey)
-            return QString().fromStdString("{\"error: level1 domain not belonged to sending id\"}");  
+            return tr("{\"error\":\" level1 domain is not belonging to sending id\"}");  
     }
     else
     {        
         LogPrintf("walletmodel:TransferDomain scriptPubkey:s% \n",scriptPubKey.ToString());
         if(cdomain.owner!=scriptPubKey)
-            return QString().fromStdString("{\"error:domain not belonged to sending id\"}");  
+            return tr("{\"error\":\"domain is not belonging to sending id\"}");  
     }
-    return DoPayment(pr);     
+    return DoPayment(pr,nPageIndex);     
 }
-QString WalletModel::PublishProduct(json_spirit::Array arrData)
+QString WalletModel::PublishProduct(json_spirit::Array arrData,const int nPageIndex)
 {     
     
     CPaymentOrder pr = GetPublishProductPaymentRequest(arrData); 
-    return DoPayment(pr); 
+    return DoPayment(pr,nPageIndex); 
 }
-QString WalletModel::BuyProduct(json_spirit::Array arrData)
+QString WalletModel::BuyProduct(json_spirit::Array arrData,const int nPageIndex)
 {     
     
     CPaymentOrder po = GetBuyProductPaymentRequest(arrData); 
-    return DoPayment(po); 
+    return DoPayment(po,nPageIndex); 
 }
-QString WalletModel::PublishPackage(json_spirit::Array arrData)
+QString WalletModel::PublishPackage(json_spirit::Array arrData,const int nPageIndex)
 {   
     CPaymentOrder pr = GetPublishPackagetPaymentRequest(arrData); 
-    return DoPayment(pr); 
+    return DoPayment(pr,nPageIndex); 
 }

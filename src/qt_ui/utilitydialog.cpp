@@ -40,7 +40,7 @@ HelpMessageDialog::HelpMessageDialog(QWidget *parent, bool about) :
 
     if (about)
     {
-        setWindowTitle(tr("About Faicoin Core"));
+        setWindowTitle(tr("About Φ DeskTop Client"));
 
         /// HTML-format the license message from the core
         QString licenseInfo = QString::fromStdString(LicenseInfo());
@@ -112,7 +112,7 @@ ShutdownWindow::ShutdownWindow(QWidget *parent, Qt::WindowFlags f):
 {
     QVBoxLayout *layout = new QVBoxLayout();
     layout->addWidget(new QLabel(
-        tr("Faicoin Core is shutting down...") + "<br /><br />" +
+        tr("Φ DeskTop Client is shutting down...") + "<br /><br />" +
         tr("Do not shut down the computer until this window disappears.")));
     setLayout(layout);
 }

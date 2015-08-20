@@ -68,7 +68,7 @@ AccountDialog::AccountDialog(Mode mode,QWidget *parent,WalletModel* walletModelI
     {
         case Encrypt: // Ask passphrase x2
             
-            ui->warningLabel->setText(tr("Enter the new passphrase to the wallet.<br/>Please use a passphrase of <b>ten or more random characters</b>, or <b>eight or more words</b>."));
+            ui->warningLabel->setText(tr("Enter the new passphrase to the account.<br/>Please use a passphrase of <b>ten or more random characters</b>, or <b>eight or more words</b>."));
             ui->passLabel1->hide();
             ui->passEdit1->hide();
             ui->headerLabel->hide();
@@ -81,11 +81,11 @@ AccountDialog::AccountDialog(Mode mode,QWidget *parent,WalletModel* walletModelI
             ui->checkBoxEncrypt->hide();
             ui->Button3->hide();
             ui->Button2->setText("OK");
-            setWindowTitle(tr("Encrypt wallet"));
+            setWindowTitle(tr("Encrypt Account"));
             break;
         case Unlock: // Ask passphrase
         {
-            ui->warningLabel->setText(tr("This operation needs your wallet passphrase to unlock the wallet."));            
+            ui->warningLabel->setText(tr("This operation needs your account passphrase to unlock the account."));            
             ui->passLabel2->hide();
             ui->passEdit2->hide();
             ui->passLabel3->hide();
@@ -103,11 +103,11 @@ AccountDialog::AccountDialog(Mode mode,QWidget *parent,WalletModel* walletModelI
             ui->Button3->hide();
             ui->Button2->setText("OK");
             ui->passEdit1->setFocus();
-            setWindowTitle(tr("Unlock wallet"));
+            setWindowTitle(tr("Unlock Account"));
         }
             break;
         case Lock: // Ask passphrase
-            ui->warningLabel->setText(tr("This operation will lock the wallet."));
+            ui->warningLabel->setText(tr("This operation will lock the account."));
             ui->passLabel1->hide();
             ui->passEdit1->hide();
             ui->passLabel2->hide();
@@ -124,10 +124,10 @@ AccountDialog::AccountDialog(Mode mode,QWidget *parent,WalletModel* walletModelI
             ui->checkBoxEncrypt->hide();
             ui->Button3->hide();
             ui->Button2->setText("OK");
-            setWindowTitle(tr("Lock wallet"));
+            setWindowTitle(tr("Lock Account"));
             break;
         case Decrypt:   // Ask passphrase
-            ui->warningLabel->setText(tr("This operation needs your wallet passphrase to decrypt the wallet."));
+            ui->warningLabel->setText(tr("This operation needs your account passphrase to decrypt the account."));
             ui->headerLabel->hide();
             ui->headerEdit->hide();            
             ui->timeLabel->hide();
@@ -142,7 +142,7 @@ AccountDialog::AccountDialog(Mode mode,QWidget *parent,WalletModel* walletModelI
             ui->checkBoxEncrypt->hide();
             ui->Button3->hide();
             ui->Button2->setText("OK");
-            setWindowTitle(tr("Decrypt wallet"));
+            setWindowTitle(tr("Decrypt account"));
             break;
         case ChangePass: // Ask old passphrase + new passphrase x2
             setWindowTitle(tr("Change passphrase"));
@@ -156,7 +156,7 @@ AccountDialog::AccountDialog(Mode mode,QWidget *parent,WalletModel* walletModelI
             ui->checkBoxEncrypt->hide();
             ui->Button3->hide();
             ui->Button2->setText("OK");
-            ui->warningLabel->setText(tr("Enter the old and new passphrase to the wallet."));
+            ui->warningLabel->setText(tr("Enter the old and new passphrase to the account."));
             break;
         case CreateNew:
             setWindowTitle(tr("Create New Account"));
