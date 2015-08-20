@@ -1625,7 +1625,7 @@ bool CSqliteWrapper::BatchInsertCheque(vector<CCheque>& vCheque,const map<CScrip
 }
 bool CSqliteWrapper::GetCheques(const vector<CScript>& vScript,vector<CCheque> & vCheques,const int nMaxItems,const int nOffset)const
 {
-    LogPrintf("CSqliteWrapper GetCheques \n");
+    //LogPrintf("CSqliteWrapper GetCheques \n");
     if(vScript.size()>100)
         return false;
     //char* zErrMsg=0;
@@ -1653,11 +1653,11 @@ bool CSqliteWrapper::GetCheques(const vector<CScript>& vScript,vector<CCheque> &
         tmp.assign(chScriptList);
     }
      sprintf(sql,selectstatement,chScriptList,nMaxItems,nOffset);
-     LogPrintf("CSqliteWrapper GetCheques sql %s\n",sql); 
+     //LogPrintf("CSqliteWrapper GetCheques sql %s\n",sql); 
     sqlite3_stmt  *stmt = NULL;
     int rc;
     rc = sqlite3_prepare_v2(pdb , sql , strlen(sql) , &stmt , NULL);
-    LogPrintf("CSqliteWrapper GetCheques result %i\n",rc);
+    //LogPrintf("CSqliteWrapper GetCheques result %i\n",rc);
     if(rc != SQLITE_OK)
     {
         if(stmt)
@@ -1675,16 +1675,16 @@ bool CSqliteWrapper::GetCheques(const vector<CScript>& vScript,vector<CCheque> &
            int64_t nLink=sqlite3_column_int64(stmt,  0);
            GetTxidByTxIndex(nLink>>16,cheque.txid);
            cheque.txIndex=nLink>>16;
-           LogPrintf("GetCheques txid %s \n",cheque.txid.GetHex());
+           //LogPrintf("GetCheques txid %s \n",cheque.txid.GetHex());
            cheque.nOut=nLink&0xffff;
-           LogPrintf("GetCheques nOut %i \n",cheque.nOut);
+           //LogPrintf("GetCheques nOut %i \n",cheque.nOut);
            int64_t scriptIndex=sqlite3_column_int64(stmt,  1);           
            cheque.scriptPubKey=mapScriptIndex[scriptIndex];
-           LogPrintf("GetCheques scriptPubKey %s \n",cheque.scriptPubKey.ToString());
+          // LogPrintf("GetCheques scriptPubKey %s \n",cheque.scriptPubKey.ToString());
            cheque.nValue=(uint64_t)sqlite3_column_int64(stmt,  2);
-           LogPrintf("GetCheques nValue %i \n",cheque.nValue);
+          // LogPrintf("GetCheques nValue %i \n",cheque.nValue);
            cheque.nLockTime=(uint32_t)sqlite3_column_int64(stmt,  3);
-           LogPrintf("GetCheques nLockTime %i \n",cheque.nLockTime);
+         //  LogPrintf("GetCheques nLockTime %i \n",cheque.nLockTime);
            vCheques.push_back(cheque);  
         }
         else if(rc == SQLITE_DONE)

@@ -810,7 +810,7 @@ bool CContent::GetDataByCC(cctype mainCc,std::vector<string> & vDataString,bool 
             CContent(vDecoded[i].second).Decode(vDecoded2);
             //LogPrintf("CContent::GetDataByCC recursive vdecoded size %i \n",vDecoded2.size());
             for (unsigned int j = 0; j < vDecoded2.size(); j++) {
-                LogPrintf("CContent::GetDataByCC recursive vdecoded cc %i,%s, \n",vDecoded2[j].first,GetCcName((cctype)vDecoded2[j].first));
+               // LogPrintf("CContent::GetDataByCC recursive vdecoded cc %i,%s, \n",vDecoded2[j].first,GetCcName((cctype)vDecoded2[j].first));
                 CContent content;
                 content.EncodeUnit(vDecoded2[j].first,vDecoded2[j].second);
                 content.GetDataByCC(mainCc,vDataString,fRecursive,fIncludeTypeCC);               

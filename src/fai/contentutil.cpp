@@ -137,11 +137,11 @@ bool GetFileFromLinks(const vector<CLink>& vlinks,string& strFile,int timeOut)
                 return false;
             bool fFound=false;
             
-            for(unsigned int i=0;i<vDecoded1.size();i++)
-                if(vDecoded1[i].first==CC_FILE_PART)  
+            for(unsigned int j=0;j<vDecoded1.size();j++)
+                if(vDecoded1[j].first==CC_FILE_PART)  
                 {
                     fFound=true;
-                    strFile+=vDecoded[0].second;
+                    strFile+=vDecoded1[j].second;
                      
                     break;
                 }

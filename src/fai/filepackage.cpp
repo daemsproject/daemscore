@@ -75,6 +75,7 @@ bool CFilePackage::SetContent(const CContent contentIn)
                 std::vector<std::pair<int, string> > vDecoded2;
                 if (!CContent(vDecoded1[i].second).Decode(vDecoded2))
                     return false;
+                LogPrintf("CFilePackage::SetContent filep subs:%i\n", vDecoded2.size());
                 bool fFound = false;
                 string strFileName;
                 for (unsigned int j = 0; j < vDecoded2.size(); j++)
@@ -83,6 +84,7 @@ bool CFilePackage::SetContent(const CContent contentIn)
                         fFound = true;
                         break;
                     }
+                LogPrintf("CFilePackage::SetContent file name:%s\n", strFileName);
                 if (!fFound)
                     return false;
                 fFound = false;
@@ -99,20 +101,27 @@ bool CFilePackage::SetContent(const CContent contentIn)
                         break;
                     }
 
-                if (!fFound) {
-                    fFound = false;
-                    for (unsigned int j = 0; i < vDecoded2.size(); j++)
+                if (!fFound) {                    
+                    for (unsigned int j = 0; j < vDecoded2.size(); j++)
                         if (vDecoded2[j].first == CC_FILE_COMBINE_P) {
+                            LogPrintf("CFilePackage::SetContent file combined\n");
                             std::vector<std::pair<int, string> > vDecoded3;
                             if (!CContent(vDecoded2[j].second).Decode(vDecoded3))
                                 return false;
-                            for (unsigned int j = 0; j < vDecoded3.size(); j++) {
-                                if (vDecoded[j].first != CC_LINK)
+                            for (unsigned int k = 0; k < vDecoded3.size(); k++) {
+                                if (vDecoded3[k].first != CC_LINK)
                                     return false;
                                 CLink fileLink;
-                                if (!fileLink.UnserializeConst(vDecoded3[j].second))
+                                if (!fileLink.UnserializeConst(vDecoded3[k].second))
                                     return false;
                                 vlink.push_back(fileLink);
+                            }
+                            if(vlink.size()>0)
+                            {
+                                LogPrintf("CFilePackage::SetContent file combined %i\n",vlink.size());
+                            
+                                mapFileList[strFileName] = vlink;
+                                fFound=true;
                             }
                             break;
                         }
@@ -391,6 +400,7 @@ string CFilePackage::FileToContent(const string strFileName) const
 {
 
     std::map<string, vector<CLink> >::const_iterator it = mapFileList.find(strFileName);
+    //LogPrintf("CFilePackage::FileToContent filename:%s \n",strFileName);
     CContent content;
 
     if (it == mapFileList.end()) {
@@ -405,7 +415,7 @@ string CFilePackage::FileToContent(const string strFileName) const
         CContent content1;
         for (unsigned i = 0; i < it->second.size(); i++)
             content1.EncodeUnit(CC_LINK, it->second[i].Serialize());
-        content.EncodeUnit(CC_FILE_COMBINE_P, content);
+        content.EncodeUnit(CC_FILE_COMBINE_P, content1);
 
     }
     return content;

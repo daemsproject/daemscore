@@ -1195,7 +1195,7 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
         if (fRejectInsaneFee && nFees > ::minRelayTxFee.GetFee(nSize) * 10000)
             return state.Invalid(error("AcceptToMemoryPool: : insane fees %s, %d > %d",hash.ToString(),nFees, ::minRelayTxFee.GetFee(nSize) * 10000),
                     REJECT_INVALID, "insane fees");
-        if (pool.getEntranceFeeRate(MEMPOOL_ENTRANCE_THRESHOLD)>=tx.GetFeeRate())
+        if (pool.getEntranceFeeRate(MEMPOOL_ENTRANCE_THRESHOLD)-1>=tx.GetFeeRate())
             return state.Invalid(error("AcceptToMemoryPool: : feerate lower than threshould %s,threshould %i, fee rate %d",hash.ToString(),pool.getEntranceFeeRate(MEMPOOL_ENTRANCE_THRESHOLD),tx.GetFeeRate()),
                     REJECT_INVALID, "insufficient fees");
         // Check against previous transactions
@@ -3161,7 +3161,7 @@ bool AcceptBlock(CBlock& block, CValidationState& state, CBlockIndex** ppindex, 
         if (dbp == NULL)
             if (!WriteBlockToDisk(block, blockPos))
                 return state.Abort("Failed to write block");
-        LogPrintf("accpetblock pos:%i,%i",blockPos.nFile,blockPos.nPos);
+        //LogPrintf("accpetblock pos:%i,%i",blockPos.nFile,blockPos.nPos);
         if (!ReceivedBlockTransactions(block, state, pindex, blockPos))
             return error("AcceptBlock() : ReceivedBlockTransactions failed");
     } catch(std::runtime_error &e) {
