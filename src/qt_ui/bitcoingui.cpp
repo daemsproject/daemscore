@@ -514,8 +514,8 @@ LogPrintf("bitcoingui:createactions 2 \n");
     quitAction->setStatusTip(tr("Quit application"));
     quitAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
     quitAction->setMenuRole(QAction::QuitRole);
-    aboutAction = new QAction(networkStyle->getAppIcon(), tr("&About Faicoin Browser"), this);
-    aboutAction->setStatusTip(tr("Show information about Faicoin Browser"));
+    aboutAction = new QAction(networkStyle->getAppIcon(), tr("&About FAI"), this);
+    aboutAction->setStatusTip(tr("Show information about Fai system"));
     aboutAction->setMenuRole(QAction::AboutRole);
 #if QT_VERSION < 0x050000
    // aboutQtAction = new QAction(QIcon(":/trolltech/qmessagebox/images/qtlogo-64.png"), tr("About &Qt"), this);
@@ -1815,10 +1815,9 @@ bool BitcoinGUI::handleUserConfirm(QString title,QString message,int nOP,string&
             dlg->ui->passwordEdit->hide();
         }        
         //connect(dlg,SIGNAL(killPage(int)),mainView,SLOT(closeTab(int)));
-        bool fConfirm=dlg->exec();
-        delete dlg;
+        bool fConfirm=dlg->exec();        
         if(dlg->nPageIndex==-2)            
-            mainView->getWebView(nPageIndex)->fBlocked=true;
+            mainView->getWebView(nPageIndex)->fBlocked=true;        
         if(fConfirm){
             //disconnect(dlg,SIGNAL(killPage(int)),mainView,SLOT(closeTab(int)));
             if(nOP==1){
@@ -1826,14 +1825,15 @@ bool BitcoinGUI::handleUserConfirm(QString title,QString message,int nOP,string&
                 ssInput.assign(dlg->ui->passwordEdit->text().toStdString().c_str());           
             }
             LogPrintf("bitcoingui handleUserConfirm ok pressed, \n");  
-             
+             delete dlg;
             return true;//QString("{\"success\":\"tx sent\"}");
             //emit sendMoneyResult(strToken,true,dlg.ui->passwordEdit->text());
         }else{
             //LogPrintf("bitcoingui handleUserConfirm return value,%i \n",dlg->nPageIndex); 
             //disconnect(dlg,SIGNAL(killPage(int)),mainView,SLOT(closeTab(int)));
             LogPrintf("bitcoingui handleUserConfirm cancel pressed \n"); 
-            strError="user cancelled";            
+            strError="user cancelled";     
+            delete dlg;
             return false;//QString("{\"error\":\"payment request cancelled\"}");
             //emit sendMoneyResult(strToken,false,QString().fromStdString("{\"result\":\"dialogue opened\"}"));
         }

@@ -44,9 +44,9 @@ static const int MAX_URI_LENGTH = 255;
 /* Number of frames in spinner animation */
 #define SPINNER_FRAMES 35
 
-#define QAPP_ORG_NAME "Faicoin"
-#define QAPP_ORG_DOMAIN "faicoin.org"
-#define QAPP_APP_NAME_DEFAULT "Faicoin-Qt"
-#define QAPP_APP_NAME_TESTNET "Faicoin-Qt-testnet"
+#define QAPP_ORG_NAME "FAI"
+#define QAPP_ORG_DOMAIN "freeanonimousinternet.org"
+#define QAPP_APP_NAME_DEFAULT "ΦDesktop-Client"
+#define QAPP_APP_NAME_TESTNET "ΦDesktop-Client-testnet"
 
 #endif // BITCOIN_QT_GUICONSTANTS_H

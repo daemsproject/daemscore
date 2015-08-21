@@ -882,6 +882,8 @@ QString WalletModel::EncryptMessages(Array params,const int nPageIndex)
         objMsg.push_back(Pair("messages",arrMsg));
         arrResult.push_back(objMsg);
     }
+    if(nOP==1)
+            pwallet->ClearPassword();
     if(!fIsWalletMain)
     delete pwallet;
     return QString().fromStdString(write_string(Value(arrResult),false));  
@@ -988,10 +990,14 @@ QString WalletModel::SendMessage(Array arrData,const int nPageIndex)
         //LogPrintf("jsinterface:SendMessage:createtransaction done\n");
         if(!pwallet->SignTransaction(tx, wtxSigned,pr.nSigType))
         {
+             if(nOP==1)
+            pwallet->ClearPassword();
             if(!fIsWalletMain)        
                 delete pwallet;
             return tr("{\"error\":\"sign transaction failed\"}");  
         }
+        if(nOP==1)
+            pwallet->ClearPassword();
     }
      //LogPrintf("jsinterface:SendMessage:signOK\n");
     if (!wtxSigned.AcceptToMemoryPool(false))
@@ -1067,10 +1073,15 @@ QString WalletModel::SignMessage(Array arrData,const int nPageIndex)
     vector<unsigned char> vchSig;
     if (!key.SignCompact(ss.GetHash(), vchSig))
     {
+        if(nOP==1)
+            pwallet->ClearPassword();
         if(!fIsWalletMain)
             delete pwallet;
+         
         return tr("{\"error\":\"Sign failed\"}");
     }
+     if(nOP==1)
+            pwallet->ClearPassword();
     return QString().fromStdString("{\"signature\":\""+EncodeBase64(&vchSig[0], vchSig.size())+"\"}");
 }
 QString WalletModel::getSMSAlertMessage(const CPaymentOrder& pr)
