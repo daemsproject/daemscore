@@ -339,8 +339,8 @@ extern CPaymentOrder GetPublishPackagetPaymentRequest(const Array arr);
 extern CWalletTx CreateRawTransaction(CPaymentOrder pr,bool& fRequestPassword,CWallet*& pwallet);
 extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, json_spirit::Object& entry,const int nContentLenLimit=1024,std::map<int,CScript>* pmapPrevoutScriptPubKey=NULL,int nTx=-1);
 extern Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDetails = false);
-extern void GetMessagesFromTx(std::vector<CMessage>& vMessages,const CTransaction& tx,const int nBlockHeight,int nTx,int nTime,const std::vector<CScript>& vIDsLocal,
-        const std::vector<CScript>& vIDsForeign,int nDirectionFilter,bool fLinkonly,int nPos,int nOffset,int nCount);
+extern void GetMessagesFromTx(std::vector<CMessage>& vMessages, const CTransaction& tx, const int nBlockHeight,const int nTx,const int nTime, const std::vector<CScript>& vIDsLocal,
+        const std::vector<CScript>& vIDsForeign,const int nDirectionFilter,const bool fLinkonly, int& nPos,const int nOffset,const int nCount);
 //extern int GetBlocksToMaturity(const unsigned int nLockTime);
 //extern int GetLockLasting(uint32_t nLockTime);
 //extern uint32_t LockTimeToTime(uint32_t nLockTime);

@@ -1357,18 +1357,18 @@ Value getmessages(const json_spirit::Array& params, bool fHelp)
     }
     std::vector<CTransaction> vMemTx;
     std::vector<CTxPosItem> vTxPos;
-    int64_t startTime = GetTimeMillis();
+    //int64_t startTime = GetTimeMillis();
     GetDiskTxPoses(vIDsLocal, vTxPos);
 
 
-    LogPrintf("getmsgs time after getdistxposes:%i,%i,%i \n", startTime, GetTimeMillis(), GetTimeMillis() - startTime);
+    //LogPrintf("getmsgs time after getdistxposes:%i,%i,%i \n", startTime, GetTimeMillis(), GetTimeMillis() - startTime);
     if (fIncludeMempool)
         mempool.GetUnconfirmedTransactions(vIDsLocal, vMemTx);
     if (fListOnly)
         return _GetMessageList(vIDsLocal, vTxPos, vMemTx, nStartBlock);
-    //LogPrintf("getmessages mempooltxs:%u \n", vMemTx.size());
-    //LogPrintf("getmessages blockchaintxs:%u \n", vTxPos.size());
-    LogPrintf("getmsgs time after get memepool:%i,%i,%i \n", startTime, GetTimeMillis(), GetTimeMillis() - startTime);
+    LogPrintf("getmessages mempooltxs:%u \n", vMemTx.size());
+    LogPrintf("getmessages blockchaintxs:%u \n", vTxPos.size());
+    //LogPrintf("getmsgs time after get memepool:%i,%i,%i \n", startTime, GetTimeMillis(), GetTimeMillis() - startTime);
     if (vIDsForeign.size() > 0) {
         std::vector<CTxPosItem> vTxPosForeign;
         GetDiskTxPoses(vIDsForeign, vTxPosForeign);
@@ -1409,13 +1409,14 @@ LogPrintf("getmsgs11 vmemtx size:%i\n",vMemTx.size());
         {
              if (nPos >= nOffset + nCount)
             break;
-            vMessages.empty();
+            vMessages.clear();
             GetMessagesFromTx(vMessages, tx, -1, -1, nTime, vIDsLocal, vIDsForeign, nDirectionFilter, fLinkOnly, nPos, nOffset, nCount);
             BOOST_FOREACH(CMessage msg, vMessages)
             arrMsg.push_back(msg.ToJson(fLinkOnly));
         }
     }
-    LogPrintf("getmsgs time after get memepool msg:%i,%i,%i \n", startTime, GetTimeMillis(), GetTimeMillis() - startTime);
+    LogPrintf("getmessages mempool msgs:%i \n",arrMsg.size());
+    //LogPrintf("getmsgs time after get memepool msg:%i,%i,%i \n", startTime, GetTimeMillis(), GetTimeMillis() - startTime);
     vMessages.clear();
     for (int i = vTxPos.size() - 1; i >= 0; i--) {
         if (nPos >= nOffset + nCount)
@@ -1428,7 +1429,6 @@ LogPrintf("getmsgs11 vmemtx size:%i\n",vMemTx.size());
         uint256 hashBlock;
         int nHeight = -1;
         int nTime = GetTime();
-        int nTx = -1;
         if (GetTransaction(vTxPos[i], tx)) {
             pBlockPosDB->GetByPos(vTxPos[i].nFile, vTxPos[i].nPos, hashBlock, nHeight);
              LogPrintf("getmessages txpos  nHeight %i,ntx %i file:%i,pos:%u,flags:%i\n",nHeight,vTxPos[i].nTx, vTxPos[i].nFile, vTxPos[i].nPos, vTxPos[i].nFlags);
@@ -1447,11 +1447,11 @@ LogPrintf("getmsgs11 vmemtx size:%i\n",vMemTx.size());
             //LogPrintf("getmessages: tx vin size:%u \n",tx.vin.size());
             //LogPrintf("getmessages: tx vout size:%u \n",tx.vout.size());
             //LogPrintf("getmessages: tx hash:%s \n",tx.GetHash().GetHex());
-            GetMessagesFromTx(vMessages, tx, nHeight, nTx, nTime, vIDsLocal, vIDsForeign, nDirectionFilter, fLinkOnly, nPos, nOffset, nCount);
-LogPrintf("getmessages:%i \n",vMessages.size());
+            GetMessagesFromTx(vMessages, tx, nHeight, vTxPos[i].nTx, nTime, vIDsLocal, vIDsForeign, nDirectionFilter, fLinkOnly, nPos, nOffset, nCount);
+LogPrintf("getmessages:%i,npos%i \n",vMessages.size(),nPos);
         }
     }
-    LogPrintf("getmessages:%i \n",vMessages.size());
+    LogPrintf("getmessages blockmsgs:%i \n",vMessages.size());
     SortMessages(vMessages, vIDsLocal);
     //LogPrintf("getmessages sorted:%i\n",vMessages.size());
     BOOST_FOREACH(CMessage& msg, vMessages)
@@ -1511,7 +1511,8 @@ Value gettxmessages(const json_spirit::Array& params, bool fHelp)
             }
         }
         vMessages.empty();
-        GetMessagesFromTx(vMessages, tx, nHeight, nTx, nTime, vIDsLocal, vIDsForeign, nDirectionFilter, fLinkOnly, 0, 0, 65536);
+        int npos=0;
+        GetMessagesFromTx(vMessages, tx, nHeight, nTx, nTime, vIDsLocal, vIDsForeign, nDirectionFilter, fLinkOnly, npos, 0, 65536);
         BOOST_FOREACH(CMessage msg, vMessages)
         arrMsg.push_back(msg.ToJson(fLinkOnly));
     }
@@ -1520,8 +1521,8 @@ Value gettxmessages(const json_spirit::Array& params, bool fHelp)
 
 }
 
-void GetMessagesFromTx(std::vector<CMessage>& vMessages, const CTransaction& tx, const int nBlockHeight, int nTx, int nTime, const std::vector<CScript>& vIDsLocal,
-        const std::vector<CScript>& vIDsForeign, int nDirectionFilter, bool fLinkonly, int nPos, int nOffset, int nCount)
+void GetMessagesFromTx(std::vector<CMessage>& vMessages, const CTransaction& tx, const int nBlockHeight,const int nTx,const int nTime, const std::vector<CScript>& vIDsLocal,
+        const std::vector<CScript>& vIDsForeign,const int nDirectionFilter,const bool fLinkonly, int& nPos,const int nOffset,const int nCount)
 {
     if (tx.vin.size() == 0)
         return;
@@ -1575,24 +1576,27 @@ void GetMessagesFromTx(std::vector<CMessage>& vMessages, const CTransaction& tx,
     }
     ////LogPrintf("getmessagesFromtx2\n");
     CScript IDFrom = prevTx.vout[tx.vin[0].prevout.n].scriptPubKey;
-    LogPrintf("getmessagesFromtx,idfrom:%s\n", IDFrom.ToString());
+   // LogPrintf("getmessagesFromtx,idfrom:%s\n", IDFrom.ToString());
     if (find(vIDsLocal.begin(), vIDsLocal.end(), IDFrom) != vIDsLocal.end()) {
         fIncoming = false;
         //LogPrintf("getmessagesFromtx:output msg\n");
     } else if (vIDsForeign.size() > 0)
         if (find(vIDsForeign.begin(), vIDsForeign.end(), IDFrom) == vIDsForeign.end())
             return;
-    LogPrintf("getmessagesFromtx: IDFrom:%s \n",IDFrom.ToString());
+   // LogPrintf("getmessagesFromtx: IDFrom:%s \n",IDFrom.ToString());
 
-    LogPrintf("getmessagesFromtx5 fincoming:%b\n",fIncoming);
+    //LogPrintf("getmessagesFromtx5 fincoming:%b\n",fIncoming);
     if ((nDirectionFilter == OUTPUT_ONLY && fIncoming) || (nDirectionFilter == INCOMING_ONLY && !fIncoming))
         return;
-    LogPrintf("getmessagesFromtx msg:%i\n", vRawMsg.size());
+   // LogPrintf("getmessagesFromtx msg:%i\n", vRawMsg.size());
     uint256 hash = tx.GetHash();
     for (unsigned int i = 0; i < vRawMsg.size(); i++) {
         CScript scriptPubKey = tx.vout[vRawMsg[i].first].scriptPubKey;
+        if(nPos>=nOffset + nCount)
+            break;
         if (fIncoming) {
-            if (find(vIDsLocal.begin(), vIDsLocal.end(), scriptPubKey) != vIDsLocal.end()) {
+            if (find(vIDsLocal.begin(), vIDsLocal.end(), scriptPubKey) == vIDsLocal.end()) 
+                continue;
                 if (nPos >= nOffset && nPos < (nOffset + nCount)) {
                     //LogPrintf("getmessagesFromtx7\n");
                     CMessage msg;
@@ -1607,12 +1611,12 @@ void GetMessagesFromTx(std::vector<CMessage>& vMessages, const CTransaction& tx,
                     vMessages.push_back(msg);
                     //LogPrintf("getmessagesFromtx8\n");
                 }
+                
                 nPos++;
-            }
+            
         } else {
-            LogPrintf("getmessagesFromtx idto:%s,foreign %s\n",scriptPubKey.ToString(), vIDsForeign[0].ToString());
-            LogPrintf("getmessagesFromtx nPos:%i,noffset:%i,nCount:%i\n",nPos,nOffset,nCount);
-            if (vIDsForeign.size() > 0)
+           // LogPrintf("getmessagesFromtx nPos:%i,noffset:%i,nCount:%i\n",nPos,nOffset,nCount);
+            if (vIDsForeign.size() > 0)            
                 if (find(vIDsForeign.begin(), vIDsForeign.end(), scriptPubKey) == vIDsForeign.end())
                     continue;
             if (nPos >= nOffset && nPos < (nOffset + nCount)) {
@@ -1629,6 +1633,7 @@ void GetMessagesFromTx(std::vector<CMessage>& vMessages, const CTransaction& tx,
                 vMessages.push_back(msg);
                 //LogPrintf("getmessagesFromtx10\n");
             }
+             
             nPos++;
         }
     }

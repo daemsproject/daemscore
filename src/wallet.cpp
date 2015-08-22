@@ -311,7 +311,7 @@ bool CWallet::EncryptMessages(const std::map<string,std::vector<string> >& mapMe
         CKey sharedKey;        
         if(!GetSharedKey(id,pub,sharedKey))
             MakeSharedKey(id,pub,sharedKey,true);
-         LogPrintf("CWallet::EncryptMessages sharedKey:%s\n",HexStr(sharedKey.begin(),sharedKey.end()));       
+        // LogPrintf("CWallet::EncryptMessages sharedKey:%s\n",HexStr(sharedKey.begin(),sharedKey.end()));       
         std::vector<string> vMsg=it->second;
         std::vector<string> vMsgOut;
         for(unsigned int i=0;i<vMsg.size();i++){
@@ -360,38 +360,38 @@ bool CWallet::EncryptMessages(const std::map<string,std::vector<string> >& mapMe
                 std::vector<std::pair<int,string> > vContent;
                 if(CContent(vMsg[i]).Decode(vContent))
                 {
-                    LogPrintf("CWallet::decryptMessages pass1 \n"); 
+                   // LogPrintf("CWallet::decryptMessages pass1 \n"); 
                     for(unsigned int j=0;j<vContent.size();j++)
                     {
                         if(vContent[j].first==CC_MESSAGE_P)
                         {                        
-                            LogPrintf("CWallet::decryptMessages pass2 \n"); 
+                           // LogPrintf("CWallet::decryptMessages pass2 \n"); 
                             std::vector<std::pair<int,string> > vInnerContent;
                             if(CContent(vContent[j].second).Decode(vInnerContent))
                             {
-                                LogPrintf("CWallet::decryptMessages pass3 \n"); 
+                              //  LogPrintf("CWallet::decryptMessages pass3 \n"); 
                                 std::vector<unsigned char> vchIV(WALLET_CRYPTO_IV_SIZE);   
                                 string strEncrypted;
                                 bool fHasIV=false;
                                 bool fHasContent=false;
                                 for(unsigned int k=0;k<vInnerContent.size();k++)
                                 {  
-                                LogPrintf("getmessagesFromtx:effective msg found:%s\n",vInnerContent[k].second);
+                               // LogPrintf("getmessagesFromtx:effective msg found:%s\n",vInnerContent[k].second);
                                     if(vInnerContent[k].first==CC_ENCRYPT_PARAMS_IV)
                                     {
                                         
                                         string s= vInnerContent[k].second;                               
-                                        LogPrintf("CWallet::decryptMessages pass4 ,s%s size:%s\n",HexStr(s.begin(),s.end()),s.size()); 
+                                     //   LogPrintf("CWallet::decryptMessages pass4 ,s%s size:%s\n",HexStr(s.begin(),s.end()),s.size()); 
                                         if(s.size()==WALLET_CRYPTO_IV_SIZE)
                                         {
-                                             LogPrintf("CWallet::decryptMessages pass41 \n");
+                                       //      LogPrintf("CWallet::decryptMessages pass41 \n");
                                             copy(s.begin(),s.end(),vchIV.begin());                                            
                                             fHasIV=true;
                                         }
                                     }
                                     else if (vInnerContent[k].first==CC_ENCRYPT)
                                     {
-                                        LogPrintf("CWallet::decryptMessages pass5 \n"); 
+                                      //  LogPrintf("CWallet::decryptMessages pass5 \n"); 
                                         strEncrypted=vInnerContent[k].second; 
                                       fHasContent=true;
                                     }
@@ -399,23 +399,23 @@ bool CWallet::EncryptMessages(const std::map<string,std::vector<string> >& mapMe
                                 }
                                 if(fHasIV&&fHasContent)
                                 {
-                                    LogPrintf("decode message:effective msg found:iv:%s,content:%s\n",HexStr(vchIV.begin(),vchIV.end()),strEncrypted);                            
+                                   // LogPrintf("decode message:effective msg found:iv:%s,content:%s\n",HexStr(vchIV.begin(),vchIV.end()),strEncrypted);                            
                                     CKeyingMaterial simpleSig(32);
                                     uint256 hash;
                                     sharedKey.MakeSimpleSig(vchIV,hash);                             
                                     copy(hash.begin(),hash.end(),simpleSig.begin());
-                                    LogPrintf("CWallet::EncryptMessages simplesig:%s\n",HexStr(simpleSig.begin(),simpleSig.end())); 
+                                   // LogPrintf("CWallet::EncryptMessages simplesig:%s\n",HexStr(simpleSig.begin(),simpleSig.end())); 
                                     CCrypter crypter;
                                     if (crypter.SetKey(simpleSig,vchIV))
                                     {
                                         CKeyingMaterial decrypted;
                                         std::vector<unsigned char> encrypted(strEncrypted.size());
                                         copy(strEncrypted.begin(),strEncrypted.end(),encrypted.begin()); 
-                                        LogPrintf("CWallet::EncryptMessages encrypted:%s\n",HexStr(encrypted.begin(),encrypted.end())); 
+                                       // LogPrintf("CWallet::EncryptMessages encrypted:%s\n",HexStr(encrypted.begin(),encrypted.end())); 
                                         if(crypter.Decrypt(encrypted, decrypted))
                                         {
                                             string strDecrypted(decrypted.begin(),decrypted.end());
-                                            LogPrintf("decode message:decoded msg %s\n",strDecrypted);  
+                                       //     LogPrintf("decode message:decoded msg %s\n",strDecrypted);  
                                             vMsgOut.push_back(CContent(strDecrypted));
                                             continue;
                                         }
