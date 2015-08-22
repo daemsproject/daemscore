@@ -105,19 +105,31 @@ struct CTxPosItem: public CDiskBlockPos
     CTxPosItem() {
         SetNull();
     }
-    friend bool operator==(const CTxPosItem &a, const CTxPosItem &b) {
+    friend bool operator==(const CTxPosItem &a, const CTxPosItem &b)
+    {
         return (a.nFile == b.nFile && a.nPos == b.nPos);
     }
-    friend bool operator>(const CTxPosItem &a, const CTxPosItem &b) {
-        return (a.nFile > b.nFile ||(a.nFile==b.nFile&& a.nPos > b.nPos));
+
+    friend bool operator>(const CTxPosItem &a, const CTxPosItem &b)
+    {
+        return (a.nFile > b.nFile || (a.nFile == b.nFile && a.nPos > b.nPos));
     }
-    void SetNull() {
+
+    friend bool operator<(const CTxPosItem &a, const CTxPosItem &b)
+    {
+        return (a.nFile < b.nFile || (a.nFile == b.nFile && a.nPos < b.nPos));
+    }
+
+    void SetNull()
+    {
         CDiskBlockPos::SetNull();
         nTx = 0;
-        nFlags=0;
+        nFlags = 0;
     }
 };
-enum BlockStatus {
+
+enum BlockStatus
+{
     //! Unused.
     BLOCK_VALID_UNKNOWN      =    0,
 

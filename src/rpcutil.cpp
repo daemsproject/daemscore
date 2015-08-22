@@ -88,7 +88,7 @@ Value getmaturetime(const Array& params, bool fHelp)
 Value encodebase32(const Array& params, bool fHelp) // TO DO: Help msg
 {
     if (fHelp || params.size() > 1)
-        throw runtime_error("");
+        throw runtime_error("encodebase32");
 
     std::vector<unsigned char> raw = ParseHexV(params[0], "parameter 1");
     return EncodeBase32(raw);
@@ -97,7 +97,7 @@ Value encodebase32(const Array& params, bool fHelp) // TO DO: Help msg
 Value encodebase32check(const Array& params, bool fHelp) // TO DO: Help msg
 {
     if (fHelp || params.size() > 1)
-        throw runtime_error("");
+        throw runtime_error("encodebase32check");
 
     std::vector<unsigned char> raw = ParseHexV(params[0], "parameter 1");
     return EncodeBase32Check(raw);
@@ -106,7 +106,7 @@ Value encodebase32check(const Array& params, bool fHelp) // TO DO: Help msg
 Value decodebase32(const Array& params, bool fHelp) // TO DO: Help msg
 {
     if (fHelp || params.size() > 1)
-        throw runtime_error("");
+        throw runtime_error("decodebase32");
     std::string b32 = params[0].get_str();
     std::vector<unsigned char> raw;
     if (DecodeBase32(b32, raw))
@@ -118,7 +118,7 @@ Value decodebase32(const Array& params, bool fHelp) // TO DO: Help msg
 Value decodebase32check(const Array& params, bool fHelp) // TO DO: Help msg
 {
     if (fHelp || params.size() > 1)
-        throw runtime_error("");
+        throw runtime_error("decodebase32check");
     std::string b32 = params[0].get_str();
     std::vector<unsigned char> raw;
     if (DecodeBase32Check(b32, raw))
@@ -130,7 +130,7 @@ Value decodebase32check(const Array& params, bool fHelp) // TO DO: Help msg
 Value standardizebase32(const Array& params, bool fHelp) // TO DO: Help msg
 {
     if (fHelp || params.size() > 1)
-        throw runtime_error("");
+        throw runtime_error("standardizebase32");
     std::string b32 = params[0].get_str();
     std::vector<unsigned char> raw;
     if (DecodeBase32(b32, raw))
@@ -141,8 +141,8 @@ Value standardizebase32(const Array& params, bool fHelp) // TO DO: Help msg
 
 Value comparebase32(const Array& params, bool fHelp) // TO DO: Help msg
 {
-    if (fHelp || params.size() > 2 || params.size() < 1)
-        throw runtime_error("");
+    if (fHelp || params.size() < 2 )
+        throw runtime_error("comparebase32");
     std::string s1 = params[0].get_str();
     std::string s2 = params[1].get_str();
     return CompareBase32(s1,s2);
@@ -150,7 +150,7 @@ Value comparebase32(const Array& params, bool fHelp) // TO DO: Help msg
 Value isvalidpubkeyaddress(const Array& params, bool fHelp) // TO DO: Help msg
 {
     if (fHelp || params.size() > 1)
-        return Value(false);
+        throw runtime_error("isvalidpubkeyaddress");
     std::string b32 = params[0].get_str();
     std::vector<unsigned char> raw;
     CPubKey pub;
@@ -161,7 +161,7 @@ Value isvalidpubkeyaddress(const Array& params, bool fHelp) // TO DO: Help msg
 Value getextkey(const Array& params, bool fHelp) // TO DO: Help msg
 {
     if (fHelp || params.size() !=3)
-        throw runtime_error("");
+        throw runtime_error("getextkey");
     //std::vector<unsigned char> vbasepriv = ParseHexV(params[0],"basepriv");
     
     //basekey.Set(vbasepriv.begin(),vbasepriv.end(),true);
@@ -186,7 +186,7 @@ Value getextkey(const Array& params, bool fHelp) // TO DO: Help msg
 Value getextpubkey(const Array& params, bool fHelp) // TO DO: Help msg
 {
     if (fHelp || params.size() !=3)
-        throw runtime_error("");
+        throw runtime_error("getextpubkey");
     CPubKey basepub = AccountFromValue(params[0]);
     CPubKey steppub = AccountFromValue(params[1]);
     uint64_t nStep = params[2].get_int64();
@@ -200,7 +200,7 @@ Value getextpubkey(const Array& params, bool fHelp) // TO DO: Help msg
 Value gethash(const Array& params, bool fHelp) // TO DO: Help msg
 {
     if (fHelp || params.size() <1)
-        throw runtime_error("");
+        throw runtime_error("gethash");
     string format="string";
     string formatout="hex";
     if(params.size()>1)
@@ -237,7 +237,7 @@ Value gethash(const Array& params, bool fHelp) // TO DO: Help msg
 Value getlinktype(const Array& params, bool fHelp) // TO DO: Help msg
 {
     if (fHelp || params.size() > 1)
-        throw runtime_error("");
+        throw runtime_error("getlinktype");
     Object result;
     CLinkUni clinkuni;
     clinkuni.SetString(params[0].get_str());

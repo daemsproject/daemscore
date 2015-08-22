@@ -224,7 +224,7 @@ Value getfeerate(const Array& params, bool fHelp)
     if (fHelp || params.size() > 1)
         throw runtime_error(
             "getfeerate ( int )\n"
-            "\nReturns the feerate per byte of the the corresponding size in blocks. Positive number means blocks in mempool, negative number means blocks in blockchain.\n");
+            "\nReturns the feerate per byte of the the corresponding size in blocks. param0:Positive number means blocks in mempool, negative number means blocks in blockchain.\n");
     float nSamplePoint = 10;
     double nFeeRate=1000;
     if (params.size() > 0)

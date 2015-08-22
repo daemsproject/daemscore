@@ -97,7 +97,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     
     { "getlink", 1 },
     { "getcontents", 0 },
-    { "getcontents", 1 },
+    { "getcontentsbyaddresses", 0 },
     { "getpromotedcontents", 0 },
     { "getpromotedcontents", 1 },
     { "getpromotedcontents", 2 },

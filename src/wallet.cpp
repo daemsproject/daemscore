@@ -1828,8 +1828,7 @@ bool SignAndSendTx(CWallet* pwallet,const CWalletTx& tx,const int nSigType, cons
      }
      if(fDelete)
         delete pwallet;
-     
-    result= ("{\"success\":\"tx sent\"}");
+    result= ("{\"success\":\""+tx.GetHash().GetHex()+"\"}");
     return true;            
 }
 

@@ -157,10 +157,12 @@ bool GetFileFromLinks(const vector<CLink>& vlinks,string& strFile,int timeOut)
 }
 int GetNTx(const uint256 &hashTx) 
 {
-    int64_t txIndex;
-    psqliteDB->GetTxIndex(hashTx,txIndex);
+    int64_t txIndex=-1;
+    if(!psqliteDB->GetTxIndex(hashTx,txIndex))
+        LogPrintf("getntx,txindex not fould,tx:%s \n",hashTx.GetHex());
     //LogPrintf("getntx,tx:%s,height:%i,ntx:%i \n",hashTx.GetHex(),txIndex>>16,txIndex&0xffff);
-    return txIndex&0xffff;
+        return txIndex&0xffff;
+    
 //    CTransaction tx;
 //    uint256 hashBlock = 0;
 //    if (!GetTransaction(hashTx, tx, hashBlock, true))
@@ -447,7 +449,10 @@ bool TxidOutLink2BlockChainLink(const uint256 txid,const int nVout,CLink& linkOu
 {
     int64_t txIndex;
     if(!psqliteDB->GetTxIndex(txid,txIndex))
+    {
+        LogPrintf("TxidOutLink2BlockChainLink,txindex not fould,tx:%s \n",txid.GetHex());
         return false;
+    }
       linkOut.nHeight=txIndex>>16;
       linkOut.nTx=txIndex&0xffff;
 //    CTransaction tx;    

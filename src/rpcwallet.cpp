@@ -2194,7 +2194,7 @@ Value getcontacts(const json_spirit::Array& params, bool fHelp){
 }
 Value addcontacts(const json_spirit::Array& params, bool fHelp){
     if (fHelp || params.size() !=2)
-        throw runtime_error("Wrong number of parameters");
+        throw runtime_error("addcontacts Wrong number of parameters");
     if (params[0].type() != str_type)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter1, expected string");
     CPubKey ID=AccountFromValue(params[0].get_str());
@@ -2263,7 +2263,7 @@ Value addcontacts(const json_spirit::Array& params, bool fHelp){
 Value getsimplesig(const json_spirit::Array& params, bool fHelp)
 {
     if (fHelp || params.size() !=3)
-        throw runtime_error("Wrong number of parameters");
+        throw runtime_error("getsimplesig Wrong number of parameters");
     if (params[0].type() != str_type)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter1, expected string");
     CPubKey IDLocal=AccountFromValue(params[0].get_str());

@@ -593,7 +593,7 @@ bool CSqliteWrapper::GetBlockDomains(const uint256 blockHash,CDataStream& sBlock
     rc = sqlite3_step(stmt);
         if(rc == SQLITE_ROW)
         {
-           sBlockDomains.read((char*)sqlite3_column_blob(stmt,0),sqlite3_column_bytes(stmt,0));            
+           sBlockDomains.write((char*)sqlite3_column_blob(stmt,0),sqlite3_column_bytes(stmt,0));            
            sqlite3_finalize(stmt);
             return true;
         }
@@ -1468,7 +1468,7 @@ bool CSqliteWrapper::InsertTxIndice(const map<uint256, int64_t>& mapTxIndex)
    // if(GetTxIndex(txid,txIndex))
     //    return true;
     //LogPrintf("InsertTxIndex\n");    
-    string insertstatement="INSERT OR IGNORE INTO txindextable VALUES (?,?)";
+    string insertstatement="INSERT OR REPLACE INTO txindextable VALUES (?,?)";
     //LogPrintf("GetInsertSql %s\n",insertstatement);
     int result;
     sqlite3_stmt  *stat;    

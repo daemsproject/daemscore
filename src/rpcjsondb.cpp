@@ -71,7 +71,7 @@ using namespace json_spirit;
 Value writefile(const json_spirit::Array& params, bool fHelp) //  To Do
 {
     if (fHelp || params.size() !=4)
-        throw runtime_error("Wrong number of parameters");
+        throw runtime_error("writefile Wrong number of parameters");
     RPCTypeCheck(params, list_of(str_type));
 //    for(unsigned int i=0;i<4;i++)
 //        if(params[i].type()!=str_type)
@@ -84,7 +84,7 @@ Value writefile(const json_spirit::Array& params, bool fHelp) //  To Do
 Value readfile(const json_spirit::Array& params, bool fHelp) //  To Do
 {
     if (fHelp || params.size() !=3)
-        throw runtime_error("Wrong number of parameters");
+        throw runtime_error("readfile Wrong number of parameters");
     RPCTypeCheck(params, list_of(str_type));
 //    for(unsigned int i=0;i<4;i++)
 //        if(params[i].type()!=str_type)
@@ -97,7 +97,7 @@ Value readfile(const json_spirit::Array& params, bool fHelp) //  To Do
 Value setconf(const json_spirit::Array& params, bool fHelp) //  To Do
 {
     if (fHelp || params.size() !=5)
-        throw runtime_error("Wrong number of parameters");
+        throw runtime_error("setconf Wrong number of parameters");
    // RPCTypeCheck(params, list_of(str_type));
     for(unsigned int i=0;i<4;i++)
         if(params[i].type()!=str_type)
@@ -117,7 +117,7 @@ Value setconf(const json_spirit::Array& params, bool fHelp) //  To Do
 Value getconf(const json_spirit::Array& params, bool fHelp) //  To Do
 {
     if (fHelp || params.size() !=4)
-        throw runtime_error("Wrong number of parameters");
+        throw runtime_error("getconf Wrong number of parameters");
     RPCTypeCheck(params, list_of(str_type));
 //    for(unsigned int i=0;i<4;i++)
 //        if(params[i].type()!=str_type)

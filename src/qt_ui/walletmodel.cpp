@@ -503,20 +503,26 @@ QString WalletModel::DoPayment(const CPaymentOrder& pr,const int nPageIndex)
 }
 QString WalletModel::HandlePaymentRequest2(const Array arrData,const int nPageIndex)
 {
-    std::vector<unsigned char> raw = ParseHexV(arrData[2], "parameter 3");
+    Array arrRaw=arrData[2].get_array();  
+    std::vector<CContent> ctts;
+    for(int i =0; i<arrRaw.size();i++){
+        std::vector<unsigned char> raw = ParseHexV(arrRaw[i], "parameter arr");
     CContent ctt(raw);
+        ctts.push_back(ctt);
+    }
+    
     CPaymentOrder pr;
     if (arrData.size() == 3)
-        pr = GetPublisherPaymentRequest(arrData[0].get_str(), arrData[1].get_str(), ctt);
+        pr = GetPublisherPaymentRequest(arrData[0].get_str(), arrData[1].get_str(), ctts);
 
     else if (arrData.size() == 4 || arrData.size() == 5)
-        pr = GetPublisherPaymentRequest(arrData[0].get_str(), arrData[1].get_str(), ctt, arrData[3].get_real());
+        pr = GetPublisherPaymentRequest(arrData[0].get_str(), arrData[1].get_str(), ctts, arrData[3].get_real());
     else if (arrData.size() == 6)
     {
         if (arrData[3].get_real() < 1000.0)
-            pr = GetPublisherPaymentRequest(arrData[0].get_str(), arrData[1].get_str(), ctt, 1000.0, arrData[4].get_int(), arrData[5].get_int());
+            pr = GetPublisherPaymentRequest(arrData[0].get_str(), arrData[1].get_str(), ctts, 1000.0, arrData[4].get_int(), arrData[5].get_int());
         else
-            pr = GetPublisherPaymentRequest(arrData[0].get_str(), arrData[1].get_str(), ctt, arrData[3].get_real(), arrData[4].get_int(), arrData[5].get_int());
+            pr = GetPublisherPaymentRequest(arrData[0].get_str(), arrData[1].get_str(), ctts, arrData[3].get_real(), arrData[4].get_int(), arrData[5].get_int());
     }
     return DoPayment(pr,nPageIndex);    
 }

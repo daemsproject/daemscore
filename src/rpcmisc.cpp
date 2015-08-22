@@ -556,7 +556,7 @@ CPaymentOrder MessageRequestToPaymentRequest(const std::string idLocal,const std
     //valtmp=find_value(obj, "vins");
 }
 
-CPaymentOrder GetPublisherPaymentRequest(const std::string idLocal, const std::string idTarget, const CContent& ctt, const double feeRate, const CAmount deposit, const uint32_t nLockTime ) // locktime is only used for the content vout, change vout will not be locked
+CPaymentOrder GetPublisherPaymentRequest(const std::string idLocal, const std::string idTarget, const std::vector<CContent>& ctts, const double feeRate, const CAmount deposit, const uint32_t nLockTime ) // locktime is only used for the content vout, change vout will not be locked
 {
     CPaymentOrder pr;
     pr.fIsValid = false;
@@ -582,7 +582,8 @@ CPaymentOrder GetPublisherPaymentRequest(const std::string idLocal, const std::s
     }
     LogPrintf("rpcmist MessageRequestToPaymentRequest vout scriptpubkey:%s\n", scriptPubKey.ToString());
     CAmount amount = deposit > 0 ? deposit : 0;
-    pr.vout.push_back(CTxOut(amount, scriptPubKey, ctt, nLockTime));
+    for (std::vector<CContent>::const_iterator it = ctts.begin(); it != ctts.end(); it++)
+        pr.vout.push_back(CTxOut(amount, scriptPubKey, *it, nLockTime));
     pr.fIsValid = true;
     pr.dFeeRate = feeRate;
     pr.nRequestType = PR_PUBLISH;

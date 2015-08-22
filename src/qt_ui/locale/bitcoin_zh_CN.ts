@@ -2764,7 +2764,7 @@ Do you want to ignore these errors for this host?</source>
     </message>
     <message>
         <source>Total Amount %1</source>
-        <translation type="unfinished">总金额：1%</translation>
+        <translation type="unfinished">总金额：%1</translation>
     </message>
     <message>
         <source>Are you sure you want to decrypt messages related to IDs below?</source>

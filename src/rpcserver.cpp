@@ -300,6 +300,7 @@ static const CRPCCommand vRPCCommands[] =
     { "blockchain",         "getlinkbytxidout",       &getlinkbytxidout,       true,      false,      false },
     { "blockchain",         "getlinktype",            &getlinktype,            true,      false,      false },
     { "blockchain",         "getcontents",            &getcontents,            true,      false,      false },
+    { "blockchain",         "getcontentsbyaddresses", &getcontentsbyaddresses, true,      false,      false },
     { "blockchain",         "getpromotedcontents",            &getpromotedcontents,            true,      false,      false },
      { "blockchain",         "getsalesrecord",            &getsalesrecord,            true,      false,      false },
    { "blockchain",         "getpurchaserecord",            &getpurchaserecord,            true,      false,      false },

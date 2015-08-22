@@ -4021,8 +4021,10 @@ void static ProcessGetData(CNode* pfrom)
                     {
                         //fai:add blockdomain information to client peers
                         if(pfrom->fClient)
-                        {                          
+                        {                    
+                            //LogPrintf("getblock send blockdomains \n");
                             CDataStream sBlockDomains(SER_DISK, CLIENT_VERSION);
+                            //LogPrintf("getblock send blockdomains1 \n");
                             pDomainDBView->GetBlockDomains(block.GetHash(),sBlockDomains);   
                             LogPrintf("getblock blockdomains:%s",HexStr(sBlockDomains));
                             pfrom->PushMessage("block", block,sBlockDomains);
@@ -4711,6 +4713,14 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         //if(chainActive.Height()==621||chainActive.Height()==620)
            // LogPrintf("block datastream len:%i,data:%s \n",vRecv.size(),HexStr(vRecv.begin(),vRecv.end()));
         vRecv >> block;
+        //these lines for full node plus test
+//        if(!vRecv.empty())
+//        {
+//            map<CScript,string> mapBlockDomains;
+//            vRecv>>mapBlockDomains;
+//            for(map<CScript,string>::const_iterator it=mapBlockDomains.begin();it!=mapBlockDomains.end();it++)
+//                LogPrintf("map block domain:%s,script %s \n",it->second,it->first.ToString());
+//        }
         //CDataStream vrecvretrieve=vRecv;
         
         //vrecvretrieve<<block;
