@@ -30,6 +30,7 @@ class CWallet;
 class uint256;
 class BitcoinGUI;
 class CWalletTx;
+class CTransaction;
 class CPaymentOrder;
 QT_BEGIN_NAMESPACE
 class QTimer;
@@ -98,10 +99,13 @@ public:
     bool importAccount();
     bool setWalletLocked(bool locked, const SecureString &passPhrase=SecureString(),int nUnlockTime=3600);  
     QString HandlePaymentRequest(const json_spirit::Array arrData,const int nPageIndex=-1);    
-    QString HandlePaymentRequest2(const json_spirit::Array arrData,const int nPageIndex=-1);  
+    QString HandlePaymentRequest2(const json_spirit::Array arrData,const int nPageIndex=-1);
+    QString HandleOverrideRequest(const json_spirit::Array arrData,const int nPageIndex=-1);   
     QString DoPayment(const CPaymentOrder& pr,const int nPageIndex=-1);
     QString EncryptMessages(json_spirit::Array params,const int nPageIndex=-1);
-    //bool handlePaymentRequest(CWalletTx tx,int nOP,string strError,SecureString& ssInput);  
+    //bool handlePaymentRequest(CWalletTx tx,int nOP,string strError,SecureString& ssInput);
+    QString getOverrideAlertMessage(const CTransaction& txOriginal,const CWalletTx& txOverride, const int64_t nLockTime=-1);
+
     QString getPublishContentMessage(const CWalletTx& tx,const CPaymentOrder& pr);  
     QString getPaymentAlertMessage(const CWalletTx& tx);
     QString getEncryptMessegeAlert(const std::vector<std::string>& vstrIDsForeign,const bool fEncrypt);

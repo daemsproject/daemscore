@@ -526,7 +526,137 @@ QString WalletModel::HandlePaymentRequest2(const Array arrData,const int nPageIn
     }
     return DoPayment(pr,nPageIndex);    
 }
+QString WalletModel::HandleOverrideRequest(const Array arrData,const int nPageIndex)
+{
+    if ( arrData.size() <3)
+        return ("{\"error\":\"params less than 3\"}");   
+    if(arrData[2].type()!=obj_type)        
+        return ("{\"error\":\"param0 is not obj type\"}");  
+    CWalletTx tx;
+    string strError;    
+    CPubKey pub;
+    if(!CBitcoinAddress(arrData[0].get_str()).GetKey(pub))    
+        return ("{\"error\":\"wrong id\"}");
+    uint256 txid = ParseHashV(arrData[1], "parameter 1");
+    Object obj=arrData[2].get_obj();
+    Value valtmp;
 
+    valtmp=find_value(obj, "feerate");
+    double dFeeRate=1000;
+    switch((int)valtmp.type()){
+        case int_type:
+            dFeeRate=(double)valtmp.get_int();
+            break;
+        case real_type:
+            dFeeRate=valtmp.get_real();
+            break;
+        case null_type:
+            break;
+        default:
+            return ("{\"error\":\"feerate type error\"}");   
+    }
+    int64_t nLockTime=-1;
+    valtmp=find_value(obj, "locktime");
+    switch((int)valtmp.type()){
+        case int_type:
+            nLockTime=valtmp.get_int64();  
+            break;
+        case null_type:
+            break;
+        default:
+            return ("{\"error\":\"locktime type error\"}");   
+    }
+    bool fIsWalletMain;
+    CWallet* pwallet;
+    if(wallet->HaveKey(pub))
+    {
+        pwallet=wallet;
+        fIsWalletMain=true;
+    }
+    else
+        pwallet=new CWallet(pub,false);    
+    int nOP=0;//0::unencrypted,1::encrypted,2::offline
+    SecureString ssInput;
+    if (!pwallet->HavePriv())
+    {
+        if(!fIsWalletMain)
+                delete pwallet;
+            return tr("{\"error\":\"no private key\"}");
+    }
+    else if (pwallet->IsLocked())
+            nOP=1;
+    CTransaction txIn;
+    uint256 blockHash;
+    if(!mempool.lookup(txid, txIn)) {   
+            if(!fIsWalletMain)        
+                delete pwallet;
+        return QString().fromStdString("{\"error\":\"tx not found\"}"); 
+    }
+    if (!pwallet->CreateOverrideTransaction(txIn,tx,strError,dFeeRate,nLockTime))
+        {   
+            if(!fIsWalletMain)        
+                delete pwallet;
+            return QString().fromStdString("{\"error\":\""+strError+"\"}"); 
+        }    
+    LogPrintf("overridetx created:%s \n",tx.ToString());
+    QString alert=getOverrideAlertMessage(txIn,tx,nLockTime);  
+    QString title=QString(tr("Request Override Transaction"));
+    if (!gui->handleUserConfirm(title,alert,nOP,strError,ssInput,nPageIndex)){
+        if(!fIsWalletMain)
+            delete pwallet;
+        return QString().fromStdString("{\"error\":\""+strError+"\"}");             
+    } 
+    if(nOP==1)
+        if(!pwallet->SetPassword(ssInput)){
+            if(!fIsWalletMain)
+            delete pwallet;
+            return tr("{\"error\":\"wrong password\"}");
+        }
+    if(!mempool.lookup(txid, txIn)) {   
+            if(!fIsWalletMain)        
+                delete pwallet;
+        return QString().fromStdString("{\"error\":\"tx already confirmed\"}"); 
+    }
+    CWalletTx wtxSigned; 
+    if(!pwallet->SignOverrideTransaction(txIn,tx, wtxSigned))
+    {
+         if(nOP==1)
+        pwallet->ClearPassword();
+        if(!fIsWalletMain)        
+            delete pwallet;
+        return tr("{\"error\":\"sign transaction failed\"}");  
+    }
+    if(nOP==1)
+            pwallet->ClearPassword();
+    if (!wtxSigned.AcceptToMemoryPool(false))
+        {            
+            LogPrintf("WalletModel::HandleOverrideRequest:sendtx : Error: Transaction not valid\n");
+            if(!fIsWalletMain)    
+                delete pwallet;
+            return tr("{\"error\":\"tx rejected\"}");;
+        }
+     RelayTransaction(wtxSigned);
+     //LogPrintf("WalletModel::HandleOverrideRequest:sendtx :%s\n",tx.GetHash().GetHex()));
+     if(!fIsWalletMain)
+        delete pwallet;
+    return QString().fromStdString("{\"success\":\""+wtxSigned.GetHash().GetHex()+"\"}");
+}
+QString WalletModel::getOverrideAlertMessage(const CTransaction& txOriginal,const CWalletTx& txOverride, const int64_t nLockTime)
+{
+   
+    QString questionString = tr("Please confirm to override transaction:");    
+    questionString.append("<br /><br />");
+    questionString.append("txid:"+QString().fromStdString(txOriginal.GetHash().GetHex())+"<br/>");
+    questionString.append(tr("Original Fee:")+BitcoinUnits::formatHtmlWithUnit(0, txOriginal.GetFee())+"<br/>");
+    
+    questionString.append("<hr /><span style='color:#aa0000;'>"+tr("New Fee:"));
+        questionString.append(BitcoinUnits::formatHtmlWithUnit(0, txOverride.GetFee()));
+        questionString.append("</span> "); 
+        // append transaction size
+        questionString.append(" (" + QString::number((double)(txOverride.CTransaction::GetSerializeSize(SER_NETWORK, CTransaction::CURRENT_VERSION)+(txOverride.vin.size()-txOriginal.vin.size())*67) / 1000) + " kB)");
+    questionString.append("<hr />");  
+    return questionString;
+}
 QString WalletModel::getPublishContentMessage(const CWalletTx& tx, const CPaymentOrder& pr)
 {
     // Format confirmation message
@@ -899,7 +1029,7 @@ QString WalletModel::EncryptMessages(Array params,const int nPageIndex)
 QString WalletModel::SendMessage(Array arrData,const int nPageIndex)
 {
     if ( arrData.size() <3)
-        throw runtime_error("");
+        throw runtime_error("SendMessage ");
     string idLocal=arrData[0].get_str();
     string idForeign=arrData[1].get_str();
     CContent msg=_create_text_content(arrData[2].get_str());    
@@ -1018,7 +1148,7 @@ QString WalletModel::SendMessage(Array arrData,const int nPageIndex)
      LogPrintf("jsinterface:SendMessage:sendtx :%s\n",EncodeHexTx(CTransaction(wtxSigned)));
      if(!fIsWalletMain)
         delete pwallet;
-    return QString().fromStdString("{\"success\":\""+tx.GetHash().GetHex()+"\"}");
+    return QString().fromStdString("{\"success\":\""+wtxSigned.GetHash().GetHex()+"\"}");
             
 }
 QString WalletModel::SignMessage(Array arrData,const int nPageIndex)

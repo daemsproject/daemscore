@@ -284,6 +284,9 @@ public:
     bool CreateTransactionUnsigned(const CPaymentOrder& pr,
                                 CWalletTx& wtxNew,std::string& strFailReason);
     bool SignTransaction(const CWalletTx& wtxIn,CWalletTx& wtxSigned,const int nSigType=129);
+    bool CreateOverrideTransaction(const CTransaction & txIn,
+                                CWalletTx& wtxNew,std::string& strFailReason,double dFeeRate=1000,int64_t nLockTime=-1);
+     bool SignOverrideTransaction(const CTransaction & txOriginal,const CWalletTx& wtxIn,CWalletTx& wtxSigned);
     bool CreateTransaction(const std::vector<std::pair<CScript, CAmount> >& vecSend,
                            CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRet, std::string& strFailReason, const CCoinControl *coinControl = NULL);
     bool CreateTransaction(CScript scriptPubKey, const CAmount& nValue,

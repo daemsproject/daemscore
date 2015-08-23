@@ -196,6 +196,8 @@ QString JsInterface::jscall(const QString command,const QString dataJson,const i
             arrData=valData.get_array();
             if (strCmd==string("requestpayment"))
                 return walletModel->HandlePaymentRequest(arrData,nPageIndex);
+            if (strCmd==string("requestoverride"))
+                return walletModel->HandleOverrideRequest(arrData,nPageIndex);
             if (strCmd==string("requestpayment2"))
                 return walletModel->HandlePaymentRequest2(arrData,nPageIndex);
             if (strCmd==string("encryptmessages"))
@@ -243,27 +245,18 @@ QString JsInterface::jscall(const QString command,const QString dataJson,const i
                 if (nPageID<=HELPPAGE_ID&&mapPageNames[nPageID]!=appName)
                     return tr("Invalid appName, not corresponding to pageid");
             }
-            
-                
         }
         if(strCmd==string("getlang"))
                 return GetLang();
-              
         if (strCmd==string("getsettings")||strCmd==string("updatesettings"))
-            {
                 if(nPageID!=SETTINGPAGE_ID)
                     return tr("Invalid pageID, getettings is forbidden");                
-            }
         if (strCmd==string("getidlist")||strCmd==string("getmainid")||strCmd==string("getnewid")||strCmd==string("listunspent"))
-            {
                 if(nPageID>HELPPAGE_ID)
                     return tr("Invalid pageID, get id is forbidden");                
-            }
         if (strCmd==string("listtransactions")&&(nPageID>HELPPAGE_ID))
-            {
                 if (dataJson.size()==0||arrData[0].get_str()=="")
                     return tr("Invalid pageID, get id is forbidden");                
-            }
         if (strCmd==string("clearcache"))
             {
                 if(nPageID!=SETTINGPAGE_ID)

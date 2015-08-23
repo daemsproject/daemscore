@@ -1431,7 +1431,7 @@ bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTr
         for (std::vector<CTxPosItem>::iterator it2 = vTxPosAll.begin();it2 != vTxPosAll.end(); it2++) {
             CTransaction txOut;
             uint256 hashBlock;
-            if((!fIncludeNoMoneyChange)&&(!(it2->nFlags&(1<<TXITEMFLAG_SENDER))&&(!(it2->nFlags&(1<<TXITEMFLAG_RECEIVEMONEY)))))
+            if((!fIncludeNoMoneyChange)&&(!(it2->nFlags&TXITEMFLAG_SENDER)&&(!(it2->nFlags&TXITEMFLAG_RECEIVEMONEY))))
                     continue;
             //LogPrintf("main:gettx:cdisktxpos after sort file:%i,pos:%u,txpos:%i\n",it2->nFile,it2->nPos,it2->nTxOffset);
             if (nTxCount>=nOffset&&nTxCount<nOffset+nNumber)

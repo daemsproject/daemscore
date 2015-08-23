@@ -21,6 +21,7 @@
 #include <boost/thread.hpp>
 #include "json/json_spirit_utils.h"
 #include "fai/content.h"
+#include "wallet_ismine.h"
 using namespace std;
 using namespace json_spirit;
 
@@ -1749,6 +1750,132 @@ bool CWallet::CreateTransactionUnsigned(const CPaymentOrder& pr,
     }
     return true;
 }
+bool CWallet::CreateOverrideTransaction(const CTransaction & txIn,
+                                CWalletTx& wtxNew,std::string& strFailReason,double dFeeRate,int64_t nLockTime)
+{
+    //check if we have all ids,sighashtype
+    bool fAnyonecanpay=true;
+    bool fHasAllIDs=true;
+   for (unsigned int i = 0; i < txIn.vin.size(); i++)
+                {
+                //    const COutPoint &prevout = txIn.vin[i].prevout;
+                 // CTransaction prevTx;
+//        uint256 tmphash;
+//        if (!GetTransaction(prevout.hash, prevTx, tmphash, true))
+//        {
+//            strFailReason= "Get prev tx failed";
+//            return false;
+//        }
+//
+//        if(::IsMine(*this,prevTx.vout[prevout.n].scriptPubKey)!=ISMINE_SPENDABLE)
+        if(IsMine(txIn.vin[i])!=ISMINE_SPENDABLE)
+            fHasAllIDs=false;
+        int nHashType = txIn.vin[i].scriptSig.back();
+        if(nHashType!=129)
+            fAnyonecanpay=false;
+    } 
+    if(!fAnyonecanpay&&!fHasAllIDs)
+    {
+        strFailReason="Can't resign";
+        return false;
+    }
+    //get target feerate,fee
+    double targetFeeRate=txIn.GetFeeRate()*1.1;
+    if(targetFeeRate<dFeeRate)
+        targetFeeRate=dFeeRate;
+    CAmount targetMinFee=txIn.GetFee()*1.1;
+    CAmount nCoinNeeded=max(targetMinFee,(CAmount)((txIn.GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION)+104)*targetFeeRate))-txIn.GetFee();
+    wtxNew.fTimeReceivedIsTxTime = true;
+    wtxNew.BindWallet(this);
+    CMutableTransaction txNew(txIn);   
+    //change locktime if we have all ids,only changes vouts with locktime>0
+    if(fHasAllIDs&&nLockTime>-1)  
+    {
+        BOOST_FOREACH(CTxOut& out,txNew.vout)
+                        if(out.nLockTime>0)
+                            out.nLockTime=nLockTime;
+    }
+        //step4:get cheques to match feerate & fee,note:for anyonecanpay, with minimal cheque as possible
+    CAmount nFeeRet;
+    {
+        LOCK2(cs_main, cs_wallet);
+        {
+            nFeeRet=nCoinNeeded;
+        
+            while(true)
+            {
+                
+                //CAmount nTotalValue = nValue + nFeeRet;
+                txNew.vin=txIn.vin;
+                txNew.vout=txIn.vout;
+                wtxNew.fFromMe = true;
+            
+                set<pair<const CWalletTx*,unsigned int> > setCoins;
+                        CAmount nValueIn = 0;
+                if (!SelectCoins(nFeeRet, setCoins, nValueIn))
+                {
+                    strFailReason = _("Insufficient funds");
+                    return false;
+                }
+                CAmount nChange = nValueIn -  nFeeRet;
+                //process change,
+        //if we have all ids, find one id that belongs to us from existing vout with 0 locktime,and add change to it
+                //if we don't have all ids,just abandon the change as fee
+                if (nChange > 0&&fHasAllIDs)
+                {
+                    CScript scriptChange;
+                    bool fFound=false;
+                    BOOST_FOREACH(CTxOut& out,txNew.vout)
+                    {
+                        if(out.nLockTime==0&&::IsMine(*this,out.scriptPubKey))
+                        {
+                            fFound=true;
+                            scriptChange=out.scriptPubKey;
+                            out.nValue+=nChange;
+                            break;
+                        }
+                    }
+                    if(!fFound)
+                    {
+                        scriptChange = GetScriptForDestination(id);
+                        CTxOut newTxOut(nChange, scriptChange);
+                        if(!newTxOut.IsDust(::minRelayTxFee))
+                            txNew.vout.push_back(newTxOut);
+                    }                
+                }                
+                // Fill vin
+                BOOST_FOREACH(const PAIRTYPE(const CWalletTx*,unsigned int)& coin, setCoins)
+                    txNew.vin.push_back(CTxIn(coin.first->GetHash(),coin.second,coin.first->vout[coin.second].nValue));
+
+                
+                // Embed the constructed transaction data in wtxNew.
+                *static_cast<CTransaction*>(&wtxNew) = CTransaction(txNew);
+
+                // Limit size,TODO calculate multisig and script size 
+                unsigned int nBytes = ::GetSerializeSize(*(CTransaction*)&wtxNew, SER_NETWORK, PROTOCOL_VERSION)+setCoins.size()*67;
+                if (nBytes >= MAX_STANDARD_TX_SIZE)
+                {
+                    strFailReason = _("Transaction too large");
+                    return false;
+                }
+                CAmount nFeeNeeded = max((CAmount)(nBytes*targetFeeRate),targetMinFee)-txIn.GetFee();
+
+                if (nFeeRet >= nFeeNeeded)
+                    break; // Done, enough fee included.
+                // Include more fee and try again.
+                nFeeRet = nFeeNeeded;
+                    continue;        
+            }
+            //if outcome feerate is too high, return false, and ask the user to split cheques 
+            if(wtxNew.GetFeeRate()>targetFeeRate*1.2&&(wtxNew.GetFee()-txIn.GetFee()>COIN))
+            {
+                strFailReason = _("No small unspent,please split and try again");
+                    return false;
+            }
+        }
+    }
+    return true;
+}
 bool CWallet::SignTransaction(const CWalletTx& wtxIn,CWalletTx& wtxSigned,int nSigType)
 {
                // LogPrintf("wallet.cpp:signtransaction");
@@ -1765,6 +1892,59 @@ bool CWallet::SignTransaction(const CWalletTx& wtxIn,CWalletTx& wtxSigned,int nS
                 *static_cast<CTransaction*>(&wtxSigned) = CTransaction(txSigned);
                 return true;
 }
+ bool CWallet::SignOverrideTransaction(const CTransaction & txOriginal,const CWalletTx& wtxIn,CWalletTx& wtxSigned)
+ {
+      bool fAnyonecanpay=true;
+    bool fHasAllIDs=true;
+   for (unsigned int i = 0; i < txOriginal.vin.size(); i++)
+    {
+//                    const COutPoint &prevout = txOriginal.vin[i].prevout;
+//                  CTransaction prevTx;
+//        uint256 tmphash;
+//        if (!GetTransaction(prevout.hash, prevTx, tmphash, true))
+//            return false;
+//        if(IsMine((CKeyStore)*this,prevTx.vout[prevout.n].scriptPubKey)!=ISMINE_SPENDABLE)
+        if(IsMine(txOriginal.vin[i])!=ISMINE_SPENDABLE)
+            fHasAllIDs=false;
+        int nHashType = txOriginal.vin[i].scriptSig.back();
+        if(nHashType!=129)
+            fAnyonecanpay=false;
+    } 
+    if(!fAnyonecanpay&&!fHasAllIDs)
+    {
+        LogPrintf("wallet.cpp:SignOverrideTransaction not applicable\n");
+        return false;
+    }
+    int nSigType=fAnyonecanpay?129:81;
+     CMutableTransaction txSigned=CMutableTransaction(wtxIn);
+     if(!fHasAllIDs)
+     {
+                for(unsigned int i=txOriginal.vin.size();i<wtxIn.vin.size();i++)
+                {
+                    LogPrintf("wallet.cpp:SignOverrideTransaction original vin %i,new vin %i,i %i\n",txOriginal.vin.size(),i<wtxIn.vin.size(),i);   
+                    CWalletTx wtx=mapWallet[wtxIn.vin[i].prevout.hash];   
+                    LogPrintf("tx from vout :%i \n",wtx.vout.size());
+                    if (!SignSignature(*this, wtx, txSigned, i,nSigType)){
+                     LogPrintf("wallet.cpp:SignOverrideTransaction signsignature failed\n");   
+                        return false;
+                    }
+                }        
+     }else
+     {
+         unsigned int nIn=0;
+         BOOST_FOREACH(CTxIn in, wtxIn.vin){
+                    CWalletTx wtx=mapWallet[in.prevout.hash];                    
+                    if (!SignSignature(*this, wtx, txSigned, nIn++,nSigType)){
+                     LogPrintf("wallet.cpp:signtransaction signsignature failed\n");   
+                        return false;
+                    }
+                } 
+         
+     }
+                // Embed the constructed transaction data in wtxNew.
+                *static_cast<CTransaction*>(&wtxSigned) = CTransaction(txSigned);
+                return true;
+ }
 bool DecodeSigs(string ssInput,std::vector<CScript> sigs){
     return false;
 }

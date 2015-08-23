@@ -1129,7 +1129,7 @@ Value getcontentsbyaddresses(const Array& params, bool fHelp) // withcc and with
         if (fBreak)
             break;
         int txPosMaxC = 65536;
-        int flags = i == 0 ? 1 << TXITEMFLAG_SENDCONTENT : 1 << TXITEMFLAG_RECEIVECONTENT;
+        int flags = i == 0 ?  TXITEMFLAG_SENDCONTENT : TXITEMFLAG_RECEIVECONTENT;
         std::vector<CScript> vIds = i == 0 ? vFrIds : vToIds;
         std::vector<CTxPosItem> vTxPos;
         //        std::cout << "m0 ------------------------------ \n";
@@ -1310,7 +1310,7 @@ json_spirit::Value getsalesrecord(const json_spirit::Array& params, bool fHelp)
     {
         //if(((nDirection==0)&&!(vTxPosAll[i].nFlags&((1<<TXITEMFLAG_RECEIVECONTENT)|(1<<TXITEMFLAG_RECEIVEMONEY))))
         //        ||((nDirection==1)&&!(vTxPosAll[i].nFlags&(1<<TXITEMFLAG_SENDCONTENT))))
-        if (!(vTxPosAll[i].nFlags & ((1 << TXITEMFLAG_RECEIVECONTENT) | (1 << TXITEMFLAG_RECEIVEMONEY))))
+        if (!(vTxPosAll[i].nFlags & (TXITEMFLAG_PURCHASE | TXITEMFLAG_RECEIVEMONEY)))
             continue;
         CTransaction txOut;
         if (!GetTransaction(vTxPosAll[i], txOut))
@@ -1403,7 +1403,7 @@ json_spirit::Value getpurchaserecord(const json_spirit::Array& params, bool fHel
     for (int i = (int) vTxPosAll.size() - 1; i >= 0; i--)
     {
 
-        if (!(vTxPosAll[i].nFlags & (1 << TXITEMFLAG_SENDCONTENT)))
+        if (!(vTxPosAll[i].nFlags & (TXITEMFLAG_PURCHASE|TXITEMFLAG_SENDER)))
             continue;
         CTransaction txOut;
         if (!GetTransaction(vTxPosAll[i], txOut))
@@ -1541,7 +1541,7 @@ Value _GetMessageList(std::vector<CScript> vIDsLocal, std::vector<CTxPosItem> vT
         int nStartPos = chainActive[nStartBlock]->nDataPos;
         for (int i = vTxPos.size() - 1; i >= 0; i--)
         {
-            if ((((vTxPos[i].nFlags & (1 << TXITEMFLAG_SENDCONTENT)) == 0)&&((vTxPos[i].nFlags & (1 << TXITEMFLAG_RECEIVECONTENT)) == 0)))
+            if (!vTxPos[i].nFlags & TXITEMFLAG_MESSAGE) 
                 continue;
             if ((vTxPos[i].nFile < nStartFile) || ((vTxPos[i].nFile == nStartFile)&&((int)vTxPos[i].nPos < nStartPos)))
                 break;
@@ -1699,9 +1699,9 @@ Value getmessages(const json_spirit::Array& params, bool fHelp)
     {
         if (nPos >= nOffset + nCount)
             break;
-        if ((((vTxPos[i].nFlags & (1 << TXITEMFLAG_SENDCONTENT)) == 0)&&((vTxPos[i].nFlags & (1 << TXITEMFLAG_RECEIVECONTENT)) == 0)) ||
-                (nDirectionFilter == OUTPUT_ONLY && ((vTxPos[i].nFlags & (1 << TXITEMFLAG_SENDCONTENT)) == 0)) ||
-                (nDirectionFilter == INCOMING_ONLY && ((vTxPos[i].nFlags & (1 << TXITEMFLAG_RECEIVECONTENT)) == 0)))
+        if ((!vTxPos[i].nFlags & TXITEMFLAG_MESSAGE) ||
+                (nDirectionFilter == OUTPUT_ONLY && ((vTxPos[i].nFlags &  TXITEMFLAG_SENDCONTENT) == 0)) ||
+                (nDirectionFilter == INCOMING_ONLY && ((vTxPos[i].nFlags & TXITEMFLAG_RECEIVECONTENT) == 0)))
             continue;
         CTransaction tx;
         uint256 hashBlock;
@@ -1711,8 +1711,6 @@ Value getmessages(const json_spirit::Array& params, bool fHelp)
         {
             pBlockPosDB->GetByPos(vTxPos[i].nFile, vTxPos[i].nPos, hashBlock, nHeight);
             //LogPrintf("getmessages txpos  nHeight %i,ntx %i file:%i,pos:%u,flags:%i\n", nHeight, vTxPos[i].nTx, vTxPos[i].nFile, vTxPos[i].nPos, vTxPos[i].nFlags);
-
-
             BlockMap::iterator mi = mapBlockIndex.find(hashBlock);
             if (mi != mapBlockIndex.end())
             {
