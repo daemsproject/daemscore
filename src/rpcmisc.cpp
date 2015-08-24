@@ -852,33 +852,49 @@ CPaymentOrder GetUpdateDomainPaymentRequest(const Array arr)
     CContent cForward;
     CContent cInfo;   
     CContent cTransfer;   
-    CLink link; 
+    CLinkUni link; 
     Value tmp = find_value(obj, "forward");
     if (tmp.type() == str_type) {
-        if(StringToScriptPubKey(tmp.get_str(),scriptPubKey)&&scriptPubKey.size()<=64)
+        link.SetString(tmp.get_str());
+        cForward.EncodeUnit(link.linkType,"");
+        switch ((int)link.linkType)
         {
-            cForward.EncodeUnit(CC_LINK_TYPE_SCRIPTPUBKEY,"");
-            cForward.EncodeUnit(CC_LINK,string(scriptPubKey.begin(),scriptPubKey.end()));
-            tmp = find_value(obj, "forwardsig");
-            if (tmp.type() == str_type) {  
+            case CC_LINK_TYPE_SCRIPTPUBKEY:
+            {
+                if(link.scriptPubKey.size()>64)
+                    throw JSONRPCError(RPC_INVALID_PARAMETER, "forward longer than 64 bytes");
+                cForward.EncodeUnit(CC_LINK,string(scriptPubKey.begin(),scriptPubKey.end()));
+                tmp = find_value(obj, "forwardsig");
+                if (tmp.type() != str_type) 
+                    throw JSONRPCError(RPC_INVALID_PARAMETER, "forward sig not provided for scriptpubkey");
                 bool fInvalid = false;
                 vector<unsigned char> vchSig = DecodeBase64(tmp.get_str().c_str(), &fInvalid);
-            
-                if (!fInvalid)
-                {
-                    string strSig;
-                    strSig.assign(vchSig.begin(),vchSig.end());
-                    cForward.EncodeUnit(CC_SIGNATURE,strSig);
-                }
+                if (fInvalid)
+                    throw JSONRPCError(RPC_INVALID_PARAMETER, "forward sig is not base64 encoded");
+                string strSig;
+                strSig.assign(vchSig.begin(),vchSig.end());
+                cForward.EncodeUnit(CC_SIGNATURE,strSig);
+                break;
             }
+            case CC_LINK_TYPE_BLOCKCHAIN:
+            {
+                 CLink link1(link.nHeight, link.nTx, link.nVout);
+                 cForward.EncodeUnit(CC_LINK,link1.Serialize());
+            }
+                 break;
+            case CC_LINK_TYPE_TXIDOUT:
+            {
+                string str(link.txid.begin(), link.txid.end());
+                EncodeVarInt(link.nVout, str);
+                cForward.EncodeUnit(CC_LINK,str);
+                //LogPrintf("GetUpdateDomainPaymentRequest link:%s \n",link.Serialize());
+            }
+                break;
+            default:
+                if(link.strLink.size()>64)
+                    throw JSONRPCError(RPC_INVALID_PARAMETER, "forward longer than 64 bytes");
+                cForward.EncodeUnit(CC_LINK,link.strLink);
         }
-         else if (link.SetString(tmp.get_str()))
-        {
-            cForward.EncodeUnit(CC_LINK_TYPE_BLOCKCHAIN,"");
-            cForward.EncodeUnit(CC_LINK,link.Serialize());
-        }
-         else if(tmp.get_str()=="")
-             cForward.EncodeUnit(CC_NULL,"");
     }
     tmp = find_value(obj, "transfer");
     if (tmp.type() == str_type) {    
@@ -895,23 +911,18 @@ CPaymentOrder GetUpdateDomainPaymentRequest(const Array arr)
         cInfo.EncodeUnit(CC_DOMAIN_INFO_INTRO,tmp.get_str());
             //vcInfo.push_back(make_pair(CC_DOMAIN_INFO_INTRO,str));  
     tmp = find_value(obj, "icon");
-    if (tmp.type() == str_type&&link.SetString(tmp.get_str()))              
+    CLink link2;
+    if (tmp.type() == str_type&&link2.SetString(tmp.get_str()))              
     {
             LogPrintf("domain info request link nheight %i,ntx %i,nvout %i\n",link.nHeight,link.nTx,link.nVout);
-//            CDataStream s(0,0);
-//            //link.Serialize(s,0,0);
-//            s<<link;
-//            char strlink[s.size()];
-//            s.read(strlink,s.size());         
-            string str=link.Serialize();
+            string str=link2.Serialize();
             LogPrintf("domain info request link %s\n",HexStr(str.begin(),str.end()));
             //vcInfo.push_back(make_pair(CC_DOMAIN_INFO_ICON,strlink));
-            cInfo.EncodeUnit(CC_DOMAIN_INFO_ICON,link.Serialize());
+            cInfo.EncodeUnit(CC_DOMAIN_INFO_ICON,link2.Serialize());
     }  
     tmp = find_value(obj, "tags");
     if (tmp.type() == array_type)              
     {
-        
         Array arrTags=tmp.get_array();
         CContent cTag;
         for(unsigned int i=0;i<arrTags.size();i++)  
@@ -921,7 +932,6 @@ CPaymentOrder GetUpdateDomainPaymentRequest(const Array arr)
             LogPrintf("domain info request tag %s\n",arrTags[i].get_str());
         }
     } 
-    
     std::vector<std::pair<int,string> > vcc;
     vcc.push_back(make_pair(CC_DOMAIN,arr[1].get_str()));
     if(cForward.size()>0)
@@ -931,11 +941,9 @@ CPaymentOrder GetUpdateDomainPaymentRequest(const Array arr)
     if(cTransfer.size()>0)
         vcc.push_back(make_pair(CC_DOMAIN_TRANSFER,cTransfer));
     if(vcc.size()==1)
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "no info available");
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "no update info provided");
     CContent ctt;
     ctt.EncodeP(CC_DOMAIN_P,vcc);    
-    
-    
     pr.vout.push_back(CTxOut(0, CScript(), ctt));
     pr.nRequestType=PR_DOMAIN_UPDATE;
     pr.info["domain"]=arr[1].get_str();

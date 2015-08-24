@@ -102,8 +102,6 @@ void JsInterface::notifyBlockHeight(const uint256 blockHash)
     //string result="{\:\"block\",\"blockHash\":\""++"\",\"blockHeight\":"+mi->second->nBlockHeight+"}";
     emit notify(QString().fromStdString(write_string(Value(obj),false)));
     //LogPrintf("jsinterface:notifyblockheight\n");
-    //QMetaObject::invokeMethod(JsInterface, "notifyBlockHeight", Qt::QueuedConnection,                              
-    //                          Q_ARG(uint256, blockHash));
 }
  void JsInterface::notifyBlockChainFallback(const int nBlockHeight,const uint256 hashBlock)
  {
@@ -270,7 +268,7 @@ QString JsInterface::jscall(const QString command,const QString dataJson,const i
     }
     catch (Object& objError)
     {
-        LogPrintf("jsinterface:jscall obj  error\n");
+        LogPrintf("jsinterface:jscall error:%s\n",json_spirit::write_string(Value(objError),false));
         Object reply;    
         reply.push_back(Pair("error", objError));
         valResult=Value(reply);            

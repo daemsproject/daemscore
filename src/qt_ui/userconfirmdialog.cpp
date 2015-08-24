@@ -35,8 +35,11 @@ UserConfirmDialog::UserConfirmDialog(QWidget *parent,int nPageIndexIn) :
     //fFeeMinimized(true)
 {
     ui->setupUi(this);
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setText(tr("Ok"));
+    ui->buttonBox->button(QDialogButtonBox::Cancel)->setText(tr("Cancel"));
     nPageIndex=nPageIndexIn;
     connect(ui->btn_blockpage,SIGNAL(clicked()),this,SLOT(on_blockPageClicked()));
+    
 #ifdef Q_OS_MAC // Icons on push buttons are very uncommon on Mac
     //ui->addButton->setIcon(QIcon());
     //ui->clearButton->setIcon(QIcon());

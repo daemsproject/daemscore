@@ -507,7 +507,7 @@ void FindNextBlocksToDownload(NodeId nodeid, unsigned int count, std::vector<CBl
 } // anon namespace
 
 bool GetNodeStateStats(NodeId nodeid, CNodeStateStats &stats) {
-    LOCK(cs_main);
+    //LOCK(cs_main);
     CNodeState *state = State(nodeid);
     if (state == NULL)
         return false;
@@ -1726,8 +1726,6 @@ void UpdateCoins(const CTransaction& tx, CValidationState &state, CCoinsViewCach
         txundo.vprevout.reserve(tx.vin.size());
         BOOST_FOREACH(const CTxIn &txin, tx.vin) {
             txundo.vprevout.push_back(CTxInUndo());
-            //if(txin.prevout.hash.GetHex()=="a02effdd97e40d27380bc3754e69729937e02fd35bfe3658f6188f92216155d1")
-            //LogPrintf("main.cpp:updatecoins a02effdd97e40d27380bc3754e69729937e02fd35bfe3658f6188f92216155d1 from:%s \n",tx.GetHash().GetHex());
             bool ret = inputs.ModifyCoins(txin.prevout.hash)->Spend(txin.prevout, txundo.vprevout.back());
             assert(ret);
         }
@@ -2146,39 +2144,14 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
         }
         //LogPrintf("%s height: %i \n", __func__,block.nBlockHeight);
         if(!fJustCheck)
-        {
-            //step1:get prevouts
             GetTxPrevouts(tx,view,vPrevouts);
-            
-            
-            //UpdateSqliteDBStep1(tx,pos,nHeaderLen,i,view,vPrevouts,vScripts,false);
-            
-            
-            
-            //LogPrintf("%s serviceflages: %i \n", __func__,settings.nServiceFlags);
-            //if(settings.nServiceFlags>>3&1)
-                
-        }
         UpdateCoins(tx, state, view, i == 0 ? undoDummy : blockundo.vtxundo.back(), pindex->nHeight);        
         //LogPrintf("%s : 22", __func__);
         vPos.push_back(std::make_pair(tx.GetHash(), pos));
         pos.nTxOffset += ::GetSerializeSize(tx, SER_DISK, CLIENT_VERSION);
     }
     if(!fJustCheck)      
-    {
-        //step2:get script2txpos list
-        //step3:flush script2txpos list
         UpdateSqliteDB(block,vPos,vPrevouts,false);
-//        UpdateScript2TxPosDB(tx,pos,nHeaderLen,i,state,view,false);
-//        GetDomainsInVins(tx,view,mapBlockDomains);
-//            UpdateDomainDB(tx,block,i,state,view,false);
-//            UpdateTagDB(tx,block,pos,nHeaderLen,i,state,view,false);
-//        pBlockPosDB->Write(pos.nFile,pos.nPos,block.GetHash(),pindex->nHeight);
-//        pDomainDBView->WriteBlockDomains(block.GetHash(),mapBlockDomains); 
-//        UpdateScriptCoinDB(tx,block,i,state,view,false);
-        //LogPrintf("connect block:UpdateSqliteDB done %b\n",f);
-        
-    }
     //LogPrintf("connect block:UpdateSqliteDB done \n");    
     int64_t nTime1 = GetTimeMicros(); nTimeConnect += nTime1 - nTimeStart;
     LogPrint("bench", "      - Connect %u transactions: %.2fms (%.3fms/tx, %.3fms/txin) [%.2fs]\n", (unsigned)block.vtx.size(), 0.001 * (nTime1 - nTimeStart), 0.001 * (nTime1 - nTimeStart) / block.vtx.size(), nInputs <= 1 ? 0 : 0.001 * (nTime1 - nTimeStart) / (nInputs-1), nTimeConnect * 0.000001);
@@ -2246,8 +2219,6 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     int64_t nTime4 = GetTimeMicros(); nTimeCallbacks += nTime4 - nTime3;
     LogPrint("bench", "    - Callbacks: %.2fms [%.2fs]\n", 0.001 * (nTime4 - nTime3), nTimeCallbacks * 0.000001);
     //LogPrintf("connect block: done \n");
-    //if(block.GetBlockHeader()->nBlockHeight>600)
-    //    MilliSleep(500);
     return true;
 }
 
@@ -2476,7 +2447,7 @@ bool static ConnectTip(CValidationState &state, CBlockIndex *pindexNew, CBlock *
  * Return the tip of the chain with the most work in it, that isn't
  * known to be invalid (it's however far from certain to be valid).
  */
-static CBlockIndex* FindMostWorkChain() {
+CBlockIndex* FindMostWorkChain() {
     do {
         CBlockIndex *pindexNew = NULL;
 
@@ -2632,8 +2603,9 @@ bool ActivateBestChain(CValidationState &state, CBlock *pblock) {
 
         // Notifications/callbacks that can run without cs_main
         //LogPrintf("relay block: finitialdownload:%b,chainnactive higiht:%b,nBlockEstimate:%b\n",fInitialDownload,chainActive.Height() , Checkpoints::GetTotalBlocksEstimate());
+        uint256 hashNewTip = pindexNewTip->GetBlockHash();
         if (!fInitialDownload) {
-            uint256 hashNewTip = pindexNewTip->GetBlockHash();
+            
             // Relay inventory, but don't relay old inventory during initial block download.
             int nBlockEstimate = Checkpoints::GetTotalBlocksEstimate();
             {
@@ -2649,9 +2621,10 @@ bool ActivateBestChain(CValidationState &state, CBlock *pblock) {
                     }
                 }
             }
-            // Notify external listeners about the new tip.
-            uiInterface.NotifyBlockTip(hashNewTip);
+            
         }
+        // Notify external listeners about the new tip.
+            uiInterface.NotifyBlockTip(hashNewTip);
     } while(pindexMostWork != chainActive.Tip());
     CheckBlockIndex();
 

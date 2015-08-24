@@ -198,15 +198,13 @@ std::string CContent::ToHumanString(int& nMaxCC)const
     return ccUnit;
 }
 
-bool CContent::HasCc(const cctype& ccIn, const bool requireStandard,int nMaxCC) const// Very costly for nunstandard conent
+bool CContent::HasCc(const cctype& ccIn, const bool requireStandard, int nMaxCC) const// Very costly for nonstandard conent
 {
     std::vector<cctype> ccv;
     bool countOverN = false;
-    if (requireStandard)
-        FirstNCc(ccv, countOverN, nMaxCC);
-    else
-        FirstNCc(ccv, countOverN, nMaxCC);
-    if(countOverN)
+    if (!FirstNCc(ccv, countOverN, nMaxCC))
+        return false;
+    if (requireStandard && countOverN)
         return false;
     return std::find(ccv.begin(), ccv.end(), ccIn) != ccv.end();
         }
@@ -225,6 +223,47 @@ bool CContent::FirstCc(const cctype& ccIn)const
         return false;
     return true;
 
+}
+
+bool CContent::GetCcContent(const cctype& ccIn, std::string& content, const bool requireStandard, int nMaxCC) const
+{
+//   std::vector<cctype> ccv;
+//    bool countOverN = false;
+//    if (!FirstNCc(ccv, countOverN, nMaxCC))
+//        return false;
+//    if (requireStandard && countOverN)
+//        return false;
+//    return std::find(ccv.begin(), ccv.end(), ccIn) != ccv.end();
+    int ccCount =0;
+    const_iterator pc = begin();
+    while (pc < end()) {
+        uint64_t ccn;
+        if (!ReadVarInt(pc, ccn))
+            return false;
+        cctype cc = (cctype) ccn;
+        ccCount ++;
+
+        uint64_t len;
+        if (!ReadCompactSize(pc, len))
+            return false;
+        if (cc == ccIn)
+        {
+            if (!ReadData(pc, len, content))
+            {
+                content = "";
+                return false;
+            }else
+                return true;
+        }
+        if (!IsCcParent(cc))
+            pc += len;
+        if (ccCount > nMaxCC) {
+            if(requireStandard)
+                return false;
+            break;
+        }
+    }
+    return false;
 }
 
 bool CContent::FirstNCc(std::vector<cctype>& ccv, bool& countOverN, const unsigned int n)const

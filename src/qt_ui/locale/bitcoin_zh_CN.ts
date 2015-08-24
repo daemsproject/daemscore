@@ -215,7 +215,7 @@
     </message>
     <message>
         <source>Faicoin Core client</source>
-        <translation type="vanished">FAIcoin客户端</translation>
+        <translation type="vanished">FAI客户端</translation>
     </message>
     <message>
         <source>Importing blocks from disk...</source>
@@ -227,7 +227,7 @@
     </message>
     <message>
         <source>Send coins to a Faicoin address</source>
-        <translation type="vanished">向一个FAIcoin地址发送FAIcoin</translation>
+        <translation type="vanished">向一个FAI地址发送FAI币</translation>
     </message>
     <message>
         <source>Modify configuration options for Faicoin</source>
@@ -255,7 +255,7 @@
     </message>
     <message>
         <source>Faicoin</source>
-        <translation type="vanished">FAIcoin</translation>
+        <translation type="vanished">FAI币</translation>
     </message>
     <message>
         <source>Wallet</source>
@@ -310,16 +310,16 @@
         <translation>导航条</translation>
     </message>
     <message>
-        <source>Faicoin Core</source>
-        <translation type="vanished">FAIcoin核心</translation>
+        <source>FAI Core</source>
+        <translation type="vanished">FAI核心</translation>
     </message>
     <message>
         <source>Request payments (generates QR codes and faicoin: URIs)</source>
         <translation type="vanished">请求支付（生成二维码和 faicoin: URI）</translation>
     </message>
     <message>
-        <source>&amp;About Faicoin Core</source>
-        <translation type="vanished">关于FAIcoin核心(&amp;A)</translation>
+        <source>&amp;About FAI Core</source>
+        <translation type="vanished">关于FAI核心(&amp;A)</translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -513,11 +513,11 @@ Address: %4
     </message>
     <message>
         <source>&amp;About Faicoin Browser</source>
-        <translation type="unfinished">关于FAI客户端</translation>
+        <translation type="obsolete">关于FAI客户端</translation>
     </message>
     <message>
         <source>Show information about Faicoin Browser</source>
-        <translation type="unfinished">显示关于FAI客户端的信息</translation>
+        <translation type="obsolete">显示关于FAI客户端的信息</translation>
     </message>
     <message>
         <source>&amp;Encrypt Account...</source>
@@ -897,6 +897,14 @@ Do you want to reload all pages?</source>
     <message>
         <source>Version %1Φ DeskTop Client</source>
         <translation type="unfinished">版本 %1Φ 桌面客户端</translation>
+    </message>
+    <message>
+        <source>&amp;About FAI</source>
+        <translation type="unfinished">&amp;关于 FAI</translation>
+    </message>
+    <message>
+        <source>Show information about Fai system</source>
+        <translation type="unfinished">显示关于FAI系统的信息</translation>
     </message>
 </context>
 <context>
@@ -1536,7 +1544,7 @@ Do you want to reload all pages?</source>
     <name>HelpMessageDialog</name>
     <message>
         <source>Faicoin Core</source>
-        <translation>FAIcoin核心</translation>
+        <translation>FAI核心</translation>
     </message>
     <message>
         <source>version</source>
@@ -1548,7 +1556,7 @@ Do you want to reload all pages?</source>
     </message>
     <message>
         <source>About Faicoin Core</source>
-        <translation type="vanished">关于FAIcoin核心</translation>
+        <translation type="vanished">关于FAI核心</translation>
     </message>
     <message>
         <source>Command-line options</source>
@@ -1660,11 +1668,11 @@ Do you want to reload all pages?</source>
     </message>
     <message>
         <source>Welcome to Faicoin Core.</source>
-        <translation type="vanished">欢迎使用 FAIcoin核心 程序。</translation>
+        <translation type="vanished">欢迎使用 FAI核心程序。</translation>
     </message>
     <message>
         <source>As this is the first time the program is launched, you can choose where Faicoin Core will store its data.</source>
-        <translation type="vanished">由于这是第一次运行 FAIcoin核心 程序，您可以选择数据存储目录。</translation>
+        <translation type="vanished">由于这是第一次运行 FAI核心 程序，您可以选择数据存储目录。</translation>
     </message>
     <message>
         <source>Faicoin Core will download and store a copy of the Faicoin block chain. At least %1GB of data will be stored in this directory, and it will grow over time. The wallet will also be stored in this directory.</source>
@@ -1680,7 +1688,7 @@ Do you want to reload all pages?</source>
     </message>
     <message>
         <source>Faicoin Core</source>
-        <translation type="vanished">FAIcoin核心</translation>
+        <translation type="vanished">FAI核心</translation>
     </message>
     <message>
         <source>Error</source>
@@ -1763,7 +1771,7 @@ Do you want to reload all pages?</source>
     </message>
     <message>
         <source>{&quot;error&quot;:&quot;command not found&quot;}</source>
-        <translation type="unfinished">{&quot;error&quot;:&quot;command not found&quot;}</translation>
+        <translation type="unfinished">{&quot;error&quot;:&quot;命令未找到&quot;}</translation>
     </message>
     <message>
         <source>{&quot;error&quot;:&quot;params less than 1&quot;}</source>
@@ -2695,6 +2703,14 @@ Do you want to ignore these errors for this host?</source>
         <source>Block Page</source>
         <translation type="unfinished">阻止页面</translation>
     </message>
+    <message>
+        <source>Ok</source>
+        <translation type="unfinished">确定</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished">取消</translation>
+    </message>
 </context>
 <context>
     <name>WalletModel</name>
@@ -2913,6 +2929,22 @@ Do you want to ignore these errors for this host?</source>
     <message>
         <source>{&quot;error&quot;:&quot;domain is not belonging to sending id&quot;}</source>
         <translation type="unfinished">{&quot;error&quot;:&quot;域名不属于发送ID&quot;}</translation>
+    </message>
+    <message>
+        <source>Request Override Transaction</source>
+        <translation type="unfinished">申请覆盖交易</translation>
+    </message>
+    <message>
+        <source>Please confirm to override transaction:</source>
+        <translation type="unfinished">请确认覆盖以下交易：</translation>
+    </message>
+    <message>
+        <source>Original Fee:</source>
+        <translation type="unfinished">当前手续费：</translation>
+    </message>
+    <message>
+        <source>New Fee:</source>
+        <translation type="unfinished">新手续费：</translation>
     </message>
 </context>
 <context>

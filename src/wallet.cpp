@@ -243,7 +243,7 @@ bool CWallet::ExportAccount(string id,string fileName)
     //generate a new extended key
 CPubKey CWallet::GenerateNewKey()
 {
-    AssertLockHeld(cs_wallet); // mapKeyMetadata
+    LOCK(cs_wallet); // mapKeyMetadata
     //bool fCompressed = CanSupportFeature(FEATURE_COMPRPUBKEY); // default to compressed public keys if we want 0.6.0 wallets
     nMaxSteps++;
     //CPubKey extPub=baseKey.pubKey;
@@ -907,14 +907,18 @@ void CWallet::SyncTransaction(const CTransaction& tx, const CBlock* pblock)
     else
         blockHash=pblock->GetHash();
     //LogPrintf("SyncTransaction1\n");
-    if(!fReindex){
-        NotifyTransactionChanged(tx.GetHash(),blockHash);
+    //if(!fReindex){
+    //    NotifyTransactionChanged(tx.GetHash(),blockHash);
         //LogPrintf("notfiytransactionchanged\n");
-    }
+    //}
    // LogPrintf("SyncTransaction2\n");
     if (!AddToWalletIfInvolvingMe(tx, pblock, true))
+    {
+        if(HasMyMessage(tx))
+            NotifyTransactionChanged(tx.GetHash(),blockHash);
         return; // Not one of ours
-
+    }
+    NotifyTransactionChanged(tx.GetHash(),blockHash);
     // If a transaction changes 'conflicted' state, that changes the balance
     // available of the outputs it spends. So force those to be
     // recomputed, also:
@@ -1915,7 +1919,7 @@ bool CWallet::SignTransaction(const CWalletTx& wtxIn,CWalletTx& wtxSigned,int nS
         LogPrintf("wallet.cpp:SignOverrideTransaction not applicable\n");
         return false;
     }
-    int nSigType=fAnyonecanpay?129:81;
+    int nSigType=fAnyonecanpay?129:1;
      CMutableTransaction txSigned=CMutableTransaction(wtxIn);
      if(!fHasAllIDs)
      {

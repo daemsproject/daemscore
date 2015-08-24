@@ -191,7 +191,11 @@ json_spirit::Value CDomain::ToJson()const
             obj1.push_back(json_spirit::Pair("target",link.ToString(LINK_FORMAT_DEC)));
             obj.push_back(json_spirit::Pair("forward",obj1));
         }
+        break;
         default:
+            obj1.push_back(json_spirit::Pair("linkType","other"));
+            obj1.push_back(json_spirit::Pair("target",redirectTo));
+            obj.push_back(json_spirit::Pair("forward",obj1));
             break;
     }
     //obj.push_back(json_spirit::Pair("forward",redirect.ToJson()));

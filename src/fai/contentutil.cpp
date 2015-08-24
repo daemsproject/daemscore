@@ -524,6 +524,7 @@ void GetMempoolCheques(const vector<CScript>& vScriptPubKeys,vector<CCheque>& vC
 }
 bool IsSpentInMempool(const COutPoint op)
 {
+    LOCK(mempool.cs);
     return(mempool.mapNextTx.find(op)!=mempool.mapNextTx.end());
 }
 //bool GetPromotedContents(const vector<CScript>& vSenders,const vector<string>& vCCs,const vector<string>& vTags,vector<CContentDBItem>& vContents,const int nMaxResults,const int nOffset)

@@ -459,7 +459,7 @@ Value getfirstncc(const Array& params, bool fHelp)
     return r;
 }
 
-bool _parse_getcontents_params(const Array& params, int& fbh, int& fntx, int&fnout, int& maxc, int& maxb, int& blkc, Array& withcc, Array& withoutcc, Array& firstcc, int& fContentFormat, unsigned char& cflag, int& mincsize, bool& fAsc, Array& frAddrs, Array& toAddrs, int& nFile, unsigned int& nPos, unsigned int& nRange, int& ftxCount)
+bool _parse_getcontents_params(const Array& params, int& fbh, int& fntx, int&fnout, int& maxc, int& maxb, int& blkc, Array& withcc, Array& withoutcc, Array& firstcc, int& fContentFormat, unsigned char& cflag, int& mincsize, bool& fAsc, Array& frAddrs, Array& toAddrs, int& nFile, unsigned int& nPos, unsigned int& nRange, int& ftxCount, Object& withccc)
 {
     if (params.size() > 3)
         return false;
@@ -680,7 +680,16 @@ bool _parse_getcontents_params(const Array& params, int& fbh, int& fntx, int&fno
     {
         ftxCount = 0;
     }
+    const Value& withccc_v = find_value(param, "withccc");
+    try
+    {
+        withccc = withccc_v.get_obj();
+    } catch (std::exception& e)
+    {
+        withccc = Object();
+    }
     return true;
+    
 }
 
 bool _parse_getpromotedcontents_params(const Array& params, int& maxc, int& nOffset, int& maxb, Array& firstcc, Array& arrTags, int& fContentFormat, unsigned char& cflag, Array& frAddrs)
@@ -801,7 +810,7 @@ bool _parse_getpromotedcontents_params(const Array& params, int& maxc, int& nOff
 
 // true if have one in firstcc array, and one in withcc array, and none in withoutcc array
 
-bool _check_cc(const CContent& ctt, const Array& withcc, const Array& withoutcc, const Array& firstcc, int nMaxCC)
+bool _check_cc(const CContent& ctt, const Array& withcc, const Array& withoutcc, const Array& firstcc, int nMaxCC, const Object& withccc = Object())
 {
     if (withcc.size() == 0 && withoutcc.size() == 0 && firstcc.size() == 0)
         return true;
@@ -833,6 +842,66 @@ bool _check_cc(const CContent& ctt, const Array& withcc, const Array& withoutcc,
         }
     }
     if (!rw)
+        return false;
+
+
+    const Value& cc_v = find_value(withccc, "cc_name");
+    const Value & ccontent_v = find_value(withccc, "ccontent");
+    const Value& cformat_v = find_value(withccc, "format");
+    std::string cformat = "bin";
+    bool rwc = false;
+    cctype cc2;
+    try
+    {
+        cformat = cformat_v.get_str();
+    } catch (std::exception& e)
+    {
+    }
+    try
+    {
+        cc2 = (cctype) GetCcValue(cc_v.get_str());
+    } catch (std::exception& e)
+    {
+        rwc = true;
+    }
+//            std::cout << "cc2 " << cc2 << "\n";
+    if (!rwc)
+    {
+        //    std::cout << "cf " << cformat << "\n";
+        try
+        {
+
+            
+
+            std::string ccontent;
+            ctt.GetCcContent(cc2, ccontent, true);
+//            std::cout << "ccontent " << ccontent << "\n";
+            BOOST_FOREACH(const Value& ccc_v, ccontent_v.get_array())
+            {
+                std::string ccontentIn;
+                if (cformat == "hex")
+                {
+                    std::vector<unsigned char> tmp = ParseHexV(ccc_v, "parameter 1");
+                    ccontentIn.assign(tmp.begin(), tmp.end());
+                } else if (cformat == "bin")
+                {
+                    ccontentIn = ccc_v.get_str();
+                }
+//                    std::cout << "ccontentIn " << ccontentIn << "\n";
+                if (ccontent == ccontentIn)
+                {
+                    rwc = true;
+                    break;
+                }else{
+//                    std::cout << "cct " << ccontent << "  ccti " << ccontentIn << "\n";
+                 }
+           
+            }
+        } catch (std::exception& e)
+        {
+        }
+    }
+    if (!rwc)
         return false;
 
     BOOST_FOREACH(const Value& ccName_v, withoutcc)
@@ -964,7 +1033,7 @@ bool GetDiskTxPoses(const std::vector<CScript>& vIds, std::vector<CTxPosItem>& v
     return true;
 }
 
-Value getcontents(const Array& params, bool fHelp) // withcc and without cc is very costly, DONOT use in standard occasion
+Value getcontents(const Array& params, bool fHelp) 
 {
     if (fHelp)
         throw runtime_error("getcontents");
@@ -977,6 +1046,7 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
     int nMaxCC = STANDARD_CONTENT_MAX_CC;
     Array withcc;
     Array withoutcc;
+    Object withccc;
     Array firstcc;
     Array frAddrs;
     Array toAddrs;
@@ -988,7 +1058,7 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
     int minsz;
     bool fAsc; // get the block by ascending or descending sequence
     int ftxCount;
-    if (!_parse_getcontents_params(params, fbh, fntx, fnout, maxc, maxb, blkc, withcc, withoutcc, firstcc, cformat, cflag, minsz, fAsc, frAddrs, toAddrs, nFile, nPos, nRange, ftxCount))
+    if (!_parse_getcontents_params(params, fbh, fntx, fnout, maxc, maxb, blkc, withcc, withoutcc, firstcc, cformat, cflag, minsz, fAsc, frAddrs, toAddrs, nFile, nPos, nRange, ftxCount,withccc))
         throw runtime_error("Error parsing parameters");
     Array r;
     int c = 0;
@@ -1034,7 +1104,7 @@ Value getcontents(const Array& params, bool fHelp) // withcc and without cc is v
                     if (c > maxc || b > maxb)
                         return r;
                     CContent ctt(out.strContent);
-                    if (_check_cc(ctt, withcc, withoutcc, firstcc, nMaxCC))
+                    if (_check_cc(ctt, withcc, withoutcc, firstcc, nMaxCC,withccc))
                     {
                         CLink clink(nHeight, nTx, nVout);
                         Object cttr = _output_content(ctt, cformat, cflag, clink, address, domain, out.nValue, out.scriptPubKey, nMaxCC, block.nTime);
@@ -1068,6 +1138,7 @@ Value getcontentsbyaddresses(const Array& params, bool fHelp) // withcc and with
     int nMaxCC = STANDARD_CONTENT_MAX_CC;
     Array withcc;
     Array withoutcc;
+    Object withccc;
     Array firstcc;
     Array frAddrs;
     Array toAddrs;
@@ -1079,7 +1150,7 @@ Value getcontentsbyaddresses(const Array& params, bool fHelp) // withcc and with
     int minsz;
     bool fAsc; // get the block by ascending or descending sequence
     int ftxCount;
-    if (!_parse_getcontents_params(params, fbh, fntx, fnout, maxc, maxb, blkc, withcc, withoutcc, firstcc, cformat, cflag, minsz, fAsc, frAddrs, toAddrs, nFile, nPos, nRange, ftxCount))
+    if (!_parse_getcontents_params(params, fbh, fntx, fnout, maxc, maxb, blkc, withcc, withoutcc, firstcc, cformat, cflag, minsz, fAsc, frAddrs, toAddrs, nFile, nPos, nRange, ftxCount,withccc))
         throw runtime_error("Error parsing parameters");
     //    std::cout << "params: " << " nFile-" << nFile << " nPos-" << nPos << " nRange-" << nRange << " fAsc-" << fAsc << " maxc-" << maxc<< " ftxCount-" << ftxCount << "\n";
 
@@ -1194,7 +1265,7 @@ Value getcontentsbyaddresses(const Array& params, bool fHelp) // withcc and with
                     fBreak = true;
                     break;
                 }
-                if (!_check_cc(ctt, withcc, withoutcc, firstcc, nMaxCC))
+                if (!_check_cc(ctt, withcc, withoutcc, firstcc, nMaxCC,withccc))
                 {
                     b -= ctt.size();
                     continue;
@@ -1635,7 +1706,10 @@ Value getmessages(const json_spirit::Array& params, bool fHelp)
 
     //LogPrintf("getmsgs time after getdistxposes:%i,%i,%i \n", startTime, GetTimeMillis(), GetTimeMillis() - startTime);
     if (fIncludeMempool)
+    {
+        LOCK(mempool.cs);
         mempool.GetUnconfirmedTransactions(vIDsLocal, vMemTx);
+    }
     if (fListOnly)
         return _GetMessageList(vIDsLocal, vTxPos, vMemTx, nStartBlock);
     LogPrintf("getmessages mempooltxs:%u \n", vMemTx.size());
@@ -1659,7 +1733,10 @@ Value getmessages(const json_spirit::Array& params, bool fHelp)
         if (fIncludeMempool)
         {
             std::vector<CTransaction> vMemTxForeign;
-            mempool.GetUnconfirmedTransactions(vIDsForeign, vMemTxForeign);
+            {
+                LOCK(mempool.cs);
+                mempool.GetUnconfirmedTransactions(vIDsForeign, vMemTxForeign);
+            }
             LogPrintf("getmsgs11 vmemtx size:%i\n", vMemTx.size());
             for (std::vector<CTransaction>::iterator it = vMemTx.begin(); it != vMemTx.end(); it++)
             {
@@ -1795,7 +1872,7 @@ Value gettxmessages(const json_spirit::Array& params, bool fHelp)
         }
         vMessages.empty();
         int npos = 0;
-        GetMessagesFromTx(vMessages, tx, nHeight, nTx, nTime, vIDsLocal, vIDsForeign, nDirectionFilter, fLinkOnly, npos, 0, 65536);
+        GetMessagesFromTx(vMessages, tx, nHeight, nTx, nTime, vIDsLocal, vIDsForeign, nDirectionFilter, fLinkOnly, npos, 0, 100);
         BOOST_FOREACH(CMessage msg, vMessages)
         arrMsg.push_back(msg.ToJson(fLinkOnly));
     }

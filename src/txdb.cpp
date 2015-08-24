@@ -1026,8 +1026,19 @@ bool CScriptCoinDB::Insert(const CCheque cheque)
 
 bool CScriptCoinDB::Search(const vector<CScript>& vScriptPubKey, vector<CCheque> & vCheques, int nMaxResults, int nOffset)const
 {
-    return db->GetCheques(vScriptPubKey, vCheques, nMaxResults, nOffset);
-
+    if(vScriptPubKey.size()<=100)
+        return db->GetCheques(vScriptPubKey, vCheques, nMaxResults, nOffset);
+    int ii = 0;
+    bool rs=true;
+    while (ii < (int) vScriptPubKey.size())
+    {
+        int nBatch = min((int) vScriptPubKey.size() - ii, 100);
+        vector<CScript> vScriptPubKey1;
+        vScriptPubKey1.assign(vScriptPubKey.begin()+ii,vScriptPubKey.begin()+ii+nBatch);
+        rs&=db->GetCheques(vScriptPubKey1, vCheques, nMaxResults, nOffset);
+        ii += nBatch;
+    }
+    return rs;
 }
 
 bool CScriptCoinDB::Erase(const uint256 txid, const uint32_t nOut)
@@ -1184,6 +1195,7 @@ bool UpdateSqliteDB(const CBlock& block, const vector<pair<uint256, CDiskTxPos> 
     // LogPrintf("UpdateSqliteDB41 \n");
     psqliteDB->EndBatch();
     //LogPrintf("UpdateSqliteDB42 \n");
+    //sleep(60);
     return true;
 }
 

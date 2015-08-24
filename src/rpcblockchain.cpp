@@ -109,11 +109,11 @@ Value getblockcount(const Array& params, bool fHelp)
     return chainActive.Height();
 }
 
-Value getbestblockhash(const Array& params, bool fHelp)
+Value getbestheader(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 0)
         throw runtime_error(
-            "getbestblockhash\n"
+            "getbestheader\n"
             "\nReturns the hash of the best (tip) block in the longest block chain.\n"
             "\nResult\n"
             "\"hex\"      (string) the block hash hex encoded\n"
@@ -121,8 +121,16 @@ Value getbestblockhash(const Array& params, bool fHelp)
             + HelpExampleCli("getbestblockhash", "")
             + HelpExampleRpc("getbestblockhash", "")
         );
-
-    return chainActive.Tip()->GetBlockHash().GetHex();
+    Object result;
+    result.push_back(Pair("hash", pindexBestHeader->GetBlockHash().GetHex()));    
+    result.push_back(Pair("height", (int64_t)pindexBestHeader->nBlockHeight));
+    result.push_back(Pair("version", pindexBestHeader->nVersion));
+    result.push_back(Pair("merkleroot", pindexBestHeader->hashMerkleRoot.GetHex()));    
+    result.push_back(Pair("time", (int64_t)pindexBestHeader->nTime));
+    result.push_back(Pair("nonce", (int64_t)pindexBestHeader->nNonce));
+    result.push_back(Pair("bits", strprintf("%08x", (int64_t)pindexBestHeader->nBits)));
+    result.push_back(Pair("previousblockhash", pindexBestHeader->pprev->GetBlockHash().GetHex()));
+    return result;
 }
 
 Value getdifficulty(const Array& params, bool fHelp)

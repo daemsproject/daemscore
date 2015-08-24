@@ -73,6 +73,7 @@ public:
     bool WriteData(const std::string str, int len);
 
     bool HasCc(const cctype& cc,const bool requireStandard = true ,int nMaxCC=STANDARD_CONTENT_MAX_CC)const; // if requireStandard = false, this function will be very costly
+    bool GetCcContent(const cctype& cc,std::string& content,const bool requireStandard = true ,int nMaxCC=STANDARD_CONTENT_MAX_CC) const;
     bool FirstCc(const cctype& cc)const;
     bool FirstNCc(std::vector<cctype>& ccv,bool& countOverN,const unsigned int n = STANDARD_CONTENT_MAX_CC)const;
     int GetFirstCc(int nIteratrions=0)const;

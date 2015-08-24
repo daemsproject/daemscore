@@ -283,7 +283,7 @@ public:
     //CAmount GetImmatureWatchOnlyBalance() const;   
     bool CreateTransactionUnsigned(const CPaymentOrder& pr,
                                 CWalletTx& wtxNew,std::string& strFailReason);
-    bool SignTransaction(const CWalletTx& wtxIn,CWalletTx& wtxSigned,const int nSigType=129);
+    bool SignTransaction(const CWalletTx& wtxIn,CWalletTx& wtxSigned,const int nSigType=1);
     bool CreateOverrideTransaction(const CTransaction & txIn,
                                 CWalletTx& wtxNew,std::string& strFailReason,double dFeeRate=1000,int64_t nLockTime=-1);
      bool SignOverrideTransaction(const CTransaction & txOriginal,const CWalletTx& wtxIn,CWalletTx& wtxSigned);
@@ -325,6 +325,13 @@ public:
         return (IsChange(txout) ? txout.nValue : 0);
     }
     bool IsMine(const CTransaction& tx) const
+    {
+        BOOST_FOREACH(const CTxOut& txout, tx.vout)
+            if (IsMine(txout)&&txout.nValue>0)
+                return true;
+        return false;
+    }
+    bool HasMyMessage(const CTransaction& tx)const
     {
         BOOST_FOREACH(const CTxOut& txout, tx.vout)
             if (IsMine(txout))
