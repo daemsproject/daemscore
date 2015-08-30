@@ -96,6 +96,7 @@ public:
     QStringList GetAccountList();
     bool switchToAccount(QString ID);
     bool exportAccount(QString ID);
+    QString saveFileUserConfirm(const json_spirit::Array arr);
     bool importAccount();
     bool setWalletLocked(bool locked, const SecureString &passPhrase=SecureString(),int nUnlockTime=3600);  
     QString HandlePaymentRequest(const json_spirit::Array arrData,const int nPageIndex=-1);    

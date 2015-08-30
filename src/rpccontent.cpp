@@ -1383,6 +1383,8 @@ json_spirit::Value getsalesrecord(const json_spirit::Array& params, bool fHelp)
         //        ||((nDirection==1)&&!(vTxPosAll[i].nFlags&(1<<TXITEMFLAG_SENDCONTENT))))
         if (!(vTxPosAll[i].nFlags & (TXITEMFLAG_PURCHASE | TXITEMFLAG_RECEIVEMONEY)))
             continue;
+        if(vTxPosAll[i].nFlags &TXITEMFLAG_SENDER)
+            continue;
         CTransaction txOut;
         if (!GetTransaction(vTxPosAll[i], txOut))
             continue;

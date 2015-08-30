@@ -812,12 +812,12 @@ Address: %4
     </message>
     <message>
         <source>Web Inspector</source>
-        <translation type="unfinished">开发页面</translation>
+        <translation type="unfinished">调试页面</translation>
     </message>
     <message>
         <source>The web inspector will only work correctly for pages that were loaded after enabling.
 Do you want to reload all pages?</source>
-        <translation type="unfinished">开发页面只在加载的页面生效，你需要重新加载所有页面吗？</translation>
+        <translation type="unfinished">调试页面只在加载的页面生效，你需要重新加载所有页面吗？</translation>
     </message>
     <message>
         <source>About</source>

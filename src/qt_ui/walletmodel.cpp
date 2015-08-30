@@ -395,6 +395,22 @@ bool WalletModel::exportAccount(QString ID)
      
      return false;
 }
+QString WalletModel::saveFileUserConfirm(const Array arr)
+{
+    QSettings settings;
+    settings.beginGroup(QLatin1String("downloadmanager"));
+    QString defaultLocation = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+    QString downloadDirectory = settings.value(QLatin1String("downloadDirectory"), defaultLocation).toString();
+    
+    QString defaultFileName = downloadDirectory+QLatin1String("/")+QString().fromStdString(arr[0].get_str());
+    
+    QString fileName = QFileDialog::getSaveFileName(gui, tr("Save File"),defaultFileName);
+        if (!fileName.isEmpty()) {
+            if(StringToFile(fileName.toStdString(),arr[1].get_str()))
+                return QString("success");
+        }     
+     return QString("error");
+}
 bool WalletModel::importAccount()
 {
     QSettings settings;
@@ -429,13 +445,13 @@ QString WalletModel::DoPayment(const CPaymentOrder& pr,const int nPageIndex)
     CPubKey id;    
     CTxDestination address;
     if(!ExtractDestination(pr.vFrom[0],address))        
-            return tr("{\"error\":\"wrong idfrom\"}");
+            return QString().fromStdString("{\"error\":\"wrong idfrom\"}");
     CBitcoinAddress pub;
     pub.Set(address);
     pub.GetKey(id);
     //memcpy(&id, &pr.vFrom[0][1], 20);
     CWallet* pwallet;
-    //LogPrintf("jsinterface:hadlepaymentrequest:id,pwalletmain id:%i",HexStr(id.begin(),id.end()),HexStr(wallet->id.begin(),wallet->id.end()));
+    //LogPrintf("jsinterface:hadlepaymentrequest:id,pwalletmain id:%i",HexSQString().fromStdString(id.begin(),id.end()),HexStr(wallet->id.begin(),wallet->id.end()));
     if(id==wallet->GetID())
         pwallet=wallet;
     else
@@ -446,7 +462,7 @@ QString WalletModel::DoPayment(const CPaymentOrder& pr,const int nPageIndex)
     {
         if(fDelete)
                 delete pwallet;
-                return tr("{\"error\":\"no private key\"}"); 
+                return QString().fromStdString("{\"error\":\"no private key\"}"); 
         //nOP=2;
     }
         
@@ -493,7 +509,7 @@ QString WalletModel::DoPayment(const CPaymentOrder& pr,const int nPageIndex)
         if(fDelete)
         delete pwallet;
         LogPrintf("walletmodel:dopayment:user cancelled \n");
-        return tr("{\"error\":\"user canceled\"}");             
+        return QString().fromStdString("{\"error\":\"user canceled\"}");             
     }  
     std::string result;
     CWalletTx wtxSigned; 
@@ -581,7 +597,7 @@ QString WalletModel::HandleOverrideRequest(const Array arrData,const int nPageIn
     {
         if(!fIsWalletMain)
                 delete pwallet;
-            return tr("{\"error\":\"no private key\"}");
+            return QString().fromStdString("{\"error\":\"no private key\"}");
     }
     else if (pwallet->IsLocked())
             nOP=1;
@@ -610,7 +626,7 @@ QString WalletModel::HandleOverrideRequest(const Array arrData,const int nPageIn
         if(!pwallet->SetPassword(ssInput)){
             if(!fIsWalletMain)
             delete pwallet;
-            return tr("{\"error\":\"wrong password\"}");
+            return QString().fromStdString("{\"error\":\"wrong password\"}");
         }
     if(!mempool.lookup(txid, txIn)) {   
             if(!fIsWalletMain)        
@@ -624,7 +640,7 @@ QString WalletModel::HandleOverrideRequest(const Array arrData,const int nPageIn
         pwallet->ClearPassword();
         if(!fIsWalletMain)        
             delete pwallet;
-        return tr("{\"error\":\"sign transaction failed\"}");  
+        return QString().fromStdString("{\"error\":\"sign transaction failed\"}");  
     }
     if(nOP==1)
             pwallet->ClearPassword();
@@ -633,7 +649,7 @@ QString WalletModel::HandleOverrideRequest(const Array arrData,const int nPageIn
             LogPrintf("WalletModel::HandleOverrideRequest:sendtx : Error: Transaction not valid\n");
             if(!fIsWalletMain)    
                 delete pwallet;
-            return tr("{\"error\":\"tx rejected\"}");;
+            return QString().fromStdString("{\"error\":\"tx rejected\"}");;
         }
      RelayTransaction(wtxSigned);
      //LogPrintf("WalletModel::HandleOverrideRequest:sendtx :%s\n",tx.GetHash().GetHex()));
@@ -972,7 +988,7 @@ QString WalletModel::EncryptMessages(Array params,const int nPageIndex)
         {
             if(!fIsWalletMain)
                 delete pwallet;
-            return tr("{\"error\":\"no private key\"}");
+            return QString().fromStdString("{\"error\":\"no private key\"}");
             //nOP=2;
         }
         else if (pwallet->IsCrypted())
@@ -991,17 +1007,17 @@ QString WalletModel::EncryptMessages(Array params,const int nPageIndex)
         if(!pwallet->SetPassword(ssInput)){
             if(!fIsWalletMain)
             delete pwallet;
-            return tr("{\"error\":\"wrong password\"}");
+            return QString().fromStdString("{\"error\":\"wrong password\"}");
         }
     std::map<string,std::vector<string> > mapMsgOut;
     if(nOP==2){
         //TODO show json of messages to get decoded,and collect decoded messages from signer
-        return tr("{\"error\":\"encryption failed\"}");    
+        return QString().fromStdString("{\"error\":\"encryption failed\"}");    
     }
     else if(!pwallet->EncryptMessages(mapMessages, mapMsgOut,fEncrypt)){
         if(!fIsWalletMain)
         delete pwallet;
-        return tr("{\"error\":\"encryption failed\"}");            
+        return QString().fromStdString("{\"error\":\"encryption failed\"}");            
     }
     //Value result;
     Array arrResult;
@@ -1042,10 +1058,10 @@ QString WalletModel::SendMessage(Array arrData,const int nPageIndex)
     string strError;    
     CPubKey pub;
     if(!CBitcoinAddress(idLocal).GetKey(pub))    
-        return tr("{\"error\":\"wrong idlocal\"}");
+        return QString().fromStdString("{\"error\":\"wrong idlocal\"}");
     CPubKey pubForeign;         
     if(!CBitcoinAddress(idForeign).GetKey(pubForeign))    
-        return tr("{\"error\":\"wrong idforeign\"}");
+        return QString().fromStdString("{\"error\":\"wrong idforeign\"}");
     bool fIsWalletMain;
     CWallet* pwallet;
     //LogPrintf("jsinterface:hadlepaymentrequest:id%s,pwalletmain id:%s size:%i\n",HexStr(id.begin(),id.end()),HexStr(wallet->GetID().begin(),wallet->GetID().end()),wallet->GetID().size());
@@ -1063,7 +1079,7 @@ QString WalletModel::SendMessage(Array arrData,const int nPageIndex)
             //nOP=2;
         if(!fIsWalletMain)
                 delete pwallet;
-            return tr("{\"error\":\"no private key\"}");
+            return QString().fromStdString("{\"error\":\"no private key\"}");
     }
         else if (pwallet->IsLocked())
             nOP=1;
@@ -1081,7 +1097,7 @@ QString WalletModel::SendMessage(Array arrData,const int nPageIndex)
         if(!pwallet->SetPassword(ssInput)){
             if(!fIsWalletMain)
             delete pwallet;
-            return tr("{\"error\":\"wrong password\"}");
+            return QString().fromStdString("{\"error\":\"wrong password\"}");
         }
     CWalletTx wtxSigned; 
     if(nOP==2){
@@ -1111,7 +1127,7 @@ QString WalletModel::SendMessage(Array arrData,const int nPageIndex)
             LogPrintf("jsinterface:SendMessage:encryption failed\n");
             if(!fIsWalletMain)
                 delete pwallet;
-            return tr("{\"error\":\"encryption failed\"}");;
+            return QString().fromStdString("{\"error\":\"encryption failed\"}");;
         }
         //LogPrintf("jsinterface:SendMessage:encryption done:%s\n",mapMsgOut[idForeign].size());
         if(mapMsgOut[idForeign].size()>0)
@@ -1130,7 +1146,7 @@ QString WalletModel::SendMessage(Array arrData,const int nPageIndex)
             pwallet->ClearPassword();
             if(!fIsWalletMain)        
                 delete pwallet;
-            return tr("{\"error\":\"sign transaction failed\"}");  
+            return QString().fromStdString("{\"error\":\"sign transaction failed\"}");  
         }
         if(nOP==1)
             pwallet->ClearPassword();
@@ -1141,7 +1157,7 @@ QString WalletModel::SendMessage(Array arrData,const int nPageIndex)
             LogPrintf("jsinterface:SendMessage:sendtx : Error: Transaction not valid\n");
             if(!fIsWalletMain)    
                 delete pwallet;
-            return tr("{\"error\":\"tx rejected\"}");;
+            return QString().fromStdString("{\"error\":\"tx rejected\"}");;
         }
      //LogPrintf("jsinterface:SendMessage:acceptedto mempool\n");
      RelayTransaction(wtxSigned);
@@ -1177,7 +1193,7 @@ QString WalletModel::SignMessage(Array arrData,const int nPageIndex)
     {
         if(!fIsWalletMain)
             delete pwallet;    
-        return tr("{\"error\":\"no privkey for signing\"}");
+        return QString().fromStdString("{\"error\":\"no privkey for signing\"}");
     }
             
     if (pwallet->IsLocked())
@@ -1195,14 +1211,14 @@ QString WalletModel::SignMessage(Array arrData,const int nPageIndex)
         if(!pwallet->SetPassword(ssInput)){
             if(!fIsWalletMain)
             delete pwallet;
-            return tr("{\"error\":\"wrong password\"}");
+            return QString().fromStdString("{\"error\":\"wrong password\"}");
         }
     CKey key;
     if (!pwallet->GetKey(pub, key))
     {
         if(!fIsWalletMain)
             delete pwallet;
-        return tr("{\"error\":\"Private key not available\"}" );
+        return QString().fromStdString("{\"error\":\"Private key not available\"}" );
     }
     CHashWriter ss(SER_GETHASH, 0);    
     ss << msg;
@@ -1214,7 +1230,7 @@ QString WalletModel::SignMessage(Array arrData,const int nPageIndex)
         if(!fIsWalletMain)
             delete pwallet;
          
-        return tr("{\"error\":\"Sign failed\"}");
+        return QString().fromStdString("{\"error\":\"Sign failed\"}");
     }
      if(nOP==1)
             pwallet->ClearPassword();
@@ -1268,30 +1284,39 @@ QString WalletModel::getSignMsgAlertMessage(const string add,const string msg)co
 QString WalletModel::RegisterDomain(json_spirit::Array arrData,const int nPageIndex)
 {
     LogPrintf("walletmodel:RegisterDomain");
-    if ( arrData.size() <4)
+    if ( arrData.size() <5)
         throw runtime_error("wrong array size");
     CPubKey id=AccountFromValue(arrData[0]);
     CScript scriptPubKey;
     StringToScriptPubKey(arrData[0].get_str(),scriptPubKey);
     string strDomain=arrData[1].get_str();
-    uint32_t nLockTime=(uint32_t)arrData[2].get_int();  
-    double dFeeRate;
-    if(arrData[3].type()==int_type)
-        dFeeRate=(double)arrData[3].get_int();
-        if(arrData[3].type()==real_type)
-        dFeeRate=arrData[3].get_real();
-    CPaymentOrder pr = GetRegisterDomainPaymentRequest(arrData[0].get_str(), strDomain, nLockTime,dFeeRate);   
+    CAmount nLockValue=arrData[2].get_int64();
+    uint32_t nLockTime=(uint32_t)arrData[3].get_int();  
+    double dFeeRate=1000;
+    switch((int)arrData[4].type()){
+        case int_type:
+            dFeeRate=(double)arrData[4].get_int();
+            break;
+        case real_type:
+            dFeeRate=arrData[4].get_real();
+            break;
+        case null_type:
+            break;
+        default:
+            return ("{\"error\":\"feerate type error\"}");   
+    }
+    CPaymentOrder pr = GetRegisterDomainPaymentRequest(arrData[0].get_str(), strDomain, nLockValue,nLockTime,dFeeRate);   
     
     CDomain cdomain;
     if(pDomainDBView->GetDomainByName(strDomain,cdomain)&&(GetLockLasting(cdomain.nExpireTime)>0))
-        return tr("{\"error\":\"domain already registered\"}");  
+        return QString().fromStdString("{\"error\":\"domain already registered\"}");  
     if(IsLevel2Domain(strDomain))
     {
         LogPrintf("walletmodel:RegisterDomain level1domain:%s",GetLevel1Domain(strDomain));
         if(!pDomainDBView->GetDomainByName(GetLevel1Domain(strDomain),cdomain)||(GetLockLasting(cdomain.nExpireTime)==0))
-            return tr("{\"error\":\" level1 domain not exists\"}");  
+            return QString().fromStdString("{\"error\":\" level1 domain not exists\"}");  
         if(cdomain.owner!=scriptPubKey)
-            return tr("{\"error\":\" level1 domain is not belonging to sending id\"}");  
+            return QString().fromStdString("{\"error\":\" level1 domain is not belonging to sending id\"}");  
     }
     else
     {
@@ -1313,19 +1338,19 @@ QString WalletModel::UpdateDomain(json_spirit::Array arrData,const int nPageInde
     CPaymentOrder pr = GetUpdateDomainPaymentRequest(arrData);       
     CDomain cdomain;
     if(!pDomainDBView->GetDomainByName(strDomain,cdomain)||(GetLockLasting(cdomain.nExpireTime)==0))
-        return tr("{\"error\":\"domain not registered\"}");  
+        return QString().fromStdString("{\"error\":\"domain not registered\"}");  
     if(IsLevel2Domain(strDomain))
     {
         if(!pDomainDBView->GetDomainByName(GetLevel1Domain(strDomain),cdomain)||(GetLockLasting(cdomain.nExpireTime)==0))
-            return tr("{\"error\":\" level1 domain not exists\"}");  
+            return QString().fromStdString("{\"error\":\" level1 domain not exists\"}");  
         if(cdomain.owner!=scriptPubKey)
-            return tr("{\"error\":\" level1 domain is not belonging to sending id\"}");    
+            return QString().fromStdString("{\"error\":\" level1 domain is not belonging to sending id\"}");    
     }
     else
     {        
         LogPrintf("walletmodel:UpdateDomain scriptPubkey:%s \n",scriptPubKey.ToString());
         if(cdomain.owner!=scriptPubKey)
-            return tr("{\"error\":\"domain is not belonging to sending id\"}");  
+            return QString().fromStdString("{\"error\":\"domain is not belonging to sending id\"}");  
     }
     return DoPayment(pr,nPageIndex);      
     
@@ -1340,21 +1365,35 @@ QString WalletModel::RenewDomain(json_spirit::Array arrData,const int nPageIndex
     StringToScriptPubKey(arrData[0].get_str(),scriptPubKey);    
     LogPrintf("walletmodel:RenewDomain scriptPubkey:s% \n",scriptPubKey.ToString());
     string strDomain=arrData[1].get_str();    
-    uint32_t nLockTime=arrData[2].get_int64();
-    CPaymentOrder pr = GetRegisterDomainPaymentRequest(arrData[0].get_str(), strDomain, nLockTime); 
+    CAmount nLockValue=arrData[2].get_int64();
+    uint32_t nLockTime=(uint32_t)arrData[3].get_int();  
+    double dFeeRate=1000;
+        switch((int)arrData[4].type()){
+        case int_type:
+            dFeeRate=(double)arrData[4].get_int();
+            break;
+        case real_type:
+            dFeeRate=arrData[4].get_real();
+            break;
+        case null_type:
+            break;
+        default:
+            return ("{\"error\":\"feerate type error\"}");   
+    }
+    CPaymentOrder pr = GetRegisterDomainPaymentRequest(arrData[0].get_str(), strDomain, nLockValue,nLockTime,dFeeRate); 
     
     CDomain cdomain;
     if(IsLevel2Domain(strDomain))
         {
             if(!pDomainDBView->GetDomainByName(GetLevel1Domain(strDomain),cdomain)||(GetLockLasting(cdomain.nExpireTime)==0))
-                return tr("{\"error\":\" level1 domain not exists\"}");   
+                return QString().fromStdString("{\"error\":\" level1 domain does not exist\"}");   
             if(cdomain.owner!=scriptPubKey)
-                return tr("{\"error\":\" level1 domain is not belonging to sending id\"}");  
+                return QString().fromStdString("{\"error\":\" level1 domain is not belonging to sending id\"}");  
         }
     if(pDomainDBView->GetDomainByName(strDomain,cdomain)&&(GetLockLasting(cdomain.nExpireTime)>0))
     {
         if(cdomain.owner!=scriptPubKey)
-                return tr("{\"error\":\"domain is not belonging to sending id\"}"); 
+                return QString().fromStdString("{\"error\":\"domain is not belonging to sending id\"}"); 
         if(LockTimeToTime(nLockTime)<LockTimeToTime(cdomain.nExpireTime))
             return QString().fromStdString("{\"error\":\"domain renew time earlier than expire time\"}");  
         pr.nRequestType=PR_DOMAIN_RENEW;
@@ -1390,13 +1429,13 @@ QString WalletModel::TransferDomain(json_spirit::Array arrData,const int nPageIn
         if(!pDomainDBView->GetDomainByName(GetLevel1Domain(strDomain),cdomain)||(GetLockLasting(cdomain.nExpireTime)==0))
             return QString().fromStdString("{\"error\":\" level1 domain not exists\"}");  
         if(cdomain.owner!=scriptPubKey)
-            return tr("{\"error\":\" level1 domain is not belonging to sending id\"}");  
+            return QString().fromStdString("{\"error\":\" level1 domain is not belonging to sending id\"}");  
     }
     else
     {        
         LogPrintf("walletmodel:TransferDomain scriptPubkey:s% \n",scriptPubKey.ToString());
         if(cdomain.owner!=scriptPubKey)
-            return tr("{\"error\":\"domain is not belonging to sending id\"}");  
+            return QString().fromStdString("{\"error\":\"domain is not belonging to sending id\"}");  
     }
     return DoPayment(pr,nPageIndex);     
 }

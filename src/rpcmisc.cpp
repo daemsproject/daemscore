@@ -603,7 +603,7 @@ CPaymentOrder GetPublisherPaymentRequest(const std::string idLocal, const std::s
 //    r.push_back(Pair("paymentRequest", EncodeHexTx(pr)));
 //    return r;
 //}
-CPaymentOrder GetRegisterDomainPaymentRequest(const string id, const std::string domain, const uint32_t nLockTime,const double dFeeRate)
+CPaymentOrder GetRegisterDomainPaymentRequest(const string id, const std::string domain,const CAmount nLockValue,const uint32_t nLockTime,const double dFeeRate)
 {
     CPaymentOrder pr;
     pr.fIsValid = false;
@@ -614,14 +614,14 @@ CPaymentOrder GetRegisterDomainPaymentRequest(const string id, const std::string
                 throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
         }
     
-    LogPrintf("rpcmist GetRegisterDomainPaymentRequest script %s\n", scriptPubKey.ToString());
+    LogPrintf("rpcmisc GetRegisterDomainPaymentRequest script %s\n", scriptPubKey.ToString());
     pr.vFrom.push_back(scriptPubKey);    
     CContent ctt;
     std::vector<std::pair<int,string> > vcc;
     vcc.push_back(make_pair(CC_DOMAIN,domain));
     vcc.push_back(make_pair(CC_DOMAIN_REG,""));
     ctt.EncodeP(CC_DOMAIN_P,vcc);
-    CAmount amount = GetDomainGroup(domain)*COIN;
+    CAmount amount = max(GetDomainGroup(domain)*COIN,nLockValue);
     if(domain.find("/")!=domain.npos||amount==0)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "invalid domain name");
     pr.vout.push_back(CTxOut(amount, scriptPubKey, ctt,nLockTime));

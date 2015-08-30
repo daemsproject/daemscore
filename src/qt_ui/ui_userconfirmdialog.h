@@ -91,7 +91,7 @@ public:
 
         btn_blockpage = new QPushButton(UserConfirmDialog);
         btn_blockpage->setObjectName(QStringLiteral("btn_blockpage"));
-        btn_blockpage->setGeometry(QRect(20, 263, 99, 27));
+        btn_blockpage->setGeometry(QRect(20, 262, 99, 27));
 
         retranslateUi(UserConfirmDialog);
         QObject::connect(buttonBox, SIGNAL(accepted()), UserConfirmDialog, SLOT(accept()));

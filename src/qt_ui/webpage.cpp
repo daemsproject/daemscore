@@ -307,7 +307,7 @@ QString WebView::jscall(QString command,QString dataJson)
     if(!fBlocked)
     return jsInterface->jscall(command,dataJson,nPageID,GetTabIndex());
     else
-        return  tr("{\"error\":\"page is blocked by user\"}");      
+        return  QString().fromStdString("{\"error\":\"page is blocked by user\"}");      
         
 }
 QString WebView::jscallasync(QString command,QString dataJson,QString successfunc,QString errorfunc)
@@ -315,7 +315,7 @@ QString WebView::jscallasync(QString command,QString dataJson,QString successfun
     if(!fBlocked)
     return jsInterface->jscallasync(command,dataJson,successfunc,errorfunc,nPageID,GetTabIndex());
     else
-        return tr("{\"error\":\"page is blocked by user\"}"); 
+        return QString().fromStdString("{\"error\":\"page is blocked by user\"}"); 
 }
 int WebView::GetTabIndex()
 {

@@ -188,9 +188,9 @@ QString JsInterface::jscall(const QString command,const QString dataJson,const i
     try {
         if (dataJson.size()>0){            
             if (!json_spirit::read_string(dataJson.toStdString(),valData))
-                return tr("{\"error\":\"data is not json format\"}");
+                return QString().fromStdString("{\"error\":\"data is not json format\"}");
             if (valData.type()!=json_spirit::array_type)
-                return tr("{\"error\":\"data is not json array\"}");
+                return QString().fromStdString("{\"error\":\"data is not json array\"}");
             arrData=valData.get_array();
             if (strCmd==string("requestpayment"))
                 return walletModel->HandlePaymentRequest(arrData,nPageIndex);
@@ -205,7 +205,7 @@ QString JsInterface::jscall(const QString command,const QString dataJson,const i
                 if(nPageID==MESSENGERPAGE_ID)
                 return walletModel->SendMessage(arrData,nPageIndex);
                 else
-                    return tr("Invalid pageID, send message out of messenger is forbidden");
+                    return QString().fromStdString("{\"error\":\"Invalid pageID, send message out of messenger is forbidden\"}");
             }
             if (strCmd==string("registerdomain"))
                 return walletModel->RegisterDomain(arrData,nPageIndex);
@@ -223,42 +223,43 @@ QString JsInterface::jscall(const QString command,const QString dataJson,const i
                 return walletModel->PublishPackage(arrData,nPageIndex);
             if (strCmd==string("signmessage"))
                 return walletModel->SignMessage(arrData,nPageIndex);
-             
+             if (strCmd==string("writefile2")&&nPageID<=HELPPAGE_ID)
+                return walletModel->saveFileUserConfirm(arrData);
             if (strCmd==string("gotocustompage"))
                 return GoToCustomPage(arrData,nPageID);
             if(strCmd==string("setlang"))
             {
                 if (nPageID!=SETTINGPAGE_ID)
-                    return tr("Invalid pageID, lang setting is forbidden");
+                    return QString().fromStdString("{\"error\":\"Invalid pageID, lang setting is forbidden\"}");
                 return SetLang(arrData);
             }
             if (strCmd==string("writefile")||strCmd==string("readfile")
                     ||strCmd==string("getconf")||strCmd==string("setconf"))
             {
                 if(arrData[0].type()!=str_type)
-                    return tr("Invalid parameter, expected string");
+                    return QString().fromStdString("{\"error\":\"Invalid parameter, expected string");
                 std::string appName=arrData[0].get_str();
                 //if (nPageID==WALLETPAGE_ID)
                 //    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid pageID, wallet page setting is forbidden");
                 if (nPageID<=HELPPAGE_ID&&mapPageNames[nPageID]!=appName)
-                    return tr("Invalid appName, not corresponding to pageid");
+                    return QString().fromStdString("{\"error\":\"Invalid appName, not corresponding to pageid\"}");
             }
         }
         if(strCmd==string("getlang"))
                 return GetLang();
         if (strCmd==string("getsettings")||strCmd==string("updatesettings"))
                 if(nPageID!=SETTINGPAGE_ID)
-                    return tr("Invalid pageID, getettings is forbidden");                
+                    return QString().fromStdString("{\"error\":\"Invalid pageID, getettings is forbidden\"}");                
         if (strCmd==string("getidlist")||strCmd==string("getmainid")||strCmd==string("getnewid")||strCmd==string("listunspent"))
                 if(nPageID>HELPPAGE_ID)
-                    return tr("Invalid pageID, get id is forbidden");                
+                    return QString().fromStdString("{\"error\":\"Invalid pageID, get id is forbidden\"}");                
         if (strCmd==string("listtransactions")&&(nPageID>HELPPAGE_ID))
                 if (dataJson.size()==0||arrData[0].get_str()=="")
-                    return tr("Invalid pageID, get id is forbidden");                
+                    return QString().fromStdString("{\"error\":\"Invalid pageID, get id is forbidden\"}");                
         if (strCmd==string("clearcache"))
             {
                 if(nPageID!=SETTINGPAGE_ID)
-                    return tr("Invalid pageID, getettings is forbidden");
+                    return QString().fromStdString("{\"error\":\"Invalid pageID, getettings is forbidden\"}");
                 ClearFilePackageCache();
                 return QString("OK");
             }
@@ -306,10 +307,10 @@ QString JsInterface::GetLang()
 QString JsInterface::SetLang(Array arr)
 {
     if(arr.size()==0)
-        return tr("{\"error\":\"no data\"}");
+        return QString().fromStdString("{\"error\":\"no data\"}");
     Value val=arr[0];
     if(val.type()!=str_type)
-        return tr("{\"error\":\"data is not string\"}");
+        return QString().fromStdString("{\"error\":\"data is not string\"}");
     QSettings settings;
     settings.setValue("language",QString().fromStdString(val.get_str()));
     return QString("OK");
@@ -326,9 +327,9 @@ QString JsInterface::jscallasync(const QString command,const QString dataJson,co
     mapAsync.insert(make_pair(strToken,make_pair(successfunc,errorfunc)));
     try {        
         if (!json_spirit::read_string(dataJson.toStdString(),valData))
-            return tr("{\"error\":\"data is not json format\"}");
+            return QString().fromStdString("{\"error\":\"data is not json format\"}");
         if (valData.type()!=json_spirit::array_type)
-            return tr("{\"error\":\"data is not json array\"}");
+            return QString().fromStdString("{\"error\":\"data is not json array\"}");
         arrData=valData.get_array();           
 
     }
@@ -339,8 +340,8 @@ QString JsInterface::jscallasync(const QString command,const QString dataJson,co
      }
    
    
-    jscallback("0",false,tr("{\"error\":\"command not found\"}"));
-    return tr("{\"error\":\"command not found\"}");
+    jscallback("0",false,QString().fromStdString("{\"error\":\"command not found\"}"));
+    return QString().fromStdString("{\"error\":\"command not found\"}");
    
     //QString result=jscall(command,dataJson);
     
@@ -372,9 +373,9 @@ void JsInterface::jscallback(std::string strToken,bool fSuccess,QString dataJson
 QString JsInterface::GoToCustomPage(Array arr,int nPageID)
 {
     if(arr.size()<1)
-        return tr("{\"error\":\"params less than 1\"}");
+        return QString().fromStdString("{\"error\":\"params less than 1\"}");
     if(arr[0].type()!=str_type)
-        return tr("{\"error\":\"param 1 is not str\"}");
+        return QString().fromStdString("{\"error\":\"param 1 is not str\"}");
     emit gotoCustomPage(QUrl(QString().fromStdString(arr[0].get_str())),nPageID);
     return QString("OK");
     

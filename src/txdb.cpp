@@ -473,10 +473,10 @@ bool CDomainViewDB::GetUpdateDomain(const CScript ownerIn, const string& strDoma
         {
             if (nLockTimeIn == 0 || LockTimeToTime(nLockTimeIn) < LockTimeToTime(existingDomain.nExpireTime))//renew time earlier than current time
                 return false;
-            LogPrintf("update domain renew\n");
+            LogPrintf("update domain renew %s\n",domain.strDomain);
             if (lockedValue < (domain.nDomainGroup == DOMAIN_10000 ? (domain.IsLevel2() ? 100 * COIN : 10000 * COIN) : 100 * COIN))
                 return false;
-            existingDomain = domain;
+            //existingDomain = domain;
             existingDomain.nExpireTime = LockTimeToTime(nLockTimeIn);
             existingDomain.nLockValue = lockedValue;
         } else
