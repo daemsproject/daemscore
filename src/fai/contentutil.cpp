@@ -339,7 +339,7 @@ bool GetNativeLink(const string urlIn,string& urlOut,int& nPageID)
         if (str==mapPageNames[i])
         {
             //temporary code
-            boost::filesystem::path fullpath = boost::filesystem::initial_path().parent_path().parent_path().parent_path() / "cccpages" / "html" / (str+"_en.html");
+            boost::filesystem::path fullpath = boost::filesystem::initial_path().parent_path().parent_path().parent_path() / "cccpages" / "html" / (str+".html");
             urlOut="file://"+fullpath.string()+(strExt.size()>0?strExt.substr(1):"");
 
             // final code

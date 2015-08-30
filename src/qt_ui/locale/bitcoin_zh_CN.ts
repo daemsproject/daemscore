@@ -481,11 +481,11 @@ Address: %4
     </message>
     <message>
         <source>&amp;Shop</source>
-        <translation type="unfinished">商场</translation>
+        <translation type="unfinished">商城</translation>
     </message>
     <message>
         <source>shop</source>
-        <translation type="unfinished">商场</translation>
+        <translation type="unfinished">商城</translation>
     </message>
     <message>
         <source>&amp;Downloader</source>
@@ -2748,7 +2748,7 @@ Do you want to ignore these errors for this host?</source>
     </message>
     <message>
         <source>Content :%1</source>
-        <translation type="unfinished">内容：更新域名1%</translation>
+        <translation type="unfinished">内容：%1</translation>
     </message>
     <message>
         <source>Locked %1 for %2 blocks</source>
@@ -2756,7 +2756,7 @@ Do you want to ignore these errors for this host?</source>
     </message>
     <message>
         <source>Locked %1 for %2 days</source>
-        <translation type="unfinished">冻结 %1 持续 %2 个区块</translation>
+        <translation type="unfinished">冻结 %1 持续 %2 天</translation>
     </message>
     <message>
         <source>%1 to %2</source>
@@ -2932,11 +2932,11 @@ Do you want to ignore these errors for this host?</source>
     </message>
     <message>
         <source>Request Override Transaction</source>
-        <translation type="unfinished">申请覆盖交易</translation>
+        <translation type="unfinished">申请修订交易</translation>
     </message>
     <message>
         <source>Please confirm to override transaction:</source>
-        <translation type="unfinished">请确认覆盖以下交易：</translation>
+        <translation type="unfinished">请确认修订以下交易：</translation>
     </message>
     <message>
         <source>Original Fee:</source>

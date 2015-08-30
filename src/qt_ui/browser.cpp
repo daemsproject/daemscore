@@ -93,15 +93,15 @@ static QString GetLangTerritory()
     // Get desired locale (e.g. "de_DE")
     // 1) System default language
     QString lang_territory = QLocale::system().name();
-    cout<<"system langauge setting:"<<lang_territory.toStdString().c_str()<<"\n";;
+   // cout<<"system langauge setting:"<<lang_territory.toStdString().c_str()<<"\n";;
     // 2) Language from QSettings
     QString lang_territory_qsettings = settings.value("language", "").toString();
-    cout<<"user langauge setting:"<<lang_territory_qsettings.toStdString().c_str()<<"\n";;
+  //  cout<<"user langauge setting:"<<lang_territory_qsettings.toStdString().c_str()<<"\n";;
     if(!lang_territory_qsettings.isEmpty())
         lang_territory = lang_territory_qsettings;
     // 3) -lang command line argument
     lang_territory = QString::fromStdString(GetArg("-lang", lang_territory.toStdString()));
-    cout<<"lang final:"<<lang_territory.toStdString().c_str()<<"\n";;
+   // cout<<"lang final:"<<lang_territory.toStdString().c_str()<<"\n";;
     return lang_territory;
 }
 
@@ -122,7 +122,7 @@ static void initTranslations(QTranslator &qtTranslatorBase, QTranslator &qtTrans
     // Convert to "de" only by truncating "_DE"
     QString lang = lang_territory;
     lang.truncate(lang_territory.lastIndexOf('_'));
-    cout<<"langauge setting short:"<<lang.toStdString().c_str()<<"\n";;
+  //  cout<<"langauge setting short:"<<lang.toStdString().c_str()<<"\n";;
     // Load language files for configured locale:
     // - First load the translator for the base language, without territory
     // - Then load the more specific locale translator
@@ -130,28 +130,28 @@ static void initTranslations(QTranslator &qtTranslatorBase, QTranslator &qtTrans
     // Load e.g. qt_de.qm
     if (qtTranslatorBase.load("qt_" + lang, QLibraryInfo::location(QLibraryInfo::TranslationsPath)))
     {
-        cout<<"translator1 \n";
+      //  cout<<"translator1 \n";
         QApplication::installTranslator(&qtTranslatorBase);
     }
 
     // Load e.g. qt_de_DE.qm
     if (qtTranslator.load("qt_" + lang_territory, QLibraryInfo::location(QLibraryInfo::TranslationsPath)))
     {
-        cout<<"translator2 \n";
+       // cout<<"translator2 \n";
         QApplication::installTranslator(&qtTranslator);
     }
 
     // Load e.g. bitcoin_de.qm (shortcut "de" needs to be defined in bitcoin.qrc)
     if (translatorBase.load(lang, ":/translations/"))
     {
-        cout<<"translator3 \n";
+       // cout<<"translator3 \n";
     
         QApplication::installTranslator(&translatorBase);
     }
     // Load e.g. bitcoin_de_DE.qm (shortcut "de_DE" needs to be defined in bitcoin.qrc)
     if (translator.load(lang_territory, ":/translations/"))
     {
-        cout<<"translator4 \n";
+      //  cout<<"translator4 \n";
     
         QApplication::installTranslator(&translator);
     }
@@ -217,7 +217,7 @@ void BitcoinCore::shutdown()
         threadGroup.interrupt_all();
         threadGroup.join_all();
         Shutdown();
-        LogPrintf("shut down finished \n");
+        //LogPrintf("shut down finished \n");
         qDebug() << __func__ << ": Shutdown finished";
         emit shutdownResult(1);
     } catch (std::exception& e) {
@@ -245,15 +245,20 @@ BitcoinApplication::BitcoinApplication(int &argc, char **argv):
 
 BitcoinApplication::~BitcoinApplication()
 {
+    //LogPrintf("~BitcoinApplication start \n");
     if(coreThread)
     {
         qDebug() << __func__ << ": Stopping thread";
+       // LogPrintf("~BitcoinApplication start1 \n");
         emit stopThread();
+      //  LogPrintf("~BitcoinApplication start 2\n");
         coreThread->wait();
+       // LogPrintf("~BitcoinApplication start3 \n");
         qDebug() << __func__ << ": Stopped thread";
     }
-
-    delete window;
+//LogPrintf("~BitcoinApplication start4 \n");
+    //delete window;
+   // LogPrintf("~BitcoinApplication start 5\n");
     window = 0;
 
     //delete optionsModel;
@@ -339,7 +344,7 @@ void BitcoinApplication::requestShutdown()
 
 void BitcoinApplication::initializeResult(int retval)
 {
-     LogPrintf("init result \n");
+     //LogPrintf("init result \n");
     qDebug() << __func__ << ": Initialization result: " << retval;
     // Set exit result: 0 if successful, 1 if failure
     returnValue = retval ? 0 : 1;
@@ -355,11 +360,11 @@ void BitcoinApplication::initializeResult(int retval)
         if(pwalletMain)
         {
             walletModel = new WalletModel(pwalletMain,window);
-        LogPrintf("init result2 \n");
+        //LogPrintf("init result2 \n");
             window->addWallet(QString(""),walletModel);
-             LogPrintf("init result3 \n");
+             //LogPrintf("init result3 \n");
             window->subscribeToCoreSignalsJs();//, walletModel);
-             LogPrintf("init result4 \n");              
+            // LogPrintf("init result4 \n");              
         }
 #endif
 
@@ -371,10 +376,10 @@ void BitcoinApplication::initializeResult(int retval)
         else
         {
             window->show();
-             LogPrintf("init result5 \n");
+             //LogPrintf("init result5 \n");
         }
         emit splashFinished(window);
-        LogPrintf("init result3 \n");
+       // LogPrintf("init result3 \n");
 #ifdef ENABLE_WALLET
         // Now that initialization/startup is done, process any command-line
         // bitcoin: URIs or payment requests:
@@ -392,6 +397,7 @@ void BitcoinApplication::initializeResult(int retval)
 void BitcoinApplication::shutdownResult(int retval)
 {
     qDebug() << __func__ << ": Shutdown result: " << retval;
+    //LogPrintf("BitcoinApplication::shutdownResult %i]n",retval);
     quit(); // Exit main loop after shutdown finished
 }
 
@@ -456,7 +462,7 @@ int main(int argc, char *argv[])
     /// 4. Initialization of translations, so that intro dialog is in user's language
     // Now that QSettings are accessible, initialize translations
     QTranslator qtTranslatorBase, qtTranslator, translatorBase, translator;
-    cout<<"init translators"<<"\n";
+    //cout<<"init translators"<<"\n";
     initTranslations(qtTranslatorBase, qtTranslator, translatorBase, translator);
     uiInterface.Translate.connect(Translate);
 
@@ -558,6 +564,7 @@ int main(int argc, char *argv[])
         WinShutdownMonitor::registerShutdownBlockReason(QObject::tr("Faicoin Core didn't yet exit safely..."), (HWND)app.getMainWinId());
 #endif
         app.exec();
+       // LogPrintf("shutdown restart gui??\n");
         app.requestShutdown();
         app.exec();
     } catch (std::exception& e) {

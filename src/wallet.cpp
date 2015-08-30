@@ -912,13 +912,12 @@ void CWallet::SyncTransaction(const CTransaction& tx, const CBlock* pblock)
         //LogPrintf("notfiytransactionchanged\n");
     //}
    // LogPrintf("SyncTransaction2\n");
-    if (!AddToWalletIfInvolvingMe(tx, pblock, true))
-    {
-        if(HasMyMessage(tx))
-            NotifyTransactionChanged(tx.GetHash(),blockHash);
-        return; // Not one of ours
-    }
+    if(!HasMyMessage(tx))
+        return;
     NotifyTransactionChanged(tx.GetHash(),blockHash);
+    if (!AddToWalletIfInvolvingMe(tx, pblock, true))
+        return; // Not one of ours
+    //NotifyTransactionChanged(tx.GetHash(),blockHash);
     // If a transaction changes 'conflicted' state, that changes the balance
     // available of the outputs it spends. So force those to be
     // recomputed, also:

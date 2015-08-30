@@ -93,7 +93,7 @@ public:
     CScript scriptPubKey;
     uint256 txid; 
     int64_t txIndex;
-    ushort nOut;
+    unsigned short nOut;
     CAmount nValue;
     uint32_t nLockTime;
     CCheque(){

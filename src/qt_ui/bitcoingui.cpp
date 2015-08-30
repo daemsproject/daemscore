@@ -420,11 +420,16 @@ LogPrintf("bitcoingui: 10 \n");
 
 BitcoinGUI::~BitcoinGUI()
 {
+    //LogPrintf("~bitcoingui start \n");
     // Unsubscribe from notifications from core
     unsubscribeFromCoreSignals();
+    // LogPrintf("~bitcoingui start1 \n");
     delete s_downloadManager;
+    // LogPrintf("~bitcoingui start 2\n");
     delete s_networkAccessManager;
+   //  LogPrintf("~bitcoingui start 3\n");
     delete s_bookmarksManager;
+   //  LogPrintf("~bitcoingui start4 \n");
     GUIUtil::saveWindowGeometry("nWindow", this);
     if(trayIcon) // Hide tray icon, as deleting will let it linger until quit (on Ubuntu)
         trayIcon->hide();
@@ -433,8 +438,10 @@ BitcoinGUI::~BitcoinGUI()
     MacDockIconHandler::instance()->setMainWindow(NULL);
     
 #endif
-    delete jsInterface;
+     //LogPrintf("~bitcoingui start 5\n");
+      //  delete jsInterface;
     jsInterface=NULL;
+   // LogPrintf("~bitcoingui done \n");
 }
 
 void BitcoinGUI::createActions(const NetworkStyle *networkStyle)
@@ -1542,7 +1549,7 @@ void BitcoinGUI::closeEvent(QCloseEvent *event)
     }
     //event->accept();
     //deleteLater();
-//#ifndef Q_OS_MAC // Ignored on Mac
+#ifndef Q_OS_MAC // Ignored on Mac
 //    if(clientModel)// && clientModel->getOptionsModel())
 //    {
 //        //if(!clientModel->getOptionsModel()->getMinimizeToTray() &&
@@ -1551,7 +1558,7 @@ void BitcoinGUI::closeEvent(QCloseEvent *event)
 //            QApplication::quit();
 //        }
 //    }
-//#endif
+#endif
     //QMainWindow::closeEvent(event);
     StartShutdown();
     event->ignore();
