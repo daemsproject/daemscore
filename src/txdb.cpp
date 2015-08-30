@@ -473,7 +473,7 @@ bool CDomainViewDB::GetUpdateDomain(const CScript ownerIn, const string& strDoma
         {
             if (nLockTimeIn == 0 || LockTimeToTime(nLockTimeIn) < LockTimeToTime(existingDomain.nExpireTime))//renew time earlier than current time
                 return false;
-            LogPrintf("update domain renew %s\n",domain.strDomain);
+            LogPrintf("update domain renew %s\n", domain.strDomain);
             if (lockedValue < (domain.nDomainGroup == DOMAIN_10000 ? (domain.IsLevel2() ? 100 * COIN : 10000 * COIN) : 100 * COIN))
                 return false;
             //existingDomain = domain;
@@ -782,7 +782,15 @@ bool CDomainViewDB::GetDomainByTags(const vector<string>& vTag, vector<CDomain>&
     //char searchValue[2000];//NOte: for varchar, need to add'' arround value
     string tableName = "domaintag10000";
     char chTag[1000];
-    if (vTag.size() == 0 || vTag.size() > 10)
+    bool ret = false;    
+    if (vTag.size() == 0)
+    {
+        char chTime[1000];
+        sprintf(chTime, "%i", GetAdjustedTime());
+        tableName = "domain10000";
+        return db->GetDomain(tableName.c_str(), "expiredate", ">", chTime, vDomain, nMax, fGetTags);
+    }
+    if (vTag.size() > 10)
         return false;
     LogPrintf("CDomainViewDB::GetDomainByTags2\n");
     const char* tagselectstatement = "SELECT domainid FROM %s WHERE tagid =%lld ";
@@ -807,7 +815,7 @@ bool CDomainViewDB::GetDomainByTags(const vector<string>& vTag, vector<CDomain>&
     sprintf(chTag, "(%s) ", strTgstmt.c_str());
     LogPrintf("CDomainViewDB::GetDomainByTags stmt:%s\n", chTag);
     tableName = "domain10000";
-    bool ret = db->GetDomain(tableName.c_str(), searchColumn.c_str(), "IN", chTag, vDomain1, nMax, fGetTags);
+    ret = db->GetDomain(tableName.c_str(), searchColumn.c_str(), "IN", chTag, vDomain1, nMax, fGetTags);
     if (FSupport100)
     {
         char chTag1[1000];
@@ -826,10 +834,13 @@ bool CDomainViewDB::GetDomainByTags(const vector<string>& vTag, vector<CDomain>&
         tableName = "domain100";
         ret &= db->GetDomain(tableName.c_str(), searchColumn.c_str(), "IN", chTag1, vDomain1, nMax, fGetTags);
     }
+
     for (unsigned int i = 0; i < vDomain1.size(); i++)
     {
         if (LockTimeToTime(vDomain1[i].nExpireTime) >= GetAdjustedTime())
             vDomain.push_back(vDomain1[i]);
+        if (vDomain.size() >= nMax)
+            return ret;
     }
     return ret;
 }
@@ -1026,16 +1037,16 @@ bool CScriptCoinDB::Insert(const CCheque cheque)
 
 bool CScriptCoinDB::Search(const vector<CScript>& vScriptPubKey, vector<CCheque> & vCheques, int nMaxResults, int nOffset)const
 {
-    if(vScriptPubKey.size()<=100)
+    if (vScriptPubKey.size() <= 100)
         return db->GetCheques(vScriptPubKey, vCheques, nMaxResults, nOffset);
     int ii = 0;
-    bool rs=true;
+    bool rs = true;
     while (ii < (int) vScriptPubKey.size())
     {
         int nBatch = min((int) vScriptPubKey.size() - ii, 100);
         vector<CScript> vScriptPubKey1;
-        vScriptPubKey1.assign(vScriptPubKey.begin()+ii,vScriptPubKey.begin()+ii+nBatch);
-        rs&=db->GetCheques(vScriptPubKey1, vCheques, nMaxResults, nOffset);
+        vScriptPubKey1.assign(vScriptPubKey.begin() + ii, vScriptPubKey.begin() + ii + nBatch);
+        rs &= db->GetCheques(vScriptPubKey1, vCheques, nMaxResults, nOffset);
         ii += nBatch;
     }
     return rs;
@@ -1292,10 +1303,10 @@ void GetBlockScript2TxPosList(const CBlock& block, const vector<pair<uint256, CD
                 if (txout.strContent.size() > 0)
                     mapReceiver[txout.scriptPubKey].nFlags |= TXITEMFLAG_RECEIVECONTENT;
                 if (txout.nValue > 0)
-                //{
+                    //{
                     mapReceiver[txout.scriptPubKey].nFlags |= TXITEMFLAG_RECEIVEMONEY;
-                    //                    if(txout.nLockTime>0)
-                    //                        mapReceiver[txout.scriptPubKey].nFlags |=1<<TXITEMFLAG_HASLOCKTIME;
+                //                    if(txout.nLockTime>0)
+                //                        mapReceiver[txout.scriptPubKey].nFlags |=1<<TXITEMFLAG_HASLOCKTIME;
                 //}
             }
         }
@@ -1303,7 +1314,7 @@ void GetBlockScript2TxPosList(const CBlock& block, const vector<pair<uint256, CD
         //LogPrintf("GetBlockScript2TxPosList7 \n");
         MergeScript2TxPosList(mapScript2TxPos, mapSender);
         MergeScript2TxPosList(mapScript2TxPos, mapReceiver);
-    }      
+    }
 }
 
 void MergeScript2TxPosList(map<CScript, vector<CTxPosItem> >& parent, const map<CScript, CTxPosItem>& child)

@@ -1193,7 +1193,7 @@ QString WalletModel::SignMessage(Array arrData,const int nPageIndex)
     {
         if(!fIsWalletMain)
             delete pwallet;    
-        return QString().fromStdString("{\"error\":\"no privkey for signing\"}");
+        return QString().fromStdString("{\"error\":\"no private key\"}");
     }
             
     if (pwallet->IsLocked())
@@ -1314,9 +1314,9 @@ QString WalletModel::RegisterDomain(json_spirit::Array arrData,const int nPageIn
     {
         LogPrintf("walletmodel:RegisterDomain level1domain:%s",GetLevel1Domain(strDomain));
         if(!pDomainDBView->GetDomainByName(GetLevel1Domain(strDomain),cdomain)||(GetLockLasting(cdomain.nExpireTime)==0))
-            return QString().fromStdString("{\"error\":\" level1 domain not exists\"}");  
+            return QString().fromStdString("{\"error\":\"level1 domain does not exist\"}");  
         if(cdomain.owner!=scriptPubKey)
-            return QString().fromStdString("{\"error\":\" level1 domain is not belonging to sending id\"}");  
+            return QString().fromStdString("{\"error\":\"level1 domain is not belonging to sending id\"}");  
     }
     else
     {
@@ -1338,13 +1338,13 @@ QString WalletModel::UpdateDomain(json_spirit::Array arrData,const int nPageInde
     CPaymentOrder pr = GetUpdateDomainPaymentRequest(arrData);       
     CDomain cdomain;
     if(!pDomainDBView->GetDomainByName(strDomain,cdomain)||(GetLockLasting(cdomain.nExpireTime)==0))
-        return QString().fromStdString("{\"error\":\"domain not registered\"}");  
+        return QString().fromStdString("{\"error\":\"domain is not registered\"}");  
     if(IsLevel2Domain(strDomain))
     {
         if(!pDomainDBView->GetDomainByName(GetLevel1Domain(strDomain),cdomain)||(GetLockLasting(cdomain.nExpireTime)==0))
-            return QString().fromStdString("{\"error\":\" level1 domain not exists\"}");  
+            return QString().fromStdString("{\"error\":\"level1 domain does not exist\"}");  
         if(cdomain.owner!=scriptPubKey)
-            return QString().fromStdString("{\"error\":\" level1 domain is not belonging to sending id\"}");    
+            return QString().fromStdString("{\"error\":\"level1 domain is not belonging to sending id\"}");    
     }
     else
     {        
@@ -1386,9 +1386,9 @@ QString WalletModel::RenewDomain(json_spirit::Array arrData,const int nPageIndex
     if(IsLevel2Domain(strDomain))
         {
             if(!pDomainDBView->GetDomainByName(GetLevel1Domain(strDomain),cdomain)||(GetLockLasting(cdomain.nExpireTime)==0))
-                return QString().fromStdString("{\"error\":\" level1 domain does not exist\"}");   
+                return QString().fromStdString("{\"error\":\"level1 domain does not exist\"}");   
             if(cdomain.owner!=scriptPubKey)
-                return QString().fromStdString("{\"error\":\" level1 domain is not belonging to sending id\"}");  
+                return QString().fromStdString("{\"error\":\"level1 domain is not belonging to sending id\"}");  
         }
     if(pDomainDBView->GetDomainByName(strDomain,cdomain)&&(GetLockLasting(cdomain.nExpireTime)>0))
     {
@@ -1413,7 +1413,7 @@ QString WalletModel::TransferDomain(json_spirit::Array arrData,const int nPageIn
     string idTo=arrData[2].get_str();
     CScript scriptPubKey2;         
     if(!StringToScriptPubKey(idTo,scriptPubKey2))        
-        return QString().fromStdString("{\"error\":\" tranfer target id invalid\"}");  
+        return QString().fromStdString("{\"error\":\"tranfer target id invalid\"}");  
     Object objInfo; 
     objInfo.push_back(Pair("transfer",idTo));
     Array arr=arrData;
@@ -1423,13 +1423,13 @@ QString WalletModel::TransferDomain(json_spirit::Array arrData,const int nPageIn
     pr.info["transfer"]=arrData[2].get_str();
     CDomain cdomain;
     if(!pDomainDBView->GetDomainByName(strDomain,cdomain)||(GetLockLasting(cdomain.nExpireTime)==0))
-        return QString().fromStdString("{\"error\":\"domain not registered\"}");  
+        return QString().fromStdString("{\"error\":\"domain is not registered\"}");  
     if(IsLevel2Domain(strDomain))
     {
         if(!pDomainDBView->GetDomainByName(GetLevel1Domain(strDomain),cdomain)||(GetLockLasting(cdomain.nExpireTime)==0))
-            return QString().fromStdString("{\"error\":\" level1 domain not exists\"}");  
+            return QString().fromStdString("{\"error\":\"tranfer target id invalid\"}");  
         if(cdomain.owner!=scriptPubKey)
-            return QString().fromStdString("{\"error\":\" level1 domain is not belonging to sending id\"}");  
+            return QString().fromStdString("{\"error\":\"level1 domain is not belonging to sending id\"}");  
     }
     else
     {        
