@@ -340,8 +340,13 @@ bool GetNativeLink(const string urlIn,string& urlOut,int& nPageID)
         {
             //temporary code
             boost::filesystem::path fullpath = boost::filesystem::initial_path().parent_path().parent_path().parent_path() / "cccpages" / "html" / (str+".html");
+#ifdef WIN32
+            string s=fullpath.string();
+            std::replace( s.begin(), s.end(), '\\', '/');
+            urlOut="file:///"+s+(strExt.size()>0?strExt.substr(1):"");
+#else
             urlOut="file://"+fullpath.string()+(strExt.size()>0?strExt.substr(1):"");
-
+#endif
             // final code
             nPageID=i;
             string strPath;

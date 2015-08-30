@@ -237,7 +237,14 @@ bool GetFilePackageMain(const string packageName, string& path, const bool fInte
         std::string str;
         if (ReadFileToString(fpFile.string(), str) && ReadFilePackageList(str, strMainFile, objFiles)) {
             boost::filesystem::path fpMainfile = fpPath / strMainFile;
+#ifdef WIN32
+            string s=fpMainfile.string();
+            std::replace( s.begin(), s.end(), '\\', '/');
+            path = "file:///" + s;
+#else
             path = "file://" + fpMainfile.string();
+#endif
+            
             return true;
         }
         LogPrintf("GetFilePackageMain file to string %s \n", str);
