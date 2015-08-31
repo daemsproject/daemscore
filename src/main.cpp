@@ -1104,6 +1104,10 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
                 LogPrintf("AcceptToMemoryPool: : missing inputs");
                 return false;
             }
+            
+//            if(pool.exists(txin.prevout.hash))
+//                LogPrintf("AcceptToMemoryPool: : mempool-based vin");
+//                return error("AcceptToMemoryPool: : mempool-based vin");
         }
 
         // are the actual inputs available?
@@ -1802,7 +1806,8 @@ bool CheckInputs(const CTransaction& tx,const CTransaction& tx4CheckVins,CValida
                 return state.DoS(100, error("CheckInputs() : txin values mismatch with prevout"),
                                  REJECT_INVALID, "bad-txns-inputvalues-mismatch");
             //check that it's from mempool
-            if (coins->nHeight<=0){
+            LogPrintf("CheckInputs txid:%s,nvin %i,nheight %i \n",tx.GetHash().GetHex(),i,coins->nHeight);
+            if (coins->nHeight==MEMPOOL_HEIGHT){
                     return state.Invalid(
                         error("CheckInputs() : tried to spend mempool coins, not allowed"),
                         REJECT_INVALID, "bad-txns-spend-of-mempool");
