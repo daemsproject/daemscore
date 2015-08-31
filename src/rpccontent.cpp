@@ -2249,6 +2249,8 @@ json_spirit::Value getdomainbyforward(const json_spirit::Array& params, bool fHe
     CScript script;
     StringToScriptPubKey(id, script);
     pDomainDBView->GetDomainByForward(script, domain, true);
+    if(domain.IsEmpty())
+        return Object();
     return Value(domain.ToJson());
 }
 
