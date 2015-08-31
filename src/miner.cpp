@@ -111,6 +111,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn,const int nHeightIn
         pindexPrev = chainActive[nHeightIn-1];
     int nHeight = pindexPrev->nBlockHeight + 1;
     pblock->nBlockHeight=nHeight;
+    UpdateTime(pblock, pindexPrev);
     // -regtest only: allow overriding block.nVersion with
     // -blockversion=N to test forking scenarios
     if (Params().MineBlocksOnDemand())
@@ -266,7 +267,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn,const int nHeightIn
                 // policy here, but we still have to ensure that the block we
                 // create only contains transactions that are valid in new blocks.
                 CValidationState state;
-                if (!CheckInputs(tx, tx,state, view, true,true, MANDATORY_SCRIPT_VERIFY_FLAGS, true))
+                if (!CheckInputs(tx, tx,state, view, pblock,true, MANDATORY_SCRIPT_VERIFY_FLAGS, true))
                     continue;
                 CTxUndo txundo;
                 UpdateCoins(tx, state, view, txundo, nHeight);
@@ -304,7 +305,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn,const int nHeightIn
 
         // Fill in header
         pblock->hashPrevBlock  = pindexPrev->GetBlockHash();
-        UpdateTime(pblock, pindexPrev);
+        
         pblock->nBits          = GetNextWorkRequired(pindexPrev, pblock);
         pblock->nNonce         = 0;
         pblocktemplate->vTxSigOps[0] = GetLegacySigOpCount(pblock->vtx[0]);

@@ -520,15 +520,7 @@ void CTxMemPool::remove(const CTransaction &origTx, std::list<CTransaction>& rem
 
             removed.push_back(tx);
             totalTxSize -= mapTx[hash].GetTxSize();
-//            std::cout << "hash " << hash.GetHex() << "\n";
-//            for (std::map<uint256, CTxMemPoolEntry>::const_iterator it = mapTx.begin(); it != mapTx.end(); it++) {
-//                std::cout << "mTxid " << it->first.GetHex() << "\n";
-//            }
-
             mapTx.erase(hash);
-//            for (std::map<uint256, CTxMemPoolEntry>::const_iterator it = mapTx.begin(); it != mapTx.end(); it++) {
-//                std::cout << "mTxid after" << it->first.GetHex() << "\n";
-//            }
             removeFromQueue(hash);
             
             nTransactionsUpdated++;
@@ -652,7 +644,7 @@ void CTxMemPool::check(const CCoinsViewCache *pcoins) const
             waitingOnDependants.push_back(&it->second);
         else {
             CValidationState state; CTxUndo undo;
-            assert(CheckInputs(tx, tx,state, mempoolDuplicate,false, false, 0, false));
+            assert(CheckInputs(tx, tx,state, mempoolDuplicate,0, false, 0, false));
             UpdateCoins(tx, state, mempoolDuplicate, undo, 1000000);
         }
     }
@@ -666,7 +658,7 @@ void CTxMemPool::check(const CCoinsViewCache *pcoins) const
             stepsSinceLastRemove++;
             assert(stepsSinceLastRemove < waitingOnDependants.size());
         } else {
-            assert(CheckInputs(entry->GetTx(), entry->GetTx(),state, mempoolDuplicate,false, false, 0, false));
+            assert(CheckInputs(entry->GetTx(), entry->GetTx(),state, mempoolDuplicate,0, false, 0, false));
             CTxUndo undo;
             UpdateCoins(entry->GetTx(), state, mempoolDuplicate, undo, 1000000);
             stepsSinceLastRemove = 0;
@@ -783,6 +775,7 @@ bool CTxMemPool::CheckTxOverride(const CTransaction &tx,CTxMemPoolEntry &entryOv
     BOOST_FOREACH(const CTxIn &txin, tx.vin) {
         std::map<COutPoint, CInPoint>::iterator it = mapNextTx.find(txin.prevout);
         if (it != mapNextTx.end()) {
+            LogPrintf("CheckTxOverride:txid %s \n",it->second.ptx->GetHash().GetHex());
             entryOverrided = mapTx[it->second.ptx->GetHash()]; 
             break;
         }

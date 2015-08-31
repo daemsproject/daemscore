@@ -121,6 +121,8 @@ void JsInterface::notifyTransactionChanged(const uint256 txid,const uint256 hash
     Array arrAddresses;
     CTransaction tx;
     if(hashBlock==0){
+        if(mempool.mapTx.count(txid)==0)
+            return;
         tx=mempool.mapTx[txid].GetTx();
         //LogPrintf("jsinterface:notifytx2\n");
     }

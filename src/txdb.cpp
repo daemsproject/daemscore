@@ -786,7 +786,7 @@ bool CDomainViewDB::GetDomainByTags(const vector<string>& vTag, vector<CDomain>&
     if (vTag.size() == 0)
     {
         char chTime[1000];
-        sprintf(chTime, "%i", GetAdjustedTime());
+        sprintf(chTime, "%lld", GetAdjustedTime());
         tableName = "domain10000";
         return db->GetDomain(tableName.c_str(), "expiredate", ">", chTime, vDomain, nMax, fGetTags);
     }
@@ -839,7 +839,7 @@ bool CDomainViewDB::GetDomainByTags(const vector<string>& vTag, vector<CDomain>&
     {
         if (LockTimeToTime(vDomain1[i].nExpireTime) >= GetAdjustedTime())
             vDomain.push_back(vDomain1[i]);
-        if (vDomain.size() >= nMax)
+        if ((int)vDomain.size() >= nMax)
             return ret;
     }
     return ret;
@@ -872,7 +872,7 @@ bool CDomainViewDB::GetDomainNamesToExpire(std::vector<string> &vDomainNames, co
 {
     string searchColumn = "expiredate";
     char chTime[1000];
-    sprintf(chTime, "%i", nExpireIn + GetAdjustedTime());
+    sprintf(chTime, "%lld", nExpireIn + GetAdjustedTime());
     string tableName = "domain10000";
     bool ret = db->SearchStrs(tableName.c_str(), "expiredate", chTime, "domainname", SQLITEDATATYPE_TEXT, vDomainNames, "<", nMax);
 
@@ -904,7 +904,7 @@ bool CDomainViewDB::ClearExpired(const uint32_t time)
     //db->GetExpiredDomainIDs("domain10000",vDomainIDs10000,time);
     //db->GetExpiredDomainIDs("domain100",vDomainIDs100,time);
     char chTime[20];
-    sprintf(chTime, "%i", time);
+    sprintf(chTime, "%ui", time);
     db->SearchInts("domain10000", "expiredate", chTime, "rowid", vDomainIDs10000, "<");
     db->SearchInts("domain100", "expiredate", chTime, "rowid", vDomainIDs100, "<");
     db->Delete("domain10000", "expiredate", chTime, "<");
@@ -992,7 +992,7 @@ bool CTagViewDB::ClearExpired(uint32_t nTime)
 {
     vector<int64_t>vLink;
     char chTime[20];
-    sprintf(chTime, "%i", nTime);
+    sprintf(chTime, "%ui", nTime);
     db->SearchInts("table_content", "locktime", chTime, "link", vLink, "<");
     db->Delete("table_content", "locktime", chTime, "<");
 

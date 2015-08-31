@@ -1029,6 +1029,7 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
                         bool* pfMissingInputs, bool fRejectInsaneFee)
 {
     AssertLockHeld(cs_main);
+    //LogPrintf("accepttomemepool tx:%s \n",tx.ToString());
     if (pfMissingInputs)
         *pfMissingInputs = false;
 
@@ -1201,7 +1202,7 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
         // Check against previous transactions
         // This is done last to help prevent CPU exhaustion denial-of-service attacks.
         //LogPrintf("AcceptToMemoryPool: : feerate threshould %i, fee rate %d",pool.getEntranceFeeRate(MEMPOOL_ENTRANCE_THRESHOLD),tx.GetFeeRate());
-        if (!CheckInputs(tx,tx4CheckVins, state, view, false,true, STANDARD_SCRIPT_VERIFY_FLAGS, true))
+        if (!CheckInputs(tx,tx4CheckVins, state, view, 0,true, STANDARD_SCRIPT_VERIFY_FLAGS, true))
         {
             return error("AcceptToMemoryPool: : ConnectInputs failed %s", hash.ToString());
         }
@@ -1215,7 +1216,7 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
         // There is a similar check in CreateNewBlock() to prevent creating
         // invalid blocks, however allowing such transactions into the mempool
         // can be exploited as a DoS attack.
-        if (!CheckInputs(tx,tx4CheckVins, state, view, false,true, MANDATORY_SCRIPT_VERIFY_FLAGS, true))
+        if (!CheckInputs(tx,tx4CheckVins, state, view, 0,true, MANDATORY_SCRIPT_VERIFY_FLAGS, true))
         {
             return error("AcceptToMemoryPool: : BUG! PLEASE REPORT THIS! ConnectInputs failed against MANDATORY but not STANDARD flags %s", hash.ToString());
         }
@@ -1772,7 +1773,7 @@ bool CScriptCheck::operator()() {
     return true;
 }
 
-bool CheckInputs(const CTransaction& tx,const CTransaction& tx4CheckVins,CValidationState &state, const CCoinsViewCache &inputs, bool fLockTimeByBlock, bool fScriptChecks, unsigned int flags, bool cacheStore, std::vector<CScriptCheck> *pvChecks)
+bool CheckInputs(const CTransaction& tx,const CTransaction& tx4CheckVins,CValidationState &state, const CCoinsViewCache &inputs,const CBlock* pblock, bool fScriptChecks, unsigned int flags, bool cacheStore, std::vector<CScriptCheck> *pvChecks)
 {
     if (!tx.IsCoinBase())
     {
@@ -1808,7 +1809,7 @@ bool CheckInputs(const CTransaction& tx,const CTransaction& tx4CheckVins,CValida
             }
             // check that it's matured
             //if (coins->IsCoinBase()) {
-            if (IsFrozen(*coins,prevout.n,0,fLockTimeByBlock?0:GetAdjustedTime())){
+            if (IsFrozen(*coins,prevout.n,pblock==NULL?0:pblock->nBlockHeight,pblock==NULL?GetAdjustedTime():pblock->nTime)){
                 //if (nSpendHeight - coins->nHeight < COINBASE_MATURITY)
                     return state.Invalid(
                         error("CheckInputs() : tried to spend frozen coins at depth %d", nSpendHeight - coins->nHeight),
@@ -2132,7 +2133,8 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
             nFees += view.GetValueIn(tx)-tx.GetValueOut();
             
             std::vector<CScriptCheck> vChecks;
-            if (!CheckInputs(tx,tx, state, view, true,fScriptChecks, flags, false, nScriptCheckThreads ? &vChecks : NULL))
+            
+            if (!CheckInputs(tx,tx, state, view, &block,fScriptChecks, flags, false, nScriptCheckThreads ? &vChecks : NULL))
                 return false;
             
             control.Add(vChecks);
@@ -2356,6 +2358,7 @@ bool static DisconnectTip(CValidationState &state) {
         // ignore validation errors in resurrected transactions
         list<CTransaction> removed;
         CValidationState stateDummy;
+        //LogPrintf("disconnecttip:tx to mempool: %s\n",tx.ToString());
         if (tx.IsCoinBase() || !AcceptToMemoryPool(mempool, stateDummy, tx, false, NULL))
             mempool.remove(tx, removed, true);
     }
@@ -2436,6 +2439,7 @@ bool static ConnectTip(CValidationState &state, CBlockIndex *pindexNew, CBlock *
     BOOST_FOREACH(const CTransaction &tx, pblock->vtx) {
         SyncWithWallets(tx, pblock);
     }
+    
     //LogPrintf("Connect tip :SyncWithWallets2\n");
     int64_t nTime6 = GetTimeMicros(); nTimePostConnect += nTime6 - nTime5; nTimeTotal += nTime6 - nTime1;
     LogPrint("bench", "  - Connect postprocess: %.2fms [%.2fs]\n", (nTime6 - nTime5) * 0.001, nTimePostConnect * 0.000001);
@@ -3231,7 +3235,12 @@ bool ProcessNewBlock(CValidationState &state, CNode* pfrom, CBlock* pblock, CDis
 
     if (!ActivateBestChain(state, pblock))
         return error("%s : ActivateBestChain failed", __func__);
-    
+    //get mempool for starting
+    if(GetBoolArg("-mempoolrefreshed", false)&&pindexBestHeader==chainActive.Tip())
+        {
+            pfrom->PushMessage("mempool");
+            SoftSetBoolArg("-mempoolrefreshed",true);
+        }
     return true;
 }
 
@@ -4273,11 +4282,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
             LOCK(cs_main);
             State(pfrom->GetId())->fCurrentlyConnected = true;
         }
-        if(!pfrom->fInbound&&!GetBoolArg("-mempoolrefreshed", false))
-        {
-            pfrom->PushMessage("mempool");
-            SoftSetBoolArg("-mempoolrefreshed",true);
-        }
+        
     }
 
 
