@@ -540,7 +540,7 @@ bool IsSpentInMempool(const COutPoint op)
 //}
 bool GetTxOutFromVoutPos(const int64_t pos,CTxOut& out)
 {
-    LogPrintf("Getransaction by pos %lld nfile %lld,pos%lld \n",pos,pos>>32,pos&0xffffffff);
+    //LogPrintf("Getransaction by pos %lld nfile %lld,pos%lld \n",pos,pos>>32,pos&0xffffffff);
     CDiskBlockPos filePos;
     filePos.nFile=pos>>32;
     filePos.nPos=pos&0xffffffff;

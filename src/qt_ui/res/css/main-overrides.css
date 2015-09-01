@@ -1,0 +1,25 @@
+::-webkit-scrollbar {
+    -webkit-appearance: none;width: 10px;
+}::-webkit-scrollbar-thumb {
+    border-radius: 4px;    background-color: rgba(0,0,0,.5);
+    -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
+}
+html,body{
+    background-color: #eee;color:#444;
+}h1{
+    font:20px arial,sans-serif;
+}.container{
+    margin-top:10px;
+}.ph{
+    width:100%;height:47px;
+}.row-fluid{
+    margin-top:0;
+}.tabbar{
+    margin-bottom: 3px;
+}.tabbar.info{
+    float:right;
+}.tabbar.info li .ntctext{
+    padding: 8px 12px 0;margin:2px;color:#ddd;
+}.tabbar.info li .icon20{
+    margin:5px 3px 0 0;display:inline-block;
+}

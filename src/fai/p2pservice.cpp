@@ -217,6 +217,22 @@ bool ProcessP2PServiceRequest(CNode* pfrom,CDataStream& vRecv, int64_t nTimeRece
              pfrom->PushMessage(ss,"service");
              break;
         }
+        case SC_FULLNODEPLUS_C_GETFEERATE:
+        {                
+            unsigned int threshould;
+            vRecv>>threshould;
+            if(threshould>MEMPOOL_ENTRANCE_THRESHOLD)
+                threshould=MEMPOOL_ENTRANCE_THRESHOLD;
+            double dFeeRate=mempool.getEntranceFeeRate(threshould);
+            if (dFeeRate==0)
+                dFeeRate=1000;
+            CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
+            ss<<(int)SC_FULLNODEPLUS_S_FEERATE;
+            ss<<msgID;
+            ss<<dFeeRate;
+            pfrom->PushMessage(ss,"service");
+            break;
+        }
         default:
         {
             pfrom->PushMessage("reject", strCommand, REJECT_NONSTANDARD, string("invalid sc"));

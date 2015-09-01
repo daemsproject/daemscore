@@ -144,6 +144,7 @@ public:
      bool Insert(const CContentDBItem& item);
      bool InsertTags(const vector<string>& vTags);
      bool InsertContentTags(const vector<CContentDBItem>& vContents,const map<string,int64_t>& mapTags);
+     bool DeleteContentTags(const vector<CContentDBItem>& vContents);
      bool ClearExpired(uint32_t nTime);
     bool ClearTables();
      ~CTagViewDB() {}

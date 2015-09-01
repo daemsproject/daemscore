@@ -1,0 +1,32 @@
+{
+	"packagename":"browser",
+	"mainfile":"html/browser.html",
+	"files":
+	{
+		"html/browser.html":"html/browser.html",
+		"html/templates.html":"html/templates.html",
+		"css/bootstrap.min.css":"css/bootstrap.min.css",		
+		"css/bootstrap-responsive.min.css":"css/bootstrap-responsive.min.css",
+		"css/jquery-ui.theme.min.css":"css/jquery-ui.theme.min.css",		
+		"css/jquery-ui.structure.min.css":"css/jquery-ui.structure.min.css",
+		"css/main-overrides.css":"css/main-overrides.css",
+		"css/br-overrides.css":"css/br-overrides.css",
+		"js/bootstrap.min.js":"js/bootstrap.min.js",
+		"js/jquery.min.js":"js/jquery.min.js",
+		"js/browser.js":"js/browser.js",		
+		"js/shared.min.js":"js/shared.min.js",
+		"js/jquery-ui.min.js":"js/jquery-ui.min.js",
+		"js/base64.js":"js/base64.js",
+		"js/browserapi.js":"js/browserapi.js",
+		"js/browserpage.js":"js/browserpage.js",
+		"js/bppage.js":"js/bppage.js",
+		"js/translate.js":"js/translate.js",
+		"js/lang/zh.json":"js/lang/zh.json",
+		"js/lang/en.json":"js/lang/en.json",
+		"icons/crown.png":"icons/crown",
+		"icons/silvercoin.png":"icons/silvercoin",
+		"icons/goldcoin.png":"icons/goldcoin",
+		"icons/diamond.png":"icons/diamond",
+		"icons/goldbar.png":"icons/goldbar"
+	}
+}

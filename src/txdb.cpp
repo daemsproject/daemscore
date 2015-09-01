@@ -974,7 +974,7 @@ bool CTagViewDB::InsertTags(const vector<string>& vTags)
 
 bool CTagViewDB::InsertContentTags(const vector<CContentDBItem>& vContents, const map<string, int64_t>& mapTags)
 {
-    bool result = false;
+    bool result = true;
     const char* tableName = "tag";
     for (unsigned int ii = 0; ii < vContents.size(); ii++)
     {
@@ -987,7 +987,18 @@ bool CTagViewDB::InsertContentTags(const vector<CContentDBItem>& vContents, cons
     }
     return result;
 }
-
+bool CTagViewDB::DeleteContentTags(const vector<CContentDBItem>& vContents)
+{
+    bool result = true;
+    const char* tableName = "tag";
+    for (unsigned int ii = 0; ii < vContents.size(); ii++)
+    {
+        char chInt[100];
+        sprintf(chInt,"%lld",vContents[ii].link.SerializeInt());
+        result &= db->Delete(tableName,"link",chInt ,"=" );
+    }
+    return result;
+}
 bool CTagViewDB::ClearExpired(uint32_t nTime)
 {
     vector<int64_t>vLink;
@@ -1102,7 +1113,9 @@ bool UpdateSqliteDB(const CBlock& block, const vector<pair<uint256, CDiskTxPos> 
         //LogPrintf("UpdateSqliteDB7 \n");
         PrePareBlockTxIndex(block, mapTxIndex);
     }
-
+    else{
+        GetBlockContentAndTagList(block, vPos, vPrevouts, vTags, vContents);
+    }
     //LogPrintf("UpdateSqliteDB8 \n");
     GetBlockScript2TxPosList(block, vPos, vPrevouts, mapScript2TxPos, fErase);
     //LogPrintf("UpdateSqliteDB9 \n");
@@ -1174,6 +1187,10 @@ bool UpdateSqliteDB(const CBlock& block, const vector<pair<uint256, CDiskTxPos> 
         // LogPrintf("UpdateSqliteDB36 \n");
         pTagDBView->InsertContentTags(vContents, mapTags);
         // LogPrintf("UpdateSqliteDB37 \n");
+    }else
+    {
+        pTagDBView->DeleteContentTags(vContents);
+        psqliteDB->DeleteContents(vContents);
     }
     // LogPrintf("UpdateSqliteDB38 \n");
     psqliteDB->BatchInsertCheque(vChequeAdd, mapScriptIndex);

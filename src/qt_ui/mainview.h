@@ -154,7 +154,7 @@ public:
     
     void installWebPage(const std::string strPageName);
     void loadWebPage(int nPageID);
-    bool copyQrcToDisc(std::string to,std::string from);
+    bool copyQrcToDisc(std::string app,std::string to,std::string from);
     std::string qrcFileToString(const std::string fileName);
     
     

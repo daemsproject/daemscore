@@ -842,6 +842,7 @@ bool WriteJsonToFile(const json_spirit::Value& valContent,const string file_name
     fout << json_spirit::write_string(valContent,true) << endl; 
     //ofstream os(file_name.c_str());
     //os.write( valContent.get_str(), strlen(valContent.get_str()));
+    fout.close();
     return true;
 }
 bool StringToFile(const std::string& filename,const std::string& str)
@@ -849,9 +850,12 @@ bool StringToFile(const std::string& filename,const std::string& str)
     ofstream fout;  
     //LogPrintf("util.cpp StringToFile file name:%s content len:%i\n",filename,str.size());
     fout.open(filename.c_str());  
-    if(!fout.is_open())
+    if(!fout.is_open()){
+        LogPrintf("util.cpp StringToFile open failed file name:%s content len:%i\n",filename,str.size());
         return false;
+    }
     fout << str; 
+    fout.close();
     return true;
 }
 bool FileExists(const std::string& filename)

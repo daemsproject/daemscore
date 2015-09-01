@@ -1,0 +1,126 @@
+
+<div id="maininput-tpl" class="maininput hide">
+
+    <input type="file" id="theFile" style="display:none" multiple/>
+    <div id="fileholder" align="center">
+        <div id="pubpreview" class="hide"><div class="prevtitle" tr="Preview"></div></div>
+        <textarea id="theText" class="maintext lttext noborder"></textarea>
+        <div id="pubdfttag" class="pubdfttag hide">
+            <input id="CC_LANG" class="" type="checkbox" checked /><span id="cclang-span"></span>
+            <input id="CC_TAG_EROTIC" class="" type="checkbox" /><span id="cclang-span" tr="Erotic"></span>
+            <input id="CC_TAG_HORROR" class="" type="checkbox" /><span id="cclang-span" tr="Horror"></span>
+            <input id="CC_TAG_POLITICS" class="" type="checkbox" /><span id="cclang-span" tr="Political"></span>
+        </div>
+        <div id="pubbtnh">
+            <button id="clearpub" class="idbtn" tr="Clear"></button>
+            <button id="addtag" class="idbtn" tr="Add tag"></button>
+            <button id="addlink" class="idbtn" tr="Add link"></button>
+            <!-- <button id="validtil" class="idbtn">Valid until</button> -->
+            <button id="browsefile" class="idbtn" tr="BrowseFile"></button>
+            <button id="confirmpub" class="idbtn bold" disabled tr="Send"></button>
+        </div>
+    </div>
+</div>
+
+<div id="pubtag-tpl" class="pubtf hide"><span tr="Tag"></span><input class="input-tag" type="text" name="tag"><input type="checkbox"><span style="display:inline"tr="Protag"></span></div>
+<div id="promctt-tpl" class="pubtf hide"><span style="display:inline" tr="Promote content"></span><input id="promctt-check" type="checkbox"><div class="input-tag-wrapper hide">
+        <span tr="Deposit"></span><input id="promctt-value" type="text" placeholder="Value locked for ranking">
+        <span tr="Until"></span><input id="promctt-date" type="text" name="deposit-til" placeholder="Promote tags until date"></div></div>
+<div id="publink-tpl" class="pubtf hide"><span tr="Link"></span><input id="input-link-name" type="text" name="linkname" placeholder="Name"><input id="input-link" type="text" name="link" placeholder="FAI/HTTP Link" /></div>
+<!--<div id="pubvalid-tpl" class="pubtf hide"><span>Valid until</span> <input id="validtil" type="text" name="validtil"></div>-->
+<div id="fee-tpl" class="pubtf hide"><span tr="Fee Rate"></span><input id="input-feerate" type="text" name="feerate" placeholder="φ/KB"/><span class="estfee"tr="Estimated fee:"></span><span id="estfee" class="estfee"></span><div><span class="estfee"tr="Suggested rate:"> </span><span id="sgstr" class="estfee"></span><span class="estfee"tr="Min rate:"> </span><span id="minr" class="estfee"></span></div></div>
+<div id="textSpan"><div class="text"></div></div>
+<div id="pubto-tpl" class="pubtf hide"><span tr="To"></span><input class="input-to" type="text" name="pubto"></div>
+
+<div id="standard-tpl" class="hide">
+    <div class="container std" >
+        <div class="post">
+            <div class="leftblock"></div>
+            <div class="brctt">
+                <div class="ctt"></div>
+                <div class="ctt2"></div>
+            </div>
+        </div>
+    </div>
+    <hr>
+</div>
+<div id="domain-tpl" class="hide"><div class="container dmn" >
+        <div class="post"><div class="leftblock" /><span class="lckvl"></span><span tr="Valid until: "></span><span class="expt"></span></div>
+        <div class="post"><div class="leftblock" /><span class="grey_a" tr="Forward to: "></span><span class="fwd-type grey_a"></span><span class="fwd-tgt grey_a"></span></div>
+        <div class="post"><div class="leftblock" /><span class="grey_a" tr="Owned by: "></span><span class="owner grey_a"></span></div>
+        <div class="post"><div class="leftblock" /><span tr="Intro: "></span><span class="intro"></span></div>
+        <hr>
+    </div>
+</div>
+<div id="prod-tpl" class="hide"><div class="container prd" >
+        <div class="post"><div class="leftblock" /><span class="lckvl"></span><span class="prdname"></span><span class="prc"></span><span class="grey_a" tr="Valid until: "></span><span class="expt grey_a"></span></div>
+        <div class="post"><div class="leftblock" /><span tr="Intro: "></span><span class="intro"></span></div>
+        <div class="post"><div class="leftblock" /><div class="brctt"><div class="ctt"></div></div></div>
+        <hr>
+    </div>
+</div>
+<div id="cmt-tpl" class="hide">
+    <ul class="cmt">
+        <li class="linkspan" clink=""></li>
+        <li><a class="ctt-link-btn idbtn hide"tr="Copy Link"></a></li>
+        <li><a class="ctt-share-btn idbtn hide"tr="Share"></a></li>
+        <li><a class="ctt-cmt-btn idbtn hide"tr="Comment"></a></li>
+        <a class="shrt idbtn short">...</a>
+    </ul>
+</div>
+<div id="buy-btn-tpl"><li><a class="prd-pchs-btn idbtn"tr="Buy"></a></li></div>
+<div id="poster-tpl" class="hide">       
+    <div class="post poster"><div class="icon"></div>
+        <div class="id">
+            <ul>
+                <li><span class="alias"></span></li>
+                <a class="text" fullid=""></a><span class="idtype"></span>
+                <li><a class="id-homepage-btn idbtn hide"tr="Visit homepage"></a></li>
+                <li><a class="id-copyid-btn idbtn hide"tr="Copy ID"></a></li>
+                <li><a class="id-chat-btn idbtn hide"tr="Chat"></a></li>
+                <li><a class="id-follow-btn idbtn hide"tr="Follow"></a></li>
+                <li><a class="id-unfollow-btn idbtn hide"tr="Unfollow"></a></li>
+                <li><a class="id-share-btn idbtn hide"tr="Share"></a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div id="video-tpl" class="hide"><video controls id=""><source type="" src=""></video><a href="" class="bclink"></a></div>
+<div id="image-tpl" class="hide"><div class="text"></div><div><a><img id="" src="" type="" class="brimg"/></a></div><a href="" class="bclink"></a><span class="ctt-rmdr hide" tr="File"></span></div>
+<div id="s-image-tpl" class="hide"><li><div class="scontainer"><img id="" src="" type="" class="brimgs"/></div><a class="slidelink"></a></li></div>
+<div id="linka"><a class="link hide"></a></div>
+<div id="pkginput-tpl" class="pkginput hide">
+    <h1 tr="Paste json here"></h1>
+    <form><textarea id="theText" class="maintext"></textarea></form> 
+    <button id="confirmpub" disabled tr="Confirm sending"></button>
+</div>
+<div id="ntcbubble-tpl" class="ntcno1 hide"></div>
+<div id="hpheader-tpl" class="quickstart hide">
+    <div class="container">                
+        <div class="row-fluid" >
+            <div class="span12 no-print">
+                <ul class="nav nav-pills pull-left tabbar" >
+                    <li class="navi-icon"></li>
+                    <li id="navi-name">
+                        <ul>
+                            <a class="navi-name text" fullid=""></a>
+                            <li id="blclvl"></li>
+                            <li><a class="id-copyid-btn idbtn"tr="Copy ID"></a></li>
+                            <li><a class="id-follow-btn idbtn"tr="Follow"></a></li>
+                            <li><a class="id-unfollow-btn idbtn"tr="Unfollow"></a></li>
+                        </ul>
+                    </li>
+                    <li class="navi-intro"tr="Intro"></li>
+                </ul>
+            </div>
+        </div>  
+    </div>
+</div>
+<div id="search-tpl" class="hide"><input id="input-search" type="text"/><a id="search-btn" class="idbtn"tr="Search"></a><input type="radio" value="ctt" name="srch-type" checked/><span tr="content"></span><input type="radio" value="dmn" name="srch-type" /><span tr="domain"></span><input type="radio" value="prd" name="srch-type" /><span tr="product"></span></div>
+<div id="main-notices-container-tpl" class="hide"><div id="notices" class="hide"></div></div>
+<div id="linkpage-tpl" class="hide"><input type="checkbox" /> <span tr="Show Debug"></span><pre id="ctt-json" class="hide"></pre></div>
+<div id="slider-tpl" class="hide">
+    <a class="control_next">></a>
+    <a class="control_prev"><</a>
+    <ul></ul>  
+</div>

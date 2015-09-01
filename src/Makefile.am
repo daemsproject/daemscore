@@ -89,8 +89,7 @@ BITCOIN_CORE_H = \
   checkqueue.h \
   clientversion.h \
   coincontrol.h \
-  coins.h \
-  fai/script2txposdb.h \
+  coins.h \  
   fai/domain.h \
   fai/contentutil.h\
   fai/settings.h\
@@ -265,8 +264,7 @@ libbitcoin_common_a_SOURCES = \
   fai/shop.cpp \
   fai/link.cpp \
   fai/jsondb.cpp \
-  coins.cpp \
-  fai/script2txposdb.cpp \
+  coins.cpp \  
   fai/domain.cpp \
   compressor.cpp \
   primitives/block.cpp \

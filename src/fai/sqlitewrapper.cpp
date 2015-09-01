@@ -1058,6 +1058,19 @@ bool CSqliteWrapper::InsertContents(const vector<CContentDBItem>& vContents,cons
    sqlite3_finalize( stat );
    return (result==SQLITE_OK||result==101);
 }
+bool CSqliteWrapper::DeleteContents(const vector<CContentDBItem>& vContents)
+{
+    bool result = true;
+    const char* tableName = "table_content";
+    for (unsigned int ii = 0; ii < vContents.size(); ii++)
+    {
+        char chInt[100];
+        sprintf(chInt,"%lld",vContents[ii].link.SerializeInt());
+        result &= Delete(tableName,"link",chInt ,"=" );
+    }
+    return result;
+}
+    
 bool CSqliteWrapper::SearchContents(const vector<int64_t>& vSenderIDs,const vector<int>& vCCs,const vector<int64_t>& vTagIDs,vector<CContentDBItem>& vContents,const int nMaxResults,const int nOffset)
 {
     //LogPrintf("CSqliteWrapper GetContents \n");    

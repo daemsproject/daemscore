@@ -2328,18 +2328,20 @@ json_spirit::Value searchproducts(const json_spirit::Array& params, bool fHelp)
                 continue;
             if (product.seller.size() > 0)
             {
-
                 pDomainDBView->GetDomainByForward(product.seller, product.sellerDomain, true);
             }
             if (product.recipient.size() == 0)
                 product.recipient = product.seller;
             product.nExpireTime = LockTimeToTime(out.nLockTime);
             vProduct.push_back(product);
+            Object obj=product.ToJson().get_obj();
+            obj.push_back(Pair("lockvalue",out.nValue));
+            arrProducts.push_back(obj);
+            
         }
-
     }
-    for (unsigned int i = 0; i < vProduct.size(); i++)
-        arrProducts.push_back(vProduct[i].ToJson());
+    //for (unsigned int i = 0; i < vProduct.size(); i++)
+    //    arrProducts.push_back(vProduct[i].ToJson());
     LogPrintf("searchproducts toJson%i \n", arrProducts.size());
     return Value(arrProducts);
 }

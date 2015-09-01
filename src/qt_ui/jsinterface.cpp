@@ -278,7 +278,7 @@ QString JsInterface::jscall(const QString command,const QString dataJson,const i
     }
     catch (std::exception& e)
     {
-        LogPrintf("jsinterface:jscall error\n");
+        LogPrintf("jsinterface:jscall error %s\n",e.what());
         Object reply;    
         reply.push_back(Pair("error", Value(e.what())));
         valResult=Value(reply);            

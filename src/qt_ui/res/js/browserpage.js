@@ -1,208 +1,131 @@
 var newDisp = []; // array to host block range shown on new page
-var fllDisp = []; // follow page
-var mypDisp = []; // mypage
+var gParam = {}; // global params
 var sldMax = 100;
 var sld = [];
+var currentTab = "br-new-btn";
+//var page = "browser";
+var accountID;
+var balance = {};
 $(document).ready(function () {
+    console.log(new Date());
+    $("#tpls").load("templates.html", function () {
 
-    CBrowser.newAction();
-
-    $("#refresh-btn").click(function () {
-        CBrowser.refreshNew();
-    });
-    $("#refreshold-btn").click(function () {
-        CBrowser.refreshOld();
-    });
-    $(".tabbar").children("li").children("a.ntcbtn").click(function () {
-        CBrowser.switchTab($(this).attr("id"));
-    });
-    $("br-lang-btn").click(function () {
-    });
-    $(".linkspan").click(function () {
-        CUtil.copyToClipboard($(this).find("a").html());
-    });
-    $(".ctt-link-btn").click(function () {
-        var link = $(this).parent().parent().find(".linkspan").attr("clink");
-        CUtil.copyToClipboard(link);
-    });
-//    $("#fullImage").click(function () {
-//        $(this).html("");
-//    });
-    $(".column2").scroll(function () {
-        
-        if ($(".column2").scrollTop() + $(".column2").height() >= $(".column2")[0].scrollHeight) {
-//            alert("btm");
-            CBrowser.bottomAction();
+        var page = CBrowser.getPageName();
+        console.log(page + "  " + new Date());
+        switch (page) {
+            case "homepage":
+                prepareStdTpl();
+                var id = CUtil.getGet("id");
+                CBrowser.goToHomepage(id);
+                CBrowser.regBottomAction();
+//                
+                resetC2();
+                break;
+            case "link":
+                prepareStdTpl();
+                var link = CUtil.getGet("link");
+                var format = CUtil.getGet("format");
+//                console.log(format);
+                format = format ? Number(format) : 7;
+                format = format > 7 ? 7 : format;
+                CBrowser.goToLinkpage(link, format);
+                resetC2();
+                break;
+            case "browser":
+            default:
+                $("#maininput").html($("#maininput-tpl").html());
+                prepareSimplePub();
+                prepareStdTpl();
+//
+//                var imgs = CBrowser.getNewImages();
+////                console.log(imgs);
+//                CBrowser.addSlideImage(imgs);
+//                CBrowser.prepareSlider();
+                CBrowser.regBottomAction();
+                CBrowser.newAction();
+                resetC2(); // this line need to stay at the bottom
+                CBrowser.refreshImages(true);
+                setInterval(function () {
+                    var tab = CBrowser.getCurrentTab();
+                    if (tab === "br-home-btn")
+                        CBrowser.refreshImages();
+                }, 10000);
+                break;
         }
+        CBrowser.prepareNotice(page);
+        $("a").click(function () {
+            CBrowser.regLink($(this));
+        });
     });
+    $("#test1-btn").click(function () {
+//        var t = BrowserAPI.goToCustomPage('http://google.com');
+//        console.log(t);
+        var t = window.location.href;
+        console.log(t);
+        console.log(window.location.search);
+        if (t.indexOf("?") < 0)
+            window.location.assign(t + "/?id=K4HUMJNWO4DT2G6QPTXPIYZDEHC6QGL5VR77R7K75MPGFHHAS36QEY2XGCCF");
+//        window.location.reload();
+    });
+    $("#test2-btn").click(function () {
+        var t = window.location.href;
+        console.log(t);
+        if (t.indexOf("?") < 0)
+            window.location.assign(t + "?link=fai:607.1");
+    });
+    $(".bclink").click(function () {
+        regBclink($(this));
+    });
+    $("#navi-name").click(function () {
+        CBrowser.toggleIdOpt($(this));
+    });
+    function regBclink(div) {
+        console.log('reg');
+        var linkstr = div.attr("href");
+        console.log(div.attr("href"));
+        var nctt = BrowserAPI.getContentByLink(linkstr);
+        console.log(nctt);
+        if (!CBrowser.replaceContent(nctt, CONTENT_TYPE_FEED, div.parent().parent().parent().parent()))
+            CBrowser.showNotice("Invalid link");
+        $(".bclink").click(function () {
+            regBclink($(this));
+        });
+    }
 
-    var imgs = CBrowser.getNewImages();
-    CBrowser.addSlideImage(imgs);
     function resetC2() {
-//        var c1w = $("#slider ul li").width() + $("body").width() * 0.1;
-//        $(".column2").css({marginLeft: c1w});
-
-
-        var c1w = $("body").width() - $(".column1").width() - 150;
-        var height = $(window).height() -50;
-        $(".column2").css({width: c1w});
+        if ($("#shdr").length > 0) {
+            var c1w = $("body").width() - $(".column1").width() - 150;
+            $(".column2").css({width: c1w});
+        } else {
+            var c1w = $(window).width() * 0.95;
+            $(".column2").css({left: 0});
+            $(".column2").css({width: c1w});
+        }
+        var height = $(window).height() - 50;
         $(".column2").css({height: height});
     }
 
     $(window).resize(function () {
         resetC2();
     });
-
-// slider code from http://codepen.io/zuraizm/pen/vGDHl
-    var sliderInterval = 3000;
-    var sliderAuto = setInterval(function () {
-        moveRight();
-    }, sliderInterval);
-
-    var slideCount = $('#slider ul li').length;
-    var slideWidth = $('#slider ul li').width();
-    var slideHeight = $('#slider ul li').height();
-    var sliderUlWidth = slideCount * slideWidth;
-    $('#slider').css({width: slideWidth, height: slideHeight});
-    $('#slider ul').css({width: sliderUlWidth, marginLeft: -slideWidth});
-    $('#slider ul li:last-child').prependTo('#slider ul');
-    $('#slider').mouseover(function () {
-        clearInterval(sliderAuto);
-    }).mouseleave(function () {
-        sliderAuto = setInterval(function () {
-            moveRight();
-        }, sliderInterval);
-    });
-    function moveLeft() {
-        $('#slider ul').animate({
-            left: +slideWidth
-        }, 200, function () {
-            $('#slider ul li:last-child').prependTo('#slider ul');
-            $('#slider ul').css('left', '');
-        });
-    }
-    function moveRight() {
-        $('#slider ul').animate({
-            left: -slideWidth
-        }, 200, function () {
-            $('#slider ul li:first-child').appendTo('#slider ul');
-            $('#slider ul').css('left', '');
-        });
-    }
-    $('a.control_prev').click(function () {
-        moveLeft();
-    });
-    $('a.control_next').click(function () {
-        moveRight();
-    });
-
-// copy from publisherpage.js
-    var dropZone = document.getElementById('fileholder');
-    var theTextVal = "Type some here or drag and drop a file / Click or drag the file into the area above";
-    $("#theText").attr("placeholder", theTextVal);
-//    $('#fileholder').click(function () {
-//        CPublisher.handleFileInput('theFile');
-//    })
+    accountID = BrowserAPI.getAccountID();
+    balance = BrowserAPI.getBalance(accountID, false).balance;
+    var bl = CBrowser.getBalanceLevel(balance);
     $('#cblc').html(BrowserAPI.getBlockCount());
-    $('#browsefile').click(function () {
-        CPublisher.handleFileInput('theFile');
-    })
-    $('#theText').click(function () {
-//        console.log($(this).val());
-        $(this).removeClass('lttext');
-//        if ($(this).val() === theTextVal) {
-//            $(this).val("").addClass("ltborder").removeClass("noborder");
-        $('#pubbtnh').show();
-//        }
-//    }).blur(function () {
-//        if ($(this).val() === "") {
-//            $(this).addClass('lttext').addClass("noborder").removeClass("ltborder");
-//        }
-    });
-    $('#addtag').click(function () {
-//        alert('t');
-        CPublisher.addTagField();
-    });
-    $('#addlink').click(function () {
-        CPublisher.addLinkField();
-        $(this).attr('disabled', true);
-    });
-    if (window.File && window.FileReader && window.FileList && window.Blob) {
-        dropZone.addEventListener('dragover', CPublisher.handleDragOver, false);
-        dropZone.addEventListener('drop', CPublisher.handleFileSelect, false);
-    } else {
-        alert("error handleDragOver");
-    }
-    $("#test-btn").click(function () {
-//        var t = "test texttest";
-//        CBrowser.showNotice(t, 100);
-        var t = BrowserAPI.getHash('1234');
-        console.log(t);
-    });
-    $("#theText").bind('input propertychange', function () {
-        $("#confirmpub").removeAttr('disabled');
-    });
-    $("#input-link").bind('input propertychange', function () {
-        $("#confirmpub").removeAttr('disabled');
-    });
-
-    $("#confirmpub").click(function () {
-        var text = $("#theText").val();
-        var haveFile = typeof bufferedFile.ctt !== 'undefined';
-//        console.log(typeof bufferedFile.ctt);
-//        console.log('text');
-//        console.log(text);
-        var linkstr = $("#input-link").val();
-        var link = CLink.setString(linkstr, $("#input-link-name").val());
-//        console.log(link);
-        if (!link.isValid() && !link.isEmpty()) {
-            CBrowser.showNotice("Link is invalid");
-            return;
-        }
-//        console.log(link);
-//        console.log(link.isEmpty());
-//        console.log(link.isValid());
-        var ctt;
-        if (text === "") {
-            if (!haveFile) {
-                if (link.isEmpty()) {
-                    CBrowser.showNotice("Nothing to send");
-                    console.log("err --nothing to send");
-                    return;
-                } else {
-                    ctt = CPublisher.createLinkContent(link);
-                }
-            } else
-                ctt = bufferedFile.ctt;
-
-        } else {
-            if (haveFile) {
-                console.log("bf.ctt");
-                console.log(bufferedFile.ctt);
-                ctt = CPublisher.addTextToContent(bufferedFile.ctt, text);
-                if (!link.isEmpty())
-                    ctt = CPublisher.addLinkToContent(ctt, link);
-            } else {
-                ctt = CPublisher.createTextContent(text);
-                if (!link.isEmpty())
-                    ctt = CPublisher.addLinkToContent(ctt, link);
-            }
-        }
-//        console.log(ctt);
-        CPublisher.handleContent(ctt);
-    });
+    $('#balance').html(balance.balance_total);
+    $("#blclvl").html(CBrowser.getBalanceHtml(bl));
     doTranslate();
-    $('#langmenu li a').click(function () {
-        langCodeF = $(this).attr("tr");
-        console.log(langCodeF);
-        langCode = langCodeF.substring(0, 2);
-        doTranslate();
+    $("#getnew-btn").click(function () {
+        CBrowser.newAction();
+        $(this).addClass("hide");
     });
-    $('#validtil').click(function () {
-        console.log('vt');
-        CPublisher.addValidtilField();
-        $(this).attr('disabled', true);
-        $("#validtil").datepicker();
-    });
-    resetC2(); // this line need to stay at the bottom
+
+    function registerNotifications() {
+        var aa = function (a) {
+            CBrowser.notifyBlock(a);
+        };
+        BrowserAPI.regNotifyBlocks(aa);
+    }
+    registerNotifications();
+    resetC2();
 });

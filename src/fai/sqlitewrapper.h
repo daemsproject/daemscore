@@ -316,6 +316,8 @@ public:
 
     bool InsertContent(const int64_t nLink,const int64_t pos,const int64_t sender, const int cc, const int64_t lockValue,const uint32_t lockTime);
     bool InsertContents(const vector<CContentDBItem>& vContents,const map<CScript,int64_t>& mapScriptIndex);
+    bool DeleteContents(const vector<CContentDBItem>& vContents);
+    
     bool SearchContents(const vector<int64_t>& vSenders,const vector<int>& vCCs,const vector<int64_t>& vTagIDs,vector<CContentDBItem>& vContents,const int nMaxResult=30,const int nOffset=0);
 
     bool InsertTag(const char* tableName,const int64_t tagID,const int64_t nLink);

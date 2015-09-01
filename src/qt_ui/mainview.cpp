@@ -219,48 +219,76 @@ void MainView::installWebPage(const string strPageName)
     //LogPrintf("current working directory : %s\n", buf);
     //std::string str(buf);
     //boost::filesystem::path fpPath=system_complete(str).parent_path().parent_path().parent_path() / "faipages" / strPageName; 
-    LogPrintf("current working directory : %s\n", fpPath.string());
+    LogPrintf("MainView::installWebPage current working directory : %s\n", fpPath.string());
     boost::filesystem::path fpFile=fpPath / (strPageName+".package.json");
     string filename=fpFile.string();
     boost::filesystem::create_directories(fpPath);
     // boost::filesystem::remove_all(fpPath);
     string str=qrcFileToString(":/"+strPageName+".package.json");
+    LogPrintf("package file:%s \n",str);
     json_spirit::Object objFiles;
     std::string strMainFile;
     StringToFile(filename,str);
     ReadFilePackageList(str,strMainFile,objFiles);
     for(unsigned int i=0;i<objFiles.size();i++)           
-        copyQrcToDisc(objFiles[i].name_,objFiles[i].value_.get_str());
+        copyQrcToDisc(strPageName,objFiles[i].name_,objFiles[i].value_.get_str());
    
 }
 
 std::string MainView::qrcFileToString(const std::string fileName)
 {
     QFile f(QString().fromStdString(fileName));
-        if(!f.open(QIODevice::WriteOnly|QIODevice::Text)){
+        if(!f.open(QIODevice::ReadOnly|QIODevice::Text)){
             LogPrintf("qrcFileToString %s failed \n",fileName);
             return "";
         }        
         QTextStream out(&f);  
-        //out< ;
-        QString qstr;
-        out>>qstr;
+        //LogPrintf("MainView::qrcFileToString :%s \n",out.readAll().toStdString().c_str());
+        QString qstr=out.readAll();
+        //out>>qstr;
         f.close();
         return qstr.toStdString();
 }
-bool MainView::copyQrcToDisc(string to,string from)
+bool MainView::copyQrcToDisc(string app,string to,string from)
 {
+    LogPrintf("copyQrcToDisc app %s,to %s,from %s \n",app,to,from);
     QFile fin(QString().fromStdString(":/"+from));       
     if(!fin.open(QIODevice::ReadOnly))
         return false;
-    QDataStream in(&fin);  
-    QString qstr;  
-    in>>qstr; 
-    boost::filesystem::path fpPath=GetDataDir()  / "appdata" / to / "filepackage";  
-    std::cout<<"remove filename result:"<<fpPath.remove_filename().string()<<"\n";
-    if(boost::filesystem::create_directories(fpPath.remove_filename()))
-       return StringToFile(fpPath.string(),qstr.toStdString());
-    return false;
+    QByteArray qba=fin.readAll();
+    string str(qba.begin(),qba.end());
+    //QDataStream in(&fin);  
+    //char * chData;
+    //uint len;
+    //in.readBytes(chData,len);
+   // LogPrintf("copyQrcToDisc content:%s\n",HexStr(str.begin(),str.end()));
+   // string str(chData,chData+len);
+    
+    //QString qstr=in.;  
+    //in>>qstr; 
+    boost::filesystem::path fpPath=GetDataDir()  / "appdata" / app / "filepackage";  
+    while(true)
+            {
+                int pos=to.find("/");
+                if(pos==(int)to.size()-1)
+                    return false;
+                if(pos==(int)to.npos)
+                {                    
+                    break;
+                }
+                else
+                {
+                    fpPath /= to.substr(0,pos);
+                    to=to.substr(pos+1);
+                }            
+            }
+    fpPath /= to;
+    //std::cout<<"remove filename result:"<<fpPath.remove_filename().string()<<"\n";
+    LogPrintf("path to write:%s \n",fpPath.string());
+    boost::filesystem::path fpPath2=fpPath;
+    boost::filesystem::create_directories(fpPath2.remove_filename());
+       return StringToFile(fpPath.string(),str);
+    //return false;
 }
 
 QWidget *MainView::lineEditStack() const

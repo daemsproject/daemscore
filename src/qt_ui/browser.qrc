@@ -48,6 +48,11 @@
         <file alias="chat">res/icons/chat.png</file>
         <file alias="shop">res/icons/shop.png</file>
         <file alias="tool">res/icons/configure.png</file>
+        <file alias="goldbar">res/icons/goldbar.png</file>
+        <file alias="silvercoin">res/icons/silvercoin.png</file>
+        <file alias="goldcoin">res/icons/goldcoin.png</file>
+        <file alias="crown">res/icons/crown.png</file>
+        <file alias="diamond">res/icons/diamond.png</file>
     </qresource>
     <qresource prefix="/images">
         <file alias="about">res/images/about.png</file>
@@ -91,8 +96,35 @@
         <file alias="spinner-033">res/movies/spinner-033.png</file>
         <file alias="spinner-034">res/movies/spinner-034.png</file>
     </qresource>
+    <qresource prefix="/js">
+        <file alias="jquery.min.js">res/js/jquery.min.js</file>
+        <file alias="jquery-ui.min.js">res/js/jquery-ui.min.js</file>
+        <file alias="bootstrap.min.js">res/js/bootstrap.min.js</file>
+        <file alias="base64.js">res/js/base64.js</file>
+        <file alias="browserapi.js">res/js/browserapi.js</file>
+        <file alias="browser.js">res/js/browser.js</file>
+        <file alias="browserpage.js">res/js/browserpage.js</file>
+        <file alias="bppage.js">res/js/bppage.js</file>
+        <file alias="translate.js">res/js/translate.js</file>
+        <file alias="shared.min.js">res/js/shared.min.js</file>
+    </qresource>
+    <qresource prefix="/js/lang">
+        <file alias="en.json">res/js/lang/en.json</file>
+        <file alias="zh.json">res/js/lang/zh.json</file>
+    </qresource>
+    <qresource prefix="/html">
+        <file alias="browser.html">res/html/browser.html</file>
+         <file alias="templates.html">res/html/templates.html</file>
+    </qresource>
+    <qresource prefix="/css">
+        <file alias="bootstrap.min.css">res/css/bootstrap.min.css</file>
+        <file alias="bootstrap-responsive.min.css">res/css/bootstrap-responsive.min.css</file>
+        <file alias="jquery-ui.theme.min.css">res/css/jquery-ui.theme.min.css</file>
+        <file alias="jquery-ui.structure.min.css">res/css/jquery-ui.structure.min.css</file>
+        <file alias="main-overrides.css">res/css/main-overrides.css</file>
+        <file alias="br-overrides.css">res/css/br-overrides.css</file>
+    </qresource>
     <qresource>
-        <file alias="wallet.html">res/html/wallet_en.html</file>
-        <file alias="wallet.js">res/js/wallet.js</file>
+        <file alias="browser.package.json">res/package/browser.package.json</file>
     </qresource>
 </RCC>

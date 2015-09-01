@@ -409,7 +409,7 @@ QString WalletModel::saveFileUserConfirm(const Array arr)
             if(StringToFile(fileName.toStdString(),arr[1].get_str()))
                 return QString("success");
         }     
-     return QString("error");
+     return QString("{\"error\":\"user canceled\"}");
 }
 bool WalletModel::importAccount()
 {
@@ -519,26 +519,38 @@ QString WalletModel::DoPayment(const CPaymentOrder& pr,const int nPageIndex)
 }
 QString WalletModel::HandlePaymentRequest2(const Array arrData,const int nPageIndex)
 {
+    if(arrData.size()<3)
+        return ("{\"error\":\"params less than 3\"}");   
     Array arrRaw=arrData[2].get_array();  
     std::vector<CContent> ctts;
     for(int i =0; i<arrRaw.size();i++){
         std::vector<unsigned char> raw = ParseHexV(arrRaw[i], "parameter arr");
-    CContent ctt(raw);
+        CContent ctt(raw);
         ctts.push_back(ctt);
     }
-    
+    double dFeeRate=1000;
     CPaymentOrder pr;
     if (arrData.size() == 3)
         pr = GetPublisherPaymentRequest(arrData[0].get_str(), arrData[1].get_str(), ctts);
-
-    else if (arrData.size() == 4 || arrData.size() == 5)
-        pr = GetPublisherPaymentRequest(arrData[0].get_str(), arrData[1].get_str(), ctts, arrData[3].get_real());
-    else if (arrData.size() == 6)
+    else
     {
-        if (arrData[3].get_real() < 1000.0)
-            pr = GetPublisherPaymentRequest(arrData[0].get_str(), arrData[1].get_str(), ctts, 1000.0, arrData[4].get_int(), arrData[5].get_int());
-        else
-            pr = GetPublisherPaymentRequest(arrData[0].get_str(), arrData[1].get_str(), ctts, arrData[3].get_real(), arrData[4].get_int(), arrData[5].get_int());
+        switch((int)arrData[3].type())
+        {
+            case int_type:
+                dFeeRate=(double)arrData[3].get_int();
+                break;
+            case real_type:
+                dFeeRate=arrData[3].get_real();
+                break;        
+            default:
+                return ("{\"error\":\"feerate type error\"}");   
+        }
+        if(dFeeRate<1000)
+            dFeeRate=1000;
+        if (arrData.size() == 4 || arrData.size() == 5)
+            pr = GetPublisherPaymentRequest(arrData[0].get_str(), arrData[1].get_str(), ctts, dFeeRate);
+        else if (arrData.size() == 6)
+            pr = GetPublisherPaymentRequest(arrData[0].get_str(), arrData[1].get_str(), ctts, dFeeRate, arrData[4].get_int64(), (uint32_t)arrData[5].get_int64());
     }
     return DoPayment(pr,nPageIndex);    
 }
