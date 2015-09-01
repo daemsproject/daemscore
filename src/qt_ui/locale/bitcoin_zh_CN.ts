@@ -2752,11 +2752,11 @@ Do you want to ignore these errors for this host?</source>
     </message>
     <message>
         <source>Locked %1 for %2 blocks</source>
-        <translation type="unfinished">冻结 %1 持续 %2 个区块</translation>
+        <translation type="unfinished">冻结 %1 为期 %2 个区块</translation>
     </message>
     <message>
         <source>Locked %1 for %2 days</source>
-        <translation type="unfinished">冻结 %1 持续 %2 天</translation>
+        <translation type="unfinished">冻结 %1 为期 %2 天</translation>
     </message>
     <message>
         <source>%1 to %2</source>

@@ -1807,7 +1807,7 @@ bool CheckInputs(const CTransaction& tx,const CTransaction& tx4CheckVins,CValida
                                  REJECT_INVALID, "bad-txns-inputvalues-mismatch");
             //check that it's from mempool
             //LogPrintf("CheckInputs txid:%s,nvin %i,nheight %i \n",tx.GetHash().GetHex(),i,coins->nHeight);
-            if (coins->nHeight==MEMPOOL_HEIGHT){
+            if (coins->nHeight==MEMPOOL_HEIGHT||coins->nHeight<=0){
                     return state.Invalid(
                         error("CheckInputs() : tried to spend mempool coins, not allowed"),
                         REJECT_INVALID, "bad-txns-spend-of-mempool");

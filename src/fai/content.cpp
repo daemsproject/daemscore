@@ -855,8 +855,11 @@ bool CContent::GetDataByCC(cctype mainCc,std::vector<string> & vDataString,bool 
                 content.GetDataByCC(mainCc,vDataString,fRecursive,fIncludeTypeCC);               
             }
         }
-        else if (fIncludeTypeCC&&GetPrimeCC((cctype)cc,GetCcLen((cctype)cc))==mainCc)
-            vDataString.push_back(GetCcName((cctype)cc));
+        else if (fIncludeTypeCC){
+           // LogPrintf("get typecc,cc:%s,primecc:%s,maincc:%s\n",GetCcName((cctype)cc),GetCcName(GetPrimeCC((cctype)cc,GetCcLen((cctype)cc))),GetCcName((cctype)mainCc));
+            if(GetPrimeCC((cctype)cc,GetCcLen((cctype)cc))==mainCc)
+                vDataString.push_back(GetCcName((cctype)cc));
+        }
     }
     return vDataString.size() > 0;
 }
@@ -869,7 +872,7 @@ cctype GetPrimeCC(const cctype ccIn,unsigned int nDigits)
     for (unsigned int i=0;i<4;i++)
     {
         int cc=ccIn>>i*8;
-        if(cc<1>>nDigits*8)
+        if(cc<(1<<(nDigits*8)))
             return (cctype)(cc-cc%2);
     }
     return CC_NULL;

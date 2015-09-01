@@ -509,10 +509,10 @@ Value createrawtransaction(const Array& params, bool fHelp)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, vout must be positive");
         const Value& value_v = find_value(o, "satoshi");
         if (value_v.type() != int_type)
-            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, missing satoshi key");
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter,input missing satoshi key");
         CAmount nValue = value_v.get_int64();
         if (nValue < 0)
-            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, satoshi must be positive");
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, input satoshi must be positive");
         CTxIn in(COutPoint(txid, nOutput, nValue));
         rawTx.vin.push_back(in);
     }
@@ -533,7 +533,7 @@ Value createrawtransaction(const Array& params, bool fHelp)
         }
         const Value& value_v = find_value(o, "satoshi");
         if (value_v.type() != int_type)
-            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, missing satoshi key");
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, output missing satoshi key");
         CAmount nAmount = value_v.get_int64();
         if (nAmount < 0 || nAmount > MAX_MONEY)
             throw JSONRPCError(RPC_MISC_ERROR, string("Vout value out of range"));
