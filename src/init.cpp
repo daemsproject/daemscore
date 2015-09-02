@@ -1068,7 +1068,7 @@ bool AppInit2(boost::thread_group& threadGroup)
                 LogPrintf("init:create dbs 4.\n");
                 pScriptCoinDBView = new CScriptCoinDB(psqliteDB,fReindex); 
                 LogPrintf("init:create dbs 5.\n");
-                settings.LoadSettings();
+                
                 if (fReindex)
                     pblocktree->WriteReindexing(true);
 
@@ -1127,7 +1127,7 @@ bool AppInit2(boost::thread_group& threadGroup)
             }
         }
     }
-
+    settings.LoadSettings();
     // As LoadBlockIndex can take several minutes, it's possible the user
     // requested to kill the GUI during the last operation. If so, exit.
     // As the program has not fully started yet, Shutdown() is possibly overkill.

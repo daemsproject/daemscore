@@ -29,7 +29,7 @@ bool CFilePackage::SetLink(const CLink linkIn)
     CContent content;
 
     if (!GetContentByLink(linkIn, content)) {
-        LogPrintf("CFilePackage::SetLink link: %s content:%s\n", link.ToString(), content);
+        LogPrintf("CFilePackage::SetLink fail link: %s content:%s\n", link.ToString(), content);
         return false;
     }
     LogPrintf("CFilePackage::SetLink link: %s content:%s\n", link.ToString(), content);

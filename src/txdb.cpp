@@ -904,7 +904,7 @@ bool CDomainViewDB::ClearExpired(const uint32_t time)
     //db->GetExpiredDomainIDs("domain10000",vDomainIDs10000,time);
     //db->GetExpiredDomainIDs("domain100",vDomainIDs100,time);
     char chTime[20];
-    sprintf(chTime, "%ui", time);
+    sprintf(chTime, "%u", time);
     db->SearchInts("domain10000", "expiredate", chTime, "rowid", vDomainIDs10000, "<");
     db->SearchInts("domain100", "expiredate", chTime, "rowid", vDomainIDs100, "<");
     db->Delete("domain10000", "expiredate", chTime, "<");
@@ -1003,7 +1003,7 @@ bool CTagViewDB::ClearExpired(uint32_t nTime)
 {
     vector<int64_t>vLink;
     char chTime[20];
-    sprintf(chTime, "%ui", nTime);
+    sprintf(chTime, "%u", nTime);
     db->SearchInts("table_content", "locktime", chTime, "link", vLink, "<");
     db->Delete("table_content", "locktime", chTime, "<");
 

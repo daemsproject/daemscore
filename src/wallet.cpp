@@ -1204,7 +1204,7 @@ void CWallet::ReacceptWalletTransactions()
 {
     LOCK2(cs_main, cs_wallet);
     std::vector<CWalletTx> vunconfirmedTxs=pwalletdb->ReadUnConfirmedTxs();
-
+    LogPrintf("ReacceptWalletTransactions %i \n",vunconfirmedTxs.size());
     for(std::vector<CWalletTx>::iterator it=vunconfirmedTxs.begin();it<vunconfirmedTxs.end();it++)
     {       
             CWalletTx& wtx=*it;
@@ -1281,7 +1281,7 @@ void CWallet::ResendWalletTransactions()
         // Sort them in chronological order
         multimap<unsigned int, CWalletTx*> mapSorted;
         std::vector<CWalletTx> vunconfirmedTxs=pwalletdb->ReadUnConfirmedTxs();
-
+LogPrintf("ResendWalletTransactions %i \n",vunconfirmedTxs.size());
         for(std::vector<CWalletTx>::iterator it=vunconfirmedTxs.begin();it<vunconfirmedTxs.end();it++)
         {       
             CWalletTx& wtx=*it;
@@ -1309,6 +1309,7 @@ bool CWallet::addUnconfirmedTx(const CWalletTx& wtx)
 {
     LOCK(cs_wallet);
     std::vector<CWalletTx> vunconfirmedTxs=pwalletdb->ReadUnConfirmedTxs();
+    LogPrintf("addUnconfirmedTx %i \n",vunconfirmedTxs.size());
     vunconfirmedTxs.push_back(wtx);
     return pwalletdb->WriteUnConfirmedTxs(vunconfirmedTxs);
 }

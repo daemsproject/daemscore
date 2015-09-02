@@ -3240,9 +3240,11 @@ bool ProcessNewBlock(CValidationState &state, CNode* pfrom, CBlock* pblock, CDis
 
     if (!ActivateBestChain(state, pblock))
         return error("%s : ActivateBestChain failed", __func__);
+    //LogPrintf("ProcessNewBlock pindexBestHeader %i,chainActive.Tip() %i \n",pindexBestHeader->nBlockHeight,chainActive.Height());
     //get mempool for starting
-    if(GetBoolArg("-mempoolrefreshed", false)&&pindexBestHeader==chainActive.Tip())
+    if((!GetBoolArg("-mempoolrefreshed", false))&&(int)pindexBestHeader->nBlockHeight==chainActive.Height()&&pfrom!=NULL)
         {
+        LogPrintf("getmempool from:%s \n",pfrom->addr.ToString());
             pfrom->PushMessage("mempool");
             SoftSetBoolArg("-mempoolrefreshed",true);
         }
