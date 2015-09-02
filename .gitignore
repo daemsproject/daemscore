@@ -57,6 +57,7 @@ src/qt/test/moc*.cpp
 src/qt_ui/*.moc
 src/qt_ui/moc_*.cpp
 src/qt_ui/browserexe
+src/qt_ui/browserexe*
 src/qt_ui/browsertest
 src/qt_ui/forms/ui_*.h
 src/qt_ui/ui_*.h

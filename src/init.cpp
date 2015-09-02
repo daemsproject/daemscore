@@ -1337,7 +1337,7 @@ bool AppInit2(boost::thread_group& threadGroup)
     LogPrintf("mapWallet.size() = %u\n",       pwalletMain ? pwalletMain->mapWallet.size() : 0);
     LogPrintf("mapAddressBook.size() = %u\n",  pwalletMain ? pwalletMain->mapAddressBook.size() : 0);
 #endif
-    SoftSetBoolArg("-mempoolrefreshed",false);
+    //SoftSetBoolArg("-mempoolrefreshed",false);
     StartNode(threadGroup);
 
 #ifdef ENABLE_WALLET
