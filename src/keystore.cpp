@@ -58,12 +58,12 @@ bool CBasicKeyStore::GetSharedKey(const CPubKey IDLocal,const CPubKey IDForeign,
     sharedKey=mapSharedKeys[IDLocal][IDForeign];
     return true;
 }
-bool CBasicKeyStore::HasSharedKey(const CPubKey IDLocal,const CPubKey IDForeign)
+bool CBasicKeyStore::HasSharedKey(const CPubKey IDLocal,const CPubKey IDForeign)const
 {
-    SharedKeyMap::iterator it=mapSharedKeys.find(IDLocal);
+    SharedKeyMap::const_iterator it=mapSharedKeys.find(IDLocal);
     if(it==mapSharedKeys.end())
         return false;
-    std::map<CPubKey, CKey>::iterator it2=it->second.find(IDForeign);
+    std::map<CPubKey, CKey>::const_iterator it2=it->second.find(IDForeign);
     if(it2==it->second.end())
         return false;    
     return true;
@@ -109,3 +109,11 @@ bool CBasicKeyStore::GetKey(const CPubKey &address, CKey& keyOut) const
      //LogPrintf("CBasicKeyStore::GetKey key not found\n");
     return false;
 }  
+bool CBasicKeyStore::GetExtendPubKey(const uint64_t nStep,CPubKey& pub)const
+{
+    LOCK(cs_KeyStore);
+    if(!CanExtendKeys())
+        return false;
+    baseKey.pubKey.AddSteps(stepKey.pubKey,Hash(&nStep,&nStep+1),pub);
+    return true;
+}

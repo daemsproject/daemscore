@@ -176,6 +176,8 @@ extern json_spirit::Value mhash(const Array& params, bool fHelp);
 
 extern json_spirit::Value getnewid(const json_spirit::Array& params, bool fHelp); // in rpcwallet.cpp
 extern json_spirit::Value getmainid(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getidstep(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value getidbystep(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getrawchangeaddress(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value setaccount(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getaccount(const json_spirit::Array& params, bool fHelp);
@@ -298,6 +300,7 @@ extern json_spirit::Value comparebase32(const json_spirit::Array& params, bool f
 extern json_spirit::Value isvalidpubkeyaddress(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getextkey(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getextpubkey(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value decodemultisigaddress(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value gethash(const json_spirit::Array& params, bool fHelp);
 
 extern json_spirit::Value devtest(const json_spirit::Array& params, bool fHelp); // to be deleted

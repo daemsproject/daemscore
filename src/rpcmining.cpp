@@ -160,7 +160,8 @@ Value setgenerate(const Array& params, bool fHelp)
         int nHeight = 0;
         int nGenerate = (nGenProcLimit > 0 ? nGenProcLimit : 1);
         //CReserveKey reservekey(pwalletMain);
-        CPubKey miningID=pwalletMain->GenerateNewKey();
+        CPubKey miningID;
+        pwalletMain->GenerateNewKey(miningID);
         {   // Don't keep cs_main locked
             LOCK(cs_main);
             nHeightStart = chainActive.Height();

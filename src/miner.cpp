@@ -395,7 +395,7 @@ bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CPubKey& miningID,bool f
     if (!ProcessNewBlock(state, NULL, pblock))
         return error("FaicoinMiner : ProcessNewBlock, block not accepted");
     if (fExtendID)
-        miningID=wallet.GenerateNewKey();
+        wallet.GenerateNewKey(miningID);
     return true;
 }
 
@@ -410,7 +410,7 @@ void BitcoinMiner(CWallet *pwallet,bool fExtendID)
     //CReserveKey reservekey(pwallet);
     CPubKey miningID;
     if(fExtendID)
-        miningID=pwallet->GenerateNewKey();
+        pwallet->GenerateNewKey(miningID);
     else
         miningID=pwallet->GetID();
     //unsigned int nExtraNonce = 0;

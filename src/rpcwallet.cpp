@@ -114,18 +114,15 @@ Value getnewid(const Array& params, bool fHelp)//original getnewaddress
             pwallet = pwalletMain;
         else
             pwallet = new CWallet(id);
-        if (!pwallet->CanExtendKeys())
+        if (!pwallet->GenerateNewKey(keyID))
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "id file is not enough for extend keys");
-        keyID = pwallet->GenerateNewKey();
         if (pwallet != pwalletMain)
             delete pwallet;
     } else
     {
         // Generate a new key that is added to wallet
-        if (!pwalletMain->CanExtendKeys())
+        if (!pwalletMain->GenerateNewKey(keyID))
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "id file is not enough for extend keys");
-        keyID = pwalletMain->GenerateNewKey();
-        //pwalletMain->SetAddressBook(keyID, "", "receive");
     }
     Value ret;
     ret = CBitcoinAddress(keyID).ToString();
@@ -193,7 +190,30 @@ Value getmainid(const Array& params, bool fHelp)
 
     return ret;
 }
-
+Value getidstep(const json_spirit::Array& params, bool fHelp)
+{
+    if (fHelp || params.size() <1)
+        throw runtime_error("getidstep");
+    if (!pwalletMain->CanExtendKeys())
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "id file is not enough for extend keys");
+    CPubKey pubkey=AccountFromValue(params[0]);
+    KeyMap::iterator it=pwalletMain->mapKeys.find(pubkey);
+    if(it==pwalletMain->mapKeys.end())
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "id not found");
+    return Value(pwalletMain->mapKeys[pubkey]);
+}
+Value getidbystep(const json_spirit::Array& params, bool fHelp)
+{
+    if (fHelp || params.size() <1)
+        throw runtime_error("getidbystep");
+            
+    CPubKey pub;
+    if(!pwalletMain->GetExtendPubKey((uint64_t)params[0].get_int64(), pub))
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "id file is not enough for extend keys");
+    return Value(CBitcoinAddress(pub).ToString());
+    
+    
+}
 Value getrawchangeaddress(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() > 1)
@@ -218,7 +238,8 @@ Value getrawchangeaddress(const Array& params, bool fHelp)
 
     //reservekey.KeepKey();
 
-    CPubKey keyID = pwalletMain->GenerateNewKey();
+    CPubKey keyID;
+     pwalletMain->GenerateNewKey(keyID);
     return CBitcoinAddress(keyID).ToString();
 }
 

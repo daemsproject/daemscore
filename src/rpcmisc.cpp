@@ -669,12 +669,17 @@ CPaymentOrder GetPublishProductPaymentRequest(const Array arr)
         strError="product data is empty";
         throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
     }
+    CAmount nLockValue=0;
     if(arr.size()>2)
     {
-        if(arr[2].type()==int_type)
-        pr.dFeeRate=(double)arr[2].get_int();
-        if(arr[2].type()==real_type)
-        pr.dFeeRate=arr[2].get_real();
+        nLockValue=AmountFromValue(arr[2]);
+    }
+    if(arr.size()>3)
+    {
+        if(arr[3].type()==int_type)
+        pr.dFeeRate=(double)arr[3].get_int();
+        if(arr[3].type()==real_type)
+        pr.dFeeRate=arr[3].get_real();
     }
     for(unsigned int i=0;i<arrProducts.size();i++)
     {
@@ -811,7 +816,10 @@ CPaymentOrder GetPublishProductPaymentRequest(const Array arr)
         CContent ctt;
         ctt.EncodeP(CC_PRODUCT_P,vcc);    
         if(nLockTime>0)
-            pr.vout.push_back(CTxOut(nTags*COIN, nTags==0?CScript():scriptPubKey, ctt,nLockTime));
+        {
+            nLockValue=max(nLockValue,min(nTags,10)*COIN);
+            pr.vout.push_back(CTxOut(nLockValue, nLockValue==0?CScript():scriptPubKey, ctt,nLockValue==0?0:nLockTime));
+        }
         else
             pr.vout.push_back(CTxOut(0, CScript(), ctt,0));
     }

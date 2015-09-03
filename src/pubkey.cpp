@@ -119,7 +119,7 @@ bool CPubKey::AddSteps(const CPubKey& stepPubKey,const long& nStep){
    return secp256k1_ec_pubkey_tweak_addsteps((unsigned char*)begin(), size(),(unsigned char*)stepPubKey.begin(), stepPubKey.size(),(unsigned char*)&tweak);
 
 }
-bool CPubKey::AddSteps(const CPubKey& stepPubKey,const uint256& nStep,CPubKey& keyOut){
+bool CPubKey::AddSteps(const CPubKey& stepPubKey,const uint256& nStep,CPubKey& keyOut)const{
     
     //the hashing is a good secure procedure, but compromise is a much slower speed
     keyOut=*this;

@@ -133,7 +133,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "getdomainsbytags", 2 },
     { "getdomainsbyalias", 0 },
     { "getdomainsexpiring", 0 },
-     
+    { "getidbystep", 0 }, 
 };
 
 class CRPCConvertTable

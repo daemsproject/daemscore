@@ -241,21 +241,23 @@ bool CWallet::ExportAccount(string id,string fileName)
     return false;
 }
     //generate a new extended key
-CPubKey CWallet::GenerateNewKey()
+ bool CWallet::GenerateNewKey(CPubKey& pubkey)
 {
     LOCK(cs_wallet); // mapKeyMetadata
-    //bool fCompressed = CanSupportFeature(FEATURE_COMPRPUBKEY); // default to compressed public keys if we want 0.6.0 wallets
-    nMaxSteps++;
-    //CPubKey extPub=baseKey.pubKey;
-    //extPub.AddSteps(stepKey.pubKey,nMaxSteps);
     CPubKey extPub;
-    baseKey.pubKey.AddSteps(stepKey.pubKey,Hash(&nMaxSteps,&nMaxSteps+1),extPub);
-    //CPubKey extID=extPub.GetID();
+    if(!GetExtendPubKey(nMaxSteps+1,extPub))
+    {
+        pubkey=id;
+        return false;
+    }
+    nMaxSteps++;
     mapKeys[extPub]=nMaxSteps;
     pwalletdb->WriteKeyStore(this);     
     NotifyNewExtendedKey(CBitcoinAddress(extPub).ToString());
-    return extPub;
+    pubkey= extPub;
+    return true;
 }
+
 bool CWallet::AddContacts(const std::map<string,json_spirit::Object>mapContact)
 {
     return pwalletdb->AddContacts(mapContact); 

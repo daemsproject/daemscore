@@ -197,6 +197,39 @@ Value getextpubkey(const Array& params, bool fHelp) // TO DO: Help msg
     
     return Value(CBitcoinAddress(extpub).ToString());
 }
+Value decodemultisigaddress(const json_spirit::Array& params, bool fHelp){
+    if (fHelp || params.size() <1)
+        throw runtime_error("decodemultisigaddress");
+    CScript script;
+    if(!StringToScriptPubKey(params[0].get_str(),script))
+            throw JSONRPCError(RPC_WALLET_INVALID_ACCOUNT_NAME, "Invalid address");  
+    txnouttype typeRet;
+    vector<vector<unsigned char> > vSolutions;
+    if (!Solver(script, typeRet, vSolutions))
+        throw JSONRPCError(RPC_WALLET_INVALID_ACCOUNT_NAME, "address is not multisig");  
+    if (typeRet != TX_MULTISIG)
+        throw JSONRPCError(RPC_WALLET_INVALID_ACCOUNT_NAME, "address is not multisig");  
+    Object obj;
+        obj.push_back(Pair("weight required",CScriptNum(vSolutions.front(),false).getint()));
+        int nTotalWeight=0;
+        Array arr;
+        for (unsigned int i = 1; i < vSolutions.size(); i+=2)
+        {
+            CPubKey pubKey(vSolutions[i]);
+            if (!pubKey.IsValid())
+                throw JSONRPCError(RPC_WALLET_INVALID_ACCOUNT_NAME, "has invalid pubkey");  
+            Object obj1;
+                 obj1.push_back(Pair("id",CBitcoinAddress(pubKey).ToString()));
+                 int weight=CScriptNum(vSolutions[i+1],false).getint();
+                 nTotalWeight+=weight;
+            obj1.push_back(Pair("weight",weight));
+            arr.push_back(obj1);
+        }
+        obj.push_back(Pair("totalweight",nTotalWeight));
+        obj.push_back(Pair("id-count",arr.size()));
+        obj.push_back(Pair("ids",arr));
+    return Value(obj);
+}
 Value gethash(const Array& params, bool fHelp) // TO DO: Help msg
 {
     if (fHelp || params.size() <1)

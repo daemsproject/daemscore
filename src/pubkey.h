@@ -183,7 +183,7 @@ public:
     bool Decompress();
     bool Compress();    
     bool AddSteps(const CPubKey& stepPubKey,const long& nStep);
-    bool AddSteps(const CPubKey& stepPubKey,const uint256& nStep,CPubKey& keyOut);
+    bool AddSteps(const CPubKey& stepPubKey,const uint256& nStep,CPubKey& keyOut)const;
     //! Derive BIP32 child pubkey.
     bool Derive(CPubKey& pubkeyChild, unsigned char ccChild[32], unsigned int nChild, const unsigned char cc[32]) const;
 };
