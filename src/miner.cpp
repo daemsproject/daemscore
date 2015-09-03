@@ -296,9 +296,13 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn,const int nHeightIn
         txNew.vout[0].nValue = 0;
         CAmount coinbaseFee=CFeeRate(DEFAULT_TRANSACTION_FEE).GetFee(txNew.GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION)+10);
         CAmount coinbaseOutput=coinbaseInput-coinbaseFee;
-    
-    if(nHeightIn<=0&&coinbaseOutput<=minRelayTxFee.GetFee(DUST_THRESHOLD))
+    if(coinbaseOutput<=minRelayTxFee.GetFee(DUST_THRESHOLD))
+    {
+         if(nHeightIn<=0)
             return NULL;  
+            txNew.vout[0].nValue =0;
+    }
+    else
         txNew.vout[0].nValue =coinbaseOutput;
         pblock->vtx[0] = txNew;
         pblocktemplate->vTxFees[0] = -nFees;
@@ -563,15 +567,16 @@ void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads,bool fExten
 
 #endif // ENABLE_WALLET
 
-
+static CCriticalSection pool_mine_cs1;
+static CCriticalSection pool_mine_cs2;
+static CCriticalSection cs_minespeed;
 void PoolMiningThread(CBlockHeader& block,uint64_t nNonceBegin,uint64_t nNonceEnd,uint32_t nbit)
 {
     //LogPrintf("FaicoinpoolMiner started header:nbit%i time%i, height%i\n",block.nBits,block.nTime,block.nBlockHeight);
     SetThreadPriority(THREAD_PRIORITY_LOWEST);
     RenameThread("faicoin-poolminer");
-    CBlockHeader block1=block;
-    block1.nNonce=nNonceBegin;
-    
+    CBlockHeader block1=block;   
+    block1.nNonce=nNonceBegin==0?1:nNonceBegin;
 
     try {
         
@@ -603,15 +608,16 @@ void PoolMiningThread(CBlockHeader& block,uint64_t nNonceBegin,uint64_t nNonceEn
                         // Found a solution
                         SetThreadPriority(THREAD_PRIORITY_NORMAL);
                         //LogPrintf("FaicoinpoolMiner:\n");
-                        LogPrintf("proof-of-work found  \n  powhash: %s  \ntarget: %s\n", thash.GetHex(), hashTarget.GetHex());
+                        LogPrintf("proof-of-work found  \n  powhash: %s  \ntarget: %s\n nonce:%lld\n", thash.GetHex(), hashTarget.GetHex(),block1.nNonce);
                         //TODO feedback 
                         SetThreadPriority(THREAD_PRIORITY_LOWEST);
-                        static CCriticalSection cs;
+                        
                         {
-                            LOCK(cs);     
+                            LOCK(pool_mine_cs1);     
                         nPoolMiningResult=block1.nNonce ;
+                            return;// throw boost::thread_interrupted();
                         }
-                            throw boost::thread_interrupted();
+                           
                     }
                     block1.nNonce += 1;
                     nHashesDone += 1;
@@ -630,9 +636,9 @@ void PoolMiningThread(CBlockHeader& block,uint64_t nNonceBegin,uint64_t nNonceEn
                     nHashCounter += nHashesDone;
                 if (GetTimeMillis() - nHPSTimerStart > 4000)
                 {
-                    static CCriticalSection cs;
+                    
                     {
-                        LOCK(cs);
+                        LOCK(cs_minespeed);
                         if (GetTimeMillis() - nHPSTimerStart > 4000)
                         {
                             dHashesPerSec = 1000.0 * nHashCounter / (GetTimeMillis() - nHPSTimerStart);
@@ -659,13 +665,14 @@ void PoolMiningThread(CBlockHeader& block,uint64_t nNonceBegin,uint64_t nNonceEn
                 
                 if (block1.nNonce > nNonceEnd||(GetTime()-nStart)>60)
                 {
-                    static CCriticalSection cs;
+                    //static CCriticalSection cs;
                     {
-                        LOCK(cs);
+                        LOCK(pool_mine_cs2);
                         fPoolMiningFinished=true;
                         //LogPrintf("FaicoinpoolMiner finished:\n");
+                        return;// throw boost::thread_interrupted();
                     }
-                 throw boost::thread_interrupted();
+                
                 }
                 
             }
@@ -711,15 +718,21 @@ uint64_t PoolMiner(bool fGenerate,CBlockHeader block,uint64_t nNonceBegin,uint64
     while(true)
     {
         MilliSleep(10);
+        {
+        LOCK(pool_mine_cs1);
         if(nPoolMiningResult>0)
         {
-            //LogPrintf("PoolMiner nPoolMiningResult %i\n",nPoolMiningResult);
+            LogPrintf("PoolMiner nPoolMiningResult %lld\n",nPoolMiningResult);
             minerThreads->interrupt_all();
             delete minerThreads;
             minerThreads = NULL;
+            LogPrintf("PoolMiner nPoolMiningResult %lld\n",nPoolMiningResult);
             return nPoolMiningResult;
         }
+        }
         //LogPrintf("PoolMiner minerThreads %i\n",minerThreads->size());
+        {
+        LOCK(pool_mine_cs2);
         if(fPoolMiningFinished)
         {
             
@@ -729,6 +742,7 @@ uint64_t PoolMiner(bool fGenerate,CBlockHeader block,uint64_t nNonceBegin,uint64
             minerThreads = NULL;
             return 0;
         }
+    }  
     }  
     
 }

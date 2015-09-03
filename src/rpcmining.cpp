@@ -500,9 +500,9 @@ Value getblocktemplate(const Array& params, bool fHelp)
 
     if (nHeight<=0&&vNodes.empty())
         throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "Faicoin is not connected!");
-
-    if (IsInitialBlockDownload())
-        throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "Faicoin is downloading blocks...");
+    //TODO activate this code later
+    //if (IsInitialBlockDownload())
+    //    throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "Faicoin is downloading blocks...");
 
     static unsigned int nTransactionsUpdatedLast;
 

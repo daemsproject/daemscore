@@ -67,13 +67,15 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     bnNew.SetCompact(pindexLast->nBits);
     bnOld = bnNew;
     // Faicoin: intermediate uint256 can overflow by 1 bit
-    bool fShift = bnNew.bits() > 235;
+    
+    bool fShift = bnNew.bits() > 238;
+    int nShift=bnNew.bits()-238;
     if (fShift)
-        bnNew >>= 1;
+        bnNew >>= nShift;
     bnNew *= nActualTimespan;
     bnNew /= Params().TargetTimespan();
     if (fShift)
-        bnNew <<= 1;
+        bnNew <<= nShift;
 
     if (bnNew > Params().ProofOfWorkLimit()){
         LogPrintf("New Target bigger than limit:  %08x  limit: %s\n", bnNew.GetCompact(), Params().ProofOfWorkLimit().ToString() );

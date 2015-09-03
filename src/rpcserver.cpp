@@ -278,8 +278,8 @@ static const CRPCCommand vRPCCommands[] =
 
     /* Block chain and UTXO */
     { "blockchain",         "getblockchaininfo",      &getblockchaininfo,      true,      false,      false },
-    { "blockchain",         "getbestheader",       &getbestheader,              true,      true,      false },
-    { "blockchain",         "getblockcount",          &getblockcount,          true,      true,      false },
+    { "blockchain",         "getbestheader",       &getbestheader,              true,      false,      false },
+    { "blockchain",         "getblockcount",          &getblockcount,          true,      false,      false },
     { "blockchain",         "getblock",               &getblock,               true,      false,      false },
     { "blockchain",         "getblockhash",           &getblockhash,           true,      false,      false },
     { "blockchain",         "getblockbyheight",       &getblockbyheight,       true,      false,      false },

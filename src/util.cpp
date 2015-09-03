@@ -398,7 +398,7 @@ boost::filesystem::path GetDefaultDataDir()
 #else
     // Unix
     //LogPrintf("GetDefaultDataDir \n");
-    return pathRet / ".fai";
+    return pathRet / ".fai1";
 #endif
 #endif
 }
