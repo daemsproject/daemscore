@@ -640,7 +640,7 @@ CPaymentOrder GetPublishProductPaymentRequest(const Array arr)
     std::string strError; 
     if ( arr.size() <2)
     {
-        strError="parameters count is not 2";
+        strError="parameters count less than 2";
         throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
     }
     if(arr[0].type()!=str_type)
