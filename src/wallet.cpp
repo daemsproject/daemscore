@@ -1912,7 +1912,7 @@ bool CWallet::SignTransaction(const CWalletTx& wtxIn,CWalletTx& wtxSigned,int nS
         if(IsMine(txOriginal.vin[i])!=ISMINE_SPENDABLE)
             fHasAllIDs=false;
         int nHashType = txOriginal.vin[i].scriptSig.back();
-        if(nHashType!=129)
+        if(!(nHashType&SIGHASH_ANYONECANPAY))
             fAnyonecanpay=false;
     } 
     if(!fAnyonecanpay&&!fHasAllIDs)
@@ -1920,7 +1920,7 @@ bool CWallet::SignTransaction(const CWalletTx& wtxIn,CWalletTx& wtxSigned,int nS
         LogPrintf("wallet.cpp:SignOverrideTransaction not applicable\n");
         return false;
     }
-    int nSigType=fAnyonecanpay?129:1;
+    int nSigType=SIGHASH_ALL|(fAnyonecanpay?SIGHASH_ANYONECANPAY:0);
      CMutableTransaction txSigned=CMutableTransaction(wtxIn);
      if(!fHasAllIDs)
      {

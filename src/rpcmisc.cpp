@@ -494,7 +494,6 @@ CPaymentOrder ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJso
         }  
         pr.vout.push_back(CTxOut(amount,scriptPubKey,ctt,nLockTime));
     }
-    //nSigType=129;
       
     valtmp=find_value(obj, "feerate");
     switch (valtmp.type()){
@@ -526,6 +525,7 @@ CPaymentOrder ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJso
             strError="fee rate is lower than limit";
             throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
         }        
+    pr.nSigType=129;
     pr.nRequestType=nType;
     pr.fIsValid=true;
     return pr;

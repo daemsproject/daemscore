@@ -50,18 +50,20 @@ void ScriptPubKeyToJSON(const CScript& scriptPubKey, Object& out, bool fIncludeH
         out.push_back(Pair("type", GetTxnOutputType(type)));
         return;
     }
-    if (type == TX_MULTISIG)
-        out.push_back(Pair("reqSigWeight", (uint64_t) wRequired));
-
-    else
-        out.push_back(Pair("reqSigs", (uint64_t) wRequired));
-    out.push_back(Pair("sigOpCount", (uint64_t) scriptPubKey.GetSigOpCount(true)));
+    
     out.push_back(Pair("type", GetTxnOutputType(type)));
 
     Array a;
     BOOST_FOREACH(const CTxDestination& addr, addresses)
         a.push_back(CBitcoinAddress(addr).ToString());
     out.push_back(Pair("addresses", a));
+    if (type == TX_MULTISIG)
+    {        
+        out.push_back(Pair("multisig",decodemultisigaddress(a,false)));
+    }
+    //else
+    //    out.push_back(Pair("reqSigs", (uint64_t) wRequired));
+    //out.push_back(Pair("sigOpCount", (uint64_t) scriptPubKey.GetSigOpCount(true)));
 }
 
 std::string GetContentCode(const std::string& content)
@@ -505,8 +507,8 @@ Value createrawtransaction(const Array& params, bool fHelp)
         if (vout_v.type() != int_type)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, missing vout key");
         int nOutput = vout_v.get_int();
-        if (nOutput < 0)
-            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, vout must be positive");
+        if (nOutput < 0||nOutput>65535)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, nvout must be positive");
         const Value& value_v = find_value(o, "satoshi");
         if (value_v.type() != int_type)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter,input missing satoshi key");
@@ -536,7 +538,7 @@ Value createrawtransaction(const Array& params, bool fHelp)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, output missing satoshi key");
         CAmount nAmount = value_v.get_int64();
         if (nAmount < 0 || nAmount > MAX_MONEY)
-            throw JSONRPCError(RPC_MISC_ERROR, string("Vout value out of range"));
+            throw JSONRPCError(RPC_MISC_ERROR, string("output value out of range"));
         const Value& content_v = find_value(o, "content");
         string strContent = "";
         if (!content_v.is_null()) {
@@ -548,7 +550,6 @@ Value createrawtransaction(const Array& params, bool fHelp)
             }
         }            
         const Value& locktime_v = find_value(o, "locktime");
-//        string strContent = "";
         uint32_t nLocktime = 0;
         if (!locktime_v.is_null()) {
             int64_t tmpLocktime =  locktime_v.get_int64();
@@ -628,7 +629,103 @@ Value decoderawtransaction(const Array& params, bool fHelp)
 
     return result;
 }
-
+Value encoderawtransaction(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() != 1)
+        throw runtime_error(
+            "enocderawtransaction [{txjson}]\n"
+            );
+    CMutableTransaction rawTx;
+    Object objTx=params[0].get_obj();
+    rawTx.nVersion=find_value(objTx, "version").get_int();
+    Array inputs = find_value(objTx, "vin").get_array();
+    Array sendTo = find_value(objTx, "vout").get_array(); 
+    BOOST_FOREACH(const Value& input, inputs)
+    {
+        const Object& o = input.get_obj();
+        uint256 txid = ParseHashO(o, "txid");
+        const Value& vout_v = find_value(o, "vout");
+        if (vout_v.type() != int_type)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, missing vout key");
+        int nOutput = vout_v.get_int();
+        if (nOutput < 0||nOutput>65535)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, nvout must be positive");
+        const Value& value_v = find_value(o, "satoshi");
+        if (value_v.type() != int_type)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter,input missing satoshi key");
+        CAmount nValue = value_v.get_int64();
+        if (nValue < 0)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, input satoshi must be positive");
+        CScript scriptSig;
+         const Value& script_v = find_value(o, "scriptSig");
+        if (script_v.type() == obj_type)
+        {
+            const Value scripthex_v = find_value(script_v.get_obj(), "hex");
+            if(scripthex_v.type()==str_type&&scripthex_v.get_str().size() > 0)
+            {
+                vector<unsigned char> vScript;            
+                vScript = ParseHexV(scripthex_v, "scriptSig");
+                scriptSig.assign(vScript.begin(),vScript.end());
+            }
+        }
+        CTxIn in(COutPoint(txid, nOutput, nValue),scriptSig);
+        rawTx.vin.push_back(in);
+    }
+    BOOST_FOREACH(const Value& output, sendTo)
+    {
+        const Object& o = output.get_obj();
+        CScript scriptPubKey = CScript();
+        const Value& scriptPubKey_v = find_value(o, "scriptPubKey");
+        const Value scripthex_v = find_value(scriptPubKey_v.get_obj(), "hex");
+        if(scripthex_v.type()==str_type)
+        {
+            vector<unsigned char> vScript;            
+            vScript = ParseHexV(scripthex_v, "scriptPubKey");
+            scriptPubKey.assign(vScript.begin(),vScript.end());
+        }
+        else 
+        {
+            const Array  address_arr= find_value(scriptPubKey_v.get_obj(), "addresses").get_array();
+            const Value& address_v=address_arr[0];
+            if (address_v.get_str() != "")
+            {
+                CBitcoinAddress address(address_v.get_str());
+                if (!address.IsValid())
+                    throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, string("Invalid Faicoin address: ") + address_v.get_str());
+                scriptPubKey = GetScriptForDestination(address.Get());
+            }
+        }
+        const Value& value_v = find_value(o, "satoshi");
+        if (value_v.type() != int_type)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, output missing satoshi key");
+        CAmount nAmount = value_v.get_int64();
+        if (nAmount < 0 || nAmount > MAX_MONEY)
+            throw JSONRPCError(RPC_MISC_ERROR, string("output value out of range"));
+        const Value& content_v = find_value(o, "content");
+        string strContent = "";
+        if (!content_v.is_null()) {
+            vector<unsigned char> vContent;
+            if (content_v.get_str().size() > 0)
+                vContent = ParseHexV(content_v, "content");
+            for (vector<unsigned char>::iterator iter = vContent.begin(); iter != vContent.end(); ++iter) {
+                strContent += *iter;
+            }
+        }            
+        const Value& locktime_v = find_value(o, "locktime");
+        uint32_t nLocktime = 0;
+        if (!locktime_v.is_null()) {
+            int64_t tmpLocktime =  locktime_v.get_int64();
+            
+            if (tmpLocktime >= 0 && tmpLocktime <= 0xffffffff) 
+                nLocktime = (uint32_t) tmpLocktime;
+            else
+                throw JSONRPCError(RPC_MISC_ERROR, string("Invalid locktime: "));
+        }
+        CTxOut out(nAmount, scriptPubKey, strContent,nLocktime);
+        rawTx.vout.push_back(out);
+    }
+    return EncodeHexTx(rawTx);
+}
 Value decodescript(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 1)
@@ -874,7 +971,7 @@ Value signrawtransaction(const Array& params, bool fHelp)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid script param");
         
     }
-    bool fHashSingle = ((nHashType & ~SIGHASH_ANYONECANPAY) == SIGHASH_SINGLE);
+    
  //LogPrintf("rpc signrawtransacxtion tx other params prepared %ld \n",GetTimeMillis()-startTime);
     // Sign what we can:
     for (unsigned int i = 0; i < mergedTx.vin.size(); i++) {
@@ -886,14 +983,31 @@ Value signrawtransaction(const Array& params, bool fHelp)
         }
         const CScript& prevScriptPubKey = coins->vout[txin.prevout.n].scriptPubKey;
      //    LogPrintf("rpc signrawtransacxtion prevoutscript %ld \n",GetTimeMillis()-startTime);
+        int nHashTypeIn=nHashType;
+        if(txin.scriptSig.size()==1)//this means sigtype
+        {
+            nHashTypeIn=txin.scriptSig[0];
+            static map<int,int> mapSigHashValues =
+            boost::assign::map_list_of
+            ( int(SIGHASH_ALL),0)
+                (int(SIGHASH_ALL | SIGHASH_ANYONECANPAY),0)
+            (int(SIGHASH_NONE),0)
+                (int(SIGHASH_NONE | SIGHASH_ANYONECANPAY),0)
+            (int(SIGHASH_SINGLE),0)
+                (int(SIGHASH_SINGLE | SIGHASH_ANYONECANPAY),0)
+            ;
+            if (!mapSigHashValues.count(nHashTypeIn))            
+                throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid sighash param");
+        }
+        bool fHashSingle = ((nHashTypeIn & ~SIGHASH_ANYONECANPAY) == SIGHASH_SINGLE);
         txin.scriptSig.clear();
         // Only sign SIGHASH_SINGLE if there's a corresponding output:
         if (!fHashSingle || (i < mergedTx.vout.size()))
         {
             if(p2shScript.size()>0)
-                SignSignature4SH(keystore, prevScriptPubKey, mergedTx, i,p2shScript, nHashType);
+                SignSignature4SH(keystore, prevScriptPubKey, mergedTx, i,p2shScript, nHashTypeIn);
             else
-                SignSignature(keystore, prevScriptPubKey, mergedTx, i, nHashType);
+                SignSignature(keystore, prevScriptPubKey, mergedTx, i, nHashTypeIn);
         }
 
         // ... and merge in other signatures:

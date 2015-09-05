@@ -300,7 +300,7 @@ class CPaymentOrder :public CMutableTransaction
 {
     public:
     CPaymentOrder(){
-        nSigType=129;//anyonecanpay
+        nSigType=1;//non-anyonecanpay
         dFeeRate=1000;    
         fIsValid=false;    
         overridedTxid=uint256(0);

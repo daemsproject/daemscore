@@ -352,6 +352,7 @@ static const CRPCCommand vRPCCommands[] =
     /* Raw transactions */
     { "rawtransactions",    "createrawtransaction",   &createrawtransaction,   true,      false,      false },
     { "rawtransactions",    "decoderawtransaction",   &decoderawtransaction,   true,      false,      false },
+     { "rawtransactions",    "encoderawtransaction",   &encoderawtransaction,   true,      true,      false },
     { "rawtransactions",    "decodescript",           &decodescript,           true,      false,      false },
     { "rawtransactions",    "getrawtransaction",      &getrawtransaction,      true,      false,      false },
     { "rawtransactions",    "sendrawtransaction",     &sendrawtransaction,     false,     false,      false },

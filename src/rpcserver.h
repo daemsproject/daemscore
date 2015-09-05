@@ -222,6 +222,7 @@ extern json_spirit::Value getsimplesig(const json_spirit::Array& params, bool fH
 extern json_spirit::Value publishpackage(const json_spirit::Array& params, bool fHelp);
 
 extern json_spirit::Value getrawtransaction(const json_spirit::Array& params, bool fHelp); // in rcprawtransaction.cpp
+extern json_spirit::Value encoderawtransaction(const json_spirit::Array& params, bool fHelp); 
 extern json_spirit::Value listunspent(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value listunspent2(const json_spirit::Array& params, bool fHelp);
 //extern json_spirit::Value lockunspent(const json_spirit::Array& params, bool fHelp);

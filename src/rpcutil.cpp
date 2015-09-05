@@ -213,10 +213,12 @@ Value decodemultisigaddress(const json_spirit::Array& params, bool fHelp){
         obj.push_back(Pair("weight required",CScriptNum(vSolutions.front(),false).getint()));
         int nTotalWeight=0;
         Array arr;
-        for (unsigned int i = 1; i < vSolutions.size(); i+=2)
+        for (unsigned int i = 1; i < vSolutions.size()-1; i+=2)
         {
+            LogPrintf("vsolutions %i:%s \n",i,HexStr(vSolutions[i].begin(),vSolutions[i].end()));
             CPubKey pubKey(vSolutions[i]);
             if (!pubKey.IsValid())
+                //continue;
                 throw JSONRPCError(RPC_WALLET_INVALID_ACCOUNT_NAME, "has invalid pubkey");  
             Object obj1;
                  obj1.push_back(Pair("id",CBitcoinAddress(pubKey).ToString()));

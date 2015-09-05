@@ -230,10 +230,14 @@ bool CSettings::GetSetting(const string settingType,const string key,string& val
         if(IsValidDomainFormat(value))
         {
             BOOST_FOREACH(PAIRTYPE(const int,string)& pair,mapPageNames)
-                if(pair.second==key&&mapPageDomain[pair.first]!=value)
+                if(pair.second==key)
                 {
-                    mapPageDomain[pair.first]=value;
-                    return SaveSettings();
+                    if(mapPageDomain[pair.first]!=value)
+                    {
+                        mapPageDomain[pair.first]=value;
+                        return SaveSettings();
+                    }
+                    return true;
                 }
         }
             
@@ -246,6 +250,7 @@ bool CSettings::GetSetting(const string settingType,const string key,string& val
             maxFilePageInstallTime=atoi64(value);
             return SaveSettings();
         }
+        return true;
     }
     else if(settingType=="maxcachesize")
     {
@@ -255,6 +260,7 @@ bool CSettings::GetSetting(const string settingType,const string key,string& val
             nMaxChacheSize=atoi(value);
             return SaveSettings();
         }
+        return true;
     }
     else if(settingType=="serviceflages")
     {
