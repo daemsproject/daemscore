@@ -93,6 +93,7 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, vector<vector<unsi
             {
                 // Found a match
                 typeRet = tplate.first;
+                //LogPrintf("Solver type:%s \n",GetTxnOutputType(typeRet));
                 if (typeRet == TX_MULTISIG)
                 {
                     // Additional checks for TX_MULTISIG:
@@ -117,7 +118,7 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, vector<vector<unsi
                 while (true)
                 {
                     if (vch1.size() > 8 && vch1.size() <= 65) 
-            {
+                    {
                         vSolutionsRet.push_back(vch1);
                         if (std::find(vPubKeysRet.begin(), vPubKeysRet.end(), vch1) != vPubKeysRet.end())
                         {
@@ -126,7 +127,7 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, vector<vector<unsi
                         }
                         vPubKeysRet.push_back(vch1);
                         if (!script1.GetOp(pc1, opcode1, vch1)) 
-                {
+                        {
                             finvalid = true;
                             break;
                         }
@@ -271,6 +272,7 @@ bool ExtractDestinations(const CScript& scriptPubKey, txnouttype& typeRet, vecto
     vector<valtype> vSolutions;
     if (!Solver(scriptPubKey, typeRet, vSolutions))
         return false;
+    //LogPrintf("ExtractDestinations type:%s \n",GetTxnOutputType(typeRet));
     if (typeRet == TX_SCRIPT)
     {
         if (vSolutions.size() != 1)

@@ -218,7 +218,7 @@ Value setgenerate(const Array& params, bool fHelp)
         if (params.size() > 3)
             fExtendID=params[3].get_bool();        
         LogPrintf("%i \n",pindexBestHeader->nBlockHeight);
-        if(fGenerate&&(pindexBestHeader>chainActive.Tip()+3))
+        if(fGenerate&&((int)pindexBestHeader->nBlockHeight>chainActive.Height()+3))
             throw JSONRPCError(RPC_INTERNAL_ERROR, "can't mine while chain is not up to date"); 
         GenerateBitcoins(fGenerate, pwalletMining, nGenProcLimit,fExtendID);
     }    

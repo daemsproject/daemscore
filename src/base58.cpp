@@ -515,14 +515,15 @@ bool ScriptPubKeyToString(const CScript& script, string& str)
         case TX_SCRIPT:
         case TX_MULTISIG:
         {
-            txnouttype type;
-            std::vector<std::vector<unsigned char> > vSolutions;
-            if (!Solver(script, type, vSolutions))
-                return false;
-            if (vSolutions.size() != 1)
-                return false;
-            CScript sc(vSolutions.front().begin(), vSolutions.front().end());
-            str = CBitcoinAddress(sc).ToString();
+//            txnouttype type;
+//            std::vector<std::vector<unsigned char> > vSolutions;
+//            if (!Solver(script, type, vSolutions))
+//                return false;
+//            if (vSolutions.size() != 1)
+//                return false;
+//            CScript sc(vSolutions.front().begin(), vSolutions.front().end());
+            
+            str = CBitcoinAddress(script).ToString();
         }
             break;
         default:

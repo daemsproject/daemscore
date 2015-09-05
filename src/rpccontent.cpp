@@ -1548,9 +1548,14 @@ void _GetMsgCountFromTx(const CTransaction& tx, std::vector<CScript>& vIDsLocal,
     bool fIncoming = true;
     CTransaction prevTx;
     uint256 tmphash;
+    if(tx.vin[0].prevout.hash==uint256(0)){
+        LogPrintf("_GetMsgCountFromTx: coinbase tx\n");
+        return;
+    }
+        
     if (!GetTransaction(tx.vin[0].prevout.hash, prevTx, tmphash, true))
     {
-        LogPrintf("_GetMsgCountFromTx: null vin prevout\n");
+        LogPrintf("_GetMsgCountFromTx: null vin prevout txid:%s \n prevout txid %s\n",tx.GetHash().GetHex(),tx.vin[0].prevout.hash.GetHex());
         return;
     }
     CScript IDFrom = prevTx.vout[tx.vin[0].prevout.n].scriptPubKey;

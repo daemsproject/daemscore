@@ -203,6 +203,7 @@ Value decodemultisigaddress(const json_spirit::Array& params, bool fHelp){
     CScript script;
     if(!StringToScriptPubKey(params[0].get_str(),script))
             throw JSONRPCError(RPC_WALLET_INVALID_ACCOUNT_NAME, "Invalid address");  
+    //LogPrintf("decodemultisigaddress script:%s \n",script.ToString());
     txnouttype typeRet;
     vector<vector<unsigned char> > vSolutions;
     if (!Solver(script, typeRet, vSolutions))
@@ -215,7 +216,7 @@ Value decodemultisigaddress(const json_spirit::Array& params, bool fHelp){
         Array arr;
         for (unsigned int i = 1; i < vSolutions.size()-1; i+=2)
         {
-            LogPrintf("vsolutions %i:%s \n",i,HexStr(vSolutions[i].begin(),vSolutions[i].end()));
+            //LogPrintf("vsolutions %i:%s \n",i,HexStr(vSolutions[i].begin(),vSolutions[i].end()));
             CPubKey pubKey(vSolutions[i]);
             if (!pubKey.IsValid())
                 //continue;

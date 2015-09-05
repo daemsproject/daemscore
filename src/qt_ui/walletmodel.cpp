@@ -1318,7 +1318,6 @@ QString WalletModel::RegisterDomain(json_spirit::Array arrData,const int nPageIn
             return ("{\"error\":\"feerate type error\"}");   
     }
     CPaymentOrder pr = GetRegisterDomainPaymentRequest(arrData[0].get_str(), strDomain, nLockValue,nLockTime,dFeeRate);   
-    
     CDomain cdomain;
     if(pDomainDBView->GetDomainByName(strDomain,cdomain)&&(GetLockLasting(cdomain.nExpireTime)>0))
         return QString().fromStdString("{\"error\":\"domain already registered\"}");  

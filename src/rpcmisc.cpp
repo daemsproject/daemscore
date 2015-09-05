@@ -622,7 +622,7 @@ CPaymentOrder GetRegisterDomainPaymentRequest(const string id, const std::string
     vcc.push_back(make_pair(CC_DOMAIN_REG,""));
     ctt.EncodeP(CC_DOMAIN_P,vcc);
     CAmount amount = max(GetDomainGroup(domain)*COIN,nLockValue);
-    if(domain.find("/")!=domain.npos||amount==0)
+    if(domain.find("/")!=domain.npos||!IsValidDomainFormat(domain))
         throw JSONRPCError(RPC_INVALID_PARAMETER, "invalid domain name");
     pr.vout.push_back(CTxOut(amount, scriptPubKey, ctt,nLockTime));
     if(GetBlocksToMaturity(nLockTime)<480)
@@ -871,7 +871,7 @@ CPaymentOrder GetUpdateDomainPaymentRequest(const Array arr)
             {
                 if(link.scriptPubKey.size()>64)
                     throw JSONRPCError(RPC_INVALID_PARAMETER, "forward longer than 64 bytes");
-                cForward.EncodeUnit(CC_LINK,string(scriptPubKey.begin(),scriptPubKey.end()));
+                cForward.EncodeUnit(CC_LINK,string(link.scriptPubKey.begin(),link.scriptPubKey.end()));
                 tmp = find_value(obj, "forwardsig");
                 if (tmp.type() != str_type) 
                     throw JSONRPCError(RPC_INVALID_PARAMETER, "forward sig not provided for scriptpubkey");
