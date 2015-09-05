@@ -57,9 +57,12 @@ void ScriptPubKeyToJSON(const CScript& scriptPubKey, Object& out, bool fIncludeH
 //    BOOST_FOREACH(const CTxDestination& addr, addresses)
 //        a.push_back(CBitcoinAddress(addr).ToString());
 //    out.push_back(Pair("addresses", a));
-    out.push_back(Pair("address", CBitcoinAddress(addresses[0]).ToString()));
+    string str=CBitcoinAddress(addresses[0]).ToString();
+    out.push_back(Pair("address",str ));
     if (type == TX_MULTISIG)
     {        
+        Array a;
+        a.push_back(str);
         out.push_back(Pair("multisig",decodemultisigaddress(a,false)));
     }
     //else
