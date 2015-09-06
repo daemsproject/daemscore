@@ -1130,5 +1130,8 @@ Value updatesettings(const Array& params, bool fHelp)
     if (fHelp || params.size() != 3)
         throw runtime_error("updatesetting, 3params");
      RPCTypeCheck(params, boost::assign::list_of(str_type));    
-    return settings.ChangeSetting(params[0].get_str(),params[1].get_str(),params[2].get_str());        
+   if(settings.ChangeSetting(params[0].get_str(),params[1].get_str(),params[2].get_str()))
+       return "OK";
+   else
+       return "\"error\":\"\"";
 }

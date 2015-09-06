@@ -221,10 +221,14 @@ bool CSettings::GetSetting(const string settingType,const string key,string& val
         if(value=="")
         {
             BOOST_FOREACH(PAIRTYPE(const int,string)& pair,mapPageNames)
-                if(pair.second==key&&mapPageDomain[pair.first]!=mapDefaultPageDomain[pair.first])
+                if(pair.second==key)
                 {
-                    mapPageDomain[pair.first]=mapDefaultPageDomain[pair.first];
-                    return SaveSettings();
+                    if(mapPageDomain[pair.first]!=mapDefaultPageDomain[pair.first])
+                    {
+                        mapPageDomain[pair.first]=mapDefaultPageDomain[pair.first];
+                        return SaveSettings();
+                    }
+                    return true;
                 }
         }         
         if(IsValidDomainFormat(value))

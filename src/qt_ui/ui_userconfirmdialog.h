@@ -99,6 +99,7 @@ public:
         horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
         btn_blockpage = new QPushButton(verticalLayoutWidget_2);
         btn_blockpage->setObjectName(QStringLiteral("btn_blockpage"));
+        btn_blockpage->setAutoDefault(false);
 
         horizontalLayout->addWidget(btn_blockpage);
 

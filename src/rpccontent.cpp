@@ -1341,7 +1341,10 @@ json_spirit::Value getpromotedcontents(const json_spirit::Array& params, bool fH
                 pDomainDBView->GetDomainByForward(vContents[i].sender, domain, true);
             }
             b += ctt.size();
-            Object cttr = _output_content(CContent(out.strContent), cformat, cflag, vContents[i].link, address, domain, vContents[i].lockValue, out.scriptPubKey);
+            unsigned int nTime=0;
+            if(vContents[i].link.nHeight>0&&vContents[i].link.nHeight<=chainActive.Height())
+                nTime=chainActive[vContents[i].link.nHeight]->nTime;
+            Object cttr = _output_content(CContent(out.strContent), cformat, cflag, vContents[i].link, address, domain, vContents[i].lockValue, out.scriptPubKey,STANDARD_CONTENT_MAX_CC,nTime);
             r.push_back(cttr);
         }
     }
@@ -1381,7 +1384,7 @@ json_spirit::Value getsalesrecord(const json_spirit::Array& params, bool fHelp)
     {
         //if(((nDirection==0)&&!(vTxPosAll[i].nFlags&((1<<TXITEMFLAG_RECEIVECONTENT)|(1<<TXITEMFLAG_RECEIVEMONEY))))
         //        ||((nDirection==1)&&!(vTxPosAll[i].nFlags&(1<<TXITEMFLAG_SENDCONTENT))))
-        if (!(vTxPosAll[i].nFlags & (TXITEMFLAG_PURCHASE | TXITEMFLAG_RECEIVEMONEY)))
+        if (!(vTxPosAll[i].nFlags & TXITEMFLAG_PURCHASE)||!(vTxPosAll[i].nFlags & TXITEMFLAG_RECEIVEMONEY))
             continue;
         if(vTxPosAll[i].nFlags &TXITEMFLAG_SENDER)
             continue;
@@ -1476,8 +1479,9 @@ json_spirit::Value getpurchaserecord(const json_spirit::Array& params, bool fHel
     for (int i = (int) vTxPosAll.size() - 1; i >= 0; i--)
     {
 
-        if (!(vTxPosAll[i].nFlags & (TXITEMFLAG_PURCHASE|TXITEMFLAG_SENDER)))
+        if (!(vTxPosAll[i].nFlags & TXITEMFLAG_PURCHASE)||!(vTxPosAll[i].nFlags &TXITEMFLAG_SENDER))
             continue;
+        //LogPrintf("TXITEMFLAG_SENDER %i vTxPosAll[i].nFlags & (TXITEMFLAG_PURCHASE|TXITEMFLAG_SENDER):%b\n",TXITEMFLAG_SENDER,vTxPosAll[i].nFlags & (TXITEMFLAG_PURCHASE|TXITEMFLAG_SENDER));
         CTransaction txOut;
         if (!GetTransaction(vTxPosAll[i], txOut))
             continue;
@@ -1491,12 +1495,12 @@ json_spirit::Value getpurchaserecord(const json_spirit::Array& params, bool fHel
             //LogPrintf("getsalesrecord1 \n" );
             if (out.strContent.size() == 0 || CContent(out.strContent).GetFirstCc() != CC_PAYMENT_P)
                 continue;
-            LogPrintf("getpurchaserecord2 \n");
+            LogPrintf("getpurchaserecord1 \n");
             CPayment payment;
             payment.recipient = out.scriptPubKey;
             if (!payment.SetContent(out.strContent))
                 continue;
-            LogPrintf("getpurchaserecord2 \n");
+            LogPrintf("getpurchaserecord2 txid:%s,nFlags:%i \n",txOut.GetHash().GetHex(),vTxPosAll[i].nFlags);
             nCount++;
             if (nCount < nOffset)
                 continue;

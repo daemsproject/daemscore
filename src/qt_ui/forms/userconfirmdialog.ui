@@ -116,6 +116,9 @@
         <property name="text">
          <string>Block Page</string>
         </property>
+        <property name="autoDefault">
+         <bool>false</bool>
+        </property>
        </widget>
       </item>
       <item>
