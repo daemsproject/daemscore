@@ -273,6 +273,7 @@ extern json_spirit::Value getmessages(const json_spirit::Array& params, bool fHe
 extern json_spirit::Value getfilepackageurl(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value encodevarint(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value decodevarint(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value encodelink(const json_spirit::Array& params, bool fHelp);
 
 extern json_spirit::Value getdomaininfo(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getdomainsbyowner(const json_spirit::Array& params, bool fHelp);

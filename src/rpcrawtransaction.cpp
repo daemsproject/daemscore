@@ -57,20 +57,24 @@ void ScriptPubKeyToJSON(const CScript& scriptPubKey, Object& out, bool fIncludeH
 //    BOOST_FOREACH(const CTxDestination& addr, addresses)
 //        a.push_back(CBitcoinAddress(addr).ToString());
 //    out.push_back(Pair("addresses", a));
-    string str=CBitcoinAddress(addresses[0]).ToString();
-    out.push_back(Pair("address",str ));
+    
     if (type == TX_MULTISIG)
     {        
         try{
             string str1=CBitcoinAddress(scriptPubKey).ToString();
-            //LogPrintf("ScriptPubKeyToJSON multisig:%s %s\n",scriptPubKey.ToString(),str1);
+            out.push_back(Pair("address",str1 ));
+            LogPrintf("ScriptPubKeyToJSON multisig:%s %s\n",scriptPubKey.ToString(),str1);
             Array a;
             a.push_back(str1);
             out.push_back(Pair("multisig",decodemultisigaddress(a,false)));
         }
         catch(const Object& e){
-            LogPrintf("ScriptPubKeyToJSON:get multisig error  \n");
+            LogPrintf("ScriptPubKeyToJSON:get multisig error %s \n",write_string(Value(e),false));
         }
+    }else
+    {
+        string str=CBitcoinAddress(addresses[0]).ToString();
+        out.push_back(Pair("address",str ));
     }
     //else
     //    out.push_back(Pair("reqSigs", (uint64_t) wRequired));
@@ -426,6 +430,7 @@ json_spirit::Value listunspent2(const json_spirit::Array& params, bool fHelp)
     for(unsigned int i=0;i<arrIDs.size();i++)
     {
         CScript script;
+        //console.log("listunspent2 address:%s \n",arrIDs[i].get_str());
         if(!StringToScriptPubKey(arrIDs[i].get_str(),script))
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Faicoin address");
         vScriptPubKeys.push_back(script);

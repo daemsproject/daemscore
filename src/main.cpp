@@ -2157,8 +2157,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
         vPos.push_back(std::make_pair(tx.GetHash(), pos));
         pos.nTxOffset += ::GetSerializeSize(tx, SER_DISK, CLIENT_VERSION);
     }
-    if(!fJustCheck)      
-        UpdateSqliteDB(block,vPos,vPrevouts,false);
+   
     //LogPrintf("connect block:UpdateSqliteDB done \n");    
     int64_t nTime1 = GetTimeMicros(); nTimeConnect += nTime1 - nTimeStart;
     LogPrint("bench", "      - Connect %u transactions: %.2fms (%.3fms/tx, %.3fms/txin) [%.2fs]\n", (unsigned)block.vtx.size(), 0.001 * (nTime1 - nTimeStart), 0.001 * (nTime1 - nTimeStart) / block.vtx.size(), nInputs <= 1 ? 0 : 0.001 * (nTime1 - nTimeStart) / (nInputs-1), nTimeConnect * 0.000001);
@@ -2210,7 +2209,8 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     if (fTxIndex)
         if (!pblocktree->WriteTxIndex(vPos))
             return state.Abort("Failed to write transaction index");
-
+// if(!fJustCheck)      
+        UpdateSqliteDB(block,vPos,vPrevouts,false);
     // add this block to the view's block chain
      //LogPrintf("connect blcok set best block2 %s \n",pindex->GetBlockHash().GetHex());
     view.SetBestBlock(pindex->GetBlockHash());

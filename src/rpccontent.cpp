@@ -415,6 +415,14 @@ Value getcontentbylink(const Array& params, bool fHelp)
     Object r = _output_content(content, cformat, cflag, clink, address, domain, tx.vout[clink.nVout].nValue, tx.vout[clink.nVout].scriptPubKey, STANDARD_CONTENT_MAX_CC, chainActive[clink.nHeight]->nTime);
     return r;
 }
+Value encodelink(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() < 1)
+        throw runtime_error("encodelink Wrong number of parameters");
+    CLink clink(params[0].get_str());   
+    string str=clink.Serialize();
+    return HexStr(str.begin(),str.end());
+}
 
 Value getcontentbystring(const Array& params, bool fHelp)
 {

@@ -381,6 +381,7 @@ static const CRPCCommand vRPCCommands[] =
     { "util",               "gethash",                &gethash,                true,      true,       false },
     { "util",               "encodevarint",           &encodevarint,           true,      true,       false },
     { "util",               "decodevarint",           &decodevarint,           true,      true,       false },
+    { "util",               "encodelink",           &encodelink,           true,      true,       false },
 
     /* Not shown in help */
     { "hidden",             "invalidateblock",        &invalidateblock,        true,      true,       false },
