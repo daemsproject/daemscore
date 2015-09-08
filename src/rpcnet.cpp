@@ -187,7 +187,7 @@ Value addnode(const Array& params, bool fHelp)
     {
         CAddress addr;
         OpenNetworkConnection(addr, NULL, strNode.c_str());
-        return Value::null;
+        return Value("OK");
     }
 
     LOCK(cs_vAddedNodes);
@@ -199,7 +199,7 @@ Value addnode(const Array& params, bool fHelp)
     if (strCommand == "add")
     {
         if (it != vAddedNodes.end())
-            throw JSONRPCError(RPC_CLIENT_NODE_ALREADY_ADDED, "Error: Node already added");
+            return Value("OK");
         vAddedNodes.push_back(strNode);
     }
     else if(strCommand == "remove")
@@ -209,7 +209,7 @@ Value addnode(const Array& params, bool fHelp)
         vAddedNodes.erase(it);
     }
 
-    return Value::null;
+    return Value("OK");
 }
 
 Value getaddednodeinfo(const Array& params, bool fHelp)

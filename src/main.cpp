@@ -1319,7 +1319,7 @@ bool GetTransaction(const uint256 &hash, CTransaction &txOut, uint256 &hashBlock
 }
 bool GetTransaction(const CTxPosItem &postx, CTransaction &txOut)
 {
-    LOCK(cs_main);            
+    //LOCK(cs_main);            
     CAutoFile file(OpenBlockFile(postx, true), SER_DISK, CLIENT_VERSION);
     if (file.IsNull())
     {

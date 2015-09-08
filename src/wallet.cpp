@@ -1641,6 +1641,11 @@ bool CWallet::CreateTransactionUnsigned(const CPaymentOrder& pr,
                                 CWalletTx& wtxNew,std::string& strFailReason)
 {
     CAmount nValue = 0;
+    if (pr.vout.empty())
+    {
+        strFailReason = _("No Vouts");
+        return false;
+    }
     BOOST_FOREACH (const CTxOut& s, pr.vout)
     {
         if (s.nValue < 0)
@@ -1648,14 +1653,18 @@ bool CWallet::CreateTransactionUnsigned(const CPaymentOrder& pr,
             strFailReason = _("Transaction amounts must be positive");
             return false;
         }
+        if (s.nValue > MAX_MONEY)
+        {
+            strFailReason = _("Transaction amount too big");
+            return false;
+        }
         nValue += s.nValue;
-    }
-    if (pr.vout.empty() || nValue < 0)
+        if ( nValue > MAX_MONEY)
     {
-        strFailReason = _("Transaction amounts must be positive");
+            strFailReason = _("Transaction amount too big");
         return false;
     }
-
+    }
     wtxNew.fTimeReceivedIsTxTime = true;
     wtxNew.BindWallet(this);
     CMutableTransaction txNew;    
