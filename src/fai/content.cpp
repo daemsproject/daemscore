@@ -69,8 +69,8 @@ bool CContent::IsStandard()const
 bool FilterCc(const cctype cc, const std::string contentStr, Object& ccUnit)
 {
     if (cc == CC_LINK) {
-        CLink link;
-        if (link.UnserializeConst(contentStr))
+        CLinkUni link;
+        if (link.SetContent(contentStr))
             ccUnit.push_back(Pair("link", link.ToString()));
     }
     return true;

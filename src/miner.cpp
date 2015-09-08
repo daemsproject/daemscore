@@ -615,9 +615,9 @@ void PoolMiningThread(CBlockHeader& block,uint64_t nNonceBegin,uint64_t nNonceEn
                         {
                             LOCK(pool_mine_cs1);     
                         nPoolMiningResult=block1.nNonce ;
-                            return;// throw boost::thread_interrupted();
+                            // throw boost::thread_interrupted();
                         }
-                           
+                           return;
                     }
                     block1.nNonce += 1;
                     nHashesDone += 1;
@@ -670,9 +670,9 @@ void PoolMiningThread(CBlockHeader& block,uint64_t nNonceBegin,uint64_t nNonceEn
                         LOCK(pool_mine_cs2);
                         fPoolMiningFinished=true;
                         //LogPrintf("FaicoinpoolMiner finished:\n");
-                        return;// throw boost::thread_interrupted();
+                        
                     }
-                
+                    return;// throw boost::thread_interrupted();
                 }
                 
             }
@@ -710,39 +710,48 @@ uint64_t PoolMiner(bool fGenerate,CBlockHeader block,uint64_t nNonceBegin,uint64
     minerThreads = new boost::thread_group();
     uint64_t step=(uint64_t)((nNonceEnd-nNonceBegin)/nThreads);
     //LogPrintf("PoolMiner step %i\n",step);
-    fPoolMiningFinished=false;
-    nPoolMiningResult=0;
+    {
+        LOCK2(pool_mine_cs1,pool_mine_cs2);
+        fPoolMiningFinished=false;
+        nPoolMiningResult=0;
+    }
     for (int i = 0; i < nThreads; i++)
         minerThreads->create_thread(boost::bind(&PoolMiningThread, block,nNonceBegin+step*i,nNonceBegin+step*(i+1),nbit));
     
     while(true)
     {
         MilliSleep(10);
-        {
-        LOCK(pool_mine_cs1);
-        if(nPoolMiningResult>0)
-        {
-            LogPrintf("PoolMiner nPoolMiningResult %lld\n",nPoolMiningResult);
-            minerThreads->interrupt_all();
-            delete minerThreads;
-            minerThreads = NULL;
-            LogPrintf("PoolMiner nPoolMiningResult %lld\n",nPoolMiningResult);
-            return nPoolMiningResult;
-        }
-        }
+        
+           uint64_t pmr=0;
+            {
+                LOCK(pool_mine_cs1);
+                pmr=nPoolMiningResult;
+            }
+            if(pmr>0)
+            {
+                LogPrintf("PoolMiner nPoolMiningResult %lld\n",pmr);
+                minerThreads->interrupt_all();
+                delete minerThreads;
+                minerThreads = NULL;
+                return pmr;
+            }
+        
         //LogPrintf("PoolMiner minerThreads %i\n",minerThreads->size());
+           bool fpmf=false;
         {
-        LOCK(pool_mine_cs2);
-        if(fPoolMiningFinished)
-        {
-            
-            //LogPrintf("PoolMiner Finished at nonce:%i \n",nNonceEnd);
-            minerThreads->interrupt_all();
-            delete minerThreads;
-            minerThreads = NULL;
-            return 0;
+            LOCK(pool_mine_cs2);
+            fpmf=fPoolMiningFinished;
         }
-    }  
+            if(fpmf)
+            {
+
+                //LogPrintf("PoolMiner Finished at nonce:%i \n",nNonceEnd);
+                minerThreads->interrupt_all();
+                delete minerThreads;
+                minerThreads = NULL;
+                return 0;
+            }
+          
     }  
     
 }

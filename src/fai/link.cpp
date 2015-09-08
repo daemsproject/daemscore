@@ -169,6 +169,8 @@ bool CLink::Unserialize(string& str)
     if (n < 0 || n > 65535)
         return false;
     nVout = (unsigned short) n;
+    if(str.size()>0)
+        return false;
     //LogPrintf("CLink::UnSerialize() %i,%i,%i \n", nHeight, nTx, nVout);
     return true;
 }
