@@ -229,16 +229,21 @@ CScript _createmultisig_redeemScript(const Array& params)
     Object sendTo = params[1].get_obj();
     vector<CTxDestination> setDest;
     vector<unsigned int> setWeight;
+    CPubKey pub;
+    unsigned int nTotalWeight=0;
     BOOST_FOREACH(const Pair& s, sendTo) {
         CBitcoinAddress address(s.name_);
-        if (!address.IsValid())
+        if (!address.IsValid()||!address.GetKey(pub))
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, string("Invalid Faicoin address: ")+s.name_);
 
         //        if (setDest. .count(address))
         //            throw JSONRPCError(RPC_INVALID_PARAMETER, string("Invalid parameter, duplicated address: ")+s.name_);
         setDest.push_back(address.Get());
-        setWeight.push_back((unsigned int)s.value_.get_int());
-
+        unsigned int nWeight=(unsigned int)s.value_.get_int();
+        setWeight.push_back(nWeight);
+        if(nTotalWeight+nWeight>nTotalWeight)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, string("Total weight over limit"));
+        nTotalWeight+=nWeight;
     }
     CScript result = GetScriptForMultisigByWeight(nRequired, setDest, setWeight);
 
