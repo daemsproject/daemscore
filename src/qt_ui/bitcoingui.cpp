@@ -490,7 +490,7 @@ void BitcoinGUI::createActions(const NetworkStyle *networkStyle)
     downloaderAction->setCheckable(true);
     downloaderAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_L)); 
     tabGroup->addAction(downloaderAction);
-    appsAction = new QAction(QIcon(":/icons/tool"), tr("&Apps"), this);
+    appsAction = new QAction(QIcon(":/icons/app"), tr("&Apps"), this);
     appsAction->setStatusTip(tr("Apps"));
     appsAction->setToolTip(appsAction->statusTip());     
     appsAction->setCheckable(true);

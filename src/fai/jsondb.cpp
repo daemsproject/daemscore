@@ -80,7 +80,8 @@ bool CJsonDb::WriteSetting(const std::string appName,const std::string IDLocal,c
     
     if (!fFound)
         objConf.push_back(Pair(key, Value(value)));
-    json_spirit::Value val=json_spirit::Value(objConf);    
+    json_spirit::Value val=json_spirit::Value(objConf);   
+    LogPrintf("CJsonDb::WriteSetting %s\n",json_spirit::write_string(val,true));
     return WriteJsonToFile(val,file.string());   
 }
 bool CJsonDb::ReadSetting(const std::string appName,const std::string IDLocal,const std::string IDForeign,const std::string& key,std::string& value)

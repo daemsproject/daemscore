@@ -639,7 +639,7 @@ bool CPaymentItem::SetJson(const Object& obj,string& strError)
         }
         catch (Object& objError)
         {
-            strError="nQuantity is not valid fromat";        
+            strError="nQuantity is not valid format";        
             return false;
         }        
         LogPrintf("CPaymentItem::SetJson product nQuantity %i\n",nQuantity);
