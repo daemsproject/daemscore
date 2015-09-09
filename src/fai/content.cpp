@@ -70,7 +70,9 @@ bool FilterCc(const cctype cc, const std::string contentStr, Object& ccUnit)
 {
     if (cc == CC_LINK) {
         CLinkUni link;
-        if (link.SetContent(contentStr))
+        CContent cct;
+        cct.EncodeUnit(cc,contentStr);
+        if (link.SetContent(cct))
             ccUnit.push_back(Pair("link", link.ToString()));
     }
     return true;
