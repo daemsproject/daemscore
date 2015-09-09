@@ -43,7 +43,11 @@ bool DecodeBase32(const char* psz, std::vector<unsigned char>& vch)
         while (bufferLen < 8) {
             if (!*++psz)
                 break;
+            if(*psz==45)//"-"
+                continue;
             buffer <<= 5;
+            //LogPrintf("psz %i, - %i \n",*psz,"-");
+            
             const char* v = strchr(pszBase32Vague, *psz);
             if (v == NULL)
                 return false;
@@ -68,7 +72,10 @@ bool DecodeBase32(const char* psz, std::vector<unsigned char>& vch)
 
 std::string ToStandardB32String(const std::string str)
 {
-    const char* psz = str.c_str();
+    string str1=str;
+    //char bar[]="-";
+    str1.erase(std::remove(str1.begin(), str1.end(), 45), str1.end());
+    const char* psz = str1.c_str();
     //LogPrintf("ToStandardB32String1\n"); 
     std::string strOut;
     //LogPrintf("ToStandardB32String2\n"); 
@@ -92,6 +99,7 @@ std::string ToStandardB32String(const std::string str)
         //LogPrintf("ToStandardB32String8\n"); 
         psz++;
     }
+    
     //LogPrintf("ToStandardB32String9\n"); 
     return strOut;
 }
