@@ -74,7 +74,8 @@ bool FilterCc(const cctype cc, const std::string contentStr, Object& ccUnit)
         cct.EncodeUnit(cc,contentStr);
         if (link.SetContent(cct))
             ccUnit.push_back(Pair("link", link.ToString()));
-    }
+    }else if(cc==CC_FILE_PACKAGE_P)
+        return false;
     return true;
 }
 
@@ -96,7 +97,11 @@ Array CContent::ToJson(int& nMaxCC,stringformat fFormat, bool fRecursive)const
         ccUnit.push_back(Pair("cc_name", ccName));
         ccUnit.push_back(Pair("cc", GetCcHex(cc)));
         if (!FilterCc(cc, contentStr, ccUnit))
+        {
+            ccUnit.push_back(Pair("length", (int) contentStr.size()));
+            result.push_back(ccUnit);
             return result;
+        }
         if (IsCcParent(cc) && fRecursive) {
             if (contentStr.IsStandard())
                 ccUnit.push_back(Pair("content", contentStr.ToJson(nMaxCC,fFormat,true)));

@@ -599,6 +599,7 @@ void PoolMiningThread(CBlockHeader& block,uint64_t nNonceBegin,uint64_t nNonceEn
                 //block1.nNonce += 1;
                 while(true)
                 {
+                    boost::this_thread::interruption_point();
                     thash=block1.GetHash();
                     
                     mixHash(&thash,(unsigned int)block1.nBlockHeight);
@@ -609,6 +610,17 @@ void PoolMiningThread(CBlockHeader& block,uint64_t nNonceBegin,uint64_t nNonceEn
                         SetThreadPriority(THREAD_PRIORITY_NORMAL);
                         //LogPrintf("FaicoinpoolMiner:\n");
                         LogPrintf("proof-of-work found  \n  powhash: %s  \ntarget: %s\n nonce:%lld\n", thash.GetHex(), hashTarget.GetHex(),block1.nNonce);
+//                        thash=block1.GetHash();
+//                        mixHash(&thash,(unsigned int)block1.nBlockHeight);
+//                    LogPrintf("CBlock(hash=%s, ver=%d, hashPrevBlock=%s, hashMerkleRoot=%s, nBlockHeight=%d, nTime=%u, nBits=%08x, nNonce=%u)\n",
+//        block1.GetHash().ToString(),
+//        block1.nVersion,
+//        block1.hashPrevBlock.ToString(),
+//        block1.hashMerkleRoot.ToString(),
+//        block1.nBlockHeight,
+//        block1.nTime, block1.nBits, block1.nNonce
+//        );
+//                        LogPrintf("recalc powhash:%s \n",thash.GetHex());
                         //TODO feedback 
                         SetThreadPriority(THREAD_PRIORITY_LOWEST);
                         
@@ -661,7 +673,7 @@ void PoolMiningThread(CBlockHeader& block,uint64_t nNonceBegin,uint64_t nNonceEn
 //                    
 //                }
                 // Check for stop or if block needs to be rebuilt
-                boost::this_thread::interruption_point();
+                
                 
                 if (block1.nNonce > nNonceEnd||(GetTime()-nStart)>60)
                 {

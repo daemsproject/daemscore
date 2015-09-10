@@ -2270,7 +2270,6 @@ json_spirit::Value getdomainbyforward(const json_spirit::Array& params, bool fHe
         return Object();
     return Value(domain.ToJson());
 }
-
 json_spirit::Value searchproducts(const json_spirit::Array& params, bool fHelp)
 {
     if (fHelp)
@@ -2397,8 +2396,11 @@ json_spirit::Value getproductbylink(const json_spirit::Array& params, bool fHelp
     // LogPrintf("getproductbylink 8 \n");
     if (product.recipient.size() == 0)
         product.recipient = product.seller;
+    product.nExpireTime = LockTimeToTime(tx.vout[nVout].nLockTime);
+    Object obj=product.ToJson().get_obj();
+    obj.push_back(Pair("lockvalue",tx.vout[nVout].nValue));
     //LogPrintf("getproductbylink 9 \n");
-    return product.ToJson();
+    return Value(obj);
 }
 
 json_spirit::Value getfilepackageurl(const json_spirit::Array& params, bool fHelp)
