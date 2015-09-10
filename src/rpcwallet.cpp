@@ -82,7 +82,7 @@ CPubKey AccountFromValue(const Value& value)
         throw JSONRPCError(RPC_WALLET_INVALID_ACCOUNT_NAME, "Invalid account id");
     CPubKey pub;
     if (!add.GetKey(pub))
-        throw JSONRPCError(RPC_WALLET_INVALID_ACCOUNT_NAME, "Invalid account id");
+        throw JSONRPCError(RPC_WALLET_INVALID_ACCOUNT_NAME, "Account id is not pubkey");
     return pub;
 }
 
@@ -739,30 +739,21 @@ Value getbalance(const Array& params, bool fHelp)
             );
 
 
-    // CWallet* pwallet;
     bool fIsWalletID = false;
     string strAccount = "*";
     if (params.size() > 0)
     {
         Array arrIDs = params[0].get_array();
-        //TODO getbalances for multiple addresses
         strAccount = arrIDs[0].get_str();
+        LogPrintf("rpcwallet gebalance  id:%s \n", strAccount);
         if (strAccount == "")
-        {
             fIsWalletID = true;
-            //pwallet=pwalletMain;
-            //pwalletMain->LoadTxs();
-        } else
+         else
         {
-            CPubKey id;
-            id = AccountFromValue(arrIDs[0]);
-            if (id == pwalletMain->GetID())
+            if (strAccount == CBitcoinAddress(pwalletMain->GetID()).ToString())
                 fIsWalletID = true;
             else
-            {
-                LogPrintf("rpcwallet gebalance new pwallet id:%s \n", HexStr(id.begin(), id.end()));
-                // pwallet=new CWallet(id);
-            }
+                LogPrintf("rpcwallet gebalance new pwallet id:%s \n", strAccount);
         }
 
     } else
@@ -801,8 +792,6 @@ Value getbalance(const Array& params, bool fHelp)
     Object result;
     result.push_back(Pair("balance", balance));
     result.push_back(Pair("currentblockheight", chainActive.Height()));
-    // if (pwallet!=pwalletMain)
-    //    delete pwallet;
     return result;
 }
 

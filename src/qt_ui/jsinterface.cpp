@@ -241,14 +241,9 @@ QString JsInterface::jscall(const QString command,const QString dataJson,const i
                 if(arrData[0].type()!=str_type)
                     return QString().fromStdString("{\"error\":\"Invalid parameter, expected string");
                 std::string appName=arrData[0].get_str();
-                //if (nPageID==WALLETPAGE_ID)
-                //    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid pageID, wallet page setting is forbidden");
-                if(appName=="common"){
-                    if(nPageID>HELPPAGE_ID)
-                        return QString().fromStdString("{\"error\":\"appName common is not allowed\"}");
-                }
-                else if (nPageID<=HELPPAGE_ID&&mapPageNames[nPageID]!=appName)
-                    return QString().fromStdString("{\"error\":\"Invalid appName, not corresponding to pageid\"}");
+                for(std::map<int,std::string>::const_iterator it=mapPageNames.begin();it!=mapPageNames.end();it++)
+                    if(it->second==appName&&nPageID>HELPPAGE_ID)
+                        return QString().fromStdString("{\"error\":\"Invalid appName, not corresponding to pageid\"}");
             }
         }
         if(strCmd==string("getlang"))

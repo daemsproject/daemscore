@@ -457,11 +457,11 @@ Address: %4
     </message>
     <message>
         <source>Publisher</source>
-        <translation type="unfinished">发布页</translation>
+        <translation type="unfinished">发布器</translation>
     </message>
     <message>
         <source>Show publisher page</source>
-        <translation type="unfinished">进入发布页</translation>
+        <translation type="unfinished">进入发布器页面</translation>
     </message>
     <message>
         <source>&amp;Messenger</source>

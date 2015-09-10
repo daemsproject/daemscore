@@ -5,7 +5,7 @@ QT       += webkitwidgets concurrent widgets printsupport
 qtHaveModule(uitools):!embedded: QT += uitools
 else: DEFINES += QT_NO_UITOOLS
 
-TARGET = browserexe
+TARGET = FAI
 TEMPLATE = app
 DEFINES += ENABLE_WALLET=1
 

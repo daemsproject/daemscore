@@ -241,7 +241,7 @@ CScript _createmultisig_redeemScript(const Array& params)
         setDest.push_back(address.Get());
         unsigned int nWeight=(unsigned int)s.value_.get_int();
         setWeight.push_back(nWeight);
-        if(nTotalWeight+nWeight>nTotalWeight)
+        if(nTotalWeight+nWeight<nTotalWeight)
             throw JSONRPCError(RPC_INVALID_PARAMETER, string("Total weight over limit"));
         nTotalWeight+=nWeight;
     }
