@@ -377,7 +377,7 @@ bool CSqliteWrapper::SearchStr(const char* tableName,const char* searchByColumn,
 {
     //LogPrintf("CSqliteWrapper GetTagID \n");
     //char* zErrMsg=0;
-    char sql[2000]; 
+    char sql[7000]; 
     const char* selectstatement="SELECT %s FROM %s WHERE %s = %s;";    
      sprintf(sql,selectstatement,searchForColumn,tableName,searchByColumn,searchByValue);
     //LogPrintf("CSqliteWrapper GetTagID sql %s\n",sql); 
@@ -470,7 +470,7 @@ bool CSqliteWrapper::SearchStrs(const char* tableName,const char* searchByColumn
 {
     //LogPrintf("CSqliteWrapper GetTagID \n");
     //char* zErrMsg=0;
-    char sql[2000]; 
+    char sql[7000]; 
     const char* selectstatement="SELECT %s FROM %s WHERE %s %s %s LIMIT %i;";    
      sprintf(sql,selectstatement,searchForColumn,tableName,searchByColumn,chOperator,searchByValue,nMax);
     //LogPrintf("CSqliteWrapper GetTagID sql %s\n",sql); 
@@ -518,7 +518,7 @@ bool CSqliteWrapper::SearchInts(const char* tableName,const char* searchByColumn
 {
     //LogPrintf("CSqliteWrapper SearchInts \n");
     //char* zErrMsg=0;
-    char sql[2000]; 
+    char sql[7000]; 
     const char* selectstatement="SELECT %s FROM %s WHERE %s %s %s;";    
      sprintf(sql,selectstatement,searchForColumn,tableName,searchByColumn,chOperator,searchByValue);
     //LogPrintf("CSqliteWrapper SearchInts sql %s\n",sql); 
@@ -664,7 +664,7 @@ bool CSqliteWrapper::BatchUpdate(const char* tableName,const char* indexColumnNa
     {
        
     //LogPrintf("BatchUpdate\n");  
-    char sql[2000]; 
+    char sql[7000]; 
     sprintf(sql,"UPDATE %s SET %s =? WHERE %s = ?",tableName,changedColumnName,indexColumnName);
     
     int result;
@@ -1416,6 +1416,8 @@ bool CSqliteWrapper::GetScriptIndex(const CScript script,int64_t& scriptIndex) c
     //LogPrintf("CSqliteWrapper GetScriptIndex \n");
     //char* zErrMsg=0;
     //char sql[2000]; 
+    if(script.size()>3000)
+        return false;
     const char* sql="SELECT scriptindex FROM table_script2txpos WHERE script = ?;";  
     //string strScript=HexStr(script.begin(),script.end());    
     //sprintf(sql,selectstatement.c_str(),strScript.c_str());

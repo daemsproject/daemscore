@@ -394,7 +394,7 @@ bool _get_poster(const CTransaction& tx, string& address, CDomain& domain, int f
 
 Value getcontentbylink(const Array& params, bool fHelp)
 {
-    if (fHelp || params.size() < 1 || params.size() > 2)
+    if (fHelp || params.size() < 1 ||  params.size() >3)
         throw runtime_error("getcontentbylink Wrong number of parameters");
     CLink clink(params[0].get_str());
     CBlockIndex* pblockindex;
@@ -407,12 +407,15 @@ Value getcontentbylink(const Array& params, bool fHelp)
     CContent content;
     if (!GetContentFromVout(tx, clink.nVout, content))
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Get content failed");
-    int cformat = (params.size() == 2) ? params[1].get_int() : CONTENT_FORMAT_STR_HEX;
+    int cformat = (params.size() >1 ) ? params[1].get_int() : CONTENT_FORMAT_STR_HEX;
+    int nMaxCC=STANDARD_CONTENT_MAX_CC;
+    if(params.size() >2)
+        nMaxCC=max(1,params[1].get_int());
     string address;
     CDomain domain;
     _get_poster(tx, address, domain);
     unsigned char cflag = CONTENT_SHOW_LINK | CONTENT_SHOW_POSTER | CONTENT_SHOW_VALUE | CONTENT_SHOW_ADDR;
-    Object r = _output_content(content, cformat, cflag, clink, address, domain, tx.vout[clink.nVout].nValue, tx.vout[clink.nVout].scriptPubKey, STANDARD_CONTENT_MAX_CC, chainActive[clink.nHeight]->nTime);
+    Object r = _output_content(content, cformat, cflag, clink, address, domain, tx.vout[clink.nVout].nValue, tx.vout[clink.nVout].scriptPubKey, nMaxCC, chainActive[clink.nHeight]->nTime);
     return r;
 }
 Value encodelink(const Array& params, bool fHelp)
@@ -843,7 +846,7 @@ bool _check_cc(const CContent& ctt, const Array& withcc, const Array& withoutcc,
     BOOST_FOREACH(const Value& ccName_v, withcc)
     {
         cctype cc = GetCcValue(ccName_v.get_str());
-        if (cttcopy.HasCc(cc, nMaxCC))
+        if (cttcopy.HasCc(cc,false, nMaxCC))
         {
             rw = true;
             break;
@@ -915,7 +918,7 @@ bool _check_cc(const CContent& ctt, const Array& withcc, const Array& withoutcc,
     BOOST_FOREACH(const Value& ccName_v, withoutcc)
     {
         cctype cc = GetCcValue(ccName_v.get_str());
-        if (cttcopy.HasCc(cc, nMaxCC))
+        if (cttcopy.HasCc(cc,false, nMaxCC))
             return false;
     }
 

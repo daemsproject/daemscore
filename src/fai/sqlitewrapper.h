@@ -170,7 +170,7 @@ public:
     bool Insert(const char* tableName,const char* columnName1,const int format1,const V1& value1,const char* columnName2,const int format2,const V2& value2,const bool fReplace)
     {
     LogPrintf("Insert2\n");  
-    char sql[2000]; 
+    char sql[4000]; 
     const char* insertstatement="INSERT OR %s INTO %s(%s,%s) VALUES (?,?);";    
      sprintf(sql,insertstatement,fReplace?"REPLACE":"IGNORE",tableName,columnName1,columnName2);
      LogPrintf("Insert sql %s\n",sql);  
@@ -193,7 +193,7 @@ public:
     {
         {
     //LogPrintf("InsertBatch2\n");  
-    char sql[2000]; 
+    char sql[4000]; 
     const char* insertstatement="INSERT OR %s INTO %s(%s,%s) VALUES (?,?);";    
      sprintf(sql,insertstatement,fReplace?"REPLACE":"IGNORE",tableName,columnName1,columnName2);
     int result;

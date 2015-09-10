@@ -960,9 +960,11 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state)
         if (!MoneyRange(nValueOut))
             return state.DoS(100, error("CheckTransaction() : txout total out of range"),
                              REJECT_INVALID, "bad-txns-txouttotal-toolarge");
-        if(txout.scriptPubKey.size()>MAX_SCRIPT_ELEMENT_SIZE)
+        if(txout.scriptPubKey.size()>MAX_SCRIPT_ELEMENT_SIZE){
+            LogPrintf("CheckTransaction() : txout scriptpubkey oversize %i\n",txout.scriptPubKey.size());
             return state.DoS(100, error("CheckTransaction() : txout scriptpubkey oversize"),
                              REJECT_INVALID, "bad-txns-txout-scriptpubkey-oversize");
+        }
     }
 
     // Check for duplicate inputs

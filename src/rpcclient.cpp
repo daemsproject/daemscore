@@ -111,6 +111,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "getpurchaserecord", 2 },
     { "getfirstncc", 1 },
     { "getcontentbylink", 1 },
+    { "getcontentbylink", 2 },
     { "getcontentbystring", 1 },
     { "encodecontentunit", 2 },
     { "setfollow", 0 },
