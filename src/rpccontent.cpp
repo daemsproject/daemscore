@@ -2396,9 +2396,9 @@ json_spirit::Value getproductbylink(const json_spirit::Array& params, bool fHelp
     // LogPrintf("getproductbylink 8 \n");
     if (product.recipient.size() == 0)
         product.recipient = product.seller;
-    product.nExpireTime = LockTimeToTime(tx.vout[nVout].nLockTime);
+    product.nExpireTime = LockTimeToTime(tx.vout[link.nVout].nLockTime);
     Object obj=product.ToJson().get_obj();
-    obj.push_back(Pair("lockvalue",tx.vout[nVout].nValue));
+    obj.push_back(Pair("lockvalue",tx.vout[link.nVout].nValue));
     //LogPrintf("getproductbylink 9 \n");
     return Value(obj);
 }
