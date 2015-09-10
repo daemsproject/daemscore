@@ -960,6 +960,9 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state)
         if (!MoneyRange(nValueOut))
             return state.DoS(100, error("CheckTransaction() : txout total out of range"),
                              REJECT_INVALID, "bad-txns-txouttotal-toolarge");
+        if(txout.scriptPubKey.size()>MAX_SCRIPT_ELEMENT_SIZE)
+            return state.DoS(100, error("CheckTransaction() : txout scriptpubkey oversize"),
+                             REJECT_INVALID, "bad-txns-txout-scriptpubkey-oversize");
     }
 
     // Check for duplicate inputs
@@ -970,6 +973,9 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state)
             return state.DoS(100, error("CheckTransaction() : duplicate inputs"),
                              REJECT_INVALID, "bad-txns-inputs-duplicate");
         vInOutPoints.insert(txin.prevout);
+        if(txin.scriptSig.size()>MAX_SCRIPT_ELEMENT_SIZE)
+            return state.DoS(100, error("CheckTransaction() : txin scriptSig oversize"),
+                             REJECT_INVALID, "bad-txns-txin-scriptSig-oversize");
     }
 
     if (tx.IsCoinBase())
