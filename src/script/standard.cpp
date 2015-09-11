@@ -191,18 +191,18 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, vector<vector<unsi
     }
 
 
-    if (scriptPubKey.IsProperFormat())
-    {
-        typeRet = TX_SCRIPT;
-        vector<unsigned char> vch1;
-        const CScript& script1 = scriptPubKey;
-        CScript::const_iterator pc1 = script1.begin();
-        opcodetype opcode1;
-        if (!script1.GetOp(pc1, opcode1, vch1))
-            return false;
-        vSolutionsRet.push_back(vch1);
-        return true;
-    }
+//    if (scriptPubKey.IsProperFormat())
+//    {
+//        typeRet = TX_SCRIPT;
+//        vector<unsigned char> vch1;
+//        const CScript& script1 = scriptPubKey;
+//        CScript::const_iterator pc1 = script1.begin();
+//        opcodetype opcode1;
+//        if (!script1.GetOp(pc1, opcode1, vch1))
+//            return false;
+//        vSolutionsRet.push_back(vch1);
+//        return true;
+//    }
     vSolutionsRet.clear();
         typeRet = TX_NONSTANDARD;
     return false;

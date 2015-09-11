@@ -686,44 +686,34 @@ bool IsStandardTx(const CTransaction& tx, string& reason)
     // almost as much to process as they cost the sender in fees, because
     // computing signature hashes is O(ninputs*txsize). Limiting transactions
     // to MAX_STANDARD_TX_SIZE mitigates CPU exhaustion attacks.
-    unsigned int sz = tx.GetSerializeSize(SER_NETWORK, CTransaction::CURRENT_VERSION);
-    if (sz >= MAX_STANDARD_TX_SIZE) {
-        reason = "tx-size";
-        return false;
-    }
-    if (tx.vout.size()>65536){
-        reason = "vout-count";
-        return false;
-    }
-    BOOST_FOREACH(const CTxIn& txin, tx.vin)
-    {
-        // Biggest 'standard' txin is a 15-of-15 P2SH multisig with compressed
-        // keys. (remember the 520 byte limit on redeemScript size) That works
-        // out to a (15*(33+1))+3=513 byte redeemScript, 513+1+15*(73+1)+3=1627
-        // bytes of scriptSig, which we round off to 1650 bytes for some minor
-        // future-proofing. That's also enough to spend a 20-of-20
-        // CHECKMULTISIG scriptPubKey, though such a scriptPubKey is not
-        // considered standard)
-        if (txin.scriptSig.size() > 10000) {
-            reason = "scriptsig-size";
-            return false;
-        }
-//        if (!txin.scriptSig.IsPushOnly()) {
-//            reason = "scriptsig-not-pushonly";
+//    unsigned int sz = tx.GetSerializeSize(SER_NETWORK, CTransaction::CURRENT_VERSION);
+//    if (sz >= MAX_STANDARD_TX_SIZE) {
+//        reason = "tx-size";
+//        return false;
+//    }
+//    if (tx.vout.size()>65536){
+//        reason = "vout-count";
+//        return false;
+//    }
+//    BOOST_FOREACH(const CTxIn& txin, tx.vin)
+//    {
+//        
+//        if (txin.scriptSig.size() > MAX_SCRIPT_SIZE) {
+//            reason = "scriptsig-size";
 //            return false;
 //        }
-    }
+////        if (!txin.scriptSig.IsPushOnly()) {
+////            reason = "scriptsig-not-pushonly";
+////            return false;
+////        }
+//    }
 
-    //unsigned int nDataOut = 0;
     txnouttype whichType;
     BOOST_FOREACH(const CTxOut& txout, tx.vout) {
         if (!::IsStandard(txout.scriptPubKey, whichType)) {
-            reason = "scriptpubkey";
+            reason = "nonstandard-scriptpubkey";
             return false;
         }
-
-//        if (whichType == TX_NULL_DATA)
-//            nDataOut++;
         if (txout.scriptPubKey.size()==0&&txout.nValue>0){
             reason = "null-addr-with-value";
             return false;
@@ -737,11 +727,6 @@ bool IsStandardTx(const CTransaction& tx, string& reason)
         }
     }
 
-    // only one OP_RETURN txout is permitted
-//    if (nDataOut > 1) {
-//        reason = "multi-op-return";
-//        return false;
-//    }
 
     return true;
 }
@@ -975,7 +960,7 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state)
             return state.DoS(100, error("CheckTransaction() : duplicate inputs"),
                              REJECT_INVALID, "bad-txns-inputs-duplicate");
         vInOutPoints.insert(txin.prevout);
-        if(txin.scriptSig.size()>MAX_SCRIPT_ELEMENT_SIZE)
+        if(txin.scriptSig.size()>MAX_SCRIPT_SIZE)
             return state.DoS(100, error("CheckTransaction() : txin scriptSig oversize"),
                              REJECT_INVALID, "bad-txns-txin-scriptSig-oversize");
     }

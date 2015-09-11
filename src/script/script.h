@@ -16,6 +16,7 @@
 #include <vector>
 
 static const unsigned int MAX_SCRIPT_ELEMENT_SIZE = 3000; // bytes
+static const unsigned int MAX_SCRIPT_SIZE = 10000; // bytes ,32bytes pubkey corresponds to 66 bytes signature
 
 static const unsigned int MAX_STACK_SIZE = 200; // bytes
 
