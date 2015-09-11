@@ -2022,7 +2022,7 @@ bool SignAndSendTx(CWallet* pwallet,const CWalletTx& tx,const int nSigType, cons
      }
      if(fDelete)
         delete pwallet;
-    result= ("{\"success\":\""+tx.GetHash().GetHex()+"\"}");
+    result= ("{\"success\":\""+wtxSigned.GetHash().GetHex()+"\"}");
     return true;            
 }
 

@@ -1073,7 +1073,7 @@ QString WalletModel::SendMessage(Array arrData,const int nPageIndex)
         return QString().fromStdString("{\"error\":\"wrong idlocal\"}");
     CPubKey pubForeign;         
     if(!CBitcoinAddress(idForeign).GetKey(pubForeign))    
-        return QString().fromStdString("{\"error\":\"wrong idforeign\"}");
+        return QString().fromStdString("{\"error\":\"invalid idforeign\"}");
     bool fIsWalletMain;
     CWallet* pwallet;
     //LogPrintf("jsinterface:hadlepaymentrequest:id%s,pwalletmain id:%s size:%i\n",HexStr(id.begin(),id.end()),HexStr(wallet->GetID().begin(),wallet->GetID().end()),wallet->GetID().size());

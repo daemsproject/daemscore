@@ -415,6 +415,7 @@ Value getcontentbylink(const Array& params, bool fHelp)
     CDomain domain;
     _get_poster(tx, address, domain);
     unsigned char cflag = CONTENT_SHOW_LINK | CONTENT_SHOW_POSTER | CONTENT_SHOW_VALUE | CONTENT_SHOW_ADDR;
+    //LogPrintf("getcontentbylink scriptpubkey:%s \n",tx.vout[clink.nVout].scriptPubKey.ToString());
     Object r = _output_content(content, cformat, cflag, clink, address, domain, tx.vout[clink.nVout].nValue, tx.vout[clink.nVout].scriptPubKey, nMaxCC, chainActive[clink.nHeight]->nTime);
     return r;
 }

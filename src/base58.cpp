@@ -512,6 +512,7 @@ bool ScriptPubKeyToString(const CScript& script, string& str)
     vector<CTxDestination> addresses;
     unsigned int wRequired;
     ExtractDestinations(script, type, addresses, wRequired);
+     //LogPrintf("ScriptPubKeyToString addresses:%i \n",addresses.size());
     if (addresses.size() == 0)
         return false;
     switch((int)type)

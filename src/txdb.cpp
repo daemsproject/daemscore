@@ -334,7 +334,7 @@ bool CScript2TxPosDB::BatchInsert(const std::map<CScript, std::vector<CTxPosItem
         string strVTxPos;
         strVTxPos.assign(ssKey.begin(), ssKey.end());
         vListNew.push_back(make_pair(strScriptPubKey, strVTxPos));
-        LogPrintf("CScript2TxPosDB::BatchInsert script %s,vtxpos %s \n", it->first.ToString(), strVTxPos.size());
+        LogPrintf("CScript2TxPosDB::BatchInsert script %s,vtxpos %i \n", it->first.ToString(), strVTxPos.size());
     }
     return db->InsertBatch("table_script2txpos", "script", SQLITEDATATYPE_BLOB, "vtxpos", SQLITEDATATYPE_BLOB, vListNew, true);
 }
@@ -351,7 +351,7 @@ bool CScript2TxPosDB::BatchUpdate(const std::map<CScript, std::vector<CTxPosItem
         string strVTxPos;
         strVTxPos.assign(ssKey.begin(), ssKey.end());
         vList.push_back(make_pair(strScriptPubKey, strVTxPos));
-        LogPrintf("CScript2TxPosDB::BatchUpdate script %s,vtxpos %s \n",it->first.ToString(),strVTxPos.size());
+        LogPrintf("CScript2TxPosDB::BatchUpdate script %s,vtxpos %i \n",it->first.ToString(),strVTxPos.size());
     }
     return db->BatchUpdate("table_script2txpos", "script", SQLITEDATATYPE_BLOB, "vtxpos", SQLITEDATATYPE_BLOB, vList);
 }
@@ -370,20 +370,20 @@ bool CScript2TxPosDB::Write(const CScript &scriptPubKey, const std::vector<CTxPo
 
 bool CScript2TxPosDB::AddNewTxs(const std::map<CScript, vector<CTxPosItem> >&mapScriptTxPos)
 {
- LogPrintf("AddNewTxs\n");
+ //LogPrintf("AddNewTxs\n");
     std::map<CScript, std::vector<CTxPosItem> > mapScriptTxPosListUpdate;
-     LogPrintf("AddNewTxs1\n");
+    // LogPrintf("AddNewTxs1\n");
     std::map<CScript, std::vector<CTxPosItem> > mapScriptTxPosListInsert;
-     LogPrintf("AddNewTxs2\n");
+   //  LogPrintf("AddNewTxs2\n");
     std::vector<CTxPosItem> vTxPos;
- LogPrintf("AddNewTxs4\n");
+// LogPrintf("AddNewTxs4\n");
     for (std::map<CScript, vector<CTxPosItem> >::const_iterator it = mapScriptTxPos.begin(); it != mapScriptTxPos.end(); it++)
     {
         //Script scriptPubKey=it->first;     
         vTxPos.clear();
         if (!GetTxPosList(it->first, vTxPos))
         {
-             LogPrintf("AddNewTxs5\n");
+          //   LogPrintf("AddNewTxs5\n");
             mapScriptTxPosListInsert.insert(*it);
             continue;
         }
@@ -405,11 +405,11 @@ bool CScript2TxPosDB::AddNewTxs(const std::map<CScript, vector<CTxPosItem> >&map
                 fChanged = true;
             }
         }
-         LogPrintf("AddNewTxs6\n");
+        // LogPrintf("AddNewTxs6\n");
         if (fChanged)
             mapScriptTxPosListUpdate.insert(make_pair(it->first, vTxPos));
     }
-    LogPrintf("AddNewTxs7\n");
+    //LogPrintf("AddNewTxs7\n");
     return BatchUpdate(mapScriptTxPosListUpdate) & BatchInsert(mapScriptTxPosListInsert);
 }
 
@@ -1138,7 +1138,7 @@ bool UpdateSqliteDB(const CBlock& block, const vector<pair<uint256, CDiskTxPos> 
     {
        // LogPrintf("UpdateSqliteDB13 \n");
         pScript2TxPosDB->AddNewTxs(mapScript2TxPos);
-        LogPrintf("UpdateSqliteDB14 \n");
+        //LogPrintf("UpdateSqliteDB14 \n");
         pTagDBView->InsertTags(vTagNew);
         //LogPrintf("UpdateSqliteDB15 \n");
         psqliteDB->InsertTxIndice(mapTxIndex);

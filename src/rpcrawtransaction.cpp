@@ -63,7 +63,7 @@ void ScriptPubKeyToJSON(const CScript& scriptPubKey, Object& out, bool fIncludeH
         try{
             string str1=CBitcoinAddress(scriptPubKey).ToString();
             out.push_back(Pair("address",str1 ));
-            LogPrintf("ScriptPubKeyToJSON multisig:%s %s\n",scriptPubKey.ToString(),str1);
+            //LogPrintf("ScriptPubKeyToJSON multisig:%s %s\n",scriptPubKey.ToString(),str1);
             Array a;
             a.push_back(str1);
             out.push_back(Pair("multisig",decodemultisigaddress(a,false)));

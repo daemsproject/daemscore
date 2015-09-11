@@ -203,12 +203,12 @@ Value decodemultisigaddress(const json_spirit::Array& params, bool fHelp){
     CScript script;
     if(!StringToScriptPubKey(params[0].get_str(),script))
             throw JSONRPCError(RPC_WALLET_INVALID_ACCOUNT_NAME, "Invalid address");  
-    LogPrintf("decodemultisigaddress script:%s \n",script.ToString());
+    //LogPrintf("decodemultisigaddress script:%s \n",script.ToString());
     txnouttype typeRet;
     vector<vector<unsigned char> > vSolutions;
     if (!Solver(script, typeRet, vSolutions))
         throw JSONRPCError(RPC_WALLET_INVALID_ACCOUNT_NAME, "address is not multisig"); 
-    LogPrintf("decodemultisigaddress type:%s \n",GetTxnOutputType(typeRet));
+    //LogPrintf("decodemultisigaddress type:%s \n",GetTxnOutputType(typeRet));
     if (typeRet != TX_MULTISIG)
         throw JSONRPCError(RPC_WALLET_INVALID_ACCOUNT_NAME, "address is not multisig");  
     Object obj;
