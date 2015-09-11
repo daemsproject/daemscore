@@ -641,7 +641,7 @@ Value decoderawtransaction(const Array& params, bool fHelp)
         throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "TX decode failed");
 
     Object result;
-    TxToJSON(tx, 0, result);
+    TxToJSON(tx, 0, result,MAX_STANDARD_TX_SIZE);
 
     return result;
 }
@@ -695,9 +695,12 @@ Value encoderawtransaction(const Array& params, bool fHelp)
         const Value scripthex_v = find_value(scriptPubKey_v.get_obj(), "hex");
         if(scripthex_v.type()==str_type)
         {
+            if(scripthex_v.get_str().size()>0)
+            {
             vector<unsigned char> vScript;            
             vScript = ParseHexV(scripthex_v, "scriptPubKey");
             scriptPubKey.assign(vScript.begin(),vScript.end());
+            }
         }
         else 
         {
