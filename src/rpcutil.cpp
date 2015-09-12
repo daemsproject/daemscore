@@ -230,7 +230,7 @@ Value decodemultisigaddress(const json_spirit::Array& params, bool fHelp){
             arr.push_back(obj1);
         }
         obj.push_back(Pair("totalweight",nTotalWeight));
-        obj.push_back(Pair("id-count",arr.size()));
+        obj.push_back(Pair("id-count",(int)arr.size()));
         obj.push_back(Pair("ids",arr));
     return Value(obj);
 }
