@@ -108,13 +108,42 @@
         <file alias="bppage.js">res/js/bppage.js</file>
         <file alias="translate.js">res/js/translate.js</file>
         <file alias="shared.min.js">res/js/shared.min.js</file>
+        <file alias="domain.js">res/js/domain.js</file>
+        <file alias="help.js">res/js/help.js</file>
+        <file alias="messenger.js">res/js/messenger.js</file>
+        <file alias="shop.js">res/js/shop.js</file>
+        <file alias="wallet.js">res/js/wallet.js</file>
+        <file alias="messengerpage.js">res/js/messengerpage.js</file>
+        <file alias="miner.js">res/js/miner.js</file>
+        <file alias="settings.js">res/js/settings.js</file>
+        <file alias="tools.js">res/js/tools.js</file>
+        <file alias="publisherpage.js">res/js/publisherpage.js</file>
+        <file alias="publisher.js">res/js/publisher.js</file>
+        <file alias="help.js">res/js/help.js</file>
+        <file alias="apps.js">res/js/apps.js</file>
     </qresource>
     <qresource prefix="/js/lang">
         <file alias="en.json">res/js/lang/en.json</file>
         <file alias="zh.json">res/js/lang/zh.json</file>
     </qresource>
+    <qresource prefix="/json">
+        <file alias="help_en.json">res/json/help_en.json</file>
+        <file alias="help_zh.json">res/json/help_zh.json</file>
+        <file alias="homepage_zh.json">res/json/homepage_zh.json</file>
+        <file alias="homepage_en.json">res/json/homepage_en.json</file>
+    </qresource>
     <qresource prefix="/html">
+        <file alias="apps.html">res/html/apps.html</file>
         <file alias="browser.html">res/html/browser.html</file>
+        <file alias="domain.html">res/html/domain.html</file>
+        <file alias="help.html">res/html/help.html</file>
+        <file alias="messenger.html">res/html/messenger.html</file>
+        <file alias="miner.html">res/html/miner.html</file>
+        <file alias="publisher.html">res/html/publisher.html</file>
+        <file alias="settings.html">res/html/settings.html</file>
+        <file alias="shop.html">res/html/shop.html</file>
+        <file alias="tools.html">res/html/tools.html</file>
+        <file alias="wallet.html">res/html/wallet.html</file>
         <file alias="templates.html">res/html/templates.html</file>
     </qresource>
     <qresource prefix="/css">
@@ -124,6 +153,11 @@
         <file alias="jquery-ui.structure.min.css">res/css/jquery-ui.structure.min.css</file>
         <file alias="main-overrides.css">res/css/main-overrides.css</file>
         <file alias="br-overrides.css">res/css/br-overrides.css</file>
+        <file alias="domain-overrides.css">res/css/domain-overrides.css</file>
+        <file alias="msg-overrides.css">res/css/msg-overrides.css</file>
+        <file alias="pb-overrides.css">res/css/pb-overrides.css</file>
+        <file alias="shop-overrides.css">res/css/shop-overrides.css</file>
+        <file alias="wallet-overrides.css">res/css/wallet-overrides.css</file>
     </qresource>
     <qresource prefix="/">
         <file alias="browser.package.json">res/package/browser.package.json</file>

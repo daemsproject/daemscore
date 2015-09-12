@@ -372,9 +372,11 @@ bool _get_poster(const CTransaction& tx, string& address, CDomain& domain, int f
             return false;
         CTransaction prevTx;
         uint256 tmphash;
-        if (!GetTransaction(in.prevout.hash, prevTx, tmphash, true))
-            throw JSONRPCError(RPC_INTERNAL_ERROR, "Get prev tx failed");
-
+        if (!GetTransaction(in.prevout.hash, prevTx, tmphash, true)){
+            LogPrintf("_get_poster prevtx not found,tx:%s,prev tx:%s\n",tx.GetHash().GetHex(),in.prevout.hash.GetHex());
+            //throw JSONRPCError(RPC_INTERNAL_ERROR, "Get prev tx failed");
+            return false;
+        }
         ScriptPubKeyToString(prevTx.vout[in.prevout.n].scriptPubKey, address);
     }
     if (flag & 2)
@@ -385,7 +387,11 @@ bool _get_poster(const CTransaction& tx, string& address, CDomain& domain, int f
             return false;
         CScript scriptPubKey;
         if (!StringToScriptPubKey(address, scriptPubKey))
-            throw JSONRPCError(RPC_INTERNAL_ERROR, "Invalid address");
+        {
+            LogPrintf("Invalid address \n");
+            return false;
+            //throw JSONRPCError(RPC_INTERNAL_ERROR, "Invalid address");
+        }
         pDomainDBView->GetDomainByForward(scriptPubKey, domain, true);
     }
     return true;
