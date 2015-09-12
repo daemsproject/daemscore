@@ -460,7 +460,7 @@ int main(int argc, char *argv[])
     
     GUIUtil::SubstituteFonts(GetLangTerritory());
     QFont new_font = app.font();
-    new_font.setPointSize( 14 ); 
+    new_font.setPointSize( 10 ); 
     app.setFont( new_font );
     /// 4. Initialization of translations, so that intro dialog is in user's language
     // Now that QSettings are accessible, initialize translations
