@@ -457,7 +457,7 @@ int main(int argc, char *argv[])
     QApplication::setOrganizationName(QAPP_ORG_NAME);
     QApplication::setOrganizationDomain(QAPP_ORG_DOMAIN);
     QApplication::setApplicationName(QAPP_APP_NAME_DEFAULT);
-    
+    app->addLibraryPath(app->applicationDirPath()+"/plugins");
     GUIUtil::SubstituteFonts(GetLangTerritory());
     QFont new_font = app.font();
     new_font.setPointSize( 10 ); 
