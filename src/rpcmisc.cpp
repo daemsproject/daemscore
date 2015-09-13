@@ -777,18 +777,18 @@ CPaymentOrder GetPublishProductPaymentRequest(const Array arr)
             vcc.push_back(make_pair(CC_PRODUCT_INTRO,tmp.get_str()));
             LogPrintf("rpcmisc GetPublishProductPaymentRequest product intro %s\n", tmp.get_str());
         }     
-        tmp = find_value(obj, "expiretime");
+        tmp = find_value(obj, "locktime");
         uint32_t nLockTime=0;
         if (tmp.type() != null_type)
         {            
             if(tmp.type() != int_type)
             {
-                strError="expiretime is not int type";
+                strError="locktime is not int type";
                 throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
             }
             nLockTime=tmp.get_int64();
             if(nLockTime!=0&&GetBlocksToMaturity(nLockTime)<480)
-                throw JSONRPCError(RPC_INVALID_PARAMETER, "invalid expiretime");
+                throw JSONRPCError(RPC_INVALID_PARAMETER, "invalid locktime");
             LogPrintf("rpcmisc GetPublishProductPaymentRequest locktime %i\n", nLockTime);
         }
         tmp = find_value(obj, "tags");        

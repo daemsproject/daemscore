@@ -29,10 +29,10 @@ bool CFilePackage::SetLink(const CLink linkIn)
     CContent content;
 
     if (!GetContentByLink(linkIn, content)) {
-        LogPrintf("CFilePackage::SetLink fail link: %s content:%s\n", link.ToString(), content);
+        //LogPrintf("CFilePackage::SetLink fail link: %s content:%s\n", link.ToString(), content);
         return false;
     }
-    LogPrintf("CFilePackage::SetLink link: %s content:%s\n", link.ToString(), content);
+    //LogPrintf("CFilePackage::SetLink link: %s content:%s\n", link.ToString(), content);
     return SetContent(content);
 }
 
@@ -47,10 +47,10 @@ bool CFilePackage::SetLink(const CLinkUni linkIn)
         return false;
     CContent content;
     if (!GetContentByLink(linkIn, content)) {
-        LogPrintf("CFilePackage::SetLink link: %s content:%s\n", link.ToString(), content);
+        //LogPrintf("CFilePackage::SetLink link: %s content:%s\n", link.ToString(), content);
         return false;
     }
-    LogPrintf("CFilePackage::SetLink link: %s content:%s\n", link.ToString(), content);
+   // LogPrintf("CFilePackage::SetLink link: %s content:%s\n", link.ToString(), content);
     return SetContent(content);
 }
 
@@ -60,22 +60,22 @@ bool CFilePackage::SetContent(const CContent contentIn)
     std::vector<std::pair<int, string> > vDecoded;
     if (!contentIn.Decode(vDecoded))
         return false;
-    LogPrintf("CFilePackage::SetContent decoded size:%i\n", vDecoded.size());
+    //LogPrintf("CFilePackage::SetContent decoded size:%i\n", vDecoded.size());
     if (vDecoded.size() > 0 && vDecoded[0].first == CC_FILE_PACKAGE_P) {
         CContent content2 = vDecoded[0].second;
         std::vector<std::pair<int, string> > vDecoded1;
         if (!content2.Decode(vDecoded1))
             return false;
-        LogPrintf("CFilePackage::SetContent decoded1 size %i\n", vDecoded1.size());
+       // LogPrintf("CFilePackage::SetContent decoded1 size %i\n", vDecoded1.size());
         for (unsigned int i = 0; i < vDecoded1.size(); i++) {
-            LogPrintf("CFilePackage::SetContent decoded1 n %i,cc:%s,content:%s\n", i, GetCcName((cctype) vDecoded1[i].first), vDecoded1[i].second);
+           // LogPrintf("CFilePackage::SetContent decoded1 n %i,cc:%s,content:%s\n", i, GetCcName((cctype) vDecoded1[i].first), vDecoded1[i].second);
             if (vDecoded1[i].first == CC_FILE_P) {
-                LogPrintf("CFilePackage::SetContent filep:%i\n", i);
+              //  LogPrintf("CFilePackage::SetContent filep:%i\n", i);
                 vector<CLink> vlink;
                 std::vector<std::pair<int, string> > vDecoded2;
                 if (!CContent(vDecoded1[i].second).Decode(vDecoded2))
                     return false;
-                LogPrintf("CFilePackage::SetContent filep subs:%i\n", vDecoded2.size());
+             //   LogPrintf("CFilePackage::SetContent filep subs:%i\n", vDecoded2.size());
                 bool fFound = false;
                 string strFileName;
                 for (unsigned int j = 0; j < vDecoded2.size(); j++)
@@ -84,7 +84,7 @@ bool CFilePackage::SetContent(const CContent contentIn)
                         fFound = true;
                         break;
                     }
-                LogPrintf("CFilePackage::SetContent file name:%s\n", strFileName);
+              //  LogPrintf("CFilePackage::SetContent file name:%s\n", strFileName);
                 if (!fFound)
                     return false;
                 fFound = false;
@@ -96,7 +96,7 @@ bool CFilePackage::SetContent(const CContent contentIn)
                             return false;
                         vlink.push_back(fileLink);
                         mapFileList[strFileName] = vlink;
-                        LogPrintf("CFilePackage::SetContent file name:%s,link:%s\n", strFileName, fileLink.ToString());
+                  //      LogPrintf("CFilePackage::SetContent file name:%s,link:%s\n", strFileName, fileLink.ToString());
                         fFound = true;
                         break;
                     }
@@ -104,7 +104,7 @@ bool CFilePackage::SetContent(const CContent contentIn)
                 if (!fFound) {                    
                     for (unsigned int j = 0; j < vDecoded2.size(); j++)
                         if (vDecoded2[j].first == CC_FILE_COMBINE_P) {
-                            LogPrintf("CFilePackage::SetContent file combined\n");
+                           // LogPrintf("CFilePackage::SetContent file combined\n");
                             std::vector<std::pair<int, string> > vDecoded3;
                             if (!CContent(vDecoded2[j].second).Decode(vDecoded3))
                                 return false;
@@ -118,7 +118,7 @@ bool CFilePackage::SetContent(const CContent contentIn)
                             }
                             if(vlink.size()>0)
                             {
-                                LogPrintf("CFilePackage::SetContent file combined %i\n",vlink.size());
+                            //    LogPrintf("CFilePackage::SetContent file combined %i\n",vlink.size());
                             
                                 mapFileList[strFileName] = vlink;
                                 fFound=true;
@@ -163,10 +163,10 @@ bool CFilePackage::InstallPackage(const string strDirName, const bool fInternal,
     boost::filesystem::create_directories(fpPath);
     int64_t startTime = GetTimeMillis();
     for (map<string, vector<CLink> >::iterator it = mapFileList.begin(); it != mapFileList.end(); it++) {
-        LogPrintf("InstallPackage filename %s link:%s\n", it->first, it->second[0].ToString());
+        //LogPrintf("InstallPackage filename %s link:%s\n", it->first, it->second[0].ToString());
         string strFilecontent;
         if (GetFileFromLinks(it->second, strFilecontent, timeOut)) {
-            LogPrintf("InstallPackage filename %s length:%i\n", it->first, strFilecontent.size());
+            //LogPrintf("InstallPackage filename %s length:%i\n", it->first, strFilecontent.size());
             boost::filesystem::path fpFile= fpPath;
             //parse path included in file name
             string strFileName=it->first;
@@ -205,7 +205,7 @@ bool CFilePackage::InstallPackage(const string strDirName, const bool fInternal,
     }
     LogPrintf("InstallPackage time %lld\n", GetTimeMillis() - startTime);
     boost::filesystem::path fpFile = fpPath / (strDirName + ".package.json");
-    LogPrintf("InstallPackage packagefile %s length:%i\n", fpFile.string(), write_string(ToJson(), true));
+   // LogPrintf("InstallPackage packagefile %s length:%i\n", fpFile.string(), write_string(ToJson(), true));
     WriteJsonToFile(ToJson(), fpFile.string());
     return true;
 }
@@ -229,11 +229,11 @@ bool GetFilePackageMain(const string packageName, string& path, const bool fInte
     else
         fpPath = GetDataDir() / "appdata" / "filepackages" / packageName;
     boost::filesystem::path fpFile = fpPath / (packageName + ".package.json");
-    LogPrintf("GetFilePackageMain fpPath:%s,fpFile %s \n", fpPath.string(), fpFile.string());
+   // LogPrintf("GetFilePackageMain fpPath:%s,fpFile %s \n", fpPath.string(), fpFile.string());
     json_spirit::Object objFiles;
     std::string strMainFile;
     if (boost::filesystem::exists(fpFile)) {
-        LogPrintf("GetFilePackageMain file exists \n");
+      //  LogPrintf("GetFilePackageMain file exists \n");
         std::string str;
         if (ReadFileToString(fpFile.string(), str) && ReadFilePackageList(str, strMainFile, objFiles)) {
             boost::filesystem::path fpMainfile = fpPath / strMainFile;
@@ -247,7 +247,7 @@ bool GetFilePackageMain(const string packageName, string& path, const bool fInte
             
             return true;
         }
-        LogPrintf("GetFilePackageMain file to string %s \n", str);
+       // LogPrintf("GetFilePackageMain file to string %s \n", str);
     }
     return false;
 }
@@ -321,7 +321,7 @@ bool CFilePackage::SetJson(const Value json)
     for (unsigned int i = 0; i < objFiles.size(); i++) {
         
         string strFileName = objFiles[i].name_;
-        LogPrintf("CFilePackage SetJson :  file %s\n",strFileName.c_str());
+      //  LogPrintf("CFilePackage SetJson :  file %s\n",strFileName.c_str());
         vector<CLink> vlinks;
         
         std::vector<string> vstr;
@@ -337,7 +337,7 @@ bool CFilePackage::SetJson(const Value json)
                 LogPrintf("SetJson :  link is not valid \n");
                 return false;
             }
-            LogPrintf("CFilePackage SetJson :  link %s, height:%i,ntx:%i,nvout:%i \n", vstr[j], flink.nHeight, flink.nTx, flink.nVout);
+            //LogPrintf("CFilePackage SetJson :  link %s, height:%i,ntx:%i,nvout:%i \n", vstr[j], flink.nHeight, flink.nTx, flink.nVout);
             vlinks.push_back(flink);
         }
         LogPrintf("CFilePackage SetJson :  file 3\n");
@@ -366,10 +366,10 @@ bool CFilePackage::CheckLinks()
         CContent content;
 
         if (it->second.size() == 1) {
-            LogPrintf("CFilePackage::CheckLinks :  link height:%i,ntx:%i,nvout:%i \n", it->second[0].nHeight, it->second[0].nTx, it->second[0].nVout);
+           // LogPrintf("CFilePackage::CheckLinks :  link height:%i,ntx:%i,nvout:%i \n", it->second[0].nHeight, it->second[0].nTx, it->second[0].nVout);
             if (!GetContentByLink(it->second[0], content))
                 return false;
-            LogPrintf("CFilePackage::CheckLinks :  link content %s \n", content.substr(0, 100));
+          //  LogPrintf("CFilePackage::CheckLinks :  link content %s \n", content.substr(0, 100));
             vector<string> vFiles;
             if (!content.GetDataByCC(CC_FILE, vFiles, true, false))
                 return false;

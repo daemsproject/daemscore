@@ -724,25 +724,25 @@ bool CContent::DecodeFileString(std::string& strFile,int nIterations)
 {
     if(nIterations>1)
         return false;
-    LogPrintf("CContent DecodeFileString 1\n");
+    //LogPrintf("CContent DecodeFileString 1\n");
     std::vector<std::pair<int, string> > vDecoded;
     if(!Decode(vDecoded))
         return false;
-    LogPrintf("CContent DecodeFileString 2\n");
+   // LogPrintf("CContent DecodeFileString 2\n");
     switch(vDecoded[0].first)
     {
         case CC_FILE_P:
         {
-            LogPrintf("CContent DecodeFileString 3\n");
+           // LogPrintf("CContent DecodeFileString 3\n");
             std::vector<std::pair<int, string> > vDecoded1;
             if(!CContent(vDecoded[0].second).Decode(vDecoded1))
                  return false;    
-            LogPrintf("CContent DecodeFileString 4\n");
+           // LogPrintf("CContent DecodeFileString 4\n");
             for (unsigned int i = 0; i < vDecoded1.size(); i++) {
-                LogPrintf("CContent DecodeFileString i:%i,cc:%s\n",i,GetCcName((cctype)vDecoded1[i].first));
+              //  LogPrintf("CContent DecodeFileString i:%i,cc:%s\n",i,GetCcName((cctype)vDecoded1[i].first));
                 if(vDecoded1[i].first==CC_FILE)
                 {
-                    LogPrintf("CContent DecodeFileString 5\n");
+                 //   LogPrintf("CContent DecodeFileString 5\n");
                     strFile= vDecoded1[i].second;         
                     return true;
                 }
@@ -750,7 +750,7 @@ bool CContent::DecodeFileString(std::string& strFile,int nIterations)
             return false;
         }
         case CC_FILE:
-            LogPrintf("CContent DecodeFileString 6\n");
+           // LogPrintf("CContent DecodeFileString 6\n");
             strFile= vDecoded[0].second;         
                     return true;
         case CC_P:
@@ -758,7 +758,7 @@ bool CContent::DecodeFileString(std::string& strFile,int nIterations)
             return CContent(vDecoded[0].second).DecodeFileString(strFile,nIterations+1);
         }
         default:
-            LogPrintf("CContent DecodeFileString 7\n");
+          //  LogPrintf("CContent DecodeFileString 7\n");
             return false;
     }
     

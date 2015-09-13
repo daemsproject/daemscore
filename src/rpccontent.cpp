@@ -1741,8 +1741,8 @@ Value getmessages(const json_spirit::Array& params, bool fHelp)
     }
     if (fListOnly)
         return _GetMessageList(vIDsLocal, vTxPos, vMemTx, nStartBlock);
-    LogPrintf("getmessages mempooltxs:%u \n", vMemTx.size());
-    LogPrintf("getmessages blockchaintxs:%u \n", vTxPos.size());
+    //LogPrintf("getmessages mempooltxs:%u \n", vMemTx.size());
+    //LogPrintf("getmessages blockchaintxs:%u \n", vTxPos.size());
     //LogPrintf("getmsgs time after get memepool:%i,%i,%i \n", startTime, GetTimeMillis(), GetTimeMillis() - startTime);
     if (vIDsForeign.size() > 0)
     {
@@ -1766,19 +1766,19 @@ Value getmessages(const json_spirit::Array& params, bool fHelp)
                 LOCK(mempool.cs);
                 mempool.GetUnconfirmedTransactions(vIDsForeign, vMemTxForeign);
             }
-            LogPrintf("getmsgs11 vmemtx size:%i\n", vMemTx.size());
+            //LogPrintf("getmsgs11 vmemtx size:%i\n", vMemTx.size());
             for (std::vector<CTransaction>::iterator it = vMemTx.begin(); it != vMemTx.end(); it++)
             {
-                LogPrintf("getmsgs1\n");
+                //LogPrintf("getmsgs1\n");
                 if (find(vMemTxForeign.begin(), vMemTxForeign.end(), *it) == vMemTxForeign.end())
                 {
-                    LogPrintf("getmsgs2\n");
+                    //LogPrintf("getmsgs2\n");
                     vMemTx.erase(it);
                     it--;
-                    LogPrintf("getmsgs4\n");
+                    //LogPrintf("getmsgs4\n");
                 }
             }
-            LogPrintf("getmessages filtered mempooltxs:%u \n", vMemTx.size());
+            //LogPrintf("getmessages filtered mempooltxs:%u \n", vMemTx.size());
         }
     }
     Array arrMsg;
@@ -1798,7 +1798,7 @@ Value getmessages(const json_spirit::Array& params, bool fHelp)
             arrMsg.push_back(msg.ToJson(fLinkOnly));
         }
     }
-    LogPrintf("getmessages mempool msgs:%i \n", arrMsg.size());
+    //LogPrintf("getmessages mempool msgs:%i \n", arrMsg.size());
     //LogPrintf("getmsgs time after get memepool msg:%i,%i,%i \n", startTime, GetTimeMillis(), GetTimeMillis() - startTime);
     vMessages.clear();
     for (int i = vTxPos.size() - 1; i >= 0; i--)
@@ -1836,12 +1836,12 @@ Value getmessages(const json_spirit::Array& params, bool fHelp)
             //LogPrintf("getmessages:%i,npos%i \n", vMessages.size(), nPos);
         }
     }
-    LogPrintf("getmessages blockmsgs:%i \n", vMessages.size());
+    //LogPrintf("getmessages blockmsgs:%i \n", vMessages.size());
     SortMessages(vMessages, vIDsLocal);
     //LogPrintf("getmessages sorted:%i\n",vMessages.size());
     BOOST_FOREACH(CMessage& msg, vMessages)
     arrMsg.push_back(msg.ToJson(fLinkOnly));
-    LogPrintf("getmessages:%i \n", arrMsg.size());
+    //LogPrintf("getmessages:%i \n", arrMsg.size());
     return Value(arrMsg);
 
 }
@@ -1905,7 +1905,7 @@ Value gettxmessages(const json_spirit::Array& params, bool fHelp)
         BOOST_FOREACH(CMessage msg, vMessages)
         arrMsg.push_back(msg.ToJson(fLinkOnly));
     }
-    LogPrintf("getmessages toJson%i \n", arrMsg.size());
+   // LogPrintf("getmessages toJson%i \n", arrMsg.size());
     return Value(arrMsg);
 
 }

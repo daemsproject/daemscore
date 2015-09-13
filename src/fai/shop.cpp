@@ -69,7 +69,7 @@ bool CProduct::SetJson(const Object& obj,string& strError)
         return false;
     }     
     id=tmp.get_str();
-    LogPrintf("CProduct::SetJson product id %s\n",id);
+   // LogPrintf("CProduct::SetJson product id %s\n",id);
     tmp = find_value(obj, "name");
     if (tmp.type() != str_type)
     {            
@@ -77,7 +77,7 @@ bool CProduct::SetJson(const Object& obj,string& strError)
         return false;
     }     
     name=tmp.get_str();    
-    LogPrintf("CProduct::SetJson product name %s\n", name);
+   // LogPrintf("CProduct::SetJson product name %s\n", name);
     tmp = find_value(obj, "price");    
     try{
         price=_AmountFromValue(tmp);
@@ -93,7 +93,7 @@ bool CProduct::SetJson(const Object& obj,string& strError)
         price=0;
         return false;
     }    
-    LogPrintf("CProduct::SetJson product price %i\n",price);
+   // LogPrintf("CProduct::SetJson product price %i\n",price);
     tmp = find_value(obj, "shipmentfee");
     if (tmp.type() != null_type)
     { 
@@ -105,7 +105,7 @@ bool CProduct::SetJson(const Object& obj,string& strError)
             strError="shipment fee is not valid fromat";        
             return false;
         }        
-        LogPrintf("CProduct::SetJson product shipment fee %i\n",shipmentFee);
+  //      LogPrintf("CProduct::SetJson product shipment fee %i\n",shipmentFee);
     }            
     tmp = find_value(obj, "recipient");
     if (tmp.type() != null_type)
@@ -119,7 +119,7 @@ bool CProduct::SetJson(const Object& obj,string& strError)
             strError="scriptPubKey is not valid format";
             return false;
         }        
-        LogPrintf("CProduct::SetJson recipient %s\n", recipient.ToString());
+   //     LogPrintf("CProduct::SetJson recipient %s\n", recipient.ToString());
     } 
     tmp = find_value(obj, "seller");
     if (tmp.type() != null_type)
@@ -133,7 +133,7 @@ bool CProduct::SetJson(const Object& obj,string& strError)
             strError="scriptPubKey is not valid format";
             return false;
         }        
-        LogPrintf("CProduct::SetJson seller %s\n", seller.ToString());
+   //     LogPrintf("CProduct::SetJson seller %s\n", seller.ToString());
     } 
     tmp = find_value(obj, "icon");
     if (tmp.type() != null_type)
@@ -143,7 +143,7 @@ bool CProduct::SetJson(const Object& obj,string& strError)
             strError="invalid product icon";
             return false;
         }           
-        LogPrintf("CProduct::SetJson icon %s\n", tmp.get_str());
+     //   LogPrintf("CProduct::SetJson icon %s\n", tmp.get_str());
     }     
     tmp = find_value(obj, "intro");
     if (tmp.type() != null_type)
@@ -154,7 +154,7 @@ bool CProduct::SetJson(const Object& obj,string& strError)
             return false;
         }
         intro=tmp.get_str();        
-        LogPrintf("CProduct::SetJson intro %s\n", intro);
+      //  LogPrintf("CProduct::SetJson intro %s\n", intro);
     }     
     tmp = find_value(obj, "tags");
     if (tmp.type() != null_type)
@@ -175,7 +175,7 @@ bool CProduct::SetJson(const Object& obj,string& strError)
             if(arrTags[j].get_str()!="")
             {
                 vTag.push_back(arrTags[j].get_str());
-                LogPrintf("CProduct::SetJson tag %s\n", arrTags[j].get_str());
+             //   LogPrintf("CProduct::SetJson tag %s\n", arrTags[j].get_str());
             }
         }
     }
@@ -188,7 +188,7 @@ bool CProduct::SetJson(const Object& obj,string& strError)
             return false;
         } 
         nExpireTime=tmp.get_int64();        
-        LogPrintf("CProduct::SetJson nExpireTime %i\n", nExpireTime);
+       // LogPrintf("CProduct::SetJson nExpireTime %i\n", nExpireTime);
     }
     return true;
 }
@@ -248,7 +248,7 @@ bool CProduct::SetContent(const CContent content)
          else if(cc==CC_PRODUCT_PAYTO)
          {
              recipient=CScript((unsigned char*)str.c_str(),(unsigned char*)(str.c_str()+str.size()));             
-             LogPrintf("CProduct::SetContent recipient str %s script %s \n",HexStr(str.begin(),str.end()),recipient.ToString());            
+        //     LogPrintf("CProduct::SetContent recipient str %s script %s \n",HexStr(str.begin(),str.end()),recipient.ToString());            
                  
          }
         else if(cc==CC_PRODUCT_EXPIRETIME)
@@ -386,12 +386,12 @@ bool CPayment::SetJson(const Object& obj,string& strError)
         strError="scriptPubKey is not valid format";
         return false;
     }     
-    LogPrintf("CProduct::SetJson recipient %s\n", recipient.ToString());
+   // LogPrintf("CProduct::SetJson recipient %s\n", recipient.ToString());
     tmp = find_value(obj, "memo");
     if (tmp.type() == str_type)
     {     
         strMemo=tmp.get_str();
-        LogPrintf("CProduct::SetJson memo %s\n",strMemo);
+     //   LogPrintf("CProduct::SetJson memo %s\n",strMemo);
     }
     
      
@@ -400,7 +400,7 @@ bool CPayment::SetJson(const Object& obj,string& strError)
 
 bool CPayment::SetContent(const CContent content)
 {
-    LogPrintf("CPayment::SetContent\n");
+    //LogPrintf("CPayment::SetContent\n");
     std::vector<std::pair<int, string> > vDecoded0;
     if(!content.Decode(vDecoded0))
         return false;
@@ -449,7 +449,7 @@ bool CPayment::SetContent(const CContent content)
          else if(cc==CC_PAYMENT_RECIPIENT)
          {
              recipient=CScript((unsigned char*)str.c_str(),(unsigned char*)(str.c_str()+str.size()));             
-             LogPrintf("CProduct::SetContent recipient str %s script %s \n",HexStr(str.begin(),str.end()),recipient.ToString());            
+           //  LogPrintf("CProduct::SetContent recipient str %s script %s \n",HexStr(str.begin(),str.end()),recipient.ToString());            
                  
          } 
         else if (cc==CC_PAYMENT_MEMO)
@@ -458,7 +458,7 @@ bool CPayment::SetContent(const CContent content)
          }
          
     }
-    LogPrintf("CProduct::SetContent done\n");
+    //LogPrintf("CProduct::SetContent done\n");
     return IsValid();
 }
 CContent CPayment::ToContent()const
@@ -536,7 +536,7 @@ bool CPaymentItem::SetContent(const CContent content)
         if(cc==CC_PRODUCT_ID)
         {
             productID=str; 
-            LogPrintf("CProduct::SetContent id:%s \n",str);
+           // LogPrintf("CProduct::SetContent id:%s \n",str);
         }        
         else if(cc==CC_PRODUCT_PRICE)
         {
@@ -599,19 +599,19 @@ bool CPaymentItem::SetJson(const Object& obj,string& strError)
         return false;
     }     
     ccPaymentType=GetCcValue(tmp.get_str());
-    LogPrintf("CPaymentItem::SetJson ccPaymentType %s,%i\n",tmp.get_str(),ccPaymentType);
+    //LogPrintf("CPaymentItem::SetJson ccPaymentType %s,%i\n",tmp.get_str(),ccPaymentType);
     tmp = find_value(obj, "productid");
     if (tmp.type() == str_type)
     {
         productID=tmp.get_str();
-        LogPrintf("CPaymentItem::SetJson product id %s\n",productID);
+        //LogPrintf("CPaymentItem::SetJson product id %s\n",productID);
     }
     tmp = find_value(obj, "paytolink");
     if (tmp.type() == str_type)
     {     
         string str=tmp.get_str();
         linkPayTo.SetString(str);
-        LogPrintf("CPaymentItem::SetJson productlink %s\n",linkPayTo.ToString());
+       // LogPrintf("CPaymentItem::SetJson productlink %s\n",linkPayTo.ToString());
     }
            
     
@@ -630,7 +630,7 @@ bool CPaymentItem::SetJson(const Object& obj,string& strError)
         price=0;
         return false;
     }    
-    LogPrintf("CPaymentItem::SetJson product price %i\n",price);
+   // LogPrintf("CPaymentItem::SetJson product price %i\n",price);
     tmp = find_value(obj, "quantity");
     if (tmp.type() != null_type)
     { 
@@ -642,14 +642,14 @@ bool CPaymentItem::SetJson(const Object& obj,string& strError)
             strError="nQuantity is not valid format";        
             return false;
         }        
-        LogPrintf("CPaymentItem::SetJson product nQuantity %i\n",nQuantity);
+        //LogPrintf("CPaymentItem::SetJson product nQuantity %i\n",nQuantity);
     }            
            
     tmp = find_value(obj, "memo");
     if (tmp.type() == str_type)
     {     
         strMemo=tmp.get_str();
-        LogPrintf("CPaymentItem::SetJson memo %s\n",strMemo);
+      //  LogPrintf("CPaymentItem::SetJson memo %s\n",strMemo);
     }
    
      

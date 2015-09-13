@@ -433,7 +433,7 @@ bool CWallet::EncryptMessages(const std::map<string,std::vector<string> >& mapMe
             }
         }
         mapMessagesOut[it->first]=vMsgOut;
-        LogPrintf("CWallet::mapMessagesOut %i\n",mapMessagesOut.size()); 
+        //LogPrintf("CWallet::mapMessagesOut %i\n",mapMessagesOut.size()); 
     }    
     return true;
 }

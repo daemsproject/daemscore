@@ -1831,14 +1831,14 @@ bool BitcoinGUI::handleUserConfirm(QString title,QString message,int nOP,string&
                 ssInput.reserve(MAX_PASSPHRASE_SIZE);    
                 ssInput.assign(dlg->ui->passwordEdit->text().toStdString().c_str());           
             }
-            LogPrintf("bitcoingui handleUserConfirm ok pressed, \n");  
+            //LogPrintf("bitcoingui handleUserConfirm ok pressed, \n");  
              delete dlg;
             return true;//QString("{\"success\":\"tx sent\"}");
             //emit sendMoneyResult(strToken,true,dlg.ui->passwordEdit->text());
         }else{
             //LogPrintf("bitcoingui handleUserConfirm return value,%i \n",dlg->nPageIndex); 
             //disconnect(dlg,SIGNAL(killPage(int)),mainView,SLOT(closeTab(int)));
-            LogPrintf("bitcoingui handleUserConfirm cancel pressed \n"); 
+            //LogPrintf("bitcoingui handleUserConfirm cancel pressed \n"); 
             strError="user cancelled";     
             delete dlg;
             return false;//QString("{\"error\":\"payment request cancelled\"}");
