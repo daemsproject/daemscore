@@ -36,6 +36,7 @@
 "It'd better to use a public IP address because you can link to more Φnodes and get latest Φ data faster.",
 "It needs to connect to at least one node of the Φ network. (The connections count is shown on bottom-right of your client window). You can collect node IPs from friends or web search, then add nodes via the \"add node\" function in  Menu--Applications--Tools. ",
 "It' better NOT putting your working directory  in the same disc with operating system. To change data dir, add -choosedatadir after FAI.exe command.",
+"Many websited requires Adobe Flash installed to play vedio. Installation of Flash is quite simple:goto www.flash.com , and follow the instructions.",
 
 "<h3>Terminologies:</h3>",
 "Φ represents the FAI system,FAI technology.",

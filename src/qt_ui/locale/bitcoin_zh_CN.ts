@@ -136,7 +136,7 @@
     </message>
     <message>
         <source>Type a name for the bookmark, and choose where to keep it.</source>
-        <translation type="unfinished">为收藏条码设置名称，并选择在哪里存放</translation>
+        <translation type="unfinished">为收藏条目设置名称，并选择在哪里存放</translation>
     </message>
 </context>
 <context>

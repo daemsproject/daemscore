@@ -1,4 +1,4 @@
-var IMAGE_FILE_TYPE = ["image/jpeg", "image/png", "image/svg+xml","image/tiff","image/bmp"];
+var IMAGE_FILE_TYPE = ["image/jpeg", "image/png", "image/svg+xml", "image/tiff", "image/bmp"];
 var VIDEO_FILE_TYPE = ["video/mp4"];
 var AUDIO_FILE_TYPE = ["audio/mpeg"];
 var FAI = "Φ";
@@ -354,6 +354,12 @@ var FAI_API = new function () {
             d.nRange = nRange;
         if (ftxCount >= 0)
             d.ftxCount = ftxCount;
+        console.log(JSON.stringify(d));
+        return this.icall("getcontentsbyaddresses", [d]);
+    };
+    this.getProductContentsByAddresses = function (ids) {
+        var wcc = ["CC_PRODUCT_P"];
+        var d = {maxc: 1000, maxb: 10000000, withcc: wcc, cformat: 7, mincsize: 3, frAddrs: ids};
         console.log(JSON.stringify(d));
         return this.icall("getcontentsbyaddresses", [d]);
     };

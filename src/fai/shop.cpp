@@ -356,7 +356,7 @@ bool CPayment::SetJson(const Object& obj,string& strError)
         return false;
     }     
     ccPaymentType=GetCcValue(tmp.get_str());
-    LogPrintf("CProduct::SetJson ccPaymentType %i\n", ccPaymentType);
+    //LogPrintf("CProduct::SetJson ccPaymentType %i\n", ccPaymentType);
     tmp = find_value(obj, "paymentitems");
     if (tmp.type() != array_type)
     {            

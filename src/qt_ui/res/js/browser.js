@@ -58,8 +58,9 @@ var CBrowser = new function () {
 
     };
     this.getB64DataFromLink = function (clink) {
-        var cj = (FAI_API.getContentByLink(clink));
-        var r = this.getFileContentFrJson(cj);
+        var ctt = (FAI_API.getContentByLink(clink));
+        var cttP = CUtil.parseCtt(ctt);
+        var r = cttP.fdata ? cttP.fdata : "";
         return r;
     };
     this.createImgSrc = function (type, b64) {
@@ -803,9 +804,12 @@ var CBrowser = new function () {
         else {
 //                console.log(json.length);
             var tmp = JSON.parse(json);
+            imageParam.frblk = tmp.frblk;
             imgs = tmp.imgs;
-            if (imgs.length <= 0)
+            if (imgs.length <= 0){
                 imgs = CBrowser.getNewImages();
+                  imageParam.frblk = Number(FAI_API.getBlockCount());
+            }
         }
 //        } else {
         if (!fFrBuffer) {
@@ -841,7 +845,7 @@ var CBrowser = new function () {
         if (imgs.length > 0) {
 //            console.log(imgs);
             CBrowser.addSlideImage(imgs);
-            var tmp = {imgs: imgs, frblk: cbh};
+            var tmp = {imgs: imgs, frblk: imageParam.frblk};
             var jtmp = JSON.stringify(tmp);
 //            var tmp2 = JSON.parse(jtmp);
             FAI_API.writeFile(app, path, filename, jtmp);

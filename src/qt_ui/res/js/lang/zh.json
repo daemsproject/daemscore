@@ -355,7 +355,7 @@
 ,"Valid until: ":"有效期至："
 ,"Forward to: ":"转发到："
 ,"Owned by: ":"所有者："
-,"Intro: ":"介绍"
+,"Intro: ":"介绍:"
 ,"Chat":"聊天"
 ,"wallet":"钱包"
 ,"browser":"浏览器"
@@ -366,6 +366,8 @@
 ,"shop":"商城"
 ,"tools":"工具"
 ,"downloader":"下载器"
+,"Downloader":"下载器"
+,"Φ Downloader":"Φ下载器"
 ,"help":"帮助"
 ,"Help":"帮助"
 ,"Φ Help":"Φ帮助"
@@ -421,4 +423,5 @@
 ,"Override failed":"修订失败"
 ,"Deposit lock for:":"押金锁定时间："
 ,"Publish product failed: ":"发布产品失败："
+,"Downloader is for p2p downloading, will be available in next client version.":"下载器用于P2P下载，将在下个版本推出。"
 }

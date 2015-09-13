@@ -1,0 +1,25 @@
+{
+	"packagename":"downloader",
+	"mainfile":"html/downloader.html",
+	"files":
+	{
+		"html/downloader.html":"html/downloader.html",
+		"html/templates.html":"html/templates.html",
+		"css/bootstrap.min.css":"css/bootstrap.min.css",		
+		"css/main-overrides.css":"css/main-overrides.css",
+		"js/jquery.min.js":"js/jquery.min.js",
+		"js/bootstrap.min.js":"js/bootstrap.min.js",
+		"js/downloader.js":"js/downloader.js",
+		"js/base64.js":"js/base64.js",
+		"js/shared.js":"js/shared.js",
+		"js/fai-api.js":"js/fai-api.js",		
+		"js/translate.js":"js/translate.js",
+		"js/lang/zh.json":"js/lang/zh.json",
+		"js/lang/en.json":"js/lang/en.json",
+		"icons/crown.png":"icons/crown",
+		"icons/silvercoin.png":"icons/silvercoin",
+		"icons/goldcoin.png":"icons/goldcoin",
+		"icons/diamond.png":"icons/diamond",
+		"icons/goldbar.png":"icons/goldbar"
+	}
+}

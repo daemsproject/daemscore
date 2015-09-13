@@ -306,7 +306,8 @@ function prepareStdTpl() {
     });
     $(".id-homepage-btn").unbind().click(function () {
         var id = $(this).parent().parent().find(".text").attr("fullid");
-        var url = "fai:browser/?id=" + id;
+        var domain = $(this).parent().parent().find(".text").attr("domain");
+        var url = domain ? domain : "fai:browser/?id=" + id;
         FAI_API.goToCustomPage(url);
     });
     $(".id-chat-btn").unbind().click(function () {

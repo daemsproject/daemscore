@@ -258,13 +258,13 @@ bool ParseUrl(const string urlIn,string& urlOut,int& nPageID)
     nPageID=255;
     urlOut=urlIn;
     CLinkUni link(urlIn);
-     LogPrintf("ParseUrl  linktype %i,%s\n",link.linkType,GetCcName(link.linkType));
+     //LogPrintf("ParseUrl  linktype %i,%s\n",link.linkType,GetCcName(link.linkType));
     switch ((int)link.linkType)
     {
         case CC_LINK_TYPE_NATIVE:
         {
             GetNativeLink(urlIn,urlOut,nPageID);
-            LogPrintf("ParseUrl  urlIn:%s urlout:%s,pageid:%i\n",urlIn,urlOut,nPageID); 
+            //LogPrintf("ParseUrl  urlIn:%s urlout:%s,pageid:%i\n",urlIn,urlOut,nPageID); 
             return true;
         }
         break;        
@@ -273,7 +273,7 @@ bool ParseUrl(const string urlIn,string& urlOut,int& nPageID)
             CContent content;
             if(!GetContentByLink(link,content))
                 return false;
-            LogPrintf("ParseUrl linktype blockchain,link:%s",link.ToString());
+            //LogPrintf("ParseUrl linktype blockchain,link:%s",link.ToString());
             return _ParseContentUrl(link,content,urlOut,nPageID);
         }
         case CC_LINK_TYPE_DOMAIN:   
@@ -303,7 +303,7 @@ bool ParseUrl(const string urlIn,string& urlOut,int& nPageID)
                 //urlIn="fai:"+id;
                 GetNativeLink("fai:browser",urlOut,nPageID);                
                 urlOut+="?id="+id;
-                LogPrintf("ParseUrl  urlIn:%s urlout:%s,pageid:%i\n",urlIn,urlOut,nPageID);
+                //LogPrintf("ParseUrl  urlIn:%s urlout:%s,pageid:%i\n",urlIn,urlOut,nPageID);
                 return true;
             }
         case CC_LINK_TYPE_HTTP:
@@ -313,11 +313,11 @@ bool ParseUrl(const string urlIn,string& urlOut,int& nPageID)
         case CC_LINK_TYPE_ED2K:
         case CC_LINK_TYPE_MAGNET:
         case CC_LINK_TYPE_FILE:
-            LogPrintf("ParseUrl  linktype http,urlIn:%s urlout:%s,pageid:%i\n",urlIn,urlOut,nPageID);
+            //LogPrintf("ParseUrl  linktype http,urlIn:%s urlout:%s,pageid:%i\n",urlIn,urlOut,nPageID);
             return true;
         default:
             urlOut="http://"+urlIn;
-            LogPrintf("ParseUrl  urlIn:%s urlout:%s,pageid:%i\n",urlIn,urlOut,nPageID);        
+            //LogPrintf("ParseUrl  urlIn:%s urlout:%s,pageid:%i\n",urlIn,urlOut,nPageID);        
     }  
     return true;
 }

@@ -6,4 +6,6 @@
     text-align: left;
 }.sid:hover{
     cursor: pointer;
+}#buy-product-list img,#seller-product-list img,#sales-record img,#cart-list img,#table-myorders img{
+    max-width: 50px; max-height:50px;
 }

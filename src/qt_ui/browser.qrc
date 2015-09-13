@@ -120,6 +120,7 @@
         <file alias="publisherpage.js">res/js/publisherpage.js</file>
         <file alias="helppage.js">res/js/helppage.js</file>
         <file alias="apps.js">res/js/apps.js</file>
+        <file alias="downloader.js">res/js/downloader.js</file>
         <file alias="jquery.qrcode.min.js">res/js/jquery.qrcode.min.js</file>
     </qresource>
     <qresource prefix="/js/lang">
@@ -144,6 +145,7 @@
         <file alias="shop.html">res/html/shop.html</file>
         <file alias="tools.html">res/html/tools.html</file>
         <file alias="wallet.html">res/html/wallet.html</file>
+        <file alias="downloader.html">res/html/downloader.html</file>
         <file alias="templates.html">res/html/templates.html</file>
     </qresource>
     <qresource prefix="/css">
@@ -171,5 +173,6 @@
         <file alias="shop.package.json">res/package/shop.package.json</file>
         <file alias="tools.package.json">res/package/tools.package.json</file>
         <file alias="apps.package.json">res/package/apps.package.json</file>
+        <file alias="downloader.package.json">res/package/downloader.package.json</file>
     </qresource>
 </RCC>

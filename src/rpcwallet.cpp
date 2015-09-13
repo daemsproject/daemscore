@@ -752,8 +752,8 @@ Value getbalance(const Array& params, bool fHelp)
         {
             if (strAccount == CBitcoinAddress(pwalletMain->GetID()).ToString())
                 fIsWalletID = true;
-            else
-                LogPrintf("rpcwallet gebalance new pwallet id:%s \n", strAccount);
+            //else
+                //LogPrintf("rpcwallet gebalance new pwallet id:%s \n", strAccount);
         }
 
     } else

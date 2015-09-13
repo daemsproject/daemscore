@@ -83,7 +83,8 @@ var Shop = new function () {
             html += "<tr><td>";
             var p = products[j];
             if (p.icon) {
-                html += CPage.createImgHtml(CBrowser.getB64DataFromLink(p.icon));
+                html += CPage.createImgHtml("image/jpeg", CBrowser.getB64DataFromLink(p.icon)).prop('outerHTML');
+
             }
             html += '</td><td>';
             html += p.name.substr(0, 32);
@@ -111,10 +112,15 @@ var Shop = new function () {
 
         var params = {};
         params.ids = [accountID];
-        params.offset = page * pagelen;
-        params.maxc = pagelen;
-        shopProducts = FAI_API.searchProducts(params);
-        console.log(shopProducts);
+        var shopProducts = [];
+        var prodCtts = FAI_API.getProductContentsByAddresses(params.ids);
+        if (prodCtts) {
+            for (var i in prodCtts.contents) {
+                var prod = FAI_API.getProductByLink(prodCtts.contents[i].link);
+                if (prod)
+                    shopProducts.push(prod);
+            }
+        }
         if (!shopProducts || shopProducts.error || shopProducts.length == 0) {
             $('#seller-product-list').html("<tr><td>" + TR('no products available now,please publish one') + "</td></tr>");
             return;
@@ -126,7 +132,7 @@ var Shop = new function () {
             html += p.id;
             html += '</td><td>';
             if (p.icon) {
-                html += CPage.createImgHtml(CBrowser.getB64DataFromLink(p.icon));
+                html += CPage.createImgHtml("image/jpeg", CBrowser.getB64DataFromLink(p.icon)).prop('outerHTML');
             }
             html += '</td><td>';
             html += p.name.substr(0, 32);
@@ -169,7 +175,7 @@ var Shop = new function () {
                             if (shopProducts[j] && shopProducts[j].id && shopProducts[j].id == it.productID)
                                 p = shopProducts[j];
                     if (p && p.icon) {
-                        html += CPage.createImgHtml(CBrowser.getB64DataFromLink(p.icon));
+                        html += CPage.createImgHtml("image/jpeg", CBrowser.getB64DataFromLink(p.icon)).prop('outerHTML');
                     }
                     html += '</td><td>';
                     if (it.type == "CC_PAYMENT_TYPE_SHIPMENTFEE")
@@ -272,7 +278,7 @@ var Shop = new function () {
                         }
                     }
                     if (p && p.icon) {
-                        html += CPage.createImgHtml(CBrowser.getB64DataFromLink(p.icon));
+                        html += CPage.createImgHtml("image/jpeg", CBrowser.getB64DataFromLink(p.icon)).prop('outerHTML');
                     }
                     html += '</td><td>';
                     if (it.type == "CC_PAYMENT_TYPE_SHIPMENTFEE")
@@ -377,6 +383,7 @@ var Shop = new function () {
             pdiv.find(".prd-pchs-btn").remove();
             pdiv.find(".ctt-share-btn").remove();
             pdiv.find(".ctt-cmt-btn").remove();
+            pdiv.find(".ctt-tip-btn").remove();
 
             pdiv.find(".id-follow-btn").parent().remove();
             pdiv.find(".id-unfollow-btn").parent().remove();
@@ -401,7 +408,7 @@ var Shop = new function () {
             var p = cart[j];
             html += '<tr id="tr-' + p.link + '" title="' + p.link + '"><td>';
             if (p.icon) {
-                html += CPage.createImgHtml(CBrowser.getB64DataFromLink(p.icon));
+                html += CPage.createImgHtml("image/jpeg", CBrowser.getB64DataFromLink(p.icon)).prop('outerHTML');
             }
             html += '</td><td>';
             html += p.name.substr(0, 32);
@@ -420,8 +427,8 @@ var Shop = new function () {
             html += '</td><td>';
             html += ("φ" + p.price);
             html += '</td><td>';
-            if(typeof p.shipmentfee==="undefined")
-                p.shipmentfee=0;
+            if (typeof p.shipmentfee === "undefined")
+                p.shipmentfee = 0;
             html += ("φ" + p.shipmentfee);
             html += '</td><td>';
             html += '<input name="quantity" type="text" style="width:40px" title="' + p.link + '" value="1" onkeyup="this.value=this.value.replace(/[^0-9]+/g,\'\')" onafterpaste="this.value=this.value.replace(/[^0-9]+/g,\'\')"/></td>';
