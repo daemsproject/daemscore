@@ -169,15 +169,15 @@ public:
     template <typename V1,typename V2>
     bool Insert(const char* tableName,const char* columnName1,const int format1,const V1& value1,const char* columnName2,const int format2,const V2& value2,const bool fReplace)
     {
-    LogPrintf("Insert2\n");  
+   // LogPrintf("Insert2\n");  
     char sql[4000]; 
     const char* insertstatement="INSERT OR %s INTO %s(%s,%s) VALUES (?,?);";    
      sprintf(sql,insertstatement,fReplace?"REPLACE":"IGNORE",tableName,columnName1,columnName2);
-     LogPrintf("Insert sql %s\n",sql);  
+    // LogPrintf("Insert sql %s\n",sql);  
     int result;
     sqlite3_stmt  *stat;    
    result=sqlite3_prepare_v2( pdb, sql, -1, &stat, 0 );
-   LogPrintf("GetInsertSql1 %i\n",result);   
+  // LogPrintf("GetInsertSql1 %i\n",result);   
    if(!BindValue(stat,1,format1,value1))
        return false;
    if(!BindValue(stat,2,format2,value2))
@@ -270,14 +270,14 @@ public:
         const char*columnName3,const int format3,const V3& value3,const bool fReplace)
     {
         {
-    LogPrintf("Insert3\n");  
+  //  LogPrintf("Insert3\n");  
     char sql[2000]; 
     const char* insertstatement="INSERT OR %s INTO %s(%s,%s,%s) VALUES (?,?,?);";    
      sprintf(sql,insertstatement,fReplace?"REPLACE":"IGNORE",tableName,columnName1,columnName2,columnName3);
     int result;
     sqlite3_stmt  *stat;    
    result=sqlite3_prepare_v2( pdb, sql, -1, &stat, 0 );
-   LogPrintf("GetInsertSql1 %i\n",result);   
+  // LogPrintf("GetInsertSql1 %i\n",result);   
    if(!BindValue(stat,1,format1,value1))
        return false;
    if(!BindValue(stat,2,format2,value2))

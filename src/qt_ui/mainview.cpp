@@ -354,7 +354,7 @@ void MainView::addWebAction(QAction *action, QWebPage::WebAction webAction)
 
 WebView *MainView::newTab(bool makeCurrent,QUrl url,int nPageID)
 {
-    LogPrintf("MainView newtab pageid:%i,url:%s \n",nPageID,url.toString().toStdString());
+    //LogPrintf("MainView newtab pageid:%i,url:%s \n",nPageID,url.toString().toStdString());
     
     // line edit
     UrlLineEdit *urlLineEdit = new UrlLineEdit;
@@ -482,7 +482,7 @@ void MainView::closeTab(int index)
     emit tabsChanged();
     if (hasFocus && count() > 0)
         currentWebView()->setFocus();
-    LogPrintf("close tab,tabs left:%i \n",count());
+    //LogPrintf("close tab,tabs left:%i \n",count());
     if (count() == 0)
         emit lastTabClosed();
 }

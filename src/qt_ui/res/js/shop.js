@@ -164,9 +164,10 @@ var Shop = new function () {
                         html += it.productID;
                     html += '</td><td>';
                     var p;
-                    for (var j in shopProducts)
-                        if (shopProducts[j].id = it.productID)
-                            p = shopProducts[j];
+                    if (it.productID)
+                        for (var j in shopProducts)
+                            if (shopProducts[j] && shopProducts[j].id && shopProducts[j].id == it.productID)
+                                p = shopProducts[j];
                     if (p && p.icon) {
                         html += CPage.createImgHtml(CBrowser.getB64DataFromLink(p.icon));
                     }
@@ -256,14 +257,15 @@ var Shop = new function () {
                     var p;
                     if (it.productID) {
                         var fFound = false;
-                        for (var k in myProducts)
-                            if (myProducts[k]&&myProducts[k].id&&myProducts[k].id == it.productID)
-                            {
-                                p = myProducts[k];
-                                fFound0 = true;
-                                break;
-                            }
-                        if (fFound===false) {
+                        if (it.productID)
+                            for (var k in myProducts)
+                                if (myProducts[k] && myProducts[k].id && myProducts[k].id == it.productID)
+                                {
+                                    p = myProducts[k];
+                                    fFound0 = true;
+                                    break;
+                                }
+                        if (fFound === false) {
                             p = FAI_API.getProductByLink(it.paytolink);
                             if (p.id)
                                 myProducts.push(p);

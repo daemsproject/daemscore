@@ -247,7 +247,7 @@ bool CCryptoKeyStore::VerifyPassword(SecureString strWalletPassphrase){
 }
 bool CCryptoKeyStore::GetKey(const CPubKey &address, CKey &keyOut) const
     {
-    LogPrintf("CCryptoKeyStore::GetKey iscrypted:%b,pub:%s\n",IsCrypted(),HexStr(address.begin(),address.end()));
+    //LogPrintf("CCryptoKeyStore::GetKey iscrypted:%b,pub:%s\n",IsCrypted(),HexStr(address.begin(),address.end()));
     if (IsCrypted())
         return GetDecryptedKey(address, keyOut);
     return CBasicKeyStore::GetKey(address, keyOut);

@@ -585,10 +585,10 @@ std::vector<CWalletTx> CWalletDB::ReadUnConfirmedTxs()
     filein.fclose();
 
     CDataStream ss(vchData, SER_DISK, CLIENT_VERSION);
-    LogPrintf("ReadUnConfirmedTxs ss size: %i",ss.size());
+    //LogPrintf("ReadUnConfirmedTxs ss size: %i",ss.size());
         if(ss.size()>0)
             ss>>vunconfirmedTxs;   
-     LogPrintf("ReadUnConfirmedTxs done txs: %i",vunconfirmedTxs.size());
+    // LogPrintf("ReadUnConfirmedTxs done txs: %i",vunconfirmedTxs.size());
     return vunconfirmedTxs;
 }
 bool CWalletDB::WriteUnConfirmedTxs(std::vector<CWalletTx> vunconfirmedTxs)

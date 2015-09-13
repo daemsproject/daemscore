@@ -195,7 +195,7 @@ bool CProduct::SetJson(const Object& obj,string& strError)
 
 bool CProduct::SetContent(const CContent content)
 {
-    LogPrintf("CProduct::SetContent\n");
+    //LogPrintf("CProduct::SetContent\n");
     std::vector<std::pair<int, string> > vDecoded0;
     if(!content.Decode(vDecoded0))
         return false;
@@ -288,7 +288,7 @@ bool CProduct::SetContent(const CContent content)
 //            
 //        }
     }
-    LogPrintf("CProduct::SetContent done\n");
+    //LogPrintf("CProduct::SetContent done\n");
     return IsValid();
 }
 CContent CProduct::ToContent()const

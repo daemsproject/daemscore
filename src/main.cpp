@@ -1393,7 +1393,7 @@ bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTr
     std::vector<CTxPosItem> vTxPosAll;
    GetDiskTxPoses (vIds,vTxPosAll);            
     
-    LogPrintf("main:gettx: vtxposall size%u",vTxPosAll.size());
+    //LogPrintf("main:gettx: vtxposall size%u \n",vTxPosAll.size());
     //sorting
 
     bool fChanged=true;
@@ -1425,7 +1425,7 @@ bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTr
             }
         }
     }
-    LogPrintf("main:gettx: vtxposall sizeafter sort%u \n",vTxPosAll.size());
+    //LogPrintf("main:gettx: vtxposall sizeafter sort%u \n",vTxPosAll.size());
         for (std::vector<CTxPosItem>::iterator it2 = vTxPosAll.begin();it2 != vTxPosAll.end(); it2++) {
             CTransaction txOut;
             uint256 hashBlock;

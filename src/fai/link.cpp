@@ -517,12 +517,12 @@ std::string CLinkUni::ToStringScriptPubKey()const
 
 bool CLinkUni::SetContent(const string& str)
 {
-    LogPrintf("CLinkUni SetContent \n");
+    //LogPrintf("CLinkUni SetContent \n");
     std::vector<std::pair<int, string> > vDecoded;
     CContent c = str;
     if (!c.Decode(vDecoded))
         return false;
-    LogPrintf("SetContent vDecoded %i\n", vDecoded.size());
+   // LogPrintf("SetContent vDecoded %i\n", vDecoded.size());
     switch (vDecoded[0].first) {
         case CC_LINK:
         {

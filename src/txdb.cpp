@@ -334,7 +334,7 @@ bool CScript2TxPosDB::BatchInsert(const std::map<CScript, std::vector<CTxPosItem
         string strVTxPos;
         strVTxPos.assign(ssKey.begin(), ssKey.end());
         vListNew.push_back(make_pair(strScriptPubKey, strVTxPos));
-        LogPrintf("CScript2TxPosDB::BatchInsert script %s,vtxpos %i \n", it->first.ToString(), strVTxPos.size());
+        //LogPrintf("CScript2TxPosDB::BatchInsert script %s,vtxpos %i \n", it->first.ToString(), strVTxPos.size());
     }
     return db->InsertBatch("table_script2txpos", "script", SQLITEDATATYPE_BLOB, "vtxpos", SQLITEDATATYPE_BLOB, vListNew, true);
 }
@@ -351,7 +351,7 @@ bool CScript2TxPosDB::BatchUpdate(const std::map<CScript, std::vector<CTxPosItem
         string strVTxPos;
         strVTxPos.assign(ssKey.begin(), ssKey.end());
         vList.push_back(make_pair(strScriptPubKey, strVTxPos));
-        LogPrintf("CScript2TxPosDB::BatchUpdate script %s,vtxpos %i \n",it->first.ToString(),strVTxPos.size());
+        //LogPrintf("CScript2TxPosDB::BatchUpdate script %s,vtxpos %i \n",it->first.ToString(),strVTxPos.size());
     }
     return db->BatchUpdate("table_script2txpos", "script", SQLITEDATATYPE_BLOB, "vtxpos", SQLITEDATATYPE_BLOB, vList);
 }
@@ -452,7 +452,7 @@ bool CDomainViewDB::GetUpdateDomain(const CScript ownerIn, const string& strDoma
     //bool fHasRecord=false;
     if (!domain.SetContent(CContent(strDomainContent), ownerIn, fRegister, fForward))
         return false;
-    LogPrintf("update domain name %s ,owner:%s,fRegister:%b,fForward:%b\n", domain.strDomain, domain.owner.ToString(), fRegister, fForward);
+   // LogPrintf("update domain name %s ,owner:%s,fRegister:%b,fForward:%b\n", domain.strDomain, domain.owner.ToString(), fRegister, fForward);
     if (domain.strDomain == "")
         return false;
     CDomain existingDomain;
@@ -480,7 +480,7 @@ bool CDomainViewDB::GetUpdateDomain(const CScript ownerIn, const string& strDoma
         {
             if (nLockTimeIn == 0 || LockTimeToTime(nLockTimeIn) < LockTimeToTime(existingDomain.nExpireTime))//renew time earlier than current time
                 return false;
-            LogPrintf("update domain renew %s\n", domain.strDomain);
+           // LogPrintf("update domain renew %s\n", domain.strDomain);
             if (lockedValue < (domain.nDomainGroup == DOMAIN_10000 ? (domain.IsLevel2() ? 100 * COIN : 10000 * COIN) : 100 * COIN))
                 return false;
             //existingDomain = domain;
@@ -509,7 +509,7 @@ bool CDomainViewDB::GetUpdateDomain(const CScript ownerIn, const string& strDoma
         //if(existingDomain.nExpireTime<nLockTimeIn)//there's possiblilty that renew time is closer to previous lock time
         existingDomain.nExpireTime = LockTimeToTime(nLockTimeIn);
         existingDomain.nLockValue = lockedValue;
-        LogPrintf("update domain register done\n");
+        //LogPrintf("update domain register done\n");
         //
 
     } else
@@ -523,13 +523,13 @@ bool CDomainViewDB::GetUpdateDomain(const CScript ownerIn, const string& strDoma
             existingDomain.redirectID.assign(existingDomain.redirectTo.begin(), existingDomain.redirectTo.end());
             ScriptPubKeyToString(existingDomain.redirectID, id);
             string strMessage = existingDomain.strDomain + "->" + id;
-            LogPrintf("update domain forward type:scriptpubkey msg4sig:%s,sig:%s\n", strMessage, HexStr(existingDomain.forwardsig.begin(), existingDomain.forwardsig.end()));
+            //LogPrintf("update domain forward type:scriptpubkey msg4sig:%s,sig:%s\n", strMessage, HexStr(existingDomain.forwardsig.begin(), existingDomain.forwardsig.end()));
             CHashWriter ss(SER_GETHASH, 0);
             ss << strMessage;
             CPubKey pubkey;
             if (!pubkey.RecoverCompact(ss.GetHash(), existingDomain.forwardsig) || CBitcoinAddress(pubkey).ToString() != id)
             {
-                LogPrintf("update domain forward verify sig failed,recovered id:%s,original id:%s\n", CBitcoinAddress(pubkey).ToString(), id);
+               // LogPrintf("update domain forward verify sig failed,recovered id:%s,original id:%s\n", CBitcoinAddress(pubkey).ToString(), id);
                 return false;
             }
 
@@ -715,7 +715,7 @@ bool CDomainViewDB::GetDomainByName(const string strDomainName, CDomain& domain,
         domain = vDomain[0];
         return true;
     }
-    LogPrintf("CDomainViewDB::GetDomainByName:domain not found \n");
+    //LogPrintf("CDomainViewDB::GetDomainByName:domain not found \n");
     return false;
 
     //    
@@ -782,7 +782,7 @@ bool CDomainViewDB::GetDomainByOwner(const CScript scriptPubKey, std::vector<CDo
 
 bool CDomainViewDB::GetDomainByTags(const vector<string>& vTag, vector<CDomain>& vDomain, bool FSupport100, const int nMax, bool fGetTags)const
 {
-    LogPrintf("CDomainViewDB::GetDomainByTags1\n");
+    //LogPrintf("CDomainViewDB::GetDomainByTags1\n");
     std::vector<CDomain> vDomain1;
     vector<int64_t>vTagIDs;
     string searchColumn = "rowid";
@@ -799,14 +799,14 @@ bool CDomainViewDB::GetDomainByTags(const vector<string>& vTag, vector<CDomain>&
     }
     if (vTag.size() > 10)
         return false;
-    LogPrintf("CDomainViewDB::GetDomainByTags2\n");
+   //LogPrintf("CDomainViewDB::GetDomainByTags2\n");
     const char* tagselectstatement = "SELECT domainid FROM %s WHERE tagid =%lld ";
     int64_t tagid;
     if (!db->GetTagID(vTag[0], tagid))
         return false;
     vTagIDs.push_back(tagid);
     sprintf(chTag, tagselectstatement, tableName.c_str(), vTagIDs[0]);
-    LogPrintf("CDomainViewDB::GetDomainByTags stmt:%s\n", chTag);
+   // LogPrintf("CDomainViewDB::GetDomainByTags stmt:%s\n", chTag);
     const char* tagselectstatement2 = "SELECT domainid FROM %s WHERE domainid IN(%s) AND tagid=%lld ";
     string strTgstmt;
     for (unsigned int i = 1; i < vTag.size(); i++)
@@ -816,11 +816,11 @@ bool CDomainViewDB::GetDomainByTags(const vector<string>& vTag, vector<CDomain>&
         vTagIDs.push_back(tagid);
         strTgstmt.assign(chTag);
         sprintf(chTag, tagselectstatement2, tableName.c_str(), strTgstmt.c_str(), vTagIDs[i]);
-        LogPrintf("CDomainViewDB::GetDomainByTags stmt:%s\n", chTag);
+    //    LogPrintf("CDomainViewDB::GetDomainByTags stmt:%s\n", chTag);
     }
     strTgstmt.assign(chTag);
     sprintf(chTag, "(%s) ", strTgstmt.c_str());
-    LogPrintf("CDomainViewDB::GetDomainByTags stmt:%s\n", chTag);
+   // LogPrintf("CDomainViewDB::GetDomainByTags stmt:%s\n", chTag);
     tableName = "domain10000";
     ret = db->GetDomain(tableName.c_str(), searchColumn.c_str(), "IN", chTag, vDomain1, nMax, fGetTags);
     if (FSupport100)
@@ -828,16 +828,16 @@ bool CDomainViewDB::GetDomainByTags(const vector<string>& vTag, vector<CDomain>&
         char chTag1[1000];
         tableName = "domaintag100";
         sprintf(chTag1, tagselectstatement, tableName.c_str(), vTagIDs[0]);
-        LogPrintf("CDomainViewDB::GetDomainByTags stmt:%s\n", chTag);
+     //   LogPrintf("CDomainViewDB::GetDomainByTags stmt:%s\n", chTag);
         for (unsigned int i = 1; i < vTag.size(); i++)
         {
             strTgstmt.assign(chTag1);
             sprintf(chTag1, tagselectstatement2, tableName.c_str(), strTgstmt.c_str(), vTagIDs[i]);
-            LogPrintf("CDomainViewDB::GetDomainByTags stmt:%s\n", chTag);
+      //      LogPrintf("CDomainViewDB::GetDomainByTags stmt:%s\n", chTag);
         }
         strTgstmt.assign(chTag1);
         sprintf(chTag1, "(%s) ", strTgstmt.c_str());
-        LogPrintf("CDomainViewDB::GetDomainByTags stmt:%s\n", chTag);
+     //   LogPrintf("CDomainViewDB::GetDomainByTags stmt:%s\n", chTag);
         tableName = "domain100";
         ret &= db->GetDomain(tableName.c_str(), searchColumn.c_str(), "IN", chTag1, vDomain1, nMax, fGetTags);
     }
@@ -1397,7 +1397,7 @@ void GetBlockContentAndTagList(const CBlock& block, const vector<pair<uint256, C
             //            continue;
             //int txSize=tx.GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION);
             int64_t nOutPos = (((int64_t) (vPos[ii].second.nFile)) << 32) + vPos[ii].second.nPos + nHeaderLen + vPos[ii].second.nTxOffset + tx.GetOutPos(i);
-            LogPrintf("GetBlockContentAndTagList: nfile:%i,npos:%i,voutoffset%i,outpos:%lld \n", vPos[ii].second.nFile, vPos[ii].second.nPos, nHeaderLen + vPos[ii].second.nTxOffset + tx.GetOutPos(i), nOutPos);
+            //LogPrintf("GetBlockContentAndTagList: nfile:%i,npos:%i,voutoffset%i,outpos:%lld \n", vPos[ii].second.nFile, vPos[ii].second.nPos, nHeaderLen + vPos[ii].second.nTxOffset + tx.GetOutPos(i), nOutPos);
             CScript sender = vPrevouts[ii][i].first;
             vector<string>vTagsTx;
             for (int64_t i = 0; i < min((int64_t) 10, (int64_t) min((int64_t) (out.nValue / 1000000), (int64_t) vTagList.size())); i++)
@@ -1463,7 +1463,7 @@ void GetBlockDomainUpdateList(const CBlock& block, const vector<vector<pair<CScr
             if (cc == CC_DOMAIN_P)
             {
                 int nMaxCC = STANDARD_CONTENT_MAX_CC;
-                LogPrintf("GetBlockDomainUpdateList  content:%s \n", CContent(tx.vout[i].strContent).ToHumanString(nMaxCC));
+                //LogPrintf("GetBlockDomainUpdateList  content:%s \n", CContent(tx.vout[i].strContent).ToHumanString(nMaxCC));
                 std::vector<std::pair<int, std::string> >vContent;
                 if (CContent(tx.vout[i].strContent).Decode(vContent))
                 {
@@ -1623,7 +1623,7 @@ bool SearchPromotedContents(const vector<CScript>& vSenders, const vector<int>& 
     if (vCCs.size() > 10)
         return false;
     vector<int64_t> vTagIDs;
-    LogPrintf("SearchPromotedContents vtags:%i \n", vTags.size());
+    //LogPrintf("SearchPromotedContents vtags:%i \n", vTags.size());
     if (vTags.size() > 9)
         return false;
     for (unsigned int i = 0; i < vTags.size(); i++)

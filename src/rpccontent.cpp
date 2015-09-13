@@ -1513,18 +1513,18 @@ json_spirit::Value getpurchaserecord(const json_spirit::Array& params, bool fHel
             //LogPrintf("getsalesrecord1 \n" );
             if (out.strContent.size() == 0 || CContent(out.strContent).GetFirstCc() != CC_PAYMENT_P)
                 continue;
-            LogPrintf("getpurchaserecord1 \n");
+            //LogPrintf("getpurchaserecord1 \n");
             CPayment payment;
             payment.recipient = out.scriptPubKey;
             if (!payment.SetContent(out.strContent))
                 continue;
-            LogPrintf("getpurchaserecord2 txid:%s,nFlags:%i \n",txOut.GetHash().GetHex(),vTxPosAll[i].nFlags);
+           // LogPrintf("getpurchaserecord2 txid:%s,nFlags:%i \n",txOut.GetHash().GetHex(),vTxPosAll[i].nFlags);
             nCount++;
             if (nCount < nOffset)
                 continue;
             if (nCount > nOffset + nMax)
                 break;
-            LogPrintf("getpurchaserecord4 \n");
+           // LogPrintf("getpurchaserecord4 \n");
             pDomainDBView->GetDomainByForward(payment.recipient, domain, true);
             Object obj;
             Value val = payment.ToJson();
@@ -1544,7 +1544,7 @@ json_spirit::Value getpurchaserecord(const json_spirit::Array& params, bool fHel
                 obj.push_back(Pair("time", (int64_t) GetAdjustedTime()));
             obj.push_back(Pair("txid", txOut.GetHash().GetHex()));
             r.push_back(obj);
-            LogPrintf("getpurchaserecord5\n");
+          //  LogPrintf("getpurchaserecord5\n");
         }
         if (nCount > nOffset + nMax)
             break;
@@ -2193,7 +2193,7 @@ json_spirit::Value getdomainsbyforward(const json_spirit::Array& params, bool fH
     {
         arrDomains.push_back(vDomain[i].ToJson());
     }
-    LogPrintf("getdomainsbyoForward toJson%i \n", arrDomains.size());
+    //LogPrintf("getdomainsbyoForward toJson%i \n", arrDomains.size());
     return Value(arrDomains);
 }
 
@@ -2295,7 +2295,7 @@ json_spirit::Value searchproducts(const json_spirit::Array& params, bool fHelp)
     if (!_parse_getpromotedcontents_params(params, nMaxResults, nOffset, maxb, firstcc, arrTags, cformat, cflag, gAddrs))
         throw runtime_error("getpromotedcontents Error parsing parameters");
     vector<CScript> vSenders;
-    LogPrintf("searchproducts arrtags:%i \n", arrTags.size());
+    //LogPrintf("searchproducts arrtags:%i \n", arrTags.size());
 
     BOOST_FOREACH(const Value& addrStr, gAddrs)
     {
@@ -2330,10 +2330,10 @@ json_spirit::Value searchproducts(const json_spirit::Array& params, bool fHelp)
         CProduct product;
         if (product.SetContent(content))
         {
-            LogPrintf("searchproducts secontent done \n");
+            //LogPrintf("searchproducts secontent done \n");
             product.link = vContents[i].link;
             product.seller = vContents[i].sender;
-            LogPrintf("searchproducts seller %s \n", product.seller.ToString());
+           // LogPrintf("searchproducts seller %s \n", product.seller.ToString());
             bool fFound = false;
             for (unsigned int j = 0; j < vProduct.size(); j++)
             {
@@ -2368,7 +2368,7 @@ json_spirit::Value searchproducts(const json_spirit::Array& params, bool fHelp)
     }
     //for (unsigned int i = 0; i < vProduct.size(); i++)
     //    arrProducts.push_back(vProduct[i].ToJson());
-    LogPrintf("searchproducts toJson%i \n", arrProducts.size());
+    //LogPrintf("searchproducts toJson%i \n", arrProducts.size());
     return Value(arrProducts);
 }
 

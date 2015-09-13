@@ -1087,7 +1087,7 @@ void BitcoinGUI::createTrayIconMenu()
 #ifndef Q_OS_MAC
 void BitcoinGUI::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
 {
-    LogPrintf("trayIconActivated reason:%i \n",reason);
+    //LogPrintf("trayIconActivated reason:%i \n",reason);
     if(reason == QSystemTrayIcon::Trigger)
     {
         // Click on system tray icon triggers show/hide of the main window
@@ -1906,13 +1906,13 @@ void BitcoinGUI::slotShowWindow()
 }
 void BitcoinGUI::loadUrl(const QUrl &url)
 {
-    LogPrintf("bitcoingui loadUrl: 1\n"); 
+    //LogPrintf("bitcoingui loadUrl: 1\n"); 
     string strUrlOut;
     int nPageID;
     if(!ParseUrl(url.toString().toStdString(),strUrlOut,nPageID))
         return ;
     QUrl urlOut(QString().fromStdString(strUrlOut));
-     LogPrintf("bitcoingui loadUrl urlout: %s\n",strUrlOut);
+     //LogPrintf("bitcoingui loadUrl urlout: %s\n",strUrlOut);
      mainView->currentLineEdit()->setText(mainView->currentWebView()->url().toString());   
      for(unsigned i=0;i<mainView->count();i++)
      {
@@ -1925,13 +1925,13 @@ void BitcoinGUI::loadUrl(const QUrl &url)
      }
     if (!currentTab() || !urlOut.isValid())
         return;
-     LogPrintf("bitcoingui loadUrl: 2\n"); 
+     //LogPrintf("bitcoingui loadUrl: 2\n"); 
      if(currentTab()->nPageID==255&&nPageID==255)
      {
         mainView->currentLineEdit()->setText(QString::fromUtf8(url.toEncoded()));
-        LogPrintf("bitcoingui loadUrl: 3\n"); 
+        //LogPrintf("bitcoingui loadUrl: 3\n"); 
         mainView->loadUrlInCurrentTab(url);
-        LogPrintf("bitcoingui loadUrl: 4\n"); 
+       // LogPrintf("bitcoingui loadUrl: 4\n"); 
      }
      else
      {      
@@ -1940,7 +1940,7 @@ void BitcoinGUI::loadUrl(const QUrl &url)
         //mainView->loadUrlInCurrentTab(url);        
         mainView->currentLineEdit()->setText(QString::fromUtf8(url.toEncoded()));
        // mainView->gotoWebPage(nPageID,url);
-        LogPrintf("bitcoingui loadUrl: 5\n"); 
+       // LogPrintf("bitcoingui loadUrl: 5\n"); 
        
      }
 }
