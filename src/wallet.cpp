@@ -1616,7 +1616,7 @@ bool CWallet::SelectCoinsMinConf(const CAmount& nTargetValue, int nConfMine, int
 
 bool CWallet::SelectCoins(const CAmount& nTargetValue, set<pair<const CWalletTx*,unsigned int> >& setCoinsRet, CAmount& nValueRet, const CCoinControl* coinControl) const
 {
-    LogPrintf("wallet.cpp %s targetvalue:%ul\n",__func__,nTargetValue);
+    LogPrintf("wallet.cpp %s targetvalue:%lld\n",__func__,nTargetValue);
     vector<COutput> vCoins;
     AvailableCoins(vCoins, true, coinControl);
     LogPrintf("wallet.cpp %s available chenques:%u\n",__func__,vCoins.size());

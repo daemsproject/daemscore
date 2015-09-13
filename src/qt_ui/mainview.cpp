@@ -140,16 +140,16 @@ void MainView::gotoWebPage(int nPageID,QUrl url,int nFromPageID)
             return;
         }            
     }
-    LogPrintf("MainView gotowebpage1 \n");
+    //LogPrintf("MainView gotowebpage1 \n");
     WebView* webpage=new WebView(language,this,jsInterface,url,nPageID,nFromPageID);
-    LogPrintf("MainView gotowebpage2 \n");
+    //LogPrintf("MainView gotowebpage2 \n");
     vWebPages.push_back(webpage);  
-    LogPrintf("MainView gotowebpage3 \n");
+    //LogPrintf("MainView gotowebpage3 \n");
     //addTab(webpage, tr(GetPageName(nPageID).c_str()));
-    LogPrintf("MainView gotowebpage4 \n");
+   // LogPrintf("MainView gotowebpage4 \n");
     //addWidget(*vWebPages.rbegin());
     setCurrentWidget(webpage);
-    LogPrintf("MainView gotowebpage5 \n");
+   // LogPrintf("MainView gotowebpage5 \n");
     //setCurrentWidget(*vWebPages.rbegin());
     //gotoWebPage(nPageID);
     //setCurrentWidget(*vWebPages.rbegin());
@@ -171,7 +171,7 @@ void MainView::loadWebPage(int nPageID)
     GetFilePackageMain(mapPageNames[nPageID],strPath,true);
     QUrl url=QUrl(QString().fromStdString(strPath));
     
-    LogPrintf("gotosettings page url:%s \n",url.toString().toStdString());
+    //LogPrintf("gotosettings page url:%s \n",url.toString().toStdString());
     gotoWebPage(nPageID,url);
 }
 //void MainView::closeWebPage(int nPageID,int nSwitchToPageID){
@@ -225,7 +225,7 @@ void MainView::installWebPage(const string strPageName)
     boost::filesystem::create_directories(fpPath);
     // boost::filesystem::remove_all(fpPath);
     string str=qrcFileToString(":/"+strPageName+".package.json");
-    LogPrintf("package file:%s \n",str);
+   // LogPrintf("package file:%s \n",str);
     json_spirit::Object objFiles;
     std::string strMainFile;
     StringToFile(filename,str);
@@ -251,7 +251,7 @@ std::string MainView::qrcFileToString(const std::string fileName)
 }
 bool MainView::copyQrcToDisc(string app,string to,string from)
 {
-    LogPrintf("copyQrcToDisc app %s,to %s,from %s \n",app,to,from);
+    //LogPrintf("copyQrcToDisc app %s,to %s,from %s \n",app,to,from);
     QFile fin(QString().fromStdString(":/"+from));       
     if(!fin.open(QIODevice::ReadOnly))
         return false;
@@ -284,7 +284,7 @@ bool MainView::copyQrcToDisc(string app,string to,string from)
             }
     fpPath /= to;
     //std::cout<<"remove filename result:"<<fpPath.remove_filename().string()<<"\n";
-    LogPrintf("path to write:%s \n",fpPath.string());
+    //LogPrintf("path to write:%s \n",fpPath.string());
     boost::filesystem::path fpPath2=fpPath;
     boost::filesystem::create_directories(fpPath2.remove_filename());
        return StringToFile(fpPath.string(),str);

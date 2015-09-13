@@ -475,7 +475,7 @@ QString WalletModel::DoPayment(const CPaymentOrder& pr,const int nPageIndex)
                 return QString().fromStdString("{\"error\":\""+strError+"\"}"); 
     }
     //tx=CreateRawTransaction(pr,fRequestPassword,pwallet);
-    LogPrintf("walletmodel:dopayment:tx created,pwallet:%i",pwallet);
+   // LogPrintf("walletmodel:dopayment:tx created,pwallet:%i",pwallet);
     SecureString ssInput;
     QString alert; 
     QString title;
@@ -505,7 +505,7 @@ QString WalletModel::DoPayment(const CPaymentOrder& pr,const int nPageIndex)
         title=QString(tr("Request Payment"));
     }
     if (!gui->handleUserConfirm(title,alert,nOP,strError,ssInput,nPageIndex)){
-        LogPrintf("walletmodel:dopayment:user cancelled \n");
+      //  LogPrintf("walletmodel:dopayment:user cancelled \n");
         if(fDelete)
         delete pwallet;
         LogPrintf("walletmodel:dopayment:user cancelled \n");

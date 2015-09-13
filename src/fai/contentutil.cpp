@@ -325,7 +325,7 @@ bool GetNativeLink(const string urlIn,string& urlOut,int& nPageID)
 {
     std::size_t posColon = urlIn.find(URI_COLON);
     std::string str = urlIn.substr(posColon+1);
-    LogPrintf("GetNativeLink  urlIN:%s\n",urlIn);
+    //LogPrintf("GetNativeLink  urlIN:%s\n",urlIn);
     string strExt;
     if(str.find("/")!=str.npos)
     {
@@ -333,7 +333,7 @@ bool GetNativeLink(const string urlIn,string& urlOut,int& nPageID)
         str=str.substr(0,str.find("/"));   
     }
     
-    LogPrintf("GetNativeLink  ext:%s\n",str);
+    //LogPrintf("GetNativeLink  ext:%s\n",str);
     for(int i=1;i<=HELPPAGE_ID;i++)
     {
         if (str==mapPageNames[i])
@@ -352,7 +352,7 @@ bool GetNativeLink(const string urlIn,string& urlOut,int& nPageID)
             string strPath;
             if(GetFilePackageMain(mapPageNames[nPageID],strPath,true))
                 urlOut=strPath+(strExt.size()>0?strExt.substr(1):"");
-            LogPrintf("ParseUrl  urlIn:%s urlout:%s,pageid:%i\n",urlIn,urlOut,nPageID);
+            //LogPrintf("ParseUrl  urlIn:%s urlout:%s,pageid:%i\n",urlIn,urlOut,nPageID);
             return true;
         }
     }

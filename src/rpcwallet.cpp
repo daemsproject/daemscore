@@ -745,7 +745,7 @@ Value getbalance(const Array& params, bool fHelp)
     {
         Array arrIDs = params[0].get_array();
         strAccount = arrIDs[0].get_str();
-        LogPrintf("rpcwallet gebalance  id:%s \n", strAccount);
+        //LogPrintf("rpcwallet gebalance  id:%s \n", strAccount);
         if (strAccount == "")
             fIsWalletID = true;
          else

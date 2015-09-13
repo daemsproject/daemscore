@@ -135,7 +135,7 @@ void SplashScreen::unsubscribeFromCoreSignals()
 
 void SplashScreen::showMessage(const QString &message, int alignment, const QColor &color)
 {
-    curMessage = message;
+    curMessage = tr(message.toStdString().c_str(),message.toStdString().c_str());
     curAlignment = alignment;
     curColor = color;
     update();

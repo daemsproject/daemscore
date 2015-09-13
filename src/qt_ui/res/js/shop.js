@@ -420,6 +420,8 @@ var Shop = new function () {
             html += '</td><td>';
             html += ("φ" + p.price);
             html += '</td><td>';
+            if(typeof p.shipmentfee==="undefined")
+                p.shipmentfee=0;
             html += ("φ" + p.shipmentfee);
             html += '</td><td>';
             html += '<input name="quantity" type="text" style="width:40px" title="' + p.link + '" value="1" onkeyup="this.value=this.value.replace(/[^0-9]+/g,\'\')" onafterpaste="this.value=this.value.replace(/[^0-9]+/g,\'\')"/></td>';
