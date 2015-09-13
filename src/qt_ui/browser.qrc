@@ -1,6 +1,6 @@
 <RCC>
     <qresource prefix="/icons">
-        <file alias="bitcoin">res/icons/bitcoin.png</file>
+        <file alias="fai">res/icons/fai.png</file>
         <file alias="address-book">res/icons/address-book.png</file>
         <file alias="quit">res/icons/quit.png</file>
         <file alias="send">res/icons/send.png</file>
@@ -25,7 +25,7 @@
         <file alias="editpaste">res/icons/editpaste.png</file>
         <file alias="editcopy">res/icons/editcopy.png</file>
         <file alias="add">res/icons/add.png</file>
-        <file alias="bitcoin_testnet">res/icons/bitcoin_testnet.png</file>
+        <file alias="fai_testnet">res/icons/fai_testnet.png</file>
         <file alias="edit">res/icons/edit.png</file>
         <file alias="history">res/icons/history.png</file>
         <file alias="overview">res/icons/overview.png</file>
@@ -102,7 +102,7 @@
         <file alias="jquery-ui.min.js">res/js/jquery-ui.min.js</file>
         <file alias="bootstrap.min.js">res/js/bootstrap.min.js</file>
         <file alias="base64.js">res/js/base64.js</file>
-        <file alias="browserapi.js">res/js/browserapi.js</file>
+        <file alias="fai-api.js">res/js/fai-api.js</file>
         <file alias="browser.js">res/js/browser.js</file>
         <file alias="browserpage.js">res/js/browserpage.js</file>
         <file alias="bppage.js">res/js/bppage.js</file>
@@ -119,8 +119,8 @@
         <file alias="tools.js">res/js/tools.js</file>
         <file alias="publisherpage.js">res/js/publisherpage.js</file>
         <file alias="helppage.js">res/js/helppage.js</file>
-        <file alias="help.js">res/js/help.js</file>
         <file alias="apps.js">res/js/apps.js</file>
+        <file alias="jquery.qrcode.min.js">res/js/jquery.qrcode.min.js</file>
     </qresource>
     <qresource prefix="/js/lang">
         <file alias="en.json">res/js/lang/en.json</file>
@@ -161,5 +161,15 @@
     </qresource>
     <qresource prefix="/">
         <file alias="browser.package.json">res/package/browser.package.json</file>
+        <file alias="wallet.package.json">res/package/wallet.package.json</file>
+        <file alias="messenger.package.json">res/package/messenger.package.json</file>
+        <file alias="publisher.package.json">res/package/publisher.package.json</file>
+        <file alias="domain.package.json">res/package/domain.package.json</file>
+        <file alias="help.package.json">res/package/help.package.json</file>
+        <file alias="miner.package.json">res/package/miner.package.json</file>
+        <file alias="settings.package.json">res/package/settings.package.json</file>
+        <file alias="shop.package.json">res/package/shop.package.json</file>
+        <file alias="tools.package.json">res/package/tools.package.json</file>
+        <file alias="apps.package.json">res/package/apps.package.json</file>
     </qresource>
 </RCC>

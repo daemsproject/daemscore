@@ -368,7 +368,7 @@
         <translation type="vanished">Sign &amp;message...</translation>
     </message>
     <message>
-        <location filename="../bitcoingui.cpp" line="+1354"/>
+        <location filename="../bitcoingui.cpp" line="+1361"/>
         <source>Synchronizing with network...</source>
         <translation>Synchronizing with network...</translation>
     </message>
@@ -546,8 +546,8 @@
         <translation>&amp;Settings</translation>
     </message>
     <message>
-        <location line="-623"/>
-        <location line="+823"/>
+        <location line="-630"/>
+        <location line="+830"/>
         <location line="+422"/>
         <location line="+710"/>
         <source>Φ DeskTop Client</source>
@@ -560,7 +560,7 @@
         <translation>&amp;Help</translation>
     </message>
     <message>
-        <location line="-587"/>
+        <location line="-594"/>
         <source>Tabs toolbar</source>
         <translation>Tabs toolbar</translation>
     </message>
@@ -569,7 +569,7 @@
         <translation type="obsolete">Faicoin Core</translation>
     </message>
     <message>
-        <location line="+311"/>
+        <location line="+318"/>
         <source>&amp;Command-line options</source>
         <translation type="unfinished"></translation>
     </message>
@@ -659,12 +659,12 @@
         <translation>Up to date</translation>
     </message>
     <message>
-        <location line="-1109"/>
+        <location line="-1116"/>
         <source>Navigation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+174"/>
+        <location line="+181"/>
         <source>Show wallet page</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1227,7 +1227,7 @@ Do you want to reload all pages?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../browser.cpp" line="+400"/>
+        <location filename="../browser.cpp" line="+407"/>
         <source>A fatal error occurred. Faicoin can no longer continue safely and will quit.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1977,79 +1977,6 @@ Do you want to reload all pages?</source>
     </message>
 </context>
 <context>
-    <name>JsInterface</name>
-    <message>
-        <location filename="../jsinterface.cpp" line="+193"/>
-        <location line="+138"/>
-        <source>{&quot;error&quot;:&quot;data is not json format&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-136"/>
-        <location line="+138"/>
-        <source>{&quot;error&quot;:&quot;data is not json array&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-123"/>
-        <source>Invalid pageID, send message out of messenger is forbidden</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+24"/>
-        <source>Invalid pageID, lang setting is forbidden</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Invalid parameter, expected string</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Invalid appName, not corresponding to pageid</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <location line="+10"/>
-        <source>Invalid pageID, getettings is forbidden</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-7"/>
-        <location line="+3"/>
-        <source>Invalid pageID, get id is forbidden</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+52"/>
-        <source>{&quot;error&quot;:&quot;no data&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>{&quot;error&quot;:&quot;data is not string&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+30"/>
-        <location line="+1"/>
-        <source>{&quot;error&quot;:&quot;command not found&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+32"/>
-        <source>{&quot;error&quot;:&quot;params less than 1&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>{&quot;error&quot;:&quot;param 1 is not str&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>MainView</name>
     <message>
         <location filename="../mainview.cpp" line="+83"/>
@@ -2077,7 +2004,7 @@ Do you want to reload all pages?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+279"/>
+        <location line="+307"/>
         <source>(Untitled)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2374,7 +2301,7 @@ Do you want to ignore these errors for this host?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../browser.cpp" line="+80"/>
+        <location filename="../browser.cpp" line="+86"/>
         <location line="+7"/>
         <location line="+13"/>
         <source>Faicoin Core</source>
@@ -3496,17 +3423,17 @@ Do you want to ignore these errors for this host?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location line="+79"/>
         <source>Please input password:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location line="-55"/>
         <source>TextLabel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+73"/>
         <source>Block Page</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3529,25 +3456,12 @@ Do you want to ignore these errors for this host?</source>
     </message>
     <message>
         <location filename="../walletmodel.cpp" line="+390"/>
-        <location line="+15"/>
+        <location line="+31"/>
         <source>Export Account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+27"/>
-        <source>{&quot;error&quot;:&quot;wrong idfrom&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <location line="+135"/>
-        <location line="+391"/>
-        <location line="+91"/>
-        <source>{&quot;error&quot;:&quot;no private key&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-596"/>
+        <location line="+65"/>
         <source>Publish Content</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3577,12 +3491,12 @@ Do you want to ignore these errors for this host?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
-        <source>{&quot;error&quot;:&quot;user canceled&quot;}</source>
+        <location line="-98"/>
+        <source>Save File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+107"/>
+        <location line="+224"/>
         <source>Request Override Transaction</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3726,106 +3640,22 @@ Do you want to ignore these errors for this host?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-370"/>
-        <location line="+381"/>
         <location line="+90"/>
-        <location line="+114"/>
-        <source>{&quot;error&quot;:&quot;wrong password&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-199"/>
-        <location line="+5"/>
-        <location line="+110"/>
-        <source>{&quot;error&quot;:&quot;encryption failed&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-69"/>
-        <source>{&quot;error&quot;:&quot;wrong idlocal&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>{&quot;error&quot;:&quot;wrong idforeign&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+25"/>
         <source>Request Send Message</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-446"/>
-        <location line="+506"/>
-        <source>{&quot;error&quot;:&quot;sign transaction failed&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-497"/>
-        <location line="+508"/>
-        <source>{&quot;error&quot;:&quot;tx rejected&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+36"/>
-        <source>{&quot;error&quot;:&quot;no privkey for signing&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
+        <location line="+114"/>
         <source>Request Sign Message</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+18"/>
-        <source>{&quot;error&quot;:&quot;Private key not available&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <source>{&quot;error&quot;:&quot;Sign failed&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+26"/>
+        <location line="+56"/>
         <source>Are you sure you want to send message?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+44"/>
-        <source>{&quot;error&quot;:&quot;domain already registered&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <location line="+28"/>
-        <location line="+30"/>
-        <source>{&quot;error&quot;:&quot; level1 domain not exists&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-56"/>
-        <location line="+28"/>
-        <location line="+30"/>
-        <location line="+41"/>
-        <source>{&quot;error&quot;:&quot; level1 domain is not belonging to sending id&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-77"/>
-        <source>{&quot;error&quot;:&quot;domain not registered&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <location line="+29"/>
-        <location line="+42"/>
-        <source>{&quot;error&quot;:&quot;domain is not belonging to sending id&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-143"/>
+        <location line="+13"/>
         <source>Are you sure you want to sign message?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3883,13 +3713,7 @@ Do you want to ignore these errors for this host?</source>
 <context>
     <name>WebView</name>
     <message>
-        <location line="+77"/>
-        <location line="+8"/>
-        <source>{&quot;error&quot;:&quot;page is blocked by user&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+79"/>
+        <location line="+164"/>
         <source>Open in New Tab</source>
         <translation type="unfinished"></translation>
     </message>

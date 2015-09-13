@@ -836,6 +836,14 @@ Do you want to reload all pages?</source>
         <translation type="unfinished">隐藏收藏夹栏</translation>
     </message>
     <message>
+        <source>Bookmarks bar</source>
+        <translation type="unfinished">收藏夹栏</translation>
+    </message>
+    <message>
+        <source>Bookmarks Menu</source>
+        <translation type="unfinished">收藏夹菜单</translation>
+    </message>
+    <message>
         <source>Show Status Bar</source>
         <translation type="unfinished">显示状态栏</translation>
     </message>
@@ -1731,55 +1739,55 @@ Do you want to reload all pages?</source>
     <name>JsInterface</name>
     <message>
         <source>{&quot;error&quot;:&quot;data is not json format&quot;}</source>
-        <translation type="unfinished">{&quot;error&quot;:&quot;数据不是 json 格式&quot;}</translation>
+        <translation type="obsolete">{&quot;error&quot;:&quot;数据不是 json 格式&quot;}</translation>
     </message>
     <message>
         <source>{&quot;error&quot;:&quot;data is not json array&quot;}</source>
-        <translation type="unfinished">{&quot;error&quot;:&quot;数据不是 json array&quot;}</translation>
+        <translation type="obsolete">{&quot;error&quot;:&quot;数据不是 json array&quot;}</translation>
     </message>
     <message>
         <source>Invalid pageID, send message out of messenger is forbidden</source>
-        <translation type="unfinished">页面权限错误，不能发送消息</translation>
+        <translation type="obsolete">页面权限错误，不能发送消息</translation>
     </message>
     <message>
         <source>Invalid pageID, lang setting is forbidden</source>
-        <translation type="unfinished">页面权限错误，不能设置语言</translation>
+        <translation type="obsolete">页面权限错误，不能设置语言</translation>
     </message>
     <message>
         <source>Invalid parameter, expected string</source>
-        <translation type="unfinished">参数错误，应为string</translation>
+        <translation type="obsolete">参数错误，应为string</translation>
     </message>
     <message>
         <source>Invalid appName, not corresponding to pageid</source>
-        <translation type="unfinished">appName错误，与pageid不符</translation>
+        <translation type="obsolete">appName错误，与pageid不符</translation>
     </message>
     <message>
         <source>Invalid pageID, getettings is forbidden</source>
-        <translation type="unfinished">页面权限错误，不能设置</translation>
+        <translation type="obsolete">页面权限错误，不能设置</translation>
     </message>
     <message>
         <source>Invalid pageID, get id is forbidden</source>
-        <translation type="unfinished">页面权限错误，不能获取ID</translation>
+        <translation type="obsolete">页面权限错误，不能获取ID</translation>
     </message>
     <message>
         <source>{&quot;error&quot;:&quot;no data&quot;}</source>
-        <translation type="unfinished">{&quot;error&quot;:&quot;没有数据&quot;}</translation>
+        <translation type="obsolete">{&quot;error&quot;:&quot;没有数据&quot;}</translation>
     </message>
     <message>
         <source>{&quot;error&quot;:&quot;data is not string&quot;}</source>
-        <translation type="unfinished">{&quot;error&quot;:&quot;数据 is not string&quot;}</translation>
+        <translation type="obsolete">{&quot;error&quot;:&quot;数据 is not string&quot;}</translation>
     </message>
     <message>
         <source>{&quot;error&quot;:&quot;command not found&quot;}</source>
-        <translation type="unfinished">{&quot;error&quot;:&quot;命令未找到&quot;}</translation>
+        <translation type="obsolete">{&quot;error&quot;:&quot;命令未找到&quot;}</translation>
     </message>
     <message>
         <source>{&quot;error&quot;:&quot;params less than 1&quot;}</source>
-        <translation type="unfinished">{&quot;error&quot;:&quot;参数数量小于 1&quot;}</translation>
+        <translation type="obsolete">{&quot;error&quot;:&quot;参数数量小于 1&quot;}</translation>
     </message>
     <message>
         <source>{&quot;error&quot;:&quot;param 1 is not str&quot;}</source>
-        <translation type="unfinished">{&quot;error&quot;:&quot;param 1 is not str&quot;}</translation>
+        <translation type="obsolete">{&quot;error&quot;:&quot;param 1 is not str&quot;}</translation>
     </message>
 </context>
 <context>
@@ -2863,72 +2871,60 @@ Do you want to ignore these errors for this host?</source>
         <translation type="unfinished">消息：</translation>
     </message>
     <message>
-        <source>{&quot;error&quot;:&quot;wrong idfrom&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>{&quot;error&quot;:&quot;no private key&quot;}</source>
-        <translation type="unfinished">{&quot;error&quot;:&quot;没有私钥&quot;}</translation>
+        <translation type="obsolete">{&quot;error&quot;:&quot;没有私钥&quot;}</translation>
     </message>
     <message>
         <source>{&quot;error&quot;:&quot;user canceled&quot;}</source>
-        <translation type="unfinished">{&quot;error&quot;:&quot;用户取消&quot;}</translation>
+        <translation type="obsolete">{&quot;error&quot;:&quot;用户取消&quot;}</translation>
     </message>
     <message>
         <source>{&quot;error&quot;:&quot;wrong password&quot;}</source>
-        <translation type="unfinished">{&quot;error&quot;:&quot;密码错误&quot;}</translation>
+        <translation type="obsolete">{&quot;error&quot;:&quot;密码错误&quot;}</translation>
     </message>
     <message>
         <source>{&quot;error&quot;:&quot;encryption failed&quot;}</source>
-        <translation type="unfinished">{&quot;error&quot;:&quot;加密失败&quot;}</translation>
-    </message>
-    <message>
-        <source>{&quot;error&quot;:&quot;wrong idlocal&quot;}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>{&quot;error&quot;:&quot;wrong idforeign&quot;}</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">{&quot;error&quot;:&quot;加密失败&quot;}</translation>
     </message>
     <message>
         <source>{&quot;error&quot;:&quot;sign transaction failed&quot;}</source>
-        <translation type="unfinished">{&quot;error&quot;:&quot;签名交易失败&quot;}</translation>
+        <translation type="obsolete">{&quot;error&quot;:&quot;签名交易失败&quot;}</translation>
     </message>
     <message>
         <source>{&quot;error&quot;:&quot;tx rejected&quot;}</source>
-        <translation type="unfinished">{&quot;error&quot;:&quot;交易被拒绝&quot;}</translation>
+        <translation type="obsolete">{&quot;error&quot;:&quot;交易被拒绝&quot;}</translation>
     </message>
     <message>
         <source>{&quot;error&quot;:&quot;no privkey for signing&quot;}</source>
-        <translation type="unfinished">{&quot;error&quot;:&quot;没有私钥&quot;}</translation>
+        <translation type="obsolete">{&quot;error&quot;:&quot;没有私钥&quot;}</translation>
     </message>
     <message>
         <source>{&quot;error&quot;:&quot;Private key not available&quot;}</source>
-        <translation type="unfinished">{&quot;error&quot;:&quot;没有私钥&quot;}</translation>
+        <translation type="obsolete">{&quot;error&quot;:&quot;没有私钥&quot;}</translation>
     </message>
     <message>
         <source>{&quot;error&quot;:&quot;Sign failed&quot;}</source>
-        <translation type="unfinished">{&quot;error&quot;:&quot;签名失败&quot;}</translation>
+        <translation type="obsolete">{&quot;error&quot;:&quot;签名失败&quot;}</translation>
     </message>
     <message>
         <source>{&quot;error&quot;:&quot;domain already registered&quot;}</source>
-        <translation type="unfinished">{&quot;error&quot;:&quot;域名已被注册&quot;}</translation>
+        <translation type="obsolete">{&quot;error&quot;:&quot;域名已被注册&quot;}</translation>
     </message>
     <message>
         <source>{&quot;error&quot;:&quot; level1 domain not exists&quot;}</source>
-        <translation type="unfinished">{&quot;error&quot;:&quot; 1级域名不存在&quot;}</translation>
+        <translation type="obsolete">{&quot;error&quot;:&quot; 1级域名不存在&quot;}</translation>
     </message>
     <message>
         <source>{&quot;error&quot;:&quot; level1 domain is not belonging to sending id&quot;}</source>
-        <translation type="unfinished">{&quot;error&quot;:&quot; 1级域名不属于发送ID&quot;}</translation>
+        <translation type="obsolete">{&quot;error&quot;:&quot; 1级域名不属于发送ID&quot;}</translation>
     </message>
     <message>
         <source>{&quot;error&quot;:&quot;domain not registered&quot;}</source>
-        <translation type="unfinished">{&quot;error&quot;:&quot;域名未注册&quot;}</translation>
+        <translation type="obsolete">{&quot;error&quot;:&quot;域名未注册&quot;}</translation>
     </message>
     <message>
         <source>{&quot;error&quot;:&quot;domain is not belonging to sending id&quot;}</source>
-        <translation type="unfinished">{&quot;error&quot;:&quot;域名不属于发送ID&quot;}</translation>
+        <translation type="obsolete">{&quot;error&quot;:&quot;域名不属于发送ID&quot;}</translation>
     </message>
     <message>
         <source>Request Override Transaction</source>
@@ -2945,6 +2941,10 @@ Do you want to ignore these errors for this host?</source>
     <message>
         <source>New Fee:</source>
         <translation type="unfinished">新手续费：</translation>
+    </message>
+    <message>
+        <source>Save File</source>
+        <translation type="unfinished">保存文件</translation>
     </message>
 </context>
 <context>
@@ -2966,7 +2966,7 @@ Do you want to ignore these errors for this host?</source>
     </message>
     <message>
         <source>{&quot;error&quot;:&quot;page is blocked by user&quot;}</source>
-        <translation type="unfinished">{&quot;error&quot;:&quot;页面被用户阻止&quot;}</translation>
+        <translation type="obsolete">{&quot;error&quot;:&quot;页面被用户阻止&quot;}</translation>
     </message>
 </context>
 <context>

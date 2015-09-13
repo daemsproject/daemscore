@@ -128,7 +128,7 @@ var Miner = new function () {
         $("#latest-tx").html(htmlcontent);
     }
     this.getMiningInfo = function () {
-        info = BrowserAPI.getMiningInfo();
+        info = FAI_API.getMiningInfo();
         console.log(info);
         if (info.kernelrate)
             hashrate = info.kernelrate;
@@ -181,7 +181,7 @@ var Miner = new function () {
     }
 
     this.get_history = function (success, error) {
-        BrowserAPI.listtransactions(accountID, function (data) {
+        FAI_API.listtransactions(accountID, function (data) {
             if (!data || data.error) {
                 if (error)
                     error();
@@ -223,10 +223,10 @@ var Miner = new function () {
         var an = function (a) {
             Miner.notifiedAccount(a);
         };
-        BrowserAPI.regNotifyTxs(ab, IDs);
-        BrowserAPI.regNotifyID(ad);
-        BrowserAPI.regNotifyFallback(af);
-        BrowserAPI.regNotifyAccount(an);
+        FAI_API.regNotifyTxs(ab, IDs);
+        FAI_API.regNotifyID(ad);
+        FAI_API.regNotifyFallback(af);
+        FAI_API.regNotifyAccount(an);
     }
     this.notifiedTx = function (a) {
         for (var j in txs)
@@ -235,19 +235,19 @@ var Miner = new function () {
         var tx = parseTx(a.tx, IDs);
         txs.unshift(tx);
         showRevenues();
-        CPage.updateBalance(BrowserAPI.getBalance(accountID).balance);
+        CPage.updateBalance(FAI_API.getBalance(accountID).balance);
     };
     this.notifiedFallback = function (obj) {
         i.get_history();
     }
     this.notifiedAccount = function (data) {
-        accountID = BrowserAPI.getAccountID();
+        accountID = FAI_API.getAccountID();
         $("#account-id").html(accountID);
-        IDs = BrowserAPI.getIDs(accountID);
+        IDs = FAI_API.getIDs(accountID);
         registerNotifications();
         Miner.get_history();
         if (info.generate)
-            BrowserAPI.setGenerate(true, accountID, $('select[name="kernels"]').val());
+            FAI_API.setGenerate(true, accountID, $('select[name="kernels"]').val());
     }
     this.notifiedPeers = function (data) {
     }
@@ -292,7 +292,7 @@ var Miner = new function () {
 
         $('#mine').unbind().click(function () {
             if ($(this).html() == TR('Start Mining')) {
-                BrowserAPI.setGenerate(true, accountID, $('select[name="kernels"]').val(), false, function () {
+                FAI_API.setGenerate(true, accountID, $('select[name="kernels"]').val(), false, function () {
                     startMining();
                     Miner.makeNotice('success', 'start-success', TR('Mining started'));
                 }, function (e) {
@@ -302,7 +302,7 @@ var Miner = new function () {
                 });
             }
             else
-                BrowserAPI.setGenerate(false, accountID, $('select[name="kernels"]').val(), false, function () {
+                FAI_API.setGenerate(false, accountID, $('select[name="kernels"]').val(), false, function () {
                     stopMining();
                 });
 
@@ -315,9 +315,9 @@ var Miner = new function () {
     }
 
     function initAccount() {
-        accountID = BrowserAPI.getAccountID();
+        accountID = FAI_API.getAccountID();
         $("#account-id").html(accountID);
-        IDs = BrowserAPI.getIDs(accountID);
+        IDs = FAI_API.getIDs(accountID);
         registerNotifications();
         Miner.get_history();
         setInterval(Miner.getMiningInfo(), 600000);

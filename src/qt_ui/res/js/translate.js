@@ -21,7 +21,7 @@ var translate = function (jsdata) {
         $(this).attr("title", strTr);
     });
 };
-langCodeF = typeof BrowserAPI === "undefined" ? navigator.language || navigator.userLanguage : BrowserAPI.getLang();
+langCodeF = typeof FAI_API === "undefined" ? navigator.language || navigator.userLanguage : FAI_API.getLang();
 if (langCodeF.userlang)
     langCodeF = langCodeF.userlang;
 else if (langCodeF.systemlang)

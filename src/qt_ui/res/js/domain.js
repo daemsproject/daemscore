@@ -63,7 +63,7 @@ var DomainManager = new function () {
     function updateCurrentDomainDisplay(domain) {
         var d = domains[domain];
         $("#home").find("input[name='domain-name']").val(d.domain);
-        var t = BrowserAPI.getMatureTime(d.expireTime);
+        var t = FAI_API.getMatureTime(d.expireTime);
         if (t.time == 0)
             t = TR("expired");
         else {
@@ -89,10 +89,10 @@ var DomainManager = new function () {
         $("#domain-list").append(html);
     }
     this.readDomainInfo = function (domain) {
-        return  BrowserAPI.getDomainInfo(domain);
+        return  FAI_API.getDomainInfo(domain);
     }
     this.getDomainsAll = function () {
-        var data = BrowserAPI.getDomainsByOwner(accountID);
+        var data = FAI_API.getDomainsByOwner(accountID);
         if (!data || data.error) {
             console.log("getMessage error");
             return;
@@ -105,7 +105,7 @@ var DomainManager = new function () {
         var id = $("#home").find("input[name='forward']").val();
         var msg4sig = currentDomain + "->" + id;
         $("#home").find("input[name='forward_msg4sig']").val(msg4sig);
-        var sig = BrowserAPI.signMessage(id, msg4sig);
+        var sig = FAI_API.signMessage(id, msg4sig);
         if (!sig.signature || sig.signature.length != 88)
             return false;
         $("#home").find("input[name='forward_sig']").val(sig.signature);
@@ -115,7 +115,7 @@ var DomainManager = new function () {
         var id = $("#home").find("input[name='forward']").val();
         var msg4sig = currentDomain + "->" + id;
         var sig = $("#home").find("input[name='forward_sig']").val();
-        return BrowserAPI.verifyMessage(id, sig, msg4sig);
+        return FAI_API.verifyMessage(id, sig, msg4sig);
     }
 
     function registerNotifications() {
@@ -126,8 +126,8 @@ var DomainManager = new function () {
             console.log("refresh");
             window.location.href = window.location.href;
         }
-        BrowserAPI.regNotifyTxs(ab, [accountID]);
-        BrowserAPI.regNotifyAccount(ac);
+        FAI_API.regNotifyTxs(ab, [accountID]);
+        FAI_API.regNotifyAccount(ac);
     }
     this.getDomainLockValue = function (domain) {
         if (domain.substring(domain.length - 2) == ".f")
@@ -179,7 +179,7 @@ var DomainManager = new function () {
                 i.makeNotice('error', 'reg-domain-error', TR("lock time is too short"));
                 return;
             }
-            var feerate = BrowserAPI.getFeeRate(0.15);
+            var feerate = FAI_API.getFeeRate(0.15);
             var domainname = $("#reg-domain").find("input[name='domain-name']").val();
             if (!IsValidDomain(domainname)) {
                 i.makeNotice('error', 'check-domain-error', TR('invaid domain format'));
@@ -191,7 +191,7 @@ var DomainManager = new function () {
             var lv2 = Number($("#reg-domain").find("input[name='value-to-lock']").val());
             if (lockvalue < lv2)
                 lockvalue = lv2;
-            BrowserAPI.registerDomain(accountID, domainname, lockvalue * 1000000, locktime * 3600 * 24 + 3600 + Math.ceil((new Date()) / 1000), feerate,
+            FAI_API.registerDomain(accountID, domainname, lockvalue * 1000000, locktime * 3600 * 24 + 3600 + Math.ceil((new Date()) / 1000), feerate,
                     function (a) {
                         i.makeNotice('success', 'reg-domain-success', TR("Domain register sent!Please check after the tx is confirmed"));
                         $("#reg-domain").modal("hide");
@@ -228,9 +228,9 @@ var DomainManager = new function () {
                     return;
                 }
             }
-            var d = BrowserAPI.getDomainInfo(domain);
+            var d = FAI_API.getDomainInfo(domain);
             if (d.domain && d.expireTime) {
-                var timeleft = BrowserAPI.getMatureTime(d.expireTime);
+                var timeleft = FAI_API.getMatureTime(d.expireTime);
                 if (timeleft.time > 0) {
                     i.makeNotice('error', 'check-domain-error', TR('domain already exists'));
                     return;
@@ -243,8 +243,8 @@ var DomainManager = new function () {
         });
         $("#transfer-domain").find(".ok").unbind().click(function () {
             var idto = $.trim($("#transfer-domain").find("input[name='transfer-id']").val());
-            var feerate = BrowserAPI.getFeeRate(0.15);
-            BrowserAPI.transferDomain(accountID, currentDomain, idto, feerate,
+            var feerate = FAI_API.getFeeRate(0.15);
+            FAI_API.transferDomain(accountID, currentDomain, idto, feerate,
                     function (a) {
                         i.makeNotice('success', 'transfer-domain-success', TR("Domain transfer sent!Please check after the tx is confirmed"));
                         $("#transfer-domain").modal("hide");
@@ -263,14 +263,14 @@ var DomainManager = new function () {
                 i.makeNotice('error', 'reg-domain-error', TR("lock time is too short"));
                 return;
             }
-            var feerate = BrowserAPI.getFeeRate(0.15);
+            var feerate = FAI_API.getFeeRate(0.15);
             var lockvalue = i.getDomainLockValue(currentDomain);
             if (lockvalue == 0)
                 return;
             var lv2 = Number($("#renew-domain").find("input[name='value-to-lock']").val());
             if (lockvalue < lv2)
                 lockvalue = lv2;
-            BrowserAPI.renewDomain(accountID, currentDomain, lockvalue * 1000000, locktime * 3600 * 24 + Math.ceil((new Date()) / 1000), feerate,
+            FAI_API.renewDomain(accountID, currentDomain, lockvalue * 1000000, locktime * 3600 * 24 + Math.ceil((new Date()) / 1000), feerate,
                     function (a) {
                         i.makeNotice('success', 'renew-domain-success', TR("Domain renew sent!Please check after the tx is confirmed"));
                         $("#renew-domain").modal("hide");
@@ -326,8 +326,8 @@ var DomainManager = new function () {
 
             if (changed) {
                 console.log(d);
-                var feerate = BrowserAPI.getFeeRate(0.15);
-                BrowserAPI.updateDomain(accountID, currentDomain, d, feerate, function (newd) {
+                var feerate = FAI_API.getFeeRate(0.15);
+                FAI_API.updateDomain(accountID, currentDomain, d, feerate, function (newd) {
                     i.makeNotice('success', 'update-domain-success', TR('domain updated!Please wait for 1 confirmation to validate update.'));
                 }, function (e) {
                     i.makeNotice('error', 'update-domain-error', TR(e));
@@ -339,7 +339,7 @@ var DomainManager = new function () {
         $("#home").find("input[name='forward']").unbind().change(function () {
             var forward = $("#home").find("input[name='forward']").val();
             console.log(forward);
-            var dF = BrowserAPI.b32CheckDecode(forward);
+            var dF = FAI_API.b32CheckDecode(forward);
             console.log(dF);
             if (dF && forward !== gParam.accountID && currentDomain) {
                 getForwardSig();
@@ -357,7 +357,7 @@ var DomainManager = new function () {
         });
     }
     function initAccount() {
-        accountID = BrowserAPI.getAccountID();
+        accountID = FAI_API.getAccountID();
         registerNotifications();
         i.getDomainsAll();
     }

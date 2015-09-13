@@ -39,7 +39,7 @@ var Tools = new function () {
     }
     function getSig() {
         var msg4sig = $('#sign-message').find("textarea[name='message']").val();
-        var sig = BrowserAPI.signMessage(accountID, msg4sig);
+        var sig = FAI_API.signMessage(accountID, msg4sig);
         if (!sig.signature || sig.signature.length != 88)
             return false;
         $("#sign-message").find("textarea[name='signature']").val(sig.signature);
@@ -49,7 +49,7 @@ var Tools = new function () {
         var id = $("#verify-message").find("input[name='verify-id']").val();
         var msg4sig = $("#verify-message").find("textarea[name='message']").val();
         var sig = $("#verify-message").find("textarea[name='signature']").val();
-        if (BrowserAPI.verifyMessage(id, sig, msg4sig)) {
+        if (FAI_API.verifyMessage(id, sig, msg4sig)) {
             i.makeNotice('success', 'verify-message-success', TR('Verify Signature Passed'));
         }
         else {
@@ -58,7 +58,7 @@ var Tools = new function () {
     }
     function showPeers() {
         var datajson = [];
-        var peerinfo = BrowserAPI.icall("getpeerinfo", datajson);
+        var peerinfo = FAI_API.icall("getpeerinfo", datajson);
         var html = "";
         for (var i in peerinfo)
             html += peerinfo[i].addr + "</br>";
@@ -71,7 +71,7 @@ var Tools = new function () {
     }
     this.addNode = function () {
         var peer = $("#add-peers").find("input[name='add-peer']").val();
-        var r = BrowserAPI.icall("addnode", [peer, "add"]);
+        var r = FAI_API.icall("addnode", [peer, "add"]);
         //console.log(r);
 
         if (!r || r.error) {
@@ -84,13 +84,13 @@ var Tools = new function () {
     function installPackages()
     {
         var html = "<tr><th>" + TR('Package Name') + "</th><th>" + TR('Size') + "</th><th>" + TR('Action') + "</th></tr>";
-        var d = BrowserAPI.getDomainInfo("installpackages.f");
+        var d = FAI_API.getDomainInfo("installpackages.f");
         console.log(d);
         var p = {};
         p.frAddrs = [d.forward.target];
         p.withcc = ["CC_FILE_PACKAGE_P"];
         p.cformat = 5;
-        var list = BrowserAPI.icall("getcontentsbyaddresses", [p]);
+        var list = FAI_API.icall("getcontentsbyaddresses", [p]);
         console.log(list);
         for (var i in list) {
             var package = list[i].content[0].content;
@@ -113,7 +113,7 @@ var Tools = new function () {
         var ac = function (a) {
             window.location.href = window.location.href;
         }
-        BrowserAPI.regNotifyAccount(ac);
+        FAI_API.regNotifyAccount(ac);
     }
     function bindReady() {
         if (haveBoundReady) {
@@ -138,7 +138,7 @@ var Tools = new function () {
         });
     }
     function initAccount() {
-        accountID = BrowserAPI.getAccountID();
+        accountID = FAI_API.getAccountID();
         registerNotifications();
     }
     $(document).ready(function () {

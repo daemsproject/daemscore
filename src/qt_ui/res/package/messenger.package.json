@@ -1,0 +1,29 @@
+{
+	"packagename":"messenger",
+	"mainfile":"html/messenger.html",
+	"files":
+	{
+		"html/messenger.html":"html/messenger.html",
+		"html/templates.html":"html/templates.html",
+		"css/bootstrap.min.css":"css/bootstrap.min.css",	
+		"css/main-overrides.css":"css/main-overrides.css",
+		"css/msg-overrides.css":"css/msg-overrides.css",
+		"js/jquery.min.js":"js/jquery.min.js",
+		"js/bootstrap.min.js":"js/bootstrap.min.js",
+		"js/shared.js":"js/shared.js",
+		"js/messenger.js":"js/messenger.js",
+		"js/messengerpage.js":"js/messengerpage.js",
+		"js/fai-api.js":"js/fai-api.js",
+		"js/browser.js":"js/browser.js",
+		"js/base64.js":"js/base64.js",
+		"js/translate.js":"js/translate.js",
+		"js/lang/zh.json":"js/lang/zh.json",
+		"js/lang/en.json":"js/lang/en.json",
+		"icons/fai.png":"icons/fai",
+		"icons/crown.png":"icons/crown",
+		"icons/silvercoin.png":"icons/silvercoin",
+		"icons/goldcoin.png":"icons/goldcoin",
+		"icons/diamond.png":"icons/diamond",
+		"icons/goldbar.png":"icons/goldbar"
+	}
+}

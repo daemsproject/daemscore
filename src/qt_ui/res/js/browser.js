@@ -58,7 +58,7 @@ var CBrowser = new function () {
 
     };
     this.getB64DataFromLink = function (clink) {
-        var cj = (BrowserAPI.getContentByLink(clink));
+        var cj = (FAI_API.getContentByLink(clink));
         var r = this.getFileContentFrJson(cj);
         return r;
     };
@@ -174,7 +174,7 @@ var CBrowser = new function () {
         if (domain) {
             sdiv.find(".id").find(".text").attr("domain", domain.domain);
             if (domain.icon) {
-                var iconCtt = BrowserAPI.getContentByLink(domain.icon);
+                var iconCtt = FAI_API.getContentByLink(domain.icon);
                 var iconCttP = CUtil.parseCtt(iconCtt);
                 var icon = this.createImgHtml(iconCttP);
                 sdiv.find(".icon").html(icon);
@@ -186,7 +186,7 @@ var CBrowser = new function () {
         if (r.filepackage) {
             idiv = $("#image-tpl").clone(true, true);
             idiv.find(".ctt-rmdr").removeClass("hide").html(TR("Filepackage")).click(function () {
-                BrowserAPI.goToCustomPage(r.selflink);
+                FAI_API.goToCustomPage(r.selflink);
             });
             console.log(r);
 //            return sdiv;
@@ -200,7 +200,7 @@ var CBrowser = new function () {
                     idiv.find(".ctt-rmdr").removeClass("hide").attr("fdata", r.fdata).attr("fname", r.fname).html(TR("GIF File")).click(function () {
                         var fdata = base64.decode($(this).attr("fdata"));
                         var fname = $(this).attr("fname");
-                        BrowserAPI.writeFile2(fname, fdata);
+                        FAI_API.writeFile2(fname, fdata);
                     });
                 } else
                     idiv.find("img").attr("src", this.createImgSrc(r.ftype, r.fdata));
@@ -213,7 +213,7 @@ var CBrowser = new function () {
                 idiv.find(".ctt-rmdr").removeClass("hide").attr("fdata", r.fdata).attr("fname", r.fname).html(TR("File")).click(function () {
                     var fdata = base64.decode($(this).attr("fdata"));
                     var fname = $(this).attr("fname");
-                    BrowserAPI.writeFile2(fname, fdata);
+                    FAI_API.writeFile2(fname, fdata);
                 });
             }
         } else
@@ -322,7 +322,7 @@ var CBrowser = new function () {
         ddiv.find(".lckvl").html(CPage.getBalanceHtml(bl, Number(domain.lockvalue / COIN)).html());
         ddiv.find(".fwd-tgt").html(domain.forward.target);
         if (domain.icon) {
-            var iconCtt = BrowserAPI.getContentByLink(domain.icon);
+            var iconCtt = FAI_API.getContentByLink(domain.icon);
             var iconCttP = CUtil.parseCtt(iconCtt);
             var icon = this.createImgHtml(iconCttP);
             console.log(icon);
@@ -392,7 +392,7 @@ var CBrowser = new function () {
         console.log(stype);
         this.clearContent();
         if (stype === "ctt") {
-            var ctts = BrowserAPI.getPromotedContents(params);
+            var ctts = FAI_API.getPromotedContents(params);
 //            console.log(ctts);
             $(".column2")[0].scrollHeight; // this line fixes scroll bar stay bottom issue
             for (var k in ctts)
@@ -401,7 +401,7 @@ var CBrowser = new function () {
                 CPage.showNotice(TR("No result, please change the key word"));
         }
         else if (stype === "dmn") {
-            var domains = BrowserAPI.getDomainsByTags(tags);
+            var domains = FAI_API.getDomainsByTags(tags);
             for (var k in domains)
                 this.addDomain(domains[k]);
             if (domains.length <= 0)
@@ -409,7 +409,7 @@ var CBrowser = new function () {
         } else if (stype === "prd") {
             var params = {};
             params.tags = tags;
-            var prods = BrowserAPI.searchProducts(params);
+            var prods = FAI_API.searchProducts(params);
             console.log(prods);
             for (var k in prods)
                 this.addProduct(prods[k]);
@@ -438,7 +438,7 @@ var CBrowser = new function () {
         }
     };
     this.refreshNewMypage = function () {
-        var myid = [BrowserAPI.getAccountID()];
+        var myid = [FAI_API.getAccountID()];
         if (myid.length == 0) {
             CPage.showNotice(TR('You need to register ID first'));
             return;
@@ -459,7 +459,7 @@ var CBrowser = new function () {
         }
     };
     this.getDevId = function () {
-        var ctt = BrowserAPI.getContentByLink("fai:0.0.0");
+        var ctt = FAI_API.getContentByLink("fai:0.0.0");
         return ctt.addr;
     };
     this.refreshOldFollowed = function () {
@@ -471,7 +471,7 @@ var CBrowser = new function () {
         }
     };
     this.refreshOldMypage = function () {
-        var myid = [BrowserAPI.getAccountID()];
+        var myid = [FAI_API.getAccountID()];
         var ctts = this.getOldContents("myp", myid);
         for (var k in ctts) {
             this.addContent(ctts[k], CONTENT_TYPE_MINE, false);
@@ -484,7 +484,7 @@ var CBrowser = new function () {
         if (!$.isEmptyObject(dm)) {
             var iconLinkStr = typeof dm.icon === "undefined" ? "" : (dm.icon.length > 0 ? dm.icon : "");
             if (iconLinkStr.length > 0) {
-                var iconCtt = BrowserAPI.getContentByLink(iconLinkStr);
+                var iconCtt = FAI_API.getContentByLink(iconLinkStr);
                 var cttP = CUtil.parseCtt(iconCtt);
                 icon = this.createImgHtml(cttP);
             }
@@ -496,7 +496,7 @@ var CBrowser = new function () {
         hpheader.find(".navi-icon").html(icon);
         hpheader.find("#navi-name").find(".navi-name").html(name).attr("fullid", id).attr("domain", dm.domain);
         hpheader.find(".navi-intro").html(intro);
-        var balance = BrowserAPI.getBalance(id).balance;
+        var balance = FAI_API.getBalance(id).balance;
         var bl = CUtil.getBalanceLevel(balance);
         hpheader.find("#blclvl").html(CPage.getBalanceHtml(bl));
         return hpheader;
@@ -507,7 +507,7 @@ var CBrowser = new function () {
         $("#navi-bar").remove();
         var hpheader = $("#hpheader-tpl").clone(true, true);
         hpheader.attr("id", "hpheader").removeClass("hide");
-        var domain = BrowserAPI.getDomainByForward(id);
+        var domain = FAI_API.getDomainByForward(id);
         console.log(domain);
         hpheader = this.fillHpheader(hpheader, id, domain);
         $("body").prepend(hpheader);
@@ -525,11 +525,11 @@ var CBrowser = new function () {
         $("#shdr").remove();
         $("#navi-bar").remove();
         $("#mainframe").html("");
-        var ctt = BrowserAPI.getContentByLink(linkstr);
+        var ctt = FAI_API.getContentByLink(linkstr);
         this.addContent(ctt);
         for (var i = 0; i <= 7; i++)
             $("#mainframe").append("<a href='" + linkstr + "&format=" + i + "&showdebug=true'>Format " + i + "</a><br />");
-        var ctt2 = BrowserAPI.getContentByLink(linkstr, format);
+        var ctt2 = FAI_API.getContentByLink(linkstr, format);
         console.log(linkstr);
 //        var url = "fai:browser/?link=" + linkstr;
 
@@ -573,14 +573,14 @@ var CBrowser = new function () {
         var ctts = [];
         switch (page) {
             case "new":
-                flink = CLink.set(fNewOld ? parseInt(BrowserAPI.getBlockCount()) : newDisp[1]).toString();
+                flink = CLink.set(fNewOld ? parseInt(FAI_API.getBlockCount()) : newDisp[1]).toString();
 //        console.log(fNewOld + " " + sbh);
                 var clink = flink;
                 console.log(flink);
                 var blkPR = 10; // todo change to about 10
                 var i = 0;
                 while (ctts.length < rc && CLink.set(clink).nHeight > 0) {
-                    var tmp = BrowserAPI.getContents(clink, blkPR, false, frAddrs, toAddrs);
+                    var tmp = FAI_API.getContents(clink, blkPR, false, frAddrs, toAddrs);
                     if (tmp.length > 0) {
                         var link1 = tmp[0].link;
                         var link2 = tmp[tmp.length - 1].link;
@@ -618,7 +618,7 @@ var CBrowser = new function () {
                     break;
                 console.log(param);
                 while (ctts.length < rc) {
-                    var tmp = BrowserAPI.getContentsByAddresses(param.nFile, param.nPos, param.nRange, param.ftxCount, frAddrs, toAddrs, false);
+                    var tmp = FAI_API.getContentsByAddresses(param.nFile, param.nPos, param.nRange, param.ftxCount, frAddrs, toAddrs, false);
                     console.log("call count out " + tmp.contents.length);
                     console.log(tmp);
                     if (!tmp.contents)
@@ -627,7 +627,7 @@ var CBrowser = new function () {
                     param.ftxCount = tmp.totalTxProcessed
                     param.nFile = tmp.nFile;
                     while (param.ftxCount < tmp.totalTxInRange && ctts.length < rc) {
-                        tmp = BrowserAPI.getContentsByAddresses(param.nFile, param.nPos, param.nRange, param.ftxCount, frAddrs, toAddrs, false);
+                        tmp = FAI_API.getContentsByAddresses(param.nFile, param.nPos, param.nRange, param.ftxCount, frAddrs, toAddrs, false);
                         console.log("call count in " + tmp.contents.length);
                         console.log(tmp);
                         if (!tmp.contents)
@@ -797,7 +797,7 @@ var CBrowser = new function () {
         var imgs;
         console.log(imageParam);
 //        if (fFrBuffer) {
-        var json = BrowserAPI.readFile(app, path, filename);
+        var json = FAI_API.readFile(app, path, filename);
         if (!json)
             imgs = CBrowser.getNewImages(imageParam.maxc);
         else {
@@ -809,7 +809,7 @@ var CBrowser = new function () {
         }
 //        } else {
         if (!fFrBuffer) {
-            cbh = typeof cbh === "undefined" ? Number(BrowserAPI.getBlockCount()) : cbh;
+            cbh = typeof cbh === "undefined" ? Number(FAI_API.getBlockCount()) : cbh;
             if (imageParam.frblk) {
                 if (imageParam.frblk === cbh)
                     return;
@@ -844,7 +844,7 @@ var CBrowser = new function () {
             var tmp = {imgs: imgs, frblk: cbh};
             var jtmp = JSON.stringify(tmp);
 //            var tmp2 = JSON.parse(jtmp);
-            BrowserAPI.writeFile(app, path, filename, jtmp);
+            FAI_API.writeFile(app, path, filename, jtmp);
             this.prepareSlider();
         }
         $("a").click(function () {
@@ -855,7 +855,7 @@ var CBrowser = new function () {
     this.getNewImages = function (maxc, maxb) {
         maxc = typeof maxc === "undefined" ? 100 : maxc;
         maxb = typeof maxb === "undefined" ? 100 : maxb;
-        var ctts = BrowserAPI.getImages(parseInt(BrowserAPI.getBlockCount()), maxb, false, maxc);
+        var ctts = FAI_API.getImages(parseInt(FAI_API.getBlockCount()), maxb, false, maxc);
         var r = [];
         for (var i in ctts) {
             var cttParsed = CUtil.parseCtt(ctts[i]);
@@ -898,12 +898,12 @@ var CBrowser = new function () {
     };
     this.setFollow = function (str2fl, type) {
         type = (typeof type === "undefined") ? "id" : type;
-        var myid = BrowserAPI.getAccountID();
+        var myid = FAI_API.getAccountID();
         var fkey = "followed-" + type;
-        var followedstr = BrowserAPI.getConf("browser", myid, "", fkey);
+        var followedstr = FAI_API.getConf("browser", myid, "", fkey);
 //        console.log(followed);
         if (!followedstr) {
-            if (BrowserAPI.setConf("browser", myid, "", fkey, JSON.stringify([str2fl])))
+            if (FAI_API.setConf("browser", myid, "", fkey, JSON.stringify([str2fl])))
                 return [str2fl];
         }
         else {
@@ -913,16 +913,16 @@ var CBrowser = new function () {
                     return followed;
             }
             followed.push(str2fl);
-            if (BrowserAPI.setConf("browser", myid, "", fkey, JSON.stringify(followed)))
+            if (FAI_API.setConf("browser", myid, "", fkey, JSON.stringify(followed)))
                 return followed;
         }
         return false;
     };
     this.setUnfollow = function (str2unfl, type) {
         type = (typeof type === "undefined") ? "id" : type;
-        var myid = BrowserAPI.getAccountID();
+        var myid = FAI_API.getAccountID();
         if (type === "domain") {
-            var domain = BrowserAPI.getDomainInfo(str2unfl);
+            var domain = FAI_API.getDomainInfo(str2unfl);
 //                console.log(domain);
             if (typeof domain.forward !== "undefined") {
                 if (domain.forward.linkType === "ID") {
@@ -932,7 +932,7 @@ var CBrowser = new function () {
             }
         }
         var fkey = "followed-" + type;
-        var followedstr = BrowserAPI.getConf("browser", myid, "", fkey);
+        var followedstr = FAI_API.getConf("browser", myid, "", fkey);
         if (!followedstr)
             return false;
         else {
@@ -942,19 +942,19 @@ var CBrowser = new function () {
                 if (followed[i] === str2unfl)
                     followed.splice(i, 1);
             }
-            if (BrowserAPI.setConf("browser", myid, "", fkey, JSON.stringify(followed)))
+            if (FAI_API.setConf("browser", myid, "", fkey, JSON.stringify(followed)))
                 return true;
         }
         return false;
     };
     this.getFollowed = function (type) {
         type = (typeof type === "undefined") ? "all" : type;
-        var myid = BrowserAPI.getAccountID();
+        var myid = FAI_API.getAccountID();
         var r = [];
         console.log(type);
         if (type === "all") {
             var fkey = "followed-id";
-            var followedstr = BrowserAPI.getConf("browser", myid, "", fkey);
+            var followedstr = FAI_API.getConf("browser", myid, "", fkey);
             if (followedstr)
                 r = JSON.parse(followedstr);
             var d = this.getFollowed("domain");
@@ -962,13 +962,13 @@ var CBrowser = new function () {
                 r = r.concat(d);
         } else if (type === "id") {
             var fkey = "followed-" + type;
-            var followedstr = BrowserAPI.getConf("browser", myid, "", fkey);
+            var followedstr = FAI_API.getConf("browser", myid, "", fkey);
             r = JSON.parse(followedstr);
         } else if (type === "domain") {
             var fkey = "followed-" + type;
-            var domains = JSON.parse(BrowserAPI.getConf("browser", myid, "", fkey));
+            var domains = JSON.parse(FAI_API.getConf("browser", myid, "", fkey));
             for (var i in domains) {
-                var domain = BrowserAPI.getDomainInfo(domains[i]);
+                var domain = FAI_API.getDomainInfo(domains[i]);
 //                console.log(domain);
                 if (typeof domain.forward === "undefined")
                     continue;
@@ -1061,7 +1061,7 @@ var CBrowser = new function () {
     };
     this.viewLink = function (link) {
         var url = "fai:browser/?link=" + link;
-        BrowserAPI.goToCustomPage(url);
+        FAI_API.goToCustomPage(url);
     };
     this.regBottomAction = function () {
         if (currentTab === "br-hot-btn") {
@@ -1087,7 +1087,7 @@ var CBrowser = new function () {
         for (var i in flist) {
             var url = "fai:browser/?id=" + flist[i];
             var f = $("<a />").html(flist[i]).attr("href", url).click(function () {
-                BrowserAPI.goToCustomPage(url);
+                FAI_API.goToCustomPage(url);
             });
             $("#list").append($("<div />").html(f));
         }
@@ -1124,11 +1124,11 @@ var CPublisher = new function () {
                         var raw = e.target.result;
                         var nf = CUtil.decodeDataUrl(raw);
                         nf.name = f.name;
-                        var cttH = BrowserAPI.createFileContent(nf);
+                        var cttH = FAI_API.createFileContent(nf);
                         CPublisher.ctts.push(cttH);
                         if (l) {
-                            var feer = BrowserAPI.getFeeRate(0.15);
-                            var r = BrowserAPI.createTxByContents(CPublisher.ctts, feer);
+                            var feer = FAI_API.getFeeRate(0.15);
+                            var r = FAI_API.createTxByContents(CPublisher.ctts, feer);
                             console.log(r);
                             CPage.showNotice(TR(r));
                         }
@@ -1162,13 +1162,13 @@ var CPublisher = new function () {
                 return function (e) {
                     var raw = e.target.result;
                     var nf = CUtil.decodeDataUrl(raw);
-                    var hash = BrowserAPI.getHash(nf.data);
+                    var hash = FAI_API.getHash(nf.data);
                     if (hash === bufferedFile.hash)
                         return;
                     nf.name = f.name;
-                    var cttH = BrowserAPI.createFileContent(nf);
-                    var ctt = BrowserAPI.getContentByString(cttH.hex);
-                    ctt.poster = {id: BrowserAPI.getAccountID()};
+                    var cttH = FAI_API.createFileContent(nf);
+                    var ctt = FAI_API.getContentByString(cttH.hex);
+                    ctt.poster = {id: FAI_API.getAccountID()};
                     ctt.hex = cttH.hex;
                     $("#" + bufferedFile.hash).parent().find('hr').remove();
                     $("#" + bufferedFile.hash).remove();
@@ -1208,10 +1208,10 @@ var CPublisher = new function () {
                         nf.name = fp.name;
                         nf.type = fp.filetype;
                         nf.nPart = i;
-                        var cttH = BrowserAPI.createFilePartContent(nf);
-                        var feer = BrowserAPI.getFeeRate(0.15);
+                        var cttH = FAI_API.createFilePartContent(nf);
+                        var feer = FAI_API.getFeeRate(0.15);
                         console.log(feer);
-                        var r = BrowserAPI.createTxByContent(cttH, feer);
+                        var r = FAI_API.createTxByContent(cttH, feer);
                         if (r.success)
                             var rdiv = fp.name + " part " + nf.nPart + " txid:nvout --- " + r.success + ":0 <br />"
                         else
@@ -1240,7 +1240,7 @@ var CPublisher = new function () {
         var toId = $("#pubto").find("input[type='text']").val();
         if (toId)
             deposit = locktime = 0;
-        var r = BrowserAPI.createTxByContent(ctt, feer, toId, deposit, locktime);
+        var r = FAI_API.createTxByContent(ctt, feer, toId, deposit, locktime);
         if (typeof r !== "undefined") {
             if (r.success) {
                 if (r.success.length > 0) {
@@ -1304,17 +1304,17 @@ var CPublisher = new function () {
         return;
     };
     this.createTextContent = function (t) {
-        var ctthex = BrowserAPI.createTextContent(t);
-        var ctt = BrowserAPI.getContentByString(ctthex.hex);
-        ctt.poster = {id: BrowserAPI.getAccountID()};
+        var ctthex = FAI_API.createTextContent(t);
+        var ctt = FAI_API.getContentByString(ctthex.hex);
+        ctt.poster = {id: FAI_API.getAccountID()};
         ctt.hex = ctthex.hex;
         return ctt;
     };
     this.createLinkContent = function (l) {
-        var ctthex = BrowserAPI.createLinkContent(l);
+        var ctthex = FAI_API.createLinkContent(l);
 //        console.log(ctthex);
-        var ctt = BrowserAPI.getContentByString(ctthex.hex);
-        ctt.poster = {id: BrowserAPI.getAccountID()};
+        var ctt = FAI_API.getContentByString(ctthex.hex);
+        ctt.poster = {id: FAI_API.getAccountID()};
         ctt.hex = ctthex.hex;
         return ctt;
     };
@@ -1322,12 +1322,12 @@ var CPublisher = new function () {
         var ctthex = "";
         for (var i in tags) {
 //            console.log(tags[i]);
-            var tgcttH = BrowserAPI.createTagContent(tags[i]);
+            var tgcttH = FAI_API.createTagContent(tags[i]);
             ctthex += tgcttH.hex;
 //            console.log(tgcttH);
 
         }
-        var ctt = BrowserAPI.getContentByString(ctthex);
+        var ctt = FAI_API.getContentByString(ctthex);
         ctt.hex = ctthex;
         return ctt;
     };
@@ -1336,11 +1336,11 @@ var CPublisher = new function () {
         if (!lang)
             return null;
         if (lang === "en" || lang === "en_US")
-            langctt = BrowserAPI.icall("encodecontentunit", ["CC_LANG_EN", "", 1])
+            langctt = FAI_API.icall("encodecontentunit", ["CC_LANG_EN", "", 1])
         else if (lang === "zh" || lang === "zh_CN")
-            langctt = BrowserAPI.icall("encodecontentunit", ["CC_LANG_ZH", "", 1])
+            langctt = FAI_API.icall("encodecontentunit", ["CC_LANG_ZH", "", 1])
         else
-            langctt = BrowserAPI.icall("encodecontentunit", ["CC_LANG", lang, 1])
+            langctt = FAI_API.icall("encodecontentunit", ["CC_LANG", lang, 1])
 //        console.log(langctt);
         return langctt;
     };
@@ -1365,9 +1365,9 @@ var CPublisher = new function () {
                 hex += tgctt.hex;
             if (lgctt)
                 hex += lgctt.hex;
-            var ctthex = BrowserAPI.createPContent(hex);
-            var ctt = BrowserAPI.getContentByString(ctthex.hex);
-            ctt.poster = {id: BrowserAPI.getAccountID()};
+            var ctthex = FAI_API.createPContent(hex);
+            var ctt = FAI_API.getContentByString(ctthex.hex);
+            ctt.poster = {id: FAI_API.getAccountID()};
             ctt.hex = ctthex.hex;
 //            console.log(ctt);
             return ctt;
@@ -1586,7 +1586,7 @@ var CPublisher = new function () {
     };
     this.shareLink = function (link) {
         if (currentPage === "homepage") {
-            BrowserAPI.goToCustomPage("fai:browser/?share=true&link=" + link);
+            FAI_API.goToCustomPage("fai:browser/?share=true&link=" + link);
             return;
         }
         $('#pubbtnh').show();
@@ -1598,12 +1598,12 @@ var CPublisher = new function () {
     };
     this.shareId = function (id) {
 //        if (typeof currentPage === "undefined") {
-//            BrowserAPI.goToCustomPage("fai:browser/?share=true&id=" + id);
+//            FAI_API.goToCustomPage("fai:browser/?share=true&id=" + id);
 //            return;
 //        }
         if (typeof currentPage !== "undefined") {
             if (currentPage === "homepage") {
-                BrowserAPI.goToCustomPage("fai:browser/?share=true&id=" + id);
+                FAI_API.goToCustomPage("fai:browser/?share=true&id=" + id);
                 return;
             }
         }
@@ -1625,7 +1625,7 @@ var CPublisher = new function () {
     this.commentLink = function (link, id, fTip) {
         fTip = typeof fTip === "undefined" ? false : fTip;
         if (currentPage === "homepage") {
-            BrowserAPI.goToCustomPage("fai:browser/?cmt=true&link=" + link + "&id=" + id);
+            FAI_API.goToCustomPage("fai:browser/?cmt=true&link=" + link + "&id=" + id);
             return;
         }
         this.shareLink(link);
@@ -1662,8 +1662,8 @@ var CPublisher = new function () {
             this.togglePromCtt();
     };
     this.regFeeRate = function () {
-        currentFeeRate.sgstfeer = BrowserAPI.getFeeRate(0.15);
-        currentFeeRate.minfeer = BrowserAPI.getFeeRate();
+        currentFeeRate.sgstfeer = FAI_API.getFeeRate(0.15);
+        currentFeeRate.minfeer = FAI_API.getFeeRate();
     };
     this.pubSimpleAction = function () {
 //        $("#mainframe").html("<div class=")

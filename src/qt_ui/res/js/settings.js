@@ -64,7 +64,7 @@ var Settings = new function () {
                 return;
         }
         console.log(2);
-        var r = BrowserAPI.updateSettings("pagedomain", name, value);
+        var r = FAI_API.updateSettings("pagedomain", name, value);
         console.log(typeof r);
         if (r === true)
             this.makeNotice("success", "domain", TR("update success"));
@@ -74,12 +74,12 @@ var Settings = new function () {
     }
     this.updateService = function (name) {
         var value = $("#" + name).html() == TR("ON") ? "false" : "true";
-        BrowserAPI.updateSettings("serviceflages", name, value);
+        FAI_API.updateSettings("serviceflages", name, value);
         LoadSettings();
     }
     this.updateLanguage = function () {
         var value = $("select[name='language']").val();
-        var r = BrowserAPI.setLang(value);
+        var r = FAI_API.setLang(value);
         if (r === true)
             this.makeNotice("success", "lang", TR("update success"));
         else
@@ -91,7 +91,7 @@ var Settings = new function () {
             this.makeNotice("error", "timeout", TR('value is not number'));
         if (value < 1)
             this.makeNotice("error", "timeout", TR('value is too small'));
-        var r = BrowserAPI.updateSettings("filepackagetimeout", "", value * 1000);
+        var r = FAI_API.updateSettings("filepackagetimeout", "", value * 1000);
         //      console.log(r);
         if (r == true)
             this.makeNotice("success", "cache", TR("update success"));
@@ -104,7 +104,7 @@ var Settings = new function () {
             this.makeNotice("error", "maxcache", TR('value is not number'));
         if (value < 100)
             this.makeNotice("error", "maxcache", TR('value is too small'));
-        var r = BrowserAPI.updateSettings("maxcachesize", "", value);
+        var r = FAI_API.updateSettings("maxcachesize", "", value);
 
         if (r === true)
             this.makeNotice("success", "cache", TR("update success"));
@@ -112,7 +112,7 @@ var Settings = new function () {
             this.makeNotice("error", "cache", TR("update failed"));
     }
     this.clearCache = function () {
-        var r = BrowserAPI.clearCache();
+        var r = FAI_API.clearCache();
         if (r === true)
             this.makeNotice("success", "cache", TR("clear success"));
         else
@@ -120,7 +120,7 @@ var Settings = new function () {
     }
     function LoadSettings()
     {
-        settings = BrowserAPI.getSettings();
+        settings = FAI_API.getSettings();
         var html = "<tr><th>" + TR('Application') + "</th><th>" + TR('Default Domain Name') + "</th><th>" + TR('Action') + "</th></tr>";
         for (var name in settings.pagedomains) {
             html += "<tr><td>" + TR(name) + "</td>";
@@ -144,7 +144,7 @@ var Settings = new function () {
         html += "<select name='language'><option value='en'>English</option><option value='zh_CN' >中文</option></select> ";
         html += '<button onclick="Settings.updateLanguage()">' + TR('Change') + '</button>';
         $("#language-settings").html(html);
-        var lang = BrowserAPI.getLang();
+        var lang = FAI_API.getLang();
         if (lang.userlang)
             lang = lang.userlang;
         else
@@ -171,7 +171,7 @@ var Settings = new function () {
         LoadSettings();
     }
     function initAccount() {
-        accountID = BrowserAPI.getAccountID();
+        accountID = FAI_API.getAccountID();
     }
     $(document).ready(function () {
         $("#tpls").load("templates.html", function () {

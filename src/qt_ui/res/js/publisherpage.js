@@ -5,9 +5,9 @@ function preparePkgPub() {
     $("#confirmpub").click(function () {
         var text = $("#theText").val();
         //console.log(text);
-        var feerate = BrowserAPI.getFeeRate(0.15);
+        var feerate = FAI_API.getFeeRate(0.15);
         console.log(feerate);
-        var result = BrowserAPI.publishPackage(gParam.accountID, text, Number(feerate));
+        var result = FAI_API.publishPackage(gParam.accountID, text, Number(feerate));
         CPage.showNotice(result);
     });
 }

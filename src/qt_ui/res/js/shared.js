@@ -161,7 +161,7 @@ function GetLevel1Domain(d) {
 }
 
 function getB64DataFromLink(clink) {
-    var cj = (BrowserAPI.getContentByLink(clink));
+    var cj = (FAI_API.getContentByLink(clink));
     r = this.getFileContentFrJson(cj);
     return r;//rcreateImgHtml(r);
 }
@@ -200,7 +200,7 @@ function parseTx(tx, IDs) {
         }
         for (var j in tx.vout) {
 
-            var outid = "Publishing Content";
+            var outid = TR("Publishing content");
             if (tx.vout[j].scriptPubKey.address)
                 outid = tx.vout[j].scriptPubKey.address;
             var isOwnID = false;
@@ -244,7 +244,7 @@ function getStrLinkType(str)
         return "link_blockchain";
     if (IsValidDomain(str))
         return "domain";
-    var b32d = BrowserAPI.b32CheckDecode(str);
+    var b32d = FAI_API.b32CheckDecode(str);
     if (b32d && !b32d.error)
         return "id";
     return "other";
@@ -307,12 +307,12 @@ function prepareStdTpl() {
     $(".id-homepage-btn").unbind().click(function () {
         var id = $(this).parent().parent().find(".text").attr("fullid");
         var url = "fai:browser/?id=" + id;
-        BrowserAPI.goToCustomPage(url);
+        FAI_API.goToCustomPage(url);
     });
     $(".id-chat-btn").unbind().click(function () {
         var id = $(this).parent().parent().find(".text").attr("fullid");
         var url = "fai:messenger/?chatto=" + id;
-        BrowserAPI.goToCustomPage(url);
+        FAI_API.goToCustomPage(url);
     });
     $(".ctt-link-btn").unbind().click(function () {
         var link = $(this).parent().parent().find(".linkspan").attr("clink");
@@ -346,7 +346,7 @@ function prepareStdTpl() {
     $(".prd-pchs-btn").unbind().click(function () {
         var link = $(this).parent().parent().find(".linkspan").attr("clink");
         var url = "fai:shop/?buy=" + link;
-        BrowserAPI.goToCustomPage(url);
+        FAI_API.goToCustomPage(url);
     });
 }
 
@@ -531,16 +531,16 @@ var CUtil = new function () {
     };
     this.initGParam = function (balance) {
         gParam = {};
-        gParam.accountID = BrowserAPI.getAccountID();
+        gParam.accountID = FAI_API.getAccountID();
         if (typeof balance === "undefined")
-            gParam.balance = BrowserAPI.getBalance(gParam.accountID, false).balance;
+            gParam.balance = FAI_API.getBalance(gParam.accountID, false).balance;
         else
             gParam.balance = balance;
-        gParam.domain = typeof gParam.accountID === "undefined" ? [] : BrowserAPI.getDomainsByForward(gParam.accountID);
+        gParam.domain = typeof gParam.accountID === "undefined" ? [] : FAI_API.getDomainsByForward(gParam.accountID);
         gParam.domain = gParam.domain.length > 0 ? gParam.domain[0] : null;
         if (gParam.domain) {
             if (gParam.domain.icon) {
-                var ctt = BrowserAPI.getContentByLink(gParam.domain.icon);
+                var ctt = FAI_API.getContentByLink(gParam.domain.icon);
                 var cttP = CUtil.parseCtt(ctt);
                 if (cttP.fdata) {
                     gParam.icon = {};
@@ -690,7 +690,7 @@ var CUtil = new function () {
     this.parseProd = function (ctt) {
         if (!ctt.link)
             return false;
-        var prod = BrowserAPI.getProductByLink(ctt.link);
+        var prod = FAI_API.getProductByLink(ctt.link);
         console.log(prod);
         return prod;
     };
@@ -748,7 +748,7 @@ var CPage = new function () {
         if (fShowId)
             ddiv.find(".navi-name").parent().removeClass("hide");
         $("#navi-bar").find(".container").append(ddiv.children());
-        $('#cblc').html(BrowserAPI.getBlockCount());
+        $('#cblc').html(FAI_API.getBlockCount());
     };
     this.createImgHtml = function (ftype, fdata) {
         if (typeof ftype === "undefined")
@@ -801,11 +801,11 @@ var CPage = new function () {
         return p;
     };
     this.updateBalance = function (b) {
-        gParam.accountID = BrowserAPI.getAccountID();
+        gParam.accountID = FAI_API.getAccountID();
         if (typeof b !== "undefined")
             gParam.balance = b;
         else
-            gParam.balance = BrowserAPI.getBalance(gParam.accountID, false).balance;
+            gParam.balance = FAI_API.getBalance(gParam.accountID, false).balance;
         var bl = CUtil.getBalanceLevel(gParam.balance);
         if (!bl)
             return;
@@ -813,7 +813,7 @@ var CPage = new function () {
         $('#balance').html(gParam.balance.balance_total);
     };
     this.updateCblc = function () {
-        $('#cblc').html(BrowserAPI.getBlockCount());
+        $('#cblc').html(FAI_API.getBlockCount());
     };
     this.prepareProdDiv = function () {
         var ddiv = $("#prod-tpl").clone(true, true).removeAttr("id").removeClass("hide");
@@ -827,7 +827,7 @@ var CPage = new function () {
     };
     this.fillProdDiv = function (ddiv, prod) {
         ddiv.find(".linkspan").attr("clink", prod.link);
-        var domain = BrowserAPI.getDomainByForward(prod.seller.id);
+        var domain = FAI_API.getDomainByForward(prod.seller.id);
         var id2show = $.isEmptyObject(domain) ? CUtil.getShortPId(prod.seller.id) : domain.domain;
         var idtype = $.isEmptyObject(domain) ? "" : "(domain)";
         ddiv.find(".id").find(".text").html(id2show);
@@ -845,7 +845,7 @@ var CPage = new function () {
             ddiv.find(".intro").html(CUtil.escapeHtml(prod.intro));
         if (typeof prod.icon !== "undefined") {
             console.log(prod.icon);
-            var ctt = BrowserAPI.getContentByLink(prod.icon);
+            var ctt = FAI_API.getContentByLink(prod.icon);
             var cttP = CUtil.parseCtt(ctt);
             var idiv;
             if (cttP.fdata) {
@@ -893,7 +893,7 @@ var CPage = new function () {
         var ab = function (a) {
             CPage.notifyAccount(a);
         };
-        BrowserAPI.regNotifyBlocks(aa);
-        BrowserAPI.regNotifyAccount(ab);
+        FAI_API.regNotifyBlocks(aa);
+        FAI_API.regNotifyAccount(ab);
     }
 };

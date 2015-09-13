@@ -14,9 +14,9 @@ function registerNotifications() {
         console.log("refresh");
         window.location.href = window.location.href;
     }
-    BrowserAPI.regNotifyBlocks(aa);
-    BrowserAPI.regNotifyTxs(ab, [accountID]);
-    BrowserAPI.regNotifyAccount(ac);
+    FAI_API.regNotifyBlocks(aa);
+    FAI_API.regNotifyTxs(ab, [accountID]);
+    FAI_API.regNotifyAccount(ac);
     console.log("regnotifications success");
 }
 
@@ -54,7 +54,7 @@ function changeCategory(id) {
 }
 
 function initAccount() {
-    accountID = BrowserAPI.getAccountID();
+    accountID = FAI_API.getAccountID();
     $("#account-id").html(accountID);
     registerNotifications();
     Messenger.getMessagesAll();
@@ -114,8 +114,8 @@ $(document).ready(function () {
                 return;
             }
             if (currentContact && msg) {
-                var feerate = BrowserAPI.getFeeRate(0.15);
-                BrowserAPI.sendMessage(accountID, currentContact, msg, feerate, function () {
+                var feerate = FAI_API.getFeeRate(0.15);
+                FAI_API.sendMessage(accountID, currentContact, msg, feerate, function () {
                     Messenger.showMessage(msg, currentContact, 0, "onchain", "out");
                     Messenger.setLastUpdateTime(currentContact);
                     $("#theText").val("");
@@ -197,8 +197,8 @@ $(document).ready(function () {
         resetCl();
         if (page === "chatto") {
             var id = CUtil.getGet("chatto");
-            console.log(BrowserAPI.checkNameKey(id));
-            if (!BrowserAPI.checkNameKey(id)) {
+            console.log(FAI_API.checkNameKey(id));
+            if (!FAI_API.checkNameKey(id)) {
                 CPage.showNotice(TR('ID is not valid'));
             } else {
                 Messenger.addContact(id);

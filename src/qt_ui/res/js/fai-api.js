@@ -4,7 +4,7 @@ var AUDIO_FILE_TYPE = ["audio/mpeg"];
 var FAI = "Φ";
 var fai = "φ";
 
-var BrowserAPI = new function () {
+var FAI_API = new function () {
     var apiconnected = false;
     var notifyblockfunc;
     var notifytx = {func: "", ids: []};
@@ -98,14 +98,14 @@ var BrowserAPI = new function () {
         }
         var jsreply;
         var jsreplyjson = jsinterface.jscall(cmd, JSON.stringify(datajson));
-//        console.log("browserapi.call:" + jsreplyjson);
+//        console.log("fai-api.call:" + jsreplyjson);
         try {
             jsreply = $.parseJSON(jsreplyjson);
         }
         catch (e) {
             errorfunc(jsreplyjson);
         }
-//        console.log("browserapi.call:" + jsreply);
+//        console.log("fai-api.call:" + jsreply);
         if (!jsreply) {
             errorfunc("api error");
             return;
@@ -117,13 +117,13 @@ var BrowserAPI = new function () {
                 errorfunc(jsreply.error);
             return;
         }
-//        console.log("browserapi.call:" + jsreply);
+//        console.log("fai-api.call:" + jsreply);
         successfunc(jsreply);
     };
     this.icall = function (cmd, datajson) {
         var jsreply;
         var jsreplyjson = jsinterface.jscall(cmd, JSON.stringify(datajson));
-        //console.log("browserapi.call:" + jsreplyjson);
+        //console.log("fai-api.call:" + jsreplyjson);
         if (jsreplyjson == "null" || !jsreplyjson) {
             return null;
         }
@@ -209,7 +209,7 @@ var BrowserAPI = new function () {
         locktime = typeof locktime === "undefined" ? 0 : locktime;
         deposit = typeof deposit === "undefined" ? 0 : deposit;
 
-        var accountID = BrowserAPI.getAccountID();
+        var accountID = FAI_API.getAccountID();
 //        console.log(feeRate);
         var targetID = toId ? toId : (locktime > 0 ? accountID : "");
 //        console.log(targetID);
@@ -231,7 +231,7 @@ var BrowserAPI = new function () {
         console.log(ctts);
         locktime = typeof locktime === "undefined" ? 0 : locktime;
         deposit = typeof deposit === "undefined" ? 0 : deposit;
-        var accountID = BrowserAPI.getAccountID();
+        var accountID = FAI_API.getAccountID();
         var targetID = toId ? toId : (locktime > 0 ? accountID : "");
         var f;
         if (toId) {

@@ -1,25 +1,19 @@
 {
-	"packagename":"browser",
-	"mainfile":"html/browser.html",
+	"packagename":"miner",
+	"mainfile":"html/miner.html",
 	"files":
 	{
-		"html/browser.html":"html/browser.html",
+		"html/miner.html":"html/miner.html",
 		"html/templates.html":"html/templates.html",
 		"css/bootstrap.min.css":"css/bootstrap.min.css",		
 		"css/bootstrap-responsive.min.css":"css/bootstrap-responsive.min.css",
-		"css/jquery-ui.theme.min.css":"css/jquery-ui.theme.min.css",		
-		"css/jquery-ui.structure.min.css":"css/jquery-ui.structure.min.css",
-		"js/jquery.min.js":"js/jquery.min.js",
-		"js/jquery-ui.min.js":"js/jquery-ui.min.js",
-		"js/bootstrap.min.js":"js/bootstrap.min.js",
 		"css/main-overrides.css":"css/main-overrides.css",
-		"css/br-overrides.css":"css/br-overrides.css",
+		"js/jquery.min.js":"js/jquery.min.js",
+		"js/bootstrap.min.js":"js/bootstrap.min.js",
 		"js/base64.js":"js/base64.js",
+		"js/miner.js":"js/miner.js",
 		"js/shared.js":"js/shared.js",
-		"js/fai-api.js":"js/fai-api.js",		
-		"js/browser.js":"js/browser.js",		
-		"js/browserpage.js":"js/browserpage.js",
-		"js/bppage.js":"js/bppage.js",
+		"js/fai-api.js":"js/fai-api.js",
 		"js/translate.js":"js/translate.js",
 		"js/lang/zh.json":"js/lang/zh.json",
 		"js/lang/en.json":"js/lang/en.json",
@@ -27,6 +21,7 @@
 		"icons/silvercoin.png":"icons/silvercoin",
 		"icons/goldcoin.png":"icons/goldcoin",
 		"icons/diamond.png":"icons/diamond",
-		"icons/goldbar.png":"icons/goldbar"
+		"icons/goldbar.png":"icons/goldbar",
+		"icons/tx_mined.png":"icons/tx_mined"
 	}
 }

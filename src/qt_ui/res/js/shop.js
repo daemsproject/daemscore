@@ -53,8 +53,8 @@ var Shop = new function () {
             console.log("refresh");
             window.location.href = window.location.href;
         }
-        BrowserAPI.regNotifyTxs(ab, [accountID]);
-        BrowserAPI.regNotifyAccount(ac);
+        FAI_API.regNotifyTxs(ab, [accountID]);
+        FAI_API.regNotifyAccount(ac);
         console.log("regnotifications success");
     }
     this.initAddNew = function ()
@@ -72,7 +72,7 @@ var Shop = new function () {
         }
         params.offset = page * pagelen;
         params.maxc = pagelen;
-        products = BrowserAPI.searchProducts(params);
+        products = FAI_API.searchProducts(params);
         console.log(products);
         if (!products || products.error || products.length == 0) {
             $('#buy-product-list').html("<tr><td>" + TR('no products found, please change search tags and retry') + "</td></tr>");
@@ -113,7 +113,7 @@ var Shop = new function () {
         params.ids = [accountID];
         params.offset = page * pagelen;
         params.maxc = pagelen;
-        shopProducts = BrowserAPI.searchProducts(params);
+        shopProducts = FAI_API.searchProducts(params);
         console.log(shopProducts);
         if (!shopProducts || shopProducts.error || shopProducts.length == 0) {
             $('#seller-product-list').html("<tr><td>" + TR('no products available now,please publish one') + "</td></tr>");
@@ -144,7 +144,7 @@ var Shop = new function () {
         $('#seller-product-list').html(html);
     }
     this.showSalesRecord = function () {
-        var records = BrowserAPI.getSalesRecord([accountID]);
+        var records = FAI_API.getSalesRecord([accountID]);
         if (!records || records.error || records.length == 0) {
             $('#seller-product-list').html("<tr><td>" + TR('no sales record yet,please try some promotions') + "</td></tr>");
             return;
@@ -232,7 +232,7 @@ var Shop = new function () {
         $("#modal-id-details").modal({show: true}).center();
     };
     this.showMyOrders = function () {
-        var records = BrowserAPI.getPurchaseRecord([accountID]);
+        var records = FAI_API.getPurchaseRecord([accountID]);
         console.log(records);
         if (!records || records.error || records.length == 0) {
             $('#my-orders').html("<tr><td>" + TR('no purchase records') + "</td></tr>");
@@ -244,8 +244,8 @@ var Shop = new function () {
             var total = 0;
             if (r.paymentitems)
             {
-                for (var i in r.paymentitems) {
-                    var it = r.paymentitems[i];
+                for (var jj in r.paymentitems) {
+                    var it = r.paymentitems[jj];
                     html += "<tr><td>";
                     html += CUtil.dateToString(new Date(r.time * 1000));
                     html += '</td><td>';
@@ -256,15 +256,15 @@ var Shop = new function () {
                     var p;
                     if (it.productID) {
                         var fFound = false;
-                        for (var j in myProducts)
-                            if (myProducts[j].id = it.productID)
+                        for (var k in myProducts)
+                            if (myProducts[k]&&myProducts[k].id&&myProducts[k].id == it.productID)
                             {
-                                p = myProducts[j];
-                                fFound = true;
+                                p = myProducts[k];
+                                fFound0 = true;
                                 break;
                             }
-                        if (!fFound) {
-                            p = BrowserAPI.getProductByLink(it.paytolink);
+                        if (fFound===false) {
+                            p = FAI_API.getProductByLink(it.paytolink);
                             if (p.id)
                                 myProducts.push(p);
                         }
@@ -448,7 +448,7 @@ var Shop = new function () {
                 if ($(this).parent().parent().attr("id") == "tr-" + cart[j].link) {
                     delete cart[j];
                     // console.log(j);
-                    BrowserAPI.writeFile("shop", "", "cart", JSON.stringify(cart));
+                    FAI_API.writeFile("shop", "", "cart", JSON.stringify(cart));
                     Shop.refreshCart();
                     break;
                 }
@@ -515,12 +515,12 @@ var Shop = new function () {
         });
         if (!fValid)
             return;
-        var feerate = BrowserAPI.getFeeRate(0.15);
-        BrowserAPI.buyProducts(accountID, l, feerate, function (a) {
+        var feerate = FAI_API.getFeeRate(0.15);
+        FAI_API.buyProducts(accountID, l, feerate, function (a) {
             CPage.showNotice(TR('Purchase successful'));
             cart = {};
             i.refreshCart();
-            BrowserAPI.writeFile("shop", "", "cart", JSON.stringify(cart));
+            FAI_API.writeFile("shop", "", "cart", JSON.stringify(cart));
         }, function (r) {
             CPage.showNotice(r ? TR(r) : TR('Purchase failed'));
         });
@@ -583,8 +583,8 @@ var Shop = new function () {
                 d.lockvalue = lockvalue;
                 d.locktime = locktime * 3600 * 24 + Math.ceil((new Date()) / 1000);
             }
-            var feerate = BrowserAPI.getFeeRate(0.15);
-            BrowserAPI.publishProduct(accountID, d, lockvalue, feerate, function (data) {
+            var feerate = FAI_API.getFeeRate(0.15);
+            FAI_API.publishProduct(accountID, d, lockvalue, feerate, function (data) {
                 CPage.showNotice(TR('Product published!'));
             }, function (e) {
                 CPage.showNotice(TR("Publish product failed: ") + TR(e));
@@ -600,7 +600,7 @@ var Shop = new function () {
                     return;
             }
             cart[currentProduct.link] = currentProduct;
-            BrowserAPI.writeFile("shop", "", "cart", JSON.stringify(cart));
+            FAI_API.writeFile("shop", "", "cart", JSON.stringify(cart));
         });
 
         $("#btn-cart-buy").unbind().click(function () {
@@ -621,7 +621,7 @@ var Shop = new function () {
         i.shopOverView();
     }
     function initAccount() {
-        accountID = BrowserAPI.getAccountID();
+        accountID = FAI_API.getAccountID();
     }
     this.getPageName = function () {
         if (CUtil.getGet("buy"))
@@ -643,7 +643,7 @@ var Shop = new function () {
             CPage.updateBalance();
             CPage.updateCblc();
             CPage.registerNotifications();
-            cart = $.parseJSON(BrowserAPI.readFile("shop", "", "cart"));
+            cart = $.parseJSON(FAI_API.readFile("shop", "", "cart"));
             if (!cart)
                 cart = {};
             var page = Shop.getPageName();
@@ -652,10 +652,10 @@ var Shop = new function () {
                 var link = CUtil.getGet("buy");
                 console.log(link);
                 // get prod by link
-                var prod = BrowserAPI.getProductByLink(link);
+                var prod = FAI_API.getProductByLink(link);
                 console.log(prod);
                 cart[link] = prod;
-                BrowserAPI.writeFile("shop", "", "cart", JSON.stringify(cart));
+                FAI_API.writeFile("shop", "", "cart", JSON.stringify(cart));
                 $("#shopping-cart-btn").click();
             }
         });

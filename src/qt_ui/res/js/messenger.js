@@ -13,7 +13,7 @@ var Messenger = new function () {
         pdiv.find(".poster").attr("id", id);
         pdiv.find(".id").find("a.text").html(id);
         $("#msg-header").addClass("msg-ha");
-        var domain = BrowserAPI.getDomainByForward(id);
+        var domain = FAI_API.getDomainByForward(id);
         var id2show = $.isEmptyObject(domain) ? CUtil.getShortPId(id) : (domain.alias ? domain.alias + " (" + domain.domain + ")" : domain.domain);
         id2show = contacts[currentContact].alias ? contacts[currentContact].alias : id2show;
         var intro = $.isEmptyObject(domain) ? "" : " " + domain.intro;
@@ -25,7 +25,7 @@ var Messenger = new function () {
         pdiv.find(".id").find(".idtype").html(idtype + intro);
         if (domain.icon) {
             console.log(domain.icon);
-            var iconCtt = BrowserAPI.getContentByLink(domain.icon);
+            var iconCtt = FAI_API.getContentByLink(domain.icon);
             var iconCttP = CUtil.parseCtt(iconCtt);
             var icon = CBrowser.createImgHtml(iconCttP);
             console.log(icon);
@@ -51,7 +51,7 @@ var Messenger = new function () {
             contacts[id].intro = a.intro;
         if (a.category)
             contacts[id].category = a.category;
-        var domain = BrowserAPI.getDomainByForward(id);
+        var domain = FAI_API.getDomainByForward(id);
         console.log(domain);
         if (domain && domain.domain) {
             contacts[id].domainName = domain.domain;
@@ -75,7 +75,7 @@ var Messenger = new function () {
             return;
         var c = contacts[id];
         if (c.icon) {
-            var iconCtt = BrowserAPI.getContentByLink(c.icon.link);
+            var iconCtt = FAI_API.getContentByLink(c.icon.link);
             var iconCttP = CUtil.parseCtt(iconCtt);
             var icon = CBrowser.createImgHtml(iconCttP);
             contacts[id].icon.data = iconCttP.fdata;
@@ -140,7 +140,7 @@ var Messenger = new function () {
     };
     this.showMessages = function (id) {
         $('#msg-history').html("");
-        messages[id] = BrowserAPI.getMessages(gParam.accountID, [id], 0, true, false, 0, 0, 100);
+        messages[id] = FAI_API.getMessages(gParam.accountID, [id], 0, true, false, 0, 0, 100);
         if (this.decryptAndShow(id, messages[id])) {
             contacts[id].offset = messages[id].length;
             contacts[id].unreadLen = 0;
@@ -149,7 +149,7 @@ var Messenger = new function () {
     }
     this.showOldMessages = function () {
         var id = currentContact;
-        var oldMsgs = BrowserAPI.getMessages(gParam.accountID, [id], 0, true, false, 0, contacts[id].offset, 20);
+        var oldMsgs = FAI_API.getMessages(gParam.accountID, [id], 0, true, false, 0, contacts[id].offset, 20);
         messages[id] = oldMsgs.concat(messages[id]);
         console.log(messages[id].length);
         this.decryptAndShow(id, oldMsgs, true);
@@ -162,11 +162,11 @@ var Messenger = new function () {
             msgs2.push(msgs[j].content);
         }
         var rs = false;
-        BrowserAPI.decryptMessages(gParam.accountID, [{idForeign: id, messages: msgs2}], function (decryptmsgs) {
+        FAI_API.decryptMessages(gParam.accountID, [{idForeign: id, messages: msgs2}], function (decryptmsgs) {
             if (fOld) {
                 for (var j = 0; j < decryptmsgs[0].messages.length; j++) {
                     if (decryptmsgs[0].messages[j]) {
-                        var direction = BrowserAPI.areIDsEqual(msgs[j].IDTo, id) ? "out" : "in";
+                        var direction = FAI_API.areIDsEqual(msgs[j].IDTo, id) ? "out" : "in";
                         if (decryptmsgs[0].messages[j][0]) {
                             msgs[j].decrypted = base64.decode(decryptmsgs[0].messages[j][0].content[0].content);
                             Messenger.updateMessage(msgs[j]);
@@ -178,7 +178,7 @@ var Messenger = new function () {
             } else {
                 for (var j = decryptmsgs[0].messages.length - 1; j >= 0; j--) {
                     if (decryptmsgs[0].messages[j]) {
-                        var direction = BrowserAPI.areIDsEqual(msgs[j].IDTo, id) ? "out" : "in";
+                        var direction = FAI_API.areIDsEqual(msgs[j].IDTo, id) ? "out" : "in";
                         if (decryptmsgs[0].messages[j][0]) {
                             msgs[j].decrypted = base64.decode(decryptmsgs[0].messages[j][0].content[0].content);
                             Messenger.updateMessage(msgs[j]);
@@ -214,7 +214,7 @@ var Messenger = new function () {
         return true;
     }
     this.addMessage = function (msg) {
-        msg.IDForeign = BrowserAPI.areIDsEqual(msg.IDFrom, gParam.accountID) ? msg.IDTo : msg.IDFrom;
+        msg.IDForeign = FAI_API.areIDsEqual(msg.IDFrom, gParam.accountID) ? msg.IDTo : msg.IDFrom;
         if (this.hasMessage(msg))
             return;
         if (this.addContact(msg.IDForeign))
@@ -226,13 +226,13 @@ var Messenger = new function () {
         this.updateUnreadLen(msg.IDForeign, 1);
     }
     this.getLastUpdateTime = function (id) {
-        var t = BrowserAPI.getConf("messenger", gParam.accountID, id, "updatetime");
+        var t = FAI_API.getConf("messenger", gParam.accountID, id, "updatetime");
         if (!t || isNaN(t))
             return 0;
         return t;
     }
     this.setLastUpdateTime = function (id) {
-        return BrowserAPI.setConf("messenger", gParam.accountID, id, "updatetime", String(new Date().getTime()));
+        return FAI_API.setConf("messenger", gParam.accountID, id, "updatetime", String(new Date().getTime()));
     }
     this.updateUnreadLen = function (id, n) {
         if (typeof n == "undefined")
@@ -248,7 +248,7 @@ var Messenger = new function () {
         $("#" + id).find(".ntcno1").html(a);
     }
     this.getUnreadLen = function (id) {
-        var l = BrowserAPI.getConf("messenger", gParam.accountID, id, "unreadlen");
+        var l = FAI_API.getConf("messenger", gParam.accountID, id, "unreadlen");
         if (typeof l === "undefined")
             l = 0;
         contacts[id].unreadLen = Number(l);
@@ -258,28 +258,28 @@ var Messenger = new function () {
             n == "0";
         contacts[id].unreadLen = n;
         this.saveContacts();
-        BrowserAPI.setConf("messenger", gParam.accountID, id, "unreadlen", n);
+        FAI_API.setConf("messenger", gParam.accountID, id, "unreadlen", n);
         if (n == "0")
             n = "";
         $("#" + id).find(".ntcno1").html(n);
     }
     this.getAlias = function (id) {
-        var alias = BrowserAPI.getConf("messenger", gParam.accountID, id, "alias");
+        var alias = FAI_API.getConf("messenger", gParam.accountID, id, "alias");
         if (alias.error)
             alias = "";
         return alias;
     }
     this.setAlias = function (id, alias) {
-        return BrowserAPI.setConf("messenger", gParam.accountID, id, "alias", alias);
+        return FAI_API.setConf("messenger", gParam.accountID, id, "alias", alias);
     }
     this.getCategory = function (id) {
-        var category = BrowserAPI.getConf("messenger", gParam.accountID, id, "category");
+        var category = FAI_API.getConf("messenger", gParam.accountID, id, "category");
         if (category.error)
             category = "";
         return category;
     }
     this.setCategory = function (id, category) {
-        return BrowserAPI.setConf("messenger", gParam.accountID, id, "category", category);
+        return FAI_API.setConf("messenger", gParam.accountID, id, "category", category);
     }
     this.readContactInfo = function (id) {
         var c = {};
@@ -289,16 +289,16 @@ var Messenger = new function () {
         return c;
     }
     this.getMessagesAll = function () {
-        lastBlock = BrowserAPI.getConf("messenger", gParam.accountID, "", "lastUpdateBlock");
+        lastBlock = FAI_API.getConf("messenger", gParam.accountID, "", "lastUpdateBlock");
         if (typeof lastBlock === "undefined")
             lastBlock = 0;
-        contacts = $.parseJSON(BrowserAPI.readFile("messenger", gParam.accountID, "contacts"));
+        contacts = $.parseJSON(FAI_API.readFile("messenger", gParam.accountID, "contacts"));
         if (!contacts || typeof contacts === "undefined" || contacts.length == 0)
             contacts = {};
         console.log(contacts);
         for (var id in contacts)
             this.showContactInList(id);
-        var data = BrowserAPI.getMessages(gParam.accountID, null, 0, true, true, Number(lastBlock) + 1, 0, 100000);
+        var data = FAI_API.getMessages(gParam.accountID, null, 0, true, true, Number(lastBlock) + 1, 0, 100000);
 
         console.log(data);
         if (data && !data.error) {
@@ -308,11 +308,11 @@ var Messenger = new function () {
             }
             this.saveContacts();
         }
-        latestBlock = BrowserAPI.getBlockCount();
-        BrowserAPI.setConf("messenger", gParam.accountID, "", "lastUpdateBlock", latestBlock);
+        latestBlock = FAI_API.getBlockCount();
+        FAI_API.setConf("messenger", gParam.accountID, "", "lastUpdateBlock", latestBlock);
     };
     this.saveContacts = function () {
-        BrowserAPI.writeFile("messenger", gParam.accountID, "contacts", JSON.stringify(contacts));
+        FAI_API.writeFile("messenger", gParam.accountID, "contacts", JSON.stringify(contacts));
     }
 
 
@@ -327,7 +327,7 @@ var Messenger = new function () {
     }
     this.notifiedTx = function (x) {
         //console.log(x);
-        var data = BrowserAPI.getTxMessages(gParam.accountID, [x.tx.txid]);
+        var data = FAI_API.getTxMessages(gParam.accountID, [x.tx.txid]);
         console.log(data);
         if (data && !data.error) {
             var msgs = [];
@@ -336,18 +336,18 @@ var Messenger = new function () {
                 msgs.push(msg);
                 this.addMessage(msg);
             }
-            if (BrowserAPI.areIDsEqual(msg.IDFrom, currentContact) && BrowserAPI.areIDsEqual(msg.IDTo, gParam.accountID)) {
+            if (FAI_API.areIDsEqual(msg.IDFrom, currentContact) && FAI_API.areIDsEqual(msg.IDTo, gParam.accountID)) {
                 this.decryptAndShow(currentContact, data);
                 this.setUnreadLen(currentContact, 0);
             }
-            if (BrowserAPI.areIDsEqual(msg.IDTo, currentContact)) 
+            if (FAI_API.areIDsEqual(msg.IDTo, currentContact)) 
                 this.setUnreadLen(currentContact, 0);
         }
     };
     this.notifiedBlock = function (l) {
 //        console.log(l);
         latestBlock = l.blockHeight;
-        BrowserAPI.setConf("messenger", gParam.accountID, "", "lastUpdateBlock", latestBlock);
+        FAI_API.setConf("messenger", gParam.accountID, "", "lastUpdateBlock", latestBlock);
     }
 
 
@@ -383,8 +383,8 @@ var Messenger = new function () {
                         CPage.showNotice(TR('can not add self to contact list'));
                         return;
                     }
-                    if (!BrowserAPI.checkNameKey(id)) {
-                        var dm = BrowserAPI.getDomainInfo(id);
+                    if (!FAI_API.checkNameKey(id)) {
+                        var dm = FAI_API.getDomainInfo(id);
                         console.log(dm);
                         if (!dm || dm.length == 0) {
                             CPage.showNotice(TR('ID is not valid'));

@@ -73,7 +73,7 @@ $(document).ready(function () {
     });
     function regBclink(div) {
         var linkstr = div.attr("href");
-        var nctt = BrowserAPI.getContentByLink(linkstr);
+        var nctt = FAI_API.getContentByLink(linkstr);
         if (!CBrowser.replaceContent(nctt, CONTENT_TYPE_FEED, div.parent().parent().parent().parent()))
             CPage.showNotice(TR("Invalid link"));
         $(".bclink").click(function () {

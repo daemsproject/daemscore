@@ -155,7 +155,7 @@ var MyWallet = new function () {
                 source: getActiveLabels()
             }).next().unbind().click(function () {
                 var input = $(this).prev();
-                BrowserAPI.scanQRCode(function (data) {
+                FAI_API.scanQRCode(function (data) {
                     input.val(data);
                 }, function (e) {
                     CPage.showNotice(TR("Scan QR code error"));
@@ -213,9 +213,9 @@ var MyWallet = new function () {
             buildSendForm(self, reset);
             self.find('.send').unbind().click(function () {
                 $('.send').prop('disabled', true);
-                var feerate = Number(BrowserAPI.getFeeRate(0.15));
+                var feerate = Number(FAI_API.getFeeRate(0.15));
                 var locktime = 0;
-                BrowserAPI.requestPayment(accountID, $.trim(self.find('input[name="send-to-address"]').val()), self.find('input[name="send-value"]').val(), self.find('textarea[name="send-message"]').val(), feerate, locktime, function () {
+                FAI_API.requestPayment(accountID, $.trim(self.find('input[name="send-to-address"]').val()), self.find('input[name="send-value"]').val(), self.find('textarea[name="send-message"]').val(), feerate, locktime, function () {
                     $('.send').prop('disabled', false);
                     self.find('input[name="send-to-address"]').val("");
                     self.find('input[name="send-value"]').val("");
@@ -238,14 +238,14 @@ var MyWallet = new function () {
         });
     }
     this.loadAddressBook = function () {
-        var adfile = BrowserAPI.readFile("wallet", "addressbook", "adb.json");
+        var adfile = FAI_API.readFile("wallet", "addressbook", "adb.json");
         address_book = $.parseJSON(adfile);
         if (!address_book)
             address_book = [];
     }
     this.saveAddressBook = function () {
         var adfile = JSON.stringify(address_book);
-        BrowserAPI.writeFile("wallet", "addressbook", "adb.json", adfile);
+        FAI_API.writeFile("wallet", "addressbook", "adb.json", adfile);
     }
     this.showAddressBook = function () {
         var html = "<tr><th>" + TR('Address') + "</th><th>" + TR('Alias') + "</th><th>" + TR('Action') + "</th></tr>";
@@ -330,7 +330,7 @@ var MyWallet = new function () {
         CPage.showNotice(TR('Address changed'));
     }
     this.get_history = function (success, error) {
-        BrowserAPI.listtransactions(accountID, function (data) {
+        FAI_API.listtransactions(accountID, function (data) {
             if (!data || data.error) {
                 if (error)
                     error();
@@ -389,14 +389,14 @@ var MyWallet = new function () {
         var af = function (a) {
             MyWallet.notifiedFallback(a);
         };
-        BrowserAPI.regNotifyBlocks(aa);
-        BrowserAPI.regNotifyTxs(ab, IDs);
-        BrowserAPI.regNotifyAccount(ac);
-        BrowserAPI.regNotifyID(ad);
-        BrowserAPI.regNotifyFallback(af);
+        FAI_API.regNotifyBlocks(aa);
+        FAI_API.regNotifyTxs(ab, IDs);
+        FAI_API.regNotifyAccount(ac);
+        FAI_API.regNotifyID(ad);
+        FAI_API.regNotifyFallback(af);
     }
     this.notifiedTx = function (a) {
-        var b = BrowserAPI.getBalance(accountID);
+        var b = FAI_API.getBalance(accountID);
         balance = b.balance;
         CPage.updateBalance(balance);
         latest_block.blockHeight = b.currentblockheight;
@@ -605,8 +605,8 @@ var MyWallet = new function () {
         if (!tx.blockheight || tx.blockheight <= 0) {
             $("#btn-override").show();
             $("#btn-override").unbind().click(function () {
-                var feerate = Number(BrowserAPI.getFeeRate(0.15));
-                BrowserAPI.requestOverride(accountID, tx.txid, feerate, "*", function (a) {
+                var feerate = Number(FAI_API.getFeeRate(0.15));
+                FAI_API.requestOverride(accountID, tx.txid, feerate, "*", function (a) {
                     CPage.showNotice(TR(a));
                 }, function (e) {
                     CPage.showNotice(TR("Override failed") + ": " + TR(e));
@@ -645,8 +645,8 @@ var MyWallet = new function () {
             var timeleft = 0;
             var locktimespan = $("<span />");
             if (tx.vout[i].locktime) {
-                timeleft = BrowserAPI.getMatureTime(tx.vout[i].locktime).time;
-                console.log(BrowserAPI.getMatureTime(tx.vout[i].locktime));
+                timeleft = FAI_API.getMatureTime(tx.vout[i].locktime).time;
+                console.log(FAI_API.getMatureTime(tx.vout[i].locktime));
             }
             console.log(timeleft);
             var locktimespan = $("<span />").html(timeleft > 0 ? TR(" unlock in: ") + CUtil.formatTimeLength(timeleft) : "");
@@ -674,10 +674,10 @@ var MyWallet = new function () {
             buildTransactionsView(reset)
     }
     this.initAccount = function () {
-        accountID = BrowserAPI.getAccountID();
+        accountID = FAI_API.getAccountID();
         $("#account-id").html(accountID);
         console.log(accountID);
-        IDs = BrowserAPI.getIDs(accountID);
+        IDs = FAI_API.getIDs(accountID);
         registerNotifications();
         MyWallet.get_history();
     }

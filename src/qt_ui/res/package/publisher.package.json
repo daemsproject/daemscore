@@ -1,9 +1,9 @@
 {
-	"packagename":"browser",
-	"mainfile":"html/browser.html",
+	"packagename":"publisher",
+	"mainfile":"html/publisher.html",
 	"files":
 	{
-		"html/browser.html":"html/browser.html",
+		"html/publisher.html":"html/publisher.html",
 		"html/templates.html":"html/templates.html",
 		"css/bootstrap.min.css":"css/bootstrap.min.css",		
 		"css/bootstrap-responsive.min.css":"css/bootstrap-responsive.min.css",
@@ -14,11 +14,12 @@
 		"js/bootstrap.min.js":"js/bootstrap.min.js",
 		"css/main-overrides.css":"css/main-overrides.css",
 		"css/br-overrides.css":"css/br-overrides.css",
+		"css/pb-overrides.css":"css/pb-overrides.css",
 		"js/base64.js":"js/base64.js",
 		"js/shared.js":"js/shared.js",
 		"js/fai-api.js":"js/fai-api.js",		
 		"js/browser.js":"js/browser.js",		
-		"js/browserpage.js":"js/browserpage.js",
+		"js/publisherpage.js":"js/publisherpage.js",
 		"js/bppage.js":"js/bppage.js",
 		"js/translate.js":"js/translate.js",
 		"js/lang/zh.json":"js/lang/zh.json",

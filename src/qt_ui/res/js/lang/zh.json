@@ -413,4 +413,6 @@
 ,"invalid idforeign":"对方名号无效"
 ,"No address":"没有地址"
 ,"can't mine while chain is not up to date":"区块链不是最新，不能抢币"
+,"Under construction":"建设中"
+,"To search apps, please go to Browser -> Hot -> Apps, and search apps by tag(s)":"搜索Apps，请使用 浏览器->热门->应用，然后使用关键词搜索应用"
 }
