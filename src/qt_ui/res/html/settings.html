@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title tr="Φ Settings"></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">        
+        <link rel="stylesheet" href="../css/bootstrap.min.css" type="text/css">
+        <link rel="stylesheet" href="../css/main-overrides.css" type="text/css">                
+        <script type="text/javascript" src="../js/jquery.min.js"></script>
+        <script type="text/javascript" src="../js/bootstrap.min.js"></script>        
+        <script type="text/javascript" src="../js/settings.js"></script>
+        <script type="text/javascript" src="../js/shared.js"></script>
+        <script type="text/javascript" src="../js/browserapi.js"></script>
+        <script type="text/javascript" src="../js/base64.js"></script>
+        <script type="text/javascript" src="../js/translate.js"></script>
+    </head>
+    <body >
+        <div class="container main-container" style="margin-top:30px;width:80%">
+            <div id="home">
+                <div class="row-fluid">
+                    <div class="span2">
+                        <ul class="nav nav-list" id="sell-nav">
+                            <li class="active"><a href="#webpage-settings"  data-toggle="tab" tr="WebPage Settings"></a></li>
+                            <li><a href="#services-settings"  data-toggle="tab" tr="Service Settings"></a></li>
+                            <li><a href="#language-settings" data-toggle="tab" tr="Language Settings" ></a></li>                            
+                            <li><a href="#cache-settings" data-toggle="tab"tr="Cache Settings"></a></li>                            
+                        </ul>                        
+                    </div>                        
+
+                    <div class="span7 tab-content">                        
+                        <div class="tab-pane well active" id="webpage-settings"  >
+                            <table class="table table-striped" id="table_pagedomains">
+                            </table>                       
+
+                        </div>
+                        <div id="services-settings" class="tab-pane well" >
+                            <table class="table table-striped" id="table_services">                                
+                            </table>   
+                        </div>
+                        <div id="language-settings" class="tab-pane well" >
+
+                        </div>
+                        <div id="cache-settings" class="tab-pane well" >
+                            <table class="table table-striped" id="table_cache">                                
+                            </table>   
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>        
+    </body>
+    <div id="tpls" class="hide"></div>
+</html>

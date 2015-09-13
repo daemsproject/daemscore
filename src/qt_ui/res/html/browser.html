@@ -10,37 +10,27 @@
         <script src="../js/jquery.min.js" type="text/javascript"></script>
         <script src="../js/jquery-ui.min.js" type="text/javascript"></script>
         <script type="text/javascript" src="../js/bootstrap.min.js"></script>        
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
         <link rel="stylesheet" href="../css/main-overrides.css" type="text/css">
         <link rel="stylesheet" href="../css/br-overrides.css" type="text/css">
         <script type="text/javascript" src="../js/base64.js"></script>
+        <script type="text/javascript" src="../js/shared.js"></script>
         <script type="text/javascript" src="../js/browserapi.js"></script>
         <script type="text/javascript" src="../js/browser.js"></script>
         <script type="text/javascript" src="../js/browserpage.js"></script>
         <script type="text/javascript" src="../js/bppage.js"></script>
         <script type="text/javascript" src="../js/translate.js"></script>
-        <script type="text/javascript" src="../js/shared.min.js"></script>
     </head>
 
-    <body >
+    <body>
         <div id="navi-bar" class="quickstart">
             <div class="container">                
-                <div class="row-fluid">
-                    <div class="span12 no-print">
-                        <ul class="nav nav-pills pull-left tabbar" >
-                            <li class="active"><a id="br-home-btn" class="ntcbtn" tr="New"></a></li>     
-                            <li><a id="br-hot-btn" class="ntcbtn" tr="Hot"></a></li>
-                            <li><a id="br-followed-btn" class="ntcbtn" tr="Followed"></a></li>
-                            <li><a id="br-dev-btn" class="ntcbtn" tr="Dev"></a></li>
-                            <li><a id="br-mypage-btn" class="ntcbtn"tr="My page"><!--<div class="ntcno1">3</div>--></a></li>
-                        </ul>
-                        <ul class="nav nav-pills pull-left tabbar info">
-                            <li><div class="ntctext"><span  tr="Current Block:"></span><span id="cblc"></span></div></li>
-                            <!--<li><div class="ntctext">Balance: <span id="balance"></span></div></li>-->
-                            <li id="blclvl"><li>
-                        </ul>
-                    </div>
-                </div>  
+                <ul class="nav nav-pills pull-left tabbar" >
+                    <li class="active"><a id="br-new-btn" class="ntcbtn" tr="New"></a></li>     
+                    <li><a id="br-hot-btn" class="ntcbtn" tr="Hot"></a></li>
+                    <li><a id="br-followed-btn" class="ntcbtn" tr="Followed"></a></li>
+                    <li><a id="br-dev-btn" class="ntcbtn" tr="Dev"></a></li>
+                    <li><a id="br-mypage-btn" class="ntcbtn"tr="My page"><!--<div class="ntcno1">3</div>--></a></li>
+                </ul>
             </div>
         </div>
         <div class="ph"></div>
@@ -58,6 +48,6 @@
                 <div class="loader bottom hide" tr="Loading..."></div>
             </div>            
         </div>
-        <div id="tpls" class="hide"></div>
     </body>
+    <div id="tpls" class="hide"></div>
 </html>

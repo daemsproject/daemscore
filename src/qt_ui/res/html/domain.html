@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html ><head>
+        <title tr="Φ Domain"></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">        
+        <link rel="stylesheet" href="../css/bootstrap.min.css" type="text/css">
+        <link rel="stylesheet" href="../css/bootstrap-responsive.min.css" type="text/css">
+        <link rel="stylesheet" href="../css/main-overrides.css" type="text/css">    
+        <link rel="stylesheet" href="../css/domain-overrides.css" type="text/css">                
+        <script src="../js/jquery.min.js" type="text/javascript"></script>
+        <script type="text/javascript" src="../js/bootstrap.min.js"></script>        
+
+        <script type="text/javascript" src="../js/domain.js"></script>
+        <script type="text/javascript" src="../js/shared.js"></script>
+        <script type="text/javascript" src="../js/browserapi.js"></script>
+        <script type="text/javascript" src="../js/base64.js"></script>
+        <script type="text/javascript" src="../js/translate.js"></script>
+    </head>
+
+    <body>
+        <div class="quickstart">
+            <div class="container">                
+                <div class="row-fluid">
+                    <div class="span12 no-print">
+                        <ul class="nav nav-pills pull-left" style="margin-bottom: 3px">
+                            <li class="active"><a id="dmn-domain-btn"tr="Domain"></a></li>
+                        </ul>
+                        <ul class="nav nav-pills pull-left tabbar info">
+                            <li><div class="ntctext"><span  tr="Current Block:"></span><span id="cblc"></span></div></li>
+                            <li><div class="ntctext"><span tr="Balance: "></span><span id="balance"></span></div></li>
+                            <li id="blclvl"><li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="ph"></div>
+        <div class="container main-container">
+            <div id="home" style="">
+                <div class="row-fluid">
+                    <div class="span3">
+                        <div class=" well" style="padding: 15px">
+                            <div>
+                                <div>
+                                    <div tr="My Domains"></div>
+                                    <button class="add btn btn-secondary pop" id="btn-reg" title="Reg Domain" style="float:right" tr="+New"></button>
+                                </div>
+
+                            </div>
+                            <div id="domain-list"  class="domain-list" style="overflow-x: hidden; overflow-y: auto;width:100%;height:400px;"></div>
+                        </div>                        
+                    </div>
+                    <div class="span9 ">
+                        <table class="well table table-striped">
+                            <tr><td tr="Domain:"></td><td><input  name="domain-name" placeholder="domain name" type="text" readonly="readonly"/></td></tr>
+                            <tr><td tr="Expire Time:"></td><td><input  name="expire-time" placeholder="time to expire" type="text" readonly="readonly"/></td></tr>
+                            <tr><td tr="Forward to:"></td><td><input  name="forward" placeholder="forward domain name to id,link" type="text" /></td></tr>
+                            <tr class="dmn-sig hide"><td tr="Instruction:"></td><td tr="To forward your domain to another ID, you need to provide the signature of the following message: "></td></tr>
+                            <tr class="dmn-sig hide"><td tr="Forward to ID msg4sig:"></td><td><input  name="forward_msg4sig" placeholder="msg4sig" type="text" readonly="readonly"/><button class="idbtn" id="cpy-msg" tr="Copy message"></button></td></tr>
+                            <tr class="dmn-sig hide"><td tr="Forward to ID sig:"></td><td><input  name="forward_sig" placeholder="please stick signature to msg4sig here" type="text" /></td></tr>
+                            <tr><td tr="Alias:"></td><td><input  name="alias" placeholder="input alias for this domain" type="text" /></td></tr>
+                            <tr><td tr="Icon:"></td><td><div id="show-icon" style="float:left"></div><input class="span6" name="icon" placeholder="the link of domain icon" type="text" /></td></tr>
+                            <tr><td tr="Intro:"></td><td><input  name="intro" placeholder="intro" type="text" /></td></tr>
+                            <tr><td tr="Tags:"></td><td><input  name="tags" placeholder="please separate tags by ," type="text" /></td></tr>
+
+                        </table>                        
+                        <div>
+                            <button class="idbtn" id="btn-update" title="Update" tr="Update"></button>
+                            <button class="idbtn" id="btn-transfer" title="Transfer" tr="Transfer"></button>
+                            <button class="idbtn" id="btn-renew" title="Renew" tr="Renew"></button>
+                        </div>                        
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div id="reg-domain" class="modal hide">
+            <div class="modal-header">
+                <h3 tr="Register new domain"></h3>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <p tr="Please input the domain name you want to register below:"></p>
+                    <input placeholder="name of domain,.f or .fai" name="domain-name" type="text" style="width:300px;"/>
+                    <button class="btn" id="btn-check-domain" tr="Check"></button>
+                    <div id="check-result"></div>
+                </div>
+                <div ><span tr="Lock time:"></span><input placeholder="Lock time:" name="lock-time" type="text" style="width:300px;"/><span tr="days"></span></div>
+                <div><span tr="Lock Value needed:"></span>φ<span id="value-needed"></span></div>
+                <div ><span tr="Value to be locked:"></span>φ<input id="value-to-lock" placeholder="Value to be locked:" name="value-to-lock" type="text" style="width:300px;"/></div>                
+            </div>
+            <div class="modal-footer">
+                <div class="btn-group pull-right">
+                    <button autocomplete="off" class="idbtn light cancel"tr="Cancel"></button>
+                    <button autocomplete="off" class="idbtn ok" tr="Register"></button>
+                </div>
+            </div>
+        </div>
+        <div id="renew-domain" class="modal hide">
+            <div class="modal-header">
+                <h3 tr="Renew Domain"></h3>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <p tr="Domain to renew:"></p>
+                    <div id="domain-to-renew" style="color:blue"></div>                    
+                </div>
+                <div ><span tr="Lock time:"></span><input placeholder="Lock time:" name="lock_time" type="text" style="width:300px;" /><span tr="days"></span></div>
+                <div ><span tr="Lock Value needed:"></span>φ<span id="value-needed-renew"></span></div>
+                <div ><span tr="Value to be locked:"></span>φ<input id="value-to-lock" placeholder="Value to be locked:" name="value-to-lock" type="text" style="width:300px;"/></div>                
+            </div>
+            <div class="modal-footer">
+                <div class="btn-group pull-right">
+                    <button autocomplete="off" class="idbtn light cancel"tr="Cancel"></button>
+                    <button autocomplete="off" class="idbtn ok" tr="Renew"></button>
+                </div>
+            </div>
+        </div>
+        <div id="transfer-domain" class="modal hide">
+            <div class="modal-header">
+                <h3 tr="Transfer Domain"></h3>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <p tr="Domain to transfer"></p>
+                    <div id="domain-to-transfer" style="color:blue"></div>                    
+                </div>
+                <p tr="Please input the target ID to transfer to :"></p>
+                <input placeholder="transfer to id" name="transfer-id" type="text" style="width:300px;"/>
+            </div>
+            <div class="modal-footer">
+                <div class="btn-group pull-right">
+                    <button autocomplete="off" class="idbtn light cancel" tr="Cancel"></button>
+                    <button autocomplete="off" class="idbtn ok"tr="Transfer"></button>
+                </div>
+            </div>
+        </div>
+    </body>
+    <div id="tpls" class="hide"></div>
+</html>

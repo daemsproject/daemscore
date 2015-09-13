@@ -1524,6 +1524,105 @@ Value listtransactions(const Array& params, bool fHelp)
 
     return result;
 }
+Value listtransactions2(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() > 5)
+        throw runtime_error(
+            "listtransactions2 ( \"ids\" count from fincludemempool,fincludenomoneychange)\n"
+            "\nReturns up to 'count' most recent transactions skipping the first 'from' transactions for ids.\n"
+            "\nArguments:\n"
+            "1. \"ids\"    (array) The ids.\n"
+            "2. count          (numeric, optional, default=100) The number of transactions to return\n"
+            "3. from           (numeric, optional, default=0) The number of transactions to skip\n"
+            "\nResult:\n"
+            "{\"txs\":\n"
+            "[\n"
+            "  {\n"
+            "    \"address\":\"faicoinaddress\",    (string) The faicoin address of the transaction. Not present for \n"
+            "                                                move transactions (category = move).\n"
+            "    \"category\":\"send|receive|move\", (string) The transaction category. 'move' is a local (off blockchain)\n"
+            "                                                transaction between ids, and not associated with an id,\n"
+            "                                                transaction id or block. 'send' and 'receive' transactions are \n"
+            "                                                associated with an account id, transaction id and block details\n"
+            "    \"amount\": x.xxx,          (numeric) The amount in φ. This is negative for the 'send' category, and for the\n"
+            "                                         'move' category for moves outbound. It is positive for the 'receive' category,\n"
+            "                                         and for the 'move' category for inbound funds.\n"
+            "    \"vout\" : n,               (numeric) the vout value\n"
+            "    \"fee\": x.xxx,             (numeric) The amount of the fee in φ. This is negative and only available for the \n"
+            "                                         'send' category of transactions.\n"
+            "    \"confirmations\": n,       (numeric) The number of confirmations for the transaction. Available for 'send' and \n"
+            "                                         'receive' category of transactions.\n"
+            "    \"blockhash\": \"hashvalue\", (string) The block hash containing the transaction. Available for 'send' and 'receive'\n"
+            "                                          category of transactions.\n"
+            "    \"blockindex\": n,          (numeric) The block index containing the transaction. Available for 'send' and 'receive'\n"
+            "                                          category of transactions.\n"
+            "    \"txid\": \"transactionid\", (string) The transaction id. Available for 'send' and 'receive' category of transactions.\n"
+            "    \"time\": xxx,              (numeric) The transaction time in seconds since epoch (midnight Jan 1 1970 GMT).\n"
+            "    \"timereceived\": xxx,      (numeric) The time received in seconds since epoch (midnight Jan 1 1970 GMT). Available \n"
+            "                                          for 'send' and 'receive' category of transactions.\n"
+            "    \"content\": \"...\",       (string) If a content is associated with the transaction.\n"
+            "  }\n"
+            "]\n"
+            "\"balances\":\n"
+            "  {\n"
+            "\"balance_available\":x.xxx ,(numeric) available balance\n"
+            "\"balance_unconfirmed\":x.xxx ,(numeric) unconfirmed balance\n"
+            "\"balance_locked\":x.xxx ,(numeric) locked balance\n"
+            "\"balance_total\":x.xxx ,(numeric) total balance\n"
+            "  }\n"
+            "}\n"
+            "\nExamples:\n"
+            "\nList the most recent 100 transactions in the default account\n"
+            + HelpExampleCli("listtransactions", "") +
+            "\nList the most recent 100 transactions for the account QN5BF73O35EMQ2G5NZAQ554YHLERLDVMAAPIQBI6 \n"
+            + HelpExampleCli("listtransactions", "\"QN5BF73O35EMQ2G5NZAQ554YHLERLDVMAAPIQBI6 \"") +
+            "\nList transactions 100 to 120 from the QN5BF73O35EMQ2G5NZAQ554YHLERLDVMAAPIQBI6  account\n"
+            + HelpExampleCli("listtransactions", "\"QN5BF73O35EMQ2G5NZAQ554YHLERLDVMAAPIQBI6 \" 20 100") +
+            "\nAs a json rpc call\n"
+            + HelpExampleRpc("listtransactions", "\"QN5BF73O35EMQ2G5NZAQ554YHLERLDVMAAPIQBI6 \", 20, 100")
+            );
+
+    std::vector<CScript> vScriptPubKey;
+            Array arrScriptPubKey=params[0].get_array();
+           // LogPrintf("arrScriptPubKey size %i \n",arrScriptPubKey.size());
+    for(int i=0;i<(int)arrScriptPubKey.size();i++)
+    {
+        //LogPrintf("arrScriptPubKey type %i \n",arrScriptPubKey[i].type());
+        CScript scriptPubKey;
+       if(!StringToScriptPubKey(arrScriptPubKey[i].get_str(),scriptPubKey)) 
+           throw JSONRPCError(RPC_INVALID_PARAMETER, "invalid ID");
+           vScriptPubKey.push_back(scriptPubKey);
+    }
+    int nCount = 10000;
+    if (params.size() > 1)
+        nCount = params[1].get_int();
+    int nFrom = 0;
+    if (params.size() > 2)
+        nFrom = params[2].get_int();
+    if (nCount < 0)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Negative count");
+    if (nFrom < 0)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Negative from");
+    bool fIncludeUnconfirmed=true;
+    if (params.size() > 3)
+        fIncludeUnconfirmed = params[3].get_bool();
+    bool fIncludeNoMoneyChange=true;
+    if (params.size() > 4)
+        fIncludeNoMoneyChange = params[4].get_bool();
+    Array ret;
+    Object result;
+    std::vector<std::pair<CTransaction, uint256> > vTxs;
+    GetTransactions(vScriptPubKey, vTxs,fIncludeUnconfirmed,fIncludeNoMoneyChange,nFrom,nCount);
+        for (int i=0;i<(int)vTxs.size();i++)
+        {
+            Object objTx;
+            TxToJSON(vTxs[i].first, vTxs[i].second, objTx, MAX_STANDARD_TX_SIZE, 0, -1);
+            ret.push_back(objTx);
+        }
+        result.push_back(Pair("txs", ret));
+        result.push_back(Pair("currentblockheight", chainActive.Height()));
+    return result;
+}
 
 Value listaccounts(const Array& params, bool fHelp)
 {

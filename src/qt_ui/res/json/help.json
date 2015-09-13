@@ -1,0 +1,45 @@
+{
+    "browser": {
+        "name": "Browser",
+        "class": "optional",
+        "text": ["text for browser"],
+        "test-page": {
+            "name": "test",
+            "text": ["text for browser", "text line2"]
+        }
+        ,
+        "browser-page": {
+            "name": "Browser Intro",
+            "text": ["text for browser",
+                "text line2"]
+        }
+        ,
+        "new-page": {
+            "name": "Tab New",
+            "text": "text for new",
+            "pub-func": {
+                "name": "to publish"
+            }
+        },
+        "hot-page": {
+            "name": "Tab Hot",
+            "text": "text for hot",
+            "browse-func": {
+                "name": "to browse"
+            }
+        }
+    }
+    ,
+    "publisher": {
+        "name": "Publisher",
+        "text": "text for publisher",
+        "simple-page": {
+            "name": "Simple Pub",
+            "text": "text for simple pub"
+        },
+        "package-page": {
+            "name": "Pub Package",
+            "text": "text for level2-2"
+        }
+    }
+}

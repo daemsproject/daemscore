@@ -1,0 +1,75 @@
+#contact-list{
+    overflow-x: hidden; overflow-y: scroll;width:100%;color:#fff;font-weight:bold;border-top: 1px solid #5a5a5a;
+}#msg-history{
+    clear:both;overflow-x: hidden; overflow-y: auto;height:300px; height:55%;background-color: #fafafa;
+}#ctct-header{
+    margin-top: 30px;
+}#ctct-head{
+    margin: 30px 0;color: #fff;text-align: center;background-color: #555;height: 35px;vertical-align: middle;font-weight: bolder;padding-top: 15px;font-size: 14px;text-shadow: 1px 1px #aaa;
+}#btn-add{
+    float:right;margin-right:30px;
+}#ctct-container{
+    height:100%;background-color: #666;position: absolute;width:80%;right:0;
+}.column1{
+    overflow: hidden;
+}#btnholder{
+    margin-left:40px;
+}#msg-container{
+    width:95%;height:100%;
+}.ctct{
+    border-bottom: 1px solid #5a5a5a;width:100%;position:relative;
+}.ctct.active{
+    background-color: #888;
+}#current-contact{
+    display:inline-block
+}#theText{
+    border:none;
+}#msg-history,#theText,#msg-header{
+    padding:10px; width:100%;
+}#btn-send{
+    float:right;
+}.ntcno1{
+    right:50px;top:5px;padding:3px;height:15px;line-height:15px;
+}#contact-list .icon,.id{
+    float:left;
+}#contact-list .id a{
+    color:#fff;
+}#contact-list .id{
+    width:70%;margin:20px 0;
+}#contact-list .icon{
+    width:40px;height:40px;margin: 12px 10px 0;border-radius: 3px;background-size: 40px 40px;background-color: #eee;
+}#contact-list .icon:empty{
+    background: url("../icons/bitcoin.png");background-size: 40px 40px;background-color: #ccc;
+}#msg-header{
+    height:45px;background-color: #fafafa;
+}#msg-container .ph{
+    height:20px;
+}.msg-ha{
+    border-bottom: 1px solid #eee;
+}#current-contact{
+    width:90%;float:left;
+}.post{
+    float:left;width:100%;
+}.post .id{
+    width:70%;margin-top:10px
+}.post .icon{
+    margin:0;float:left;
+}#btn-edit-ctct{
+    float:left
+}.modal-body .idbtn{
+    float:right;margin-right:5px;
+}.msg-container .icon{
+    width:30px;height:30px;border-radius: 3px;background-size: 40px 40px;background-color: #ddd;line-height:30px;
+}.msg-container{
+    clear:both; padding-top:5px;
+}.msg-wrapper{
+
+}.msg-container .time{
+    color:#aaa;
+}.bubble{
+    max-width:70%;
+}.msg{
+    word-wrap:break-word;width:100%;
+}.modal-body p,.line{
+    margin: 10px 0;
+}

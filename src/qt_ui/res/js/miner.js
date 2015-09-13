@@ -8,9 +8,6 @@ var Miner = new function () {
 
     this.skip_init = false; //Set on sign up page
     var cVisible; //currently visible view
-    var password; //Password
-    var dpassword; //double encryption Password
-    var dpasswordhash; //double encryption Password
     var accountID;
     var balance = {balance_available: 0, balance_uncofirmed: 0, balance_locked: 0, balance_total: 0}; //Final Satoshi wallet balance    
     var hashrate = 0;
@@ -22,21 +19,13 @@ var Miner = new function () {
     var tx_filter = 0; //Transaction filter (e.g. Sent Received etc)
     var maxAddr = 1000; //Maximum number of addresses
     var IDs = []; //{addr : address, priv : private key, tag : tag (mark as archived), label : label, balance : balance}
-    var info={};
-    var archTimer; //Delayed Backup wallet timer
-
-    var event_listeners = []; //Emits Did decrypt wallet event (used on claim page)
-
-    var isInitialized = false;
-    var language = 'en'; //Current language    
+    var info = {};
     var haveBoundReady = false;
-
-    var sync_pubkeys = false;
     var wallet_options = {
         fee_policy: 0, //Default Fee policy (-1 Tight, 0 Normal, 1 High)
         html5_notifications: false, //HTML 5 Desktop notifications    
         tx_display: 0, //Compact or detailed transactions    
-        transactions_per_page: 1000, //Number of transactions per page    
+        transactions_per_page: 5, //Number of transactions per page    
     };
     this.setNTransactionsPerPage = function (val) {
         wallet_options.transactions_per_page = val;
@@ -109,11 +98,11 @@ var Miner = new function () {
             }, timeout ? timeout : 5000);
         })();
     }
-    
+
     function showRevenues() {
 
         var htmlcontent = '<table class="well table table-striped">';
-        htmlcontent += '<thead><tr><th colspan=2>Recent Revenues</th><th></th></tr></thead><tbody> ';
+        htmlcontent += '<thead><tr><th colspan=2>' + TR('Recent Revenues') + '</th><th></th></tr></thead><tbody> ';
         var count = 0;
         for (i = 0; i < txs.length; i++) {
             var tx = txs[i];
@@ -122,12 +111,12 @@ var Miner = new function () {
             var c = new Date(tx.blocktime * 1000);
             if (!tx.blocktime)
                 c = new Date();
-            if (tx.category=="minted") {
+            if (tx.category == "minted") {
                 htmlcontent += ('<tr OnClick="Miner.showTx(\'' + tx.txid + '\')"><td>');
                 htmlcontent += '<img src="../icons/tx_mined.png">';
                 htmlcontent += ('</td><td>');
-                htmlcontent += '<div><div style="float:left">' + dateToString(c) + '</div><div style="text-align:right">';
-                htmlcontent += (tx.amount + "FAI");
+                htmlcontent += '<div><div style="float:left">' + CUtil.dateToString(c) + '</div><div style="text-align:right">';
+                htmlcontent += ("φ" + tx.amount);
                 htmlcontent += '</div></div>';
                 htmlcontent += '<div>' + showID(tx.address) + '</div></td></tr>';
                 count++;
@@ -140,6 +129,7 @@ var Miner = new function () {
     }
     this.getMiningInfo = function () {
         info = BrowserAPI.getMiningInfo();
+        console.log(info);
         if (info.kernelrate)
             hashrate = info.kernelrate;
         if (info.kernelrevenueperday)
@@ -158,9 +148,9 @@ var Miner = new function () {
         if (info.difficulty)
             $("#difficulty").html(info.difficulty.toFixed(3));
         if (info.connected)
-            $("#connection").html("Yes");
+            $("#connection").html(TR('Connected'));
         else
-            $("#connection").html('<span style="color:red">Not Connected</span>');
+            $("#connection").html('<span style="color:red">' + TR('Not Connected') + '</span>');
         if (!info.generate)
             stopMining();
         else {
@@ -189,29 +179,9 @@ var Miner = new function () {
 
         return str;
     }
-    function formatTime(time) {
-        var str;
-        if (time < 60) {
-            str = time.toFixed(3);
-            str += " seconds";
-        }
-        else if (time < 60 * 60) {
-            str = (time / 60).toFixed(3);
-            str += " minutes";
-        }
-        else if (time < 60 * 60 * 24) {
-            str = (time / 3600).toFixed(3);
-            str += " hours";
-        }
-        else {
-            str = (time / (3600 * 24)).toFixed(3);
-            str += " days";
-        }
-        return str;
-    }
 
     this.get_history = function (success, error) {
-        BrowserAPI.get_history(accountID, function (data) {
+        BrowserAPI.listtransactions(accountID, function (data) {
             if (!data || data.error) {
                 if (error)
                     error();
@@ -220,7 +190,7 @@ var Miner = new function () {
             console.log(data);
             txs = data.txs;
             for (var j in txs)
-                txs[j] = parseTx(txs[j],IDs);
+                txs[j] = parseTx(txs[j], IDs);
             balance = data.balance;
             if (txs.length == 0 && tx_page > 0) {
                 //We have set a higher page number than transactions we actually have to display
@@ -230,8 +200,6 @@ var Miner = new function () {
                 //Rebuild the my-addresses list with the new updated balances (Only if visible)
                 showRevenues();
             }
-
-
             if (success)
                 success();
 
@@ -243,14 +211,10 @@ var Miner = new function () {
     };
 
     function registerNotifications() {
-        //var aa=fuction(a){(a);};
-//        var aa=function(a){
-//            MyWallet.notifiedBlock(a);
-//        };
         var ab = function (a) {
             Miner.notifiedTx(a);
         };
-        var ad=function(a){
+        var ad = function (a) {
             Miner.notifiedID(a);
         };
         var af = function (a) {
@@ -259,76 +223,53 @@ var Miner = new function () {
         var an = function (a) {
             Miner.notifiedAccount(a);
         };
-        //BrowserAPI.regNotifyBlocks(aa);        
         BrowserAPI.regNotifyTxs(ab, IDs);
         BrowserAPI.regNotifyID(ad);
         BrowserAPI.regNotifyFallback(af);
         BrowserAPI.regNotifyAccount(an);
-//        BrowserAPI.regNotifyPeers(this.notifiedPeers);
     }
     this.notifiedTx = function (a) {
-        console.log("notified tx");
-        for(var j in txs)
-            if(txs[j].txid==a.tx.txid)
+        for (var j in txs)
+            if (txs[j].txid == a.tx.txid)
                 return;
-        var tx=parseTx(a.tx,IDs);
+        var tx = parseTx(a.tx, IDs);
         txs.unshift(tx);
-        //this.get_history();
         showRevenues();
+        CPage.updateBalance(BrowserAPI.getBalance(accountID).balance);
     };
     this.notifiedFallback = function (obj) {
-        console.log("notified fallback");
         i.get_history();
     }
     this.notifiedAccount = function (data) {
-        console.log("account changed");
         accountID = BrowserAPI.getAccountID();
         $("#account-id").html(accountID);
-        IDs=BrowserAPI.getIDs(accountID);  
-        //BrowserAPI.getNewID(accountID);
+        IDs = BrowserAPI.getIDs(accountID);
         registerNotifications();
         Miner.get_history();
-        if(info.generate)
-            BrowserAPI.setGenerate(true, accountID, $('select[name="kernels"]').val(),true);    
+        if (info.generate)
+            BrowserAPI.setGenerate(true, accountID, $('select[name="kernels"]').val());
     }
     this.notifiedPeers = function (data) {
-
     }
-    this.notifiedID=function(a){
+    this.notifiedID = function (a) {
         console.log(a);
-        for(var j in IDs)
-            if(IDs[j]==a.id)
+        for (var j in IDs)
+            if (IDs[j] == a.id)
                 return;
         IDs.push(a.id);
-        registerNotifications();       
+        registerNotifications();
     };
-    //Reset is true when called manually with changeview
-    function buildVisibleViewPre() {
-        //Hide any popovers as they can get stuck whent the element is re-drawn
-        hidePopovers();
-
-        //Update the account balance
-        if (balance == null) {
-            //$('#balance').html('Loading...');
-        } else {
-            //$('#balance').html(formatSymbol(final_balance, symbol, true));
-            //$('#balance2').html(formatSymbol(final_balance, (symbol === symbol_local) ? symbol_btc : symbol_local), true);
-        }
-
-        //Only build when visible
-        return cVisible.attr('id');
-    }
     var stopMining = function () {
         $('select[name="kernels"]').prop("disabled", false);
-        $('.btn-primary').html("Start Mining");
+        $('#mine').html(TR('Start Mining'));
         clearInterval(intervalID);
         $("#mining_status").html("");
     }
     var startMining = function () {
         clearInterval(intervalID);
         $('select[name="kernels"]').prop("disabled", true);
-        $('.btn-primary').html("Stop Mining");
-        $("#mining_status").html("Mining  FAIcoins...");
+        $('#mine').html(TR('Stop Mining'));
+        $("#mining_status").html(TR('Mining  FAIcoins...'));
         intervalID = setInterval(changeColor, 1000);
     }
     var color = "blue";
@@ -349,11 +290,11 @@ var Miner = new function () {
 
 
 
-        $('.btn-primary').unbind().click(function () {
-            if ($(this).html() == "Start Mining") {
-                BrowserAPI.setGenerate(true, accountID, $('select[name="kernels"]').val(),false ,function () {
+        $('#mine').unbind().click(function () {
+            if ($(this).html() == TR('Start Mining')) {
+                BrowserAPI.setGenerate(true, accountID, $('select[name="kernels"]').val(), false, function () {
                     startMining();
-                    Miner.makeNotice('success', 'start-success', 'Mining started');
+                    Miner.makeNotice('success', 'start-success', TR('Mining started'));
                 }, function (e) {
                     console.log(e);
                     stopMining();
@@ -361,23 +302,22 @@ var Miner = new function () {
                 });
             }
             else
-                BrowserAPI.setGenerate(false, accountID, $('select[name="kernels"]').val(),false, function () {
+                BrowserAPI.setGenerate(false, accountID, $('select[name="kernels"]').val(), false, function () {
                     stopMining();
                 });
 
         });
         $('select[name="kernels"]').unbind().change(function () {
             $('#hashrate').html(formatRate($(this).val() * hashrate));
-            $('#estimated_revenue_amount').html(($(this).val() * kernelrevenue).toFixed(3) + " FAI/day");
-            $('#estimated_revenue_interval').html(formatTime(kernelinterval / $(this).val()));
+            $('#estimated_revenue_amount').html("φ" + ($(this).val() * kernelrevenue).toFixed(3) + "/" + TR('day'));
+            $('#estimated_revenue_interval').html(CUtil.formatTimeLength(kernelinterval / $(this).val()));
         }).trigger("change");
     }
 
     function initAccount() {
         accountID = BrowserAPI.getAccountID();
         $("#account-id").html(accountID);
-        IDs=BrowserAPI.getIDs(accountID);  
-        //BrowserAPI.getNewID(accountID);
+        IDs = BrowserAPI.getIDs(accountID);
         registerNotifications();
         Miner.get_history();
         setInterval(Miner.getMiningInfo(), 600000);
@@ -385,50 +325,20 @@ var Miner = new function () {
 
 
     $(document).ready(function () {
-
-        if (!$.isEmptyObject({}) || !$.isEmptyObject([])) {
-            MyWallet.makeNotice('error', 'error', 'Object.prototype has been extended by a browser extension. Please disable this extensions and reload the page.');
-            return;
-        }
-
-        //Listener to reload the page on App Cache update
-        window.applicationCache.addEventListener('updateready', function () {
-            if (window.applicationCache.status === window.applicationCache.UPDATEREADY) {
-                window.applicationCache.swapCache();
-                location.reload();
-            }
-        });
-
-        //Disable autocomplete in firefox
-        $("input,button,select").attr("autocomplete", "off");
-
-
-        var body = $(document.body);
-//        //Deposit pages set this flag so it can be loaded in an iframe
-//        if (MyWallet.skip_init)
-//            return;
-
-        cVisible = $("#home-intro");
-        bindInitial();
-        initAccount();
-        bindReady();
-        //Frame break
-        if (top.location != self.location) {
-            top.location = self.location.href
-        }
-
-
-
-        cVisible.show();
-
-        $(document).ajaxStart(function () {
-            setLogoutImageStatus('loading_start');
-
-            $('.loading-indicator').fadeIn(200);
-        }).ajaxStop(function () {
-            setLogoutImageStatus('loading_stop');
-
-            $('.loading-indicator').hide();
+        $("#tpls").load("templates.html", function () {
+            CUtil.initGParam();
+            CPage.prepareHeader(true);
+            doTranslate();
+            $("input,button,select").attr("autocomplete", "off");
+            cVisible = $("#home-intro");
+            bindInitial();
+            initAccount();
+            bindReady();
+            cVisible.show();
+            CPage.prepareNotice("miner");
+            CPage.updateBalance();
+            CPage.updateCblc();
+            CPage.registerNotifications();
         });
     });
 }

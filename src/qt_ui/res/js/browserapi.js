@@ -1,9 +1,8 @@
-var IMAGE_FILE_TYPE = ["image/jpeg", "image/png"];
+var IMAGE_FILE_TYPE = ["image/jpeg", "image/png", "image/svg+xml","image/tiff","image/bmp"];
 var VIDEO_FILE_TYPE = ["video/mp4"];
 var AUDIO_FILE_TYPE = ["audio/mpeg"];
 var FAI = "Φ";
 var fai = "φ";
-
 
 var BrowserAPI = new function () {
     var apiconnected = false;
@@ -128,9 +127,9 @@ var BrowserAPI = new function () {
         if (jsreplyjson == "null" || !jsreplyjson) {
             return null;
         }
-//        console.log(jsreplyjson);
-        if (jsreplyjson == "OK" || jsreplyjson == "success")
-            return jsreplyjson;
+//        console.log(String(jsreplyjson));
+        if (jsreplyjson == '"OK"' || jsreplyjson == '"success"' || jsreplyjson == "OK" || jsreplyjson == "success")
+            return true;
         try {
             jsreply = $.parseJSON(jsreplyjson);
         }
@@ -228,6 +227,31 @@ var BrowserAPI = new function () {
         }, false);
         return f;
     };
+    this.createTxByContents = function (ctts, feeRate, toId, deposit, locktime) {
+        console.log(ctts);
+        locktime = typeof locktime === "undefined" ? 0 : locktime;
+        deposit = typeof deposit === "undefined" ? 0 : deposit;
+        var accountID = BrowserAPI.getAccountID();
+        var targetID = toId ? toId : (locktime > 0 ? accountID : "");
+        var f;
+        if (toId) {
+            deposit = 0;
+            locktime = 0;
+        }
+        var cttInput = [];
+        for (var i in ctts)
+            cttInput.push(ctts[i].hex);
+        console.log(cttInput);
+        console.log(feeRate);
+        console.log(deposit);
+        console.log(locktime);
+        this.call("requestpayment2", [accountID, targetID, cttInput, feeRate, deposit, locktime], function (r) {
+            f = r;
+        }, function (e) {
+            f = e;
+        }, false);
+        return f;
+    };
     this.listtransactions = function (id, success, error, number, offset) {
         var data = [];
         data[0] = id;
@@ -309,8 +333,8 @@ var BrowserAPI = new function () {
         flink = typeof flink !== 'undefined' ? flink : CLink.set(0).toString();
         blkc = typeof blkc !== 'undefined' ? blkc : 10;
         fAsc = typeof fAsc !== 'undefined' ? fAsc : true;
-        var wcc = ["CC_FILE_P", "CC_TEXT_P", "CC_TEXT", "CC_LINK_P", "CC_LINK"];
-        var wocc = ["CC_FILE_PACKAGE_P", "CC_DOMAIN_P", "CC_MESSAGE_P", "CC_NULL"];
+        var wcc = ["CC_FILE_P", "CC_TEXT_P", "CC_TEXT", "CC_LINK_P", "CC_LINK", "CC_PRODUCT_P", "CC_FILE_PACKAGE_P"];
+        var wocc = ["CC_DOMAIN_P", "CC_MESSAGE_P", "CC_NULL"];
         var d = [{flink: flink, maxc: 10, maxb: 3000000, withcc: wcc, withoutcc: wocc, cformat: 6, fAsc: fAsc, mincsize: 3, blkc: blkc}];
         console.log(JSON.stringify(d));
         return this.icall("getcontents", d);
@@ -319,8 +343,8 @@ var BrowserAPI = new function () {
         fAsc = typeof fAsc !== 'undefined' ? fAsc : true;
         frAddrs = typeof frAddrs !== 'undefined' ? frAddrs : [];
         toAddrs = typeof toAddrs !== 'undefined' ? toAddrs : [];
-        var wcc = ["CC_FILE_P", "CC_TEXT_P", "CC_TEXT", "CC_LINK_P", "CC_LINK"];
-        var wocc = ["CC_FILE_PACKAGE_P", "CC_DOMAIN_P", "CC_MESSAGE_P", "CC_NULL"];
+        var wcc = ["CC_FILE_P", "CC_TEXT_P", "CC_TEXT", "CC_LINK_P", "CC_LINK", "CC_PRODUCT_P", "CC_FILE_PACKAGE_P"];
+        var wocc = ["CC_DOMAIN_P", "CC_MESSAGE_P", "CC_NULL"];
         var d = {maxc: 20, maxb: 3000000, withcc: wcc, withoutcc: wocc, cformat: 6, fAsc: fAsc, mincsize: 3, frAddrs: frAddrs, toAddrs: toAddrs};
         if (nFile >= 0)
             d.nFile = nFile;
@@ -373,7 +397,7 @@ var BrowserAPI = new function () {
         var wccc = {"cc_name": "CC_FILE_TYPESTRING", "ccontent": IMAGE_FILE_TYPE, "format": "bin"};
         var wcc = ["CC_FILE_P", "CC_P", "CC_FILE_TYPESTRING"];
         var d = [{fbh: fbh, maxc: maxc, maxb: 20000000, withcc: wcc, withccc: wccc, withoutcc: wocc, cformat: 6, fAsc: fAsc, mincsize: 3, blkc: blkc}];
-        console.log(JSON.stringify(d));
+//        console.log(JSON.stringify(d));
         var r = this.icall("getcontents", d);
 //        console.log(r);
         return r;
@@ -531,10 +555,10 @@ var BrowserAPI = new function () {
                 error(e);
         });
     }
-    this.publishProduct = function (id, product, feerate, success, error) {
+    this.publishProduct = function (id, product, lockvalue, feerate, success, error) {
         if (Object.prototype.toString.call(product) != '[object Array]')
             product = [product];
-        this.call("publishproduct", [id, product, feerate], function (a) {
+        this.call("publishproduct", [id, product, lockvalue, feerate], function (a) {
             if (success)
                 success(a);
         }, function (e) {
@@ -543,17 +567,23 @@ var BrowserAPI = new function () {
         });
     }
     this.searchProducts = function (params) {
-        console.log(params);
+//        console.log(params);
         return this.icall("searchproducts", [params]);
     }
     this.getProductByLink = function (link) {
         //console.log(params);
         return this.icall("getproductbylink", [link]);
     }
-    this.buyProducts = function (id, products, feerate) {
+    this.buyProducts = function (id, products, feerate, success, error) {
         if (Object.prototype.toString.call(products) != '[object Array]')
             products = [products];
-        return this.icall("buyproduct", [id, products, feerate]);
+        this.call("buyproduct", [id, products, feerate], function (a) {
+            if (success)
+                success(a);
+        }, function (e) {
+            if (error)
+                error(e);
+        });
     }
     this.publishPackage = function (id, json, feerate, lockvalue, locktime) {
         if (!lockvalue)
@@ -572,8 +602,7 @@ var BrowserAPI = new function () {
     this.setConf = function (app, idlocal, idforeign, conf, value) {
         if (!value)
             value = "";
-        var result = this.icall("setconf", [app, idlocal, idforeign, conf, String(value)]);
-        return (result == "success") ? true : false;
+        return this.icall("setconf", [app, idlocal, idforeign, conf, String(value)]);
     }
     this.getConf = function (app, idlocal, idforeign, conf) {
         var result = this.icall("getconf", [app, idlocal, idforeign, conf]);
@@ -582,8 +611,7 @@ var BrowserAPI = new function () {
         return $.parseJSON(result);
     }
     this.writeFile = function (app, path, filename, filestring) {
-        var result = this.icall("writefile", [app, path, filename, filestring]);
-        return (result == "success") ? true : false;
+        return this.icall("writefile", [app, path, filename, filestring]);
     }
     this.writeFile2 = function (filename, filestring) {
         return this.icall("writefile2", [filename, filestring]);
@@ -765,160 +793,3 @@ var BrowserAPI = new function () {
     }
 
 };
-
-var CLink = new function () {
-    var CLink = this;
-    this.nHeight = -1;
-    this.nTx = -1;
-    this.nVout = -1;
-    this.linkname;
-    this.linktype = "";
-    this.setString = function (str, ln) {
-        this.linkname = (typeof ln === 'undefined') ? "" : ln;
-        this.nHeight = -1;
-        this.nTx = -1;
-        this.nVout = -1;
-        if (typeof str === 'undefined')
-            return this;
-        var pc = str.indexOf(":");
-        if (pc >= 0)
-            str = str.substring(pc + 1);
-        var pfd = str.indexOf(".");
-        this.nHeight = parseInt(str.substring(0, pfd));
-        var psd = str.indexOf(".", pfd + 1);
-        if (psd >= 0) {
-            this.nTx = parseInt(str.substring(pfd + 1, psd));
-            this.nVout = parseInt(str.substring(psd + 1));
-        } else {
-            this.nTx = parseInt(str.substring(pfd + 1));
-            this.nVout = 0;
-        }
-        if (this.isValid())
-            this.linktype = "BLOCKCHAIN";
-        return this;
-    };
-    this.set = function (nHeight, nTx, nVout) {
-//        console.log(typeof nHeight);
-        if (typeof nHeight === "undefined")
-            return this;
-        if (typeof nHeight === "string")
-            return this.setString(nHeight);
-        if (typeof nHeight !== "number")
-            return this;
-        if (nHeight < 0) {
-            this.nHeight = -1;
-            this.nTx = -1;
-            this.nVout = -1;
-        } else {
-            this.nHeight = nHeight;
-            this.nTx = typeof nTx === "undefined" ? 0 : nTx;
-            this.nVout = typeof nVout === "undefined" ? 0 : nVout;
-        }
-        return this;
-    };
-    this.toString = function () {
-        return  (this.nHeight >= 0 && this.nTx >= 0) ?
-                (this.nVout > 0 ? "fai:" + this.nHeight + "." + this.nTx + "." + this.nVout : "fai:" + this.nHeight + "." + this.nTx) : "";
-    };
-    this.toHtmlId = function () {
-        return  this.nHeight >= 0 && this.nTx >= 0 ?
-                (this.nVout > 0 ? this.nHeight + "_" + this.nTx + "_" + this.nVout : this.nHeight + "_" + this.nTx) : "";
-    };
-    this.isValid = function () {
-        return  this.nHeight >= 0 && this.nTx >= 0;
-    };
-    this.isEmpty = function () {
-        return isNaN(this.nHeight) || isNaN(this.nTx);
-    };
-    this.cmp = function (l1, l2) { // compare, invalid input link return false, l1 > l2 return 1, equal return 0, l1 < l2 return -1
-        if (!this.set(l1).isValid())
-            return false;
-        var h1 = this.nHeight;
-        var t1 = this.nTx;
-        var o1 = this.nVout;
-        if (!this.set(l2).isValid())
-            return false;
-        var h2 = this.nHeight;
-        var t2 = this.nTx;
-        var o2 = this.nVout;
-        if (h1 != h2)
-            return h1 > h2 ? 1 : -1;
-        if (t1 != t2)
-            return t1 > t2 ? 1 : -1;
-        if (o1 != o2)
-            return o1 > o2 ? 1 : -1;
-        return 0;
-    };
-    this.nVoutPP = function () {
-        this.nVout = this.nVout + 1;
-        return this;
-    };
-};
-
-var CUtil = new function () {
-    this.decodeDataUrl = function (s) {
-        var r = [];
-        var t1 = s.split(";");
-        var rctt = t1[1];
-        var t2 = t1[0].split(":");
-        r["type"] = t2[1];
-        var t3 = rctt.split(",");
-        r["data"] = t3[1];
-
-        return r;
-    };
-    this.escapeHtml = function (h, br) {
-        br = typeof br === "undefined" ? true : br;
-        var str = $("<div>").text(h).html();
-        str = br ? str.replace(/(?:\r\n|\r|\n)/g, '<br />') : str;
-        return str;
-    };
-    this.copyToClipboard = function (text) {
-        window.prompt(TR("Copy to clipboard: Ctrl+C (Cmd+C for mac), Enter"), text);
-    };
-    this.getGet = function (val) {
-        var result = null;
-        var tmp = [];
-//        console.log(location.search);
-        var items = location.search.substr(1).split("&");
-        for (var index = 0; index < items.length; index++) {
-            tmp = items[index].split("=");
-            if (tmp[0] === val)
-                result = decodeURIComponent(tmp[1]);
-        }
-        return result;
-    };
-    this.setGet = function (str, val) {  // not fully working yet
-        var p = str.split("?");
-        console.log(p[0]);
-        var items = str.split("&");
-        for (var index = 0; index < items.length; index++) {
-            tmp = items[index].split("=");
-            if (tmp[0] === val)
-                result = decodeURIComponent(tmp[1]);
-        }
-        return result;
-    };
-    this.isLinkHttp = function (lstr) {
-        return lstr.substr(0, 4).toLowerCase() === "http";
-    };
-    this.isLinkFai = function (lstr) {
-        return lstr.substr(0, 3).toLowerCase() === "fai";
-    };
-    this.cleanNullElem = function (a) { // input of this function must be array
-        if (!Array.isArray(a))
-            return [];
-        var r = [];
-        for (var i in a) {
-            if (a[i] !== null)
-                r.push(a[i]);
-        }
-        return r;
-};
-};
-function sleep(n) {
-    var start = new Date().getTime();
-    while (true)
-        if (new Date().getTime() - start > n)
-            break;
-}

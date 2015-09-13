@@ -1,0 +1,45 @@
+{
+    "Home":{
+        "name":"Home",
+        "text":"<p><h1>Φ</h1>--Free Anonymous Internet, upgrades internet by providing ultimate freedom and anonymity</p>        <p>Ultimate <h1>F</h1>reedom</p>"
+    <p>Never can be deleted,freezed, modified or filtered.</p>
+    Accessible from anywhere."
+    <p>Ultimate <h1>A</h1>anonymity</p>
+    No real-world personal data needed.
+    Footprint untrackable.
+    <p>Infrastructure for next generation <h1>I</h1>nternet</p>    
+        Fully compatible with existing internet system.
+        Plentiful of general-purpose APIs enabling quick and powerful Apps development."
+        Open source to ensure safety and upgradability.
+        Core Innovations:
+        Φ account   
+            The Φ account system is based on asymmetric cryptography,specifically, ECDSA technology. 
+            Each user can create a universe-unique Φ account by himself. A Φ account is a private key-name key(public key)pair.Name key represents the Φaccount,and digital signatures signed by private key proofs the controlling of the Φ account and triggers digital operations.
+            The Φ account is fully owned and controlled by the user only. No website , organization, or government can have access to Φ accounts.
+            The Φ account has no correspondancy to real-world personal information, ensuring ultimate anonymity. 
+            Φ accounts are free. Users can create, possess, use or abandon as many Φ accounts as they want, ensuring ultimate freedom.
+            Φ accounts are compatible with all kinds of digital system and extremely easy to implement, \"one account for all apps\" will become true in the near future.
+        Φ network
+            The Φ network system is based on P2P technology,i.e. decentralized network.
+            The Φ network has no center, every nodes in the Φ network are equal. Users can communicate point-to-point, or broadcast and relay Φ information.
+            Becuase of the cascade-spreading of Φ information in the Φ network, there're no way to block ,filter or modify Φ information,ensuring ultimate freedom;
+            Also becuase of the cascade-spreading of Φ information in the Φ network,it's extremely difficult to track the origin of Φ information,ensuring ultimate anonymity.
+            Any digital device can join the Φ network if it follows the basic Φ network protocol.All kinds of apps can be run on Φ network,even without a server.
+        Φ database
+            The Φ database system is based on blockchain technology.
+            There's always only one valid version of Φ database in the whole internet, while many node/digital devices keep a full copy of it.
+            Because every digital device in the Φ network can have a full copy of the Φ database, so it will never be deleted.
+            Φ information following Φ database rules  will go into Φ database if confirmed by Φ miners. The Φ database rules strictly require digital signature from the sender for the Φ information, so no one else can modify the Φ information,i.e. the Φ information will be stored in the Φ database as what it was forever. Because of the decentrality of miners, there're no ways to block any valid Φ information going into Φ database ,ensuring ultimate freedom;
+            Because everbody has exactly the same copy of Φ database, so there're no ways to know what data a user has browsed,ensuring ultimate anonymity.
+            The Φ database is open for all kinds of information,not only text,image,vedio,but also programmes,settings,opeartion commands--nothing is impossible, oh ,impossible is nothing.
+        Φ currency
+           The Φ currency system is based on Bitcoin technology.
+           The Φ currency is published and distributed independantly on Φ system. It has no relationship with traditional currencies, so it's indepent from all traditional banking and financial system.
+           Any Φ account can receive and send Φ currency. Obviously , The Φ currency system inherits the freedom and anonymity of Φ account .
+          A big unique advantage of Φ currency system is that, the currency transaction is processed together with information and operation commands on the Φ system, it's unimaginably easy for merchants or app developers to integrete currency functions into their programmes. 
+        Screen-captures
+        Downloads
+        APIs
+            "
+    }
+}

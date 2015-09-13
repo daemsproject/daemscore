@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title tr="Φ Messenger"></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">        
+        <link rel="stylesheet" href="../css/bootstrap.min.css" type="text/css">
+        <link rel="stylesheet" href="../css/main-overrides.css" type="text/css">
+        <link rel="stylesheet" href="../css/msg-overrides.css" type="text/css">
+        <script type="text/javascript" src="../js/jquery.min.js"></script>
+        <script type="text/javascript" src="../js/bootstrap.min.js"></script>   
+        <script type="text/javascript" src="../js/shared.js"></script>
+        <script type="text/javascript" src="../js/messenger.js"></script> 
+        <script type="text/javascript" src="../js/messengerpage.js"></script>
+        <script type="text/javascript" src="../js/browserapi.js"></script>
+        <script type="text/javascript" src="../js/browser.js"></script>
+        <script type="text/javascript" src="../js/base64.js"></script>
+        <script type="text/javascript" src="../js/translate.js"></script>
+    </head>
+
+    <body>
+        <div id="navi-bar" class="quickstart">
+            <div class="container"></div>
+        </div>
+        <div class="ph"></div>
+        <div class="column column1" id="shdr">
+            <div id="ctct-container">
+                <div id="ctct-header">
+                    <div id="ctct-head"><span tr="Contacts"></span><button class="idbtn light" id="btn-add" title="Add contact" tr="+New"></button></div>
+                    <div id="btnholder">
+                        <ul class="nav nav-pills pull-left" >
+                            <li class="active"><a id="list-all" tr="All"></a></li>
+                            <li><a id="list-friends" tr="Friends"></a></li>
+                            <li><a id="list-black" tr="Blacklist"></a></li>                            
+                        </ul>
+                    </div>
+                </div>
+                <div id="contact-list"></div>
+            </div>                        
+        </div>
+        <div class="column column2">
+            <div id="msg-container">
+                <div class="ph"></div>
+                <div id="msg-header">
+                    <div id="current-contact">
+
+                    </div><div id="btn-edit-ctct" class="idbtn hide" title="Edit Contact Attributes" tr="Edit"></div>
+                </div>
+                <div id="msg-history"></div>
+                <textarea id="theText"  placeholder="Message:" name="send-message"></textarea>
+                <button  id="btn-send" class="idbtn"title="Send message" tr="Send"></button>
+            </div>
+        </div>
+    </body>
+    <div id="edit-contact-body-tpl" class="hide">
+        <p tr="Please set attributes for the following contact:"></p>
+        <div class="edit-modal-contact line"></div>
+        <div> 
+            <input placeholder="Contact Alias" name="contact-alias" type="text" class="input-id"/>
+            <button class="idbtn ok" id="btn-alias" tr="Set Alias"></button>
+        </div>
+        <div class="line">
+            <div class="fleft"><span tr="Category:"></span><span class="contact-category"></span></div>
+            <button class="idbtn ok" id="btn-friend" tr="Add to friends"></button>
+            <button class="idbtn ok" id="btn-black" tr="Add_to_blacklist"></button>
+        </div>
+    </div>
+    <div id="tpls" class="hide"></div>
+</html>

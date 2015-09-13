@@ -26,7 +26,6 @@ span.qrcodeicon span {
     right: 6px;
     width: 18px;
     height: 18px;
-    background: url("https://blockchain.info/Resources/qrcode.png");
     cursor: pointer;
     z-index: 1;
 }

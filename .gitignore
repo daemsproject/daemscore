@@ -58,6 +58,7 @@ src/qt_ui/*.moc
 src/qt_ui/moc_*.cpp
 src/qt_ui/browserexe
 src/qt_ui/FAI
+src/qt_ui/fai
 src/qt_ui/browserexe*
 src/qt_ui/browsertest
 src/qt_ui/forms/ui_*.h

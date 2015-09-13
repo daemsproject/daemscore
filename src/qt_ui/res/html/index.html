@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title tr="Φ FAI introduction"></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">        
+        <link rel="stylesheet" href="../css/bootstrap.min.css" type="text/css">
+        <link rel="stylesheet" href="../css/main-overrides.css" type="text/css">                
+        <script type="text/javascript" src="../js/jquery.min.js"></script>
+        <script type="text/javascript" src="../js/bootstrap.min.js"></script>        
+
+        <script type="text/javascript" src="../js/shared.js"></script>
+        <script type="text/javascript" src="../js/base64.js"></script>
+        <script type="text/javascript" src="../js/translate.js"></script>
+        <script type="text/javascript" src="../js/help.js"></script>
+        <script>
+            $(document).ready(function () {
+                $("#tpls").load("templates.html", function () {
+                    CHelp.getJson();
+                    CHelp.renderHelp();
+                    doTranslate();
+                    $("a").click(function () {
+                        if ($(this).hasClass("goto")) {
+                            var url = CUtil.setGet("hid", $(this).attr("id"));
+                            window.location.href = url;
+                        }
+                    });
+                    $(".goto").hover(function () {
+                        $(this).css("cursor", "pointer");
+                    });
+                    var helpId = CHelp.getHelpId();
+                    if (helpId)
+                        CHelp.renderHelpContent(helpId);
+
+                });
+            });
+
+        </script>
+
+    </head>
+
+    <body >
+        <div id="navi-bar" class="quickstart">
+            <div class="container">                
+                <div class="row-fluid">
+                    <div class="span12 no-print">
+                        <ul class="nav nav-pills pull-left tabbar" >
+                            <li class="active"><a id="msg-onchain-btn" class="ntcbtn" tr="FAI"></a></li>   
+                        </ul>
+                    </div>
+                </div>  
+            </div>
+        </div>
+        <div class="ph"></div>
+        <div class="container main-container" style="margin-top:10px">
+            <div class="container">
+                <div class="row">
+                    <h2 tr="Free Anonymous Internet - Introduction"></h2><hr>
+                    <div id="drop-menu"></div>
+                    <div class="ph"></div>
+                    <div id="drop-menu-content"></div>
+                </div>
+            </div>
+        </div>        
+    </body>
+    <div id="tpls" class="hide"></div>
+</html>

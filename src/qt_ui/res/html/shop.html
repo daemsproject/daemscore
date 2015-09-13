@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html >
+    <head>
+        <title tr="Φ Shop"></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">        
+        <link rel="stylesheet" href="../css/bootstrap.min.css" type="text/css">
+        <link rel="stylesheet" href="../css/bootstrap-responsive.min.css" type="text/css">
+        <link rel="stylesheet" href="../css/main-overrides.css" type="text/css">
+        <link rel="stylesheet" href="../css/shop-overrides.css" type="text/css">
+        <script src="../js/jquery.min.js" type="text/javascript"></script>
+        <script type="text/javascript" src="../js/bootstrap.min.js"></script>        
+
+        <script type="text/javascript" src="../js/shared.js"></script>
+        <script type="text/javascript" src="../js/browserapi.js"></script>
+        <script type="text/javascript" src="../js/browser.js"></script>
+        <script type="text/javascript" src="../js/base64.js"></script>
+        <script type="text/javascript" src="../js/translate.js"></script>
+        <script type="text/javascript" src="../js/shop.js"></script>
+    </head>
+
+    <body >
+
+        <div id="navi-bar" class="quickstart">
+            <div class="container">                
+                <ul class="nav nav-pills pull-left" style="margin-bottom: 3px">
+                    <li class="active"><a  href="#buy" data-toggle="tab"tr="Buy"></a></li>
+                    <li><a href="#sell" data-toggle="tab"tr="Sell"></a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="ph"></div>
+        <div class="container tab-content main-container" style="margin-top:10px" >
+            <div id="buy" class="active tab-pane" >
+                <div class="span12 no-print">
+                    <ul class="nav nav-pills pull-left" style="margin-bottom: 3px">                        
+                        <li class="active" ><a href="#view-products" data-toggle="tab"tr="View Products"></a></li>
+                        <li><a id="shopping-cart-btn" href="#shopping-cart" data-toggle="tab" onclick="Shop.refreshCart()" tr="Shopping Cart"></a></li>
+                        <li><a href="#my-orders" data-toggle="tab" onclick="Shop.showMyOrders()"tr="My Orders"></a></li>                            
+                    </ul>                                       
+                </div>
+                <div class="tab-content clear" style="margin-top:10px">
+                    <div id="view-products" class="active tab-pane well">
+                        <div class="row-fluid">
+                            <div>
+                                <input name="search" placeholder="input tags to serach，seperated by ," type="text" />
+                                <button class="idbtn  pop" id="btn-product-search" title="search" tr="Search"></button>
+                                <!--<button class="idbtn  pop" id="btn-test" title="search" tr="test"></button>-->
+                            </div>
+                            <div  >
+                                <table class="well table table-striped" id="buy-product-list">
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="shopping-cart" class="tab-pane well">                        
+                        <div>
+                            <table class="well table table-striped" id="cart-list">
+                            </table>
+                        </div>
+                        <div>
+                            <button class="update idbtn  pop" id="btn-cart-buy" title="buy" tr="Buy"></button>
+                        </div>
+                    </div>
+                    <div id="my-orders" class="tab-pane well" ><div tr="my-orders"></div>
+                        <table class="well table table-striped" id="table-myorders">
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+            <div id="sell" class="tab-pane" style="">
+                <div class="row-fluid">
+                    <div class="span12">
+                        <ul class="nav nav-pills pull-left" id="sell-nav">
+                            <li class="active"><a href="#shop-overview"  onclick="Shop.shopOverView()"data-toggle="tab" tr="Shop Overview"></a></li>
+                            <li><a href="#add-new" onclick="Shop.initAddNew()" data-toggle="tab" tr="Add New Product"></a></li>
+                            <li><a href="#shop-overview" onclick="Shop.shopOverView()" data-toggle="tab" tr="On Shelf"></a></li>
+                            <li><a href="#sales-record" onclick="Shop.showSalesRecord()" data-toggle="tab" tr="Sales Record"></a></li>
+                        </ul>                        
+                    </div>                        
+
+                    <div class="span12 tab-content">
+                        <div id="shop-overview" class="active tab-pane well" ><div tr="Shop Overview"></div>
+                            <div class="row-fluid">                            
+
+                                <table class="well table table-striped" id="seller-product-list">
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane well" id="add-new"  >
+                            <table class="table table-striped" >
+                                <tr><td tr="Product ID:"></td><td><input  name="product-id" placeholder="0.0" type="text" /></td></tr>
+                                <tr><td tr="Product Name:"></td><td><input name="product-name" placeholder="input product name" type="text" /></td></tr>                            
+                                <tr><td tr="Unit:"></td><td>Pcs</td></tr>
+                                <tr><td tr="Price:"></td><td class="input-prepend"><span class="add-on">φ</span><input name="price" placeholder="input unit price" type="text" /></td></tr>                            
+                                <tr><td tr="Shipment Fee:"></td><td class="input-prepend"><span class="add-on ">φ</span><input  name="shipment-fee" placeholder="input shipment fee" type="text" /></td></tr>                            
+                                <tr><td tr="Recipient Account ID:"></td><td><input name="recipient" placeholder="input account ID to receive payment" type="text" /></td></tr>                            
+                                <tr><td tr="Expire Time:"></td><td><input name="expire-time" placeholder="0.0" type="text"/><span tr=" days"></span></td></tr>
+                                <tr><td tr="Icon:"></td><td><div id="show-icon" style="float:left"></div><input  name="icon" placeholder="input icon link" type="text" /></td></tr>
+                                <tr><td tr="Intro:"></td><td><textarea  name="intro" placeholder="input introduction,can specify unit and shipment fee here" /></textarea></td></tr>
+                                <tr><td tr="Tags:"></td><td><textarea  name="tags" placeholder="input tags separated by ," /></textarea></td></tr>
+                                <tr><td tr="Deposit:"></td><td class="input-prepend"><span class="add-on ">φ</span><input name="lockvalue" placeholder="0.0" type="text"/></td></tr>                            
+                                <tr><td tr="Deposit lock for:"></td><td><input name="locktime" placeholder="0" type="text"/><span tr=" days"></span></td></tr>
+                            </table>                        
+                            <div><button class="update idbtn  pop" id="btn-add-new" title="submit" tr="submit"></button></div>
+                        </div>
+                        <div id="on-shelf" class="tab-pane well" tr="on-shelf"></div>
+                        <div id="sales-record" class="tab-pane well" ><div tr="sales-record"></div>
+                            <table class="well table table-striped" id="table-sales-record">
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="modal-product-details" class="modal hide">
+            <div class="modal-header">
+                <h3 tr="Product Details"></h3>
+            </div>
+            <div class="modal-body"></div>
+            <div class="modal-footer">
+                <div class="btn-group pull-right">
+                    <button  class="idbtn light cancel" tr="Close"></button>
+                    <button id="btn-addcart" class="idbtn" tr="Add To Cart"></button>
+                </div>
+            </div>
+        </div>
+        <div id="modal-id-details" class="modal hide">
+            <div class="modal-header"><h3></h3></div>
+            <div class="modal-body"></div>
+            <div class="modal-footer"></div>
+        </div>
+        <div id="tpls" class="hide"></div>
+    </body>
+</html>

@@ -24,8 +24,8 @@
 
 <div id="pubtag-tpl" class="pubtf hide"><span tr="Tag"></span><input class="input-tag" type="text" name="tag"><input type="checkbox"><span style="display:inline"tr="Protag"></span></div>
 <div id="promctt-tpl" class="pubtf hide"><span style="display:inline" tr="Promote content"></span><input id="promctt-check" type="checkbox"><div class="input-tag-wrapper hide">
-        <span tr="Deposit"></span><input id="promctt-value" type="text" placeholder="Value locked for ranking">
-        <span tr="Until"></span><input id="promctt-date" type="text" name="deposit-til" placeholder="Promote tags until date"></div></div>
+        <span id="pub-value-span" tr="Deposit"></span><input id="promctt-value" type="text" >
+        <span id="pub-until-span" tr="Until"></span><input id="promctt-date" type="text" name="deposit-til" placeholder="Promote tags until date"></div></div>
 <div id="publink-tpl" class="pubtf hide"><span tr="Link"></span><input id="input-link-name" type="text" name="linkname" placeholder="Name"><input id="input-link" type="text" name="link" placeholder="FAI/HTTP Link" /></div>
 <!--<div id="pubvalid-tpl" class="pubtf hide"><span>Valid until</span> <input id="validtil" type="text" name="validtil"></div>-->
 <div id="fee-tpl" class="pubtf hide"><span tr="Fee Rate"></span><input id="input-feerate" type="text" name="feerate" placeholder="φ/KB"/><span class="estfee"tr="Estimated fee:"></span><span id="estfee" class="estfee"></span><div><span class="estfee"tr="Suggested rate:"> </span><span id="sgstr" class="estfee"></span><span class="estfee"tr="Min rate:"> </span><span id="minr" class="estfee"></span></div></div>
@@ -46,14 +46,14 @@
 </div>
 <div id="domain-tpl" class="hide"><div class="container dmn" >
         <div class="post"><div class="leftblock" /><span class="lckvl"></span><span tr="Valid until: "></span><span class="expt"></span></div>
-        <div class="post"><div class="leftblock" /><span class="grey_a" tr="Forward to: "></span><span class="fwd-type grey_a"></span><span class="fwd-tgt grey_a"></span></div>
-        <div class="post"><div class="leftblock" /><span class="grey_a" tr="Owned by: "></span><span class="owner grey_a"></span></div>
+        <div class="post"><div class="leftblock" /><span class="grey_a" tr="Forward to: "></span><span class="fwd-type grey_a id-text"></span><span class="fwd-tgt grey_a id-text"></span></div>
+        <div class="post"><div class="leftblock" /><span class="grey_a" tr="Owned by: "></span><span class="owner grey_a id-text"></span></div>
         <div class="post"><div class="leftblock" /><span tr="Intro: "></span><span class="intro"></span></div>
         <hr>
     </div>
 </div>
 <div id="prod-tpl" class="hide"><div class="container prd" >
-        <div class="post"><div class="leftblock" /><span class="lckvl"></span><span class="prdname"></span><span class="prc"></span><span class="grey_a" tr="Valid until: "></span><span class="expt grey_a"></span></div>
+        <div class="post"><div class="leftblock" /><span class="lckvl"></span><span class="prdname"></span><span class="prc"></span><span class="grey_a"></span><span class="expt grey_a"></span></div>
         <div class="post"><div class="leftblock" /><span tr="Intro: "></span><span class="intro"></span></div>
         <div class="post"><div class="leftblock" /><div class="brctt"><div class="ctt"></div></div></div>
         <hr>
@@ -65,6 +65,7 @@
         <li><a class="ctt-link-btn idbtn hide"tr="Copy Link"></a></li>
         <li><a class="ctt-share-btn idbtn hide"tr="Share"></a></li>
         <li><a class="ctt-cmt-btn idbtn hide"tr="Comment"></a></li>
+        <li><a class="ctt-tip-btn idbtn hide"tr="Tip"></a></li>
         <a class="shrt idbtn short">...</a>
     </ul>
 </div>
@@ -86,7 +87,7 @@
     </div>
 </div>
 <div id="video-tpl" class="hide"><video controls id=""><source type="" src=""></video><a href="" class="bclink"></a></div>
-<div id="image-tpl" class="hide"><div class="text"></div><div><a><img id="" src="" type="" class="brimg"/></a></div><a href="" class="bclink"></a><span class="ctt-rmdr hide" tr="File"></span></div>
+<div id="image-tpl" class="hide"><div class="text"></div><div><a><img id="" src="" type="" class="brimg"/></a></div><a href="" class="bclink"></a><span class="ctt-rmdr hide"></span></div>
 <div id="s-image-tpl" class="hide"><li><div class="scontainer"><img id="" src="" type="" class="brimgs"/></div><a class="slidelink"></a></li></div>
 <div id="linka"><a class="link hide"></a></div>
 <div id="pkginput-tpl" class="pkginput hide">
@@ -97,30 +98,63 @@
 <div id="ntcbubble-tpl" class="ntcno1 hide"></div>
 <div id="hpheader-tpl" class="quickstart hide">
     <div class="container">                
-        <div class="row-fluid" >
-            <div class="span12 no-print">
-                <ul class="nav nav-pills pull-left tabbar" >
-                    <li class="navi-icon"></li>
-                    <li id="navi-name">
-                        <ul>
-                            <a class="navi-name text" fullid=""></a>
-                            <li id="blclvl"></li>
-                            <li><a class="id-copyid-btn idbtn"tr="Copy ID"></a></li>
-                            <li><a class="id-follow-btn idbtn"tr="Follow"></a></li>
-                            <li><a class="id-unfollow-btn idbtn"tr="Unfollow"></a></li>
-                        </ul>
-                    </li>
-                    <li class="navi-intro"tr="Intro"></li>
+        <ul class="nav nav-pills pull-left tabbar" >
+            <li class="navi-icon"></li>
+            <li id="navi-name">
+                <ul>
+                    <a class="navi-name text" fullid=""></a>
+                    <li id="blclvl"></li>
+                    <li><a class="id-copyid-btn idbtn"tr="Copy ID"></a></li>
+                    <li><a class="id-follow-btn idbtn"tr="Follow"></a></li>
+                    <li><a class="id-unfollow-btn idbtn"tr="Unfollow"></a></li>
                 </ul>
-            </div>
-        </div>  
+            </li>
+            <li class="navi-intro"tr="Intro"></li>
+        </ul>
     </div>
 </div>
+<div id="header-info-tpl" class="hide">
+    <ul class="nav nav-pills pull-left tabbar info">
+        <li class="hide"><a class="navi-name text" fullid=""></a></li>
+        <li><div class="ntctext"><span  tr="Current Block:"></span><span id="cblc"></span></div></li>
+        <li id="blclvl"><li>
+    </ul>
+</div>
+<div id="modal-tpl" class="modal hide">
+    <div class="modal-header"><h3></h3></div>
+    <div class="modal-body"><p></p><input type="text"/></div>
+    <div class="modal-footer">
+        <div class="btn-group pull-right">
+            <button class="idbtn light cancel"></button>
+            <button class="idbtn ok"></button>
+        </div>
+    </div>
+</div>
+<div id="tx-detail-tpl">
+    <div class="txid-holder"><span tr="txid: "></span><span class="txid"></span></div>
+    <span class="time-holder"><span tr="Time: "></span><span class="time"></span></sapn>
+        <span class="height-holder"><span tr="Height :"></span><span class="height"></span></span>
+        <div class="inputs-holder"><div class="title" tr="Inputs:"></div><div class="vins"></div></div>
+        <div class="ph"></div>
+        <div class="outputs-holder"><div class="title" tr="Outputs:"></div><div class="vouts"></div></div>
+</div>
+<a  data-toggle="dropdown" class="goto" data-target="#"><span tr="test1"></span><span class="caret"></span></a>
+<div id="dropdown-menu-tpl" class="hide">
+    <div class="dropdown">
+        <a  data-toggle="dropdown" data-target="#"><span class="name" tr=""></span><span class="caret"></span></a>
+        <ul class="dropdown-menu multi-level"></ul>
+    </div>
+</div>
+<div id="submenu-tpl" class="hide">
+    <li><a></a><ul class="dropdown-menu"></ul></li>
+</div>
+
 <div id="search-tpl" class="hide"><input id="input-search" type="text"/><a id="search-btn" class="idbtn"tr="Search"></a><input type="radio" value="ctt" name="srch-type" checked/><span tr="content"></span><input type="radio" value="dmn" name="srch-type" /><span tr="domain"></span><input type="radio" value="prd" name="srch-type" /><span tr="product"></span></div>
-<div id="main-notices-container-tpl" class="hide"><div id="notices" class="hide"></div></div>
+<div id="main-notices-container-tpl" class="hide"><div id="notices" class="bubble bubble-top hide"></div></div>
 <div id="linkpage-tpl" class="hide"><input type="checkbox" /> <span tr="Show Debug"></span><pre id="ctt-json" class="hide"></pre></div>
+<div id="msg-tpl" class="msg-container hide"><div class="icon"></div><div class="msg-wrapper bubble"><div class="time"></div><div class="msg"></div></div></div>
 <div id="slider-tpl" class="hide">
-    <a class="control_next">></a>
-    <a class="control_prev"><</a>
+    <a class="control_next">&gt;</a>
+    <a class="control_prev">&lt;</a>
     <ul></ul>  
 </div>

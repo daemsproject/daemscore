@@ -107,7 +107,7 @@
         <file alias="browserpage.js">res/js/browserpage.js</file>
         <file alias="bppage.js">res/js/bppage.js</file>
         <file alias="translate.js">res/js/translate.js</file>
-        <file alias="shared.min.js">res/js/shared.min.js</file>
+        <file alias="shared.js">res/js/shared.js</file>
         <file alias="domain.js">res/js/domain.js</file>
         <file alias="help.js">res/js/help.js</file>
         <file alias="messenger.js">res/js/messenger.js</file>
@@ -118,7 +118,7 @@
         <file alias="settings.js">res/js/settings.js</file>
         <file alias="tools.js">res/js/tools.js</file>
         <file alias="publisherpage.js">res/js/publisherpage.js</file>
-        <file alias="publisher.js">res/js/publisher.js</file>
+        <file alias="helppage.js">res/js/helppage.js</file>
         <file alias="help.js">res/js/help.js</file>
         <file alias="apps.js">res/js/apps.js</file>
     </qresource>

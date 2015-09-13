@@ -3,37 +3,34 @@ var CONTENT_TYPE_FEED = 1;
 var CONTENT_TYPE_FOLLOW = 2;
 var CONTENT_TYPE_MINE = 3;
 var CONTENT_TYPE_HOMEPAGE = 4;
+var CONTENT_TYPE_HOT = 5;
 var CONTENT_FILE_TYPE = {image: IMAGE_FILE_TYPE, video: VIDEO_FILE_TYPE, audio: AUDIO_FILE_TYPE};
 var bufferedFile = {};
 var currentFeeRate = {sgstfeer: false, minfeer: 1000.0};
 var COIN = 1000000;
 var K = 1000;
 var tagCount = 0;
+var imageParam = {frblk: null, maxc: 15};
 (function ($) {
     $.fn.hasScrollBar = function () {
+        if (typeof this.get(0) === "undefined")
+            return false;
         return this.get(0).scrollHeight > this.height();
     }
 })(jQuery);
 var CBrowser = new function () {
     var CBrowser = this;
-    this.getShortPId = function (fullId) {
-        return typeof fullId === "undefined" ? "" : fullId.substr(0, 10) + "..." + fullId.substr(fullId.length - 2);
-    };
-    this.getLongPId = function (fullId) {
-        return fullId;
-//        return fullId.substr(0, 25) + "..." + fullId.substr(fullId.length - 2);
-    };
     this.showFullId = function (div, fullId) {
-        div.find("a.text").html(this.getShortPId(fullId));
+        div.find("a.text").html(CUtil.getShortPId(fullId));
         div.find("li").find("a").css('display', 'inline-block');
     };
     this.hideFullId = function (div, fullId) {
-        div.find("a.text").html(this.getShortPId(fullId));
+        div.find("a.text").html(CUtil.getShortPId(fullId));
         div.find("li").find("a").hide();
     };
     this.toggleFullId = function (div) {
         var fullId = div.find("a.text").attr("fullid");
-        if (this.getShortPId(fullId) === div.find("a.text").html())
+        if (CUtil.getShortPId(fullId) === div.find("a.text").html())
             this.hideFullId(div, fullId);
         else
             this.showFullId(div, fullId);
@@ -80,7 +77,6 @@ var CBrowser = new function () {
     };
     this.getTextFrJson = function (ctt) {
         console.log(ctt);
-
         if (ctt.content[0].cc_name !== "CC_FILE_P" || ctt.content[0].cc_name !== "CC_P")
             return false;
         for (var i in ctt.content[0].content) {
@@ -103,7 +99,6 @@ var CBrowser = new function () {
                 return ctt.content[0].content[i].link;
         }
         return "";
-
     };
     this.decodeRawLink = function (rl) {
 
@@ -114,7 +109,6 @@ var CBrowser = new function () {
     this.getLinknameFrLinkctt = function (ctt) {
         if (ctt.content[0].cc_name !== "CC_LINK_P")
             return "";
-
         for (var i in ctt.content[0].content) {
             if (ctt.content[0].content[i].cc_name === "CC_NAME")
                 return base64.decode(ctt.content[0].content[i].content);
@@ -122,18 +116,7 @@ var CBrowser = new function () {
         return "";
     };
     this.createImgHtml = function (cttP) {
-        console.log(cttP);
-        if (typeof cttP.ftype === "undefined")
-            return false;
-        if (!cttP.ftype)
-            return false;
-        if ($.inArray(cttP.ftype, CONTENT_FILE_TYPE.image) < 0)
-            return false;
-        var idiv = $('<img/>', {
-            type: cttP.ftype,
-            src: this.createImgSrc(cttP.ftype, cttP.fdata),
-        });
-        return idiv;
+        return CPage.createImgHtml(cttP.ftype, cttP.fdata);
     };
     this.toggleCmt = function (div) {
         var s = div.find("a.shrt").hasClass("short");
@@ -144,7 +127,6 @@ var CBrowser = new function () {
                 CBrowser.regLink($(this));
             });
             div.find("a.shrt").removeClass("short");
-
         } else {
             div.find("li").find("a").hide();
             div.find("a.shrt").addClass("short");
@@ -168,13 +150,109 @@ var CBrowser = new function () {
 //        console.log(ldiv.html());
         return ldiv.html();
     };
-    this.addContent = function (ctt, fType, fPos) {
+    this.fillSdiv = function (sdiv, ctt, fType) {
+        var id = this.getIdFrContent(ctt);
+        sdiv.find(".id").find(".text").attr("fullid", id);
+        var domain = this.getDomainFrContent(ctt);
+        var id2show = domain ? domain.domain : CUtil.getShortPId(id);
+        id2show = CUtil.isIdDev(id) ? TR("Φ Developers") : id2show;
+        var idtype = domain ? "(" + TR("domain") + ")" : "";
+        sdiv.find(".id").find(".text").html(id2show);
+        sdiv.find(".id").find(".idtype").html(idtype);
+        sdiv.find(".linkspan").attr("clink", ctt.link);
+        var pcc = ctt.content[0].cc_name;
+        if (pcc !== "CC_P" && pcc !== "CC_FILE_P" && pcc !== "CC_TEXT_P" && pcc !== "CC_LINK_P" && pcc !== "CC_TEXT" && pcc !== "CC_LINK" && pcc !== "CC_FILE_PACKAGE_P")
+            return false;
+        console.log(ctt);
+        if (typeof fType !== "undefined") {
+            if (fType === CONTENT_TYPE_HOT) {
+                var d = $("<span />").html(TR("Deposit: ") + fai + ctt.satoshi / COIN).css("margin-left", 20);
+                sdiv.find(".ctt2").append(d);
+            }
+        }
+        var r = CUtil.parseCtt(ctt);
+        if (domain) {
+            sdiv.find(".id").find(".text").attr("domain", domain.domain);
+            if (domain.icon) {
+                var iconCtt = BrowserAPI.getContentByLink(domain.icon);
+                var iconCttP = CUtil.parseCtt(iconCtt);
+                var icon = this.createImgHtml(iconCttP);
+                sdiv.find(".icon").html(icon);
+            }
+        }
+
+        var idiv;
+//        console.log(r);
+        if (r.filepackage) {
+            idiv = $("#image-tpl").clone(true, true);
+            idiv.find(".ctt-rmdr").removeClass("hide").html(TR("Filepackage")).click(function () {
+                BrowserAPI.goToCustomPage(r.selflink);
+            });
+            console.log(r);
+//            return sdiv;
+        } else if (r.fdata) {
+            if ($.inArray(r.ftype, CONTENT_FILE_TYPE.image) >= 0) {
+                idiv = $("#image-tpl").clone(true, true);
+                idiv.find("img").attr("id", CLink.setString(ctt.clink).toHtmlId());
+                idiv.find("img").attr("type", r.ftype);
+                var head = base64.decode(r.fdata).substr(0, 3);
+                if (head.toLowerCase() === "gif") {
+                    idiv.find(".ctt-rmdr").removeClass("hide").attr("fdata", r.fdata).attr("fname", r.fname).html(TR("GIF File")).click(function () {
+                        var fdata = base64.decode($(this).attr("fdata"));
+                        var fname = $(this).attr("fname");
+                        BrowserAPI.writeFile2(fname, fdata);
+                    });
+                } else
+                    idiv.find("img").attr("src", this.createImgSrc(r.ftype, r.fdata));
+            } else if ($.inArray(r.ftype, CONTENT_FILE_TYPE.video) >= 0 || $.inArray(r.ftype, CONTENT_FILE_TYPE.audio) >= 0) {
+                idiv = $("#video-tpl").clone(true, true);
+            } else
+            {
+                idiv = $("#image-tpl").clone(true, true);
+                console.log("rmdr");
+                idiv.find(".ctt-rmdr").removeClass("hide").attr("fdata", r.fdata).attr("fname", r.fname).html(TR("File")).click(function () {
+                    var fdata = base64.decode($(this).attr("fdata"));
+                    var fname = $(this).attr("fname");
+                    BrowserAPI.writeFile2(fname, fdata);
+                });
+            }
+        } else
+            idiv = $("#image-tpl").clone(true, true);
+        if (r.text)
+            idiv.find(".text").html(r.text);
+        if (r.ltype) {
+            if (r.ltype === "BLOCKCHAIN") {
+                var lname = r.lname.length > 0 ? r.lname : r.ldata;
+                idiv.find(".bclink").html(lname).attr("href", r.ldata).attr("title", r.ldata);
+            } else if (r.ltype === "HTTP") {
+                var lname = r.lname.length > 0 ? r.lname : r.ltext;
+                idiv.find(".bclink").html(lname).attr("href", r.ltext).attr("title", r.ltext);
+            }
+        }
+        var bl = CUtil.getBalanceLevel(ctt.satoshi / COIN);
+        if (typeof ctt.fShowValue !== "undefined") {
+            if (ctt.fShowValue)
+                sdiv.find(".ctt").append(CPage.getBalanceHtml(bl, ctt.satoshi / COIN));
+            else
+                sdiv.find(".ctt").append(CPage.getBalanceHtml(bl));
+        } else
+            sdiv.find(".ctt").append(CPage.getBalanceHtml(bl));
+        sdiv.find(".ctt").append(idiv.children());
+        return sdiv;
+    };
+    this.addContent = function (ctt, fType, fPos, fShowProd) {
 //        console.log(ctt);
         fPos = typeof fPos !== 'undefined' ? fPos : true;
         fType = typeof fType !== 'undefined' ? fType : CONTENT_TYPE_FEED;
+        fShowProd = typeof fShowProd !== 'undefined' ? fShowProd : true;
+        if (fShowProd) {
+            if (CUtil.isProd(ctt)) {
+                var prod = CUtil.parseProd(ctt);
+                this.addProduct(prod);
+            }
+        }
         if (!ctt)
             return false;
-
 //        console.log(ctt.content);
         if (ctt.content.length === 0)
             return false;
@@ -188,6 +266,7 @@ var CBrowser = new function () {
         switch (fType) {
             case CONTENT_TYPE_FEED:
                 sdiv.find(".id-unfollow-btn").parent().remove();
+                sdiv.find()
                 break;
             case CONTENT_TYPE_FOLLOW:
                 sdiv.find(".id-follow-btn").parent().remove();
@@ -200,12 +279,18 @@ var CBrowser = new function () {
             case CONTENT_TYPE_HOMEPAGE:
                 sdiv.find(".id-homepage-btn").parent().remove();
                 break;
+            case CONTENT_TYPE_HOT:
+                sdiv.find(".id-unfollow-btn").parent().remove();
+                var t = new Date(ctt.time * 1000);
+                sdiv.find(".ctt2").append(TR("Posted: ") + CUtil.dateToShortString(t));
+                break;
             case CONTENT_TYPE_DEFAULT:
             default:
                 break;
         }
         sdiv.removeAttr("id");
-        sdiv = this.fillSdiv(sdiv, ctt);
+        ctt.fShowValue = false;
+        sdiv = this.fillSdiv(sdiv, ctt, fType);
         if (sdiv === false)
             return false;
         fPos ? $("#mainframe").prepend(sdiv.children()) : $("#mainframe").append(sdiv.children());
@@ -225,21 +310,20 @@ var CBrowser = new function () {
         }
         var id2show = domain.domain;
         var idtype = domain ? "(domain)" : "";
-
         ddiv.find(".id").find(".text").html(id2show).attr("domain", domain.domain);
         ddiv.find(".id").find(".idtype").html(idtype);
         ddiv.find(".alias").html(domain.alias);
         ddiv.find(".domain").html(domain.domain);
         var vt = new Date(domain.expireTime * 1000);
-        ddiv.find(".expt").html(dateToShortString(vt));
+        ddiv.find(".expt").html(CUtil.dateToShortString(vt));
         ddiv.find(".owner").html(domain.owner);
-        var bl = this.getBalanceLevel(Number(domain.lockvalue / COIN));
+        var bl = CUtil.getBalanceLevel(Number(domain.lockvalue / COIN));
         console.log(bl);
-        ddiv.find(".lckvl").html(this.getBalanceHtml(bl, Number(domain.lockvalue / COIN)).html());
+        ddiv.find(".lckvl").html(CPage.getBalanceHtml(bl, Number(domain.lockvalue / COIN)).html());
         ddiv.find(".fwd-tgt").html(domain.forward.target);
         if (domain.icon) {
             var iconCtt = BrowserAPI.getContentByLink(domain.icon);
-            var iconCttP = this.parseCtt(iconCtt);
+            var iconCttP = CUtil.parseCtt(iconCtt);
             var icon = this.createImgHtml(iconCttP);
             console.log(icon);
             ddiv.find(".icon").html(icon);
@@ -249,60 +333,8 @@ var CBrowser = new function () {
     };
     this.addProduct = function (prod, fPos) {
         fPos = typeof fPos !== 'undefined' ? fPos : false;
-        var ddiv = $("#prod-tpl").clone(true, true).removeAttr("id").removeClass("hide");
-        var pdiv = $("#poster-tpl").clone(true, true).removeAttr("id");
-        var cdiv = $("#cmt-tpl").clone(true, true).removeAttr("id");
-        var bdiv = $("#buy-btn-tpl").clone(true, true).removeAttr("id");
-        cdiv.find(".cmt").append(bdiv.children());
-        ddiv.find(".container").prepend(pdiv.children());
-        ddiv.find(".container").find(".brctt").append(cdiv.children());
-        ddiv.find(".linkspan").attr("clink", prod.link);
-        console.log(prod);
-        var domain = BrowserAPI.getDomainByForward(prod.seller.id);
-        var id2show = $.isEmptyObject(domain) ? this.getShortPId(prod.seller.id) : domain.domain;
-        var idtype = $.isEmptyObject(domain) ? "" : "(domain)";
-        console.log(id2show);
-        ddiv.find(".id").find(".text").html(id2show);
-        ddiv.find(".id").find(".text").attr("fullid", prod.seller.id);
-        if (!$.isEmptyObject(domain))
-            ddiv.find(".id").find(".text").attr("domain", domain.domain);
-        ddiv.find(".id").find(".idtype").html(idtype);
-//        var bl = this.getBalanceLevel(ctt.satoshi / COIN);
-//        sdiv.find(".ctt").append(this.getBalanceHtml(bl, ctt.satoshi / COIN));
-        ddiv.find(".prdname").html(prod.name);
-        ddiv.find(".prc").html(fai + prod.price);
-        var vt = new Date(prod.expiretime * 1000);
-        ddiv.find(".expt").html(dateToShortString(vt));
-        ddiv.find(".intro").html(CUtil.escapeHtml(prod.intro));
-        if (typeof prod.icon !== "undefined") {
-            console.log(prod.icon);
-            var ctt = BrowserAPI.getContentByLink(prod.icon);
-            var cttP = this.parseCtt(ctt);
-            var idiv;
-            if (cttP.fdata) {
-                if ($.inArray(cttP.ftype, CONTENT_FILE_TYPE.image) >= 0) {
-                    idiv = $("#image-tpl").clone(true, true);
-                    idiv.find("img").attr("id", CLink.setString(ctt.clink).toHtmlId());
-                    idiv.find("img").attr("type", cttP.ftype);
-                    idiv.find("img").attr("src", this.createImgSrc(cttP.ftype, cttP.fdata));
-                }
-                else if ($.inArray(cttP.ftype, CONTENT_FILE_TYPE.video) >= 0 || $.inArray(cttP.ftype, CONTENT_FILE_TYPE.audio) >= 0) {
-                    idiv = $("#video-tpl").clone(true, true);
-                } else
-                {
-                    idiv = $("#image-tpl").clone(true, true);
-                    idiv.find(".ctt-rmdr").removeClass("hide");
-                }
-                ddiv.find(".ctt").html("").append(idiv.children());
-            }
-        }
-        if (prod.tags.length > 0) {
-            ddiv.find(".ctt").append($('<div />').addClass("clear").addClass("fullwidth").css("height", 10));
-            for (var i in prod.tags) {
-                var tdiv = $("<span />").addClass("ctt-rmdr").html(prod.tags[i]);
-                ddiv.find(".ctt").append(tdiv);
-            }
-        }
+        var ddiv = CPage.prepareProdDiv();
+        ddiv = CPage.fillProdDiv(ddiv, prod);
         fPos ? $("#mainframe").prepend(ddiv.children()) : $("#mainframe").append(ddiv.children());
         return true;
     };
@@ -326,82 +358,24 @@ var CBrowser = new function () {
         var id = this.getIdFrContent(ctt);
         sdiv.find(".id").find(".text").attr("fullid", id);
         var domain = this.getDomainFrContent(ctt);
-        var id2show = domain ? domain.domain : this.getShortPId(id);
+        var id2show = domain ? domain.domain : CUtil.getShortPId(id);
         sdiv.find(".id").find(".text").html(id2show);
         sdiv.find(".linkspan").attr("clink", ctt.link);
         return this.fillSdiv(sdiv, ctt);
-
-    };
-    this.fillSdiv = function (sdiv, ctt) {
-        var id = this.getIdFrContent(ctt);
-        sdiv.find(".id").find(".text").attr("fullid", id);
-        var domain = this.getDomainFrContent(ctt);
-        var id2show = domain ? domain.domain : this.getShortPId(id);
-        var idtype = domain ? "(" + TR("domain") + ")" : "";
-
-        sdiv.find(".id").find(".text").html(id2show);
-        sdiv.find(".id").find(".idtype").html(idtype);
-        sdiv.find(".linkspan").attr("clink", ctt.link);
-        var pcc = ctt.content[0].cc_name;
-        if (pcc !== "CC_P" && pcc !== "CC_FILE_P" && pcc !== "CC_TEXT_P" && pcc !== "CC_LINK_P" && pcc !== "CC_TEXT" && pcc !== "CC_LINK")
-            return false;
-        var r = this.parseCtt(ctt);
-        if (domain) {
-            sdiv.find(".id").find(".text").attr("domain", domain.domain);
-            if (domain.icon) {
-                var iconCtt = BrowserAPI.getContentByLink(domain.icon);
-                var iconCttP = this.parseCtt(iconCtt);
-                var icon = this.createImgHtml(iconCttP);
-                sdiv.find(".icon").html(icon);
-            }
-        }
-        var idiv;
-        if (r.fdata) {
-            if ($.inArray(r.ftype, CONTENT_FILE_TYPE.image) >= 0) {
-                idiv = $("#image-tpl").clone(true, true);
-                idiv.find("img").attr("id", CLink.setString(ctt.clink).toHtmlId());
-                idiv.find("img").attr("type", r.ftype);
-                idiv.find("img").attr("src", this.createImgSrc(r.ftype, r.fdata));
-            }
-            else if ($.inArray(r.ftype, CONTENT_FILE_TYPE.video) >= 0 || $.inArray(r.ftype, CONTENT_FILE_TYPE.audio) >= 0) {
-                idiv = $("#video-tpl").clone(true, true);
-            } else
-            {
-                idiv = $("#image-tpl").clone(true, true);
-                console.log("rmdr");
-                idiv.find(".ctt-rmdr").removeClass("hide").attr("fdata", r.fdata).attr("fname", r.fname).click(function () {
-                    var fdata = base64.decode($(this).attr("fdata"));
-                    var fname = $(this).attr("fname");
-                    BrowserAPI.writeFile2(fname, fdata);
-                });
-
-            }
-        } else
-            idiv = $("#image-tpl").clone(true, true);
-        if (r.text)
-            idiv.find(".text").html(r.text);
-        if (r.ltype) {
-            if (r.ltype === "BLOCKCHAIN") {
-                var lname = r.lname.length > 0 ? r.lname : r.ldata;
-                idiv.find(".bclink").html(lname).attr("href", r.ldata).attr("title", r.ldata);
-            } else if (r.ltype === "HTTP") {
-                var lname = r.lname.length > 0 ? r.lname : r.ltext;
-                idiv.find(".bclink").html(lname).attr("href", r.ltext).attr("title", r.ltext);
-            }
-        }
-        var bl = this.getBalanceLevel(ctt.satoshi / COIN);
-        sdiv.find(".ctt").append(this.getBalanceHtml(bl, ctt.satoshi / COIN));
-        sdiv.find(".ctt").append(idiv.children());
-        return sdiv;
     };
     this.cttText = function (t) {
         var div = $("#textSpan").find(".text").html(t);
         return div;
     };
+    this.clearContent = function () {
+        $("#mainframe").children(".container").remove();
+        $("#mainframe").children("hr").remove();
+    };
     this.refreshNew = function () {
         var ctts = this.getContents(true, "new");
 //        console.log(ctts);
-
+        this.clearContent();
+        $(".column2").scrollTop(); // this line fixes scroll bar stay bottom issue
         for (var k in ctts) {
             this.addContent(ctts[k], CONTENT_TYPE_FEED, false);
         }
@@ -410,28 +384,28 @@ var CBrowser = new function () {
         fKeyword = typeof fKeyword === "undefined" ? true : fKeyword;
         var params = {};
         var tags = $('#input-search').val();
-        if (tags.length > 0 && fKeyword)
-            tags = tags.split(",");
-        else
-            tags = [];
+        tags = (tags.length > 0 && fKeyword) ? tags.split(",") : [];
         params.tags = tags;
         params.cformat = 6;
         //params.ccs=["CC_TEXT"];
         var stype = $("#search input[name='srch-type']:checked").val();
         console.log(stype);
-        $("#mainframe").children(".container").remove();
-        $("#mainframe").children("hr").remove();
-
+        this.clearContent();
         if (stype === "ctt") {
             var ctts = BrowserAPI.getPromotedContents(params);
-            console.log(ctts);
+//            console.log(ctts);
+            $(".column2")[0].scrollHeight; // this line fixes scroll bar stay bottom issue
             for (var k in ctts)
-                this.addContent(ctts[k], CONTENT_TYPE_FEED, false);
+                this.addContent(ctts[k], CONTENT_TYPE_HOT, false);
+            if (typeof ctts.length === "undefined")
+                CPage.showNotice(TR("No result, please change the key word"));
         }
         else if (stype === "dmn") {
             var domains = BrowserAPI.getDomainsByTags(tags);
             for (var k in domains)
                 this.addDomain(domains[k]);
+            if (domains.length <= 0)
+                CPage.showNotice(TR("No result, please change the key word"));
         } else if (stype === "prd") {
             var params = {};
             params.tags = tags;
@@ -439,6 +413,8 @@ var CBrowser = new function () {
             console.log(prods);
             for (var k in prods)
                 this.addProduct(prods[k]);
+            if (!prods)
+                CPage.showNotice(TR("No result, please change the key word"));
         }
     }
     this.refreshOld = function () {
@@ -452,7 +428,7 @@ var CBrowser = new function () {
     this.refreshNewFollowed = function () {
         var flist = this.getFollowed();
         if (flist.length == 0) {
-            this.showNotice(TR('You need to follow someone first'));
+            CPage.showNotice(TR('You need to follow someone first'));
             return;
         }
         this.refreshFollowList(flist);
@@ -464,7 +440,7 @@ var CBrowser = new function () {
     this.refreshNewMypage = function () {
         var myid = [BrowserAPI.getAccountID()];
         if (myid.length == 0) {
-            this.showNotice(TR('You need to register ID first'));
+            CPage.showNotice(TR('You need to register ID first'));
             return;
         }
         var ctts = this.getNewContents("myp", myid);
@@ -509,7 +485,7 @@ var CBrowser = new function () {
             var iconLinkStr = typeof dm.icon === "undefined" ? "" : (dm.icon.length > 0 ? dm.icon : "");
             if (iconLinkStr.length > 0) {
                 var iconCtt = BrowserAPI.getContentByLink(iconLinkStr);
-                var cttP = this.parseCtt(iconCtt);
+                var cttP = CUtil.parseCtt(iconCtt);
                 icon = this.createImgHtml(cttP);
             }
             var name = typeof dm.alias === "undefined" ? dm.domain : (dm.alias.length > 0 ? dm.alias + " (" + dm.domain + ")" : dm.domain);
@@ -521,11 +497,12 @@ var CBrowser = new function () {
         hpheader.find("#navi-name").find(".navi-name").html(name).attr("fullid", id).attr("domain", dm.domain);
         hpheader.find(".navi-intro").html(intro);
         var balance = BrowserAPI.getBalance(id).balance;
-        var bl = CBrowser.getBalanceLevel(balance);
-        hpheader.find("#blclvl").html(CBrowser.getBalanceHtml(bl));
+        var bl = CUtil.getBalanceLevel(balance);
+        hpheader.find("#blclvl").html(CPage.getBalanceHtml(bl));
         return hpheader;
-    }
+    };
     this.goToHomepage = function (id) {
+        currentPage = "homepage";
         $("#shdr").remove();
         $("#navi-bar").remove();
         var hpheader = $("#hpheader-tpl").clone(true, true);
@@ -549,15 +526,19 @@ var CBrowser = new function () {
         $("#navi-bar").remove();
         $("#mainframe").html("");
         var ctt = BrowserAPI.getContentByLink(linkstr);
-        if (!this.addContent(ctt))
-            for (var i = 0; i <= 7; i++)
-                $("#mainframe").append("<a href='" + linkstr + "&format=" + i + "'>Format " + i + "</a><br />");
+        this.addContent(ctt);
+        for (var i = 0; i <= 7; i++)
+            $("#mainframe").append("<a href='" + linkstr + "&format=" + i + "&showdebug=true'>Format " + i + "</a><br />");
         var ctt2 = BrowserAPI.getContentByLink(linkstr, format);
         console.log(linkstr);
 //        var url = "fai:browser/?link=" + linkstr;
 
         var ldiv = $("#linkpage-tpl").clone(true, true).attr("id", "linkpage").removeClass("hide");
         ldiv.find("pre").html(JSON.stringify(ctt2, null, 2));
+        if (CUtil.getGet("showdebug")) {
+            ldiv.find("input[type='checkbox']").attr("checked", true);
+            ldiv.find("#ctt-json").removeClass("hide");
+        }
         ldiv.find("input[type='checkbox']").click(function () {
 
             if ($(this).is(":checked"))
@@ -566,7 +547,6 @@ var CBrowser = new function () {
                 $(this).parent().find("#ctt-json").addClass("hide");
         })
         $("#mainframe").append(ldiv);
-
     };
 //    this.regFileDownload = function () {
 //        console.log("565");
@@ -587,7 +567,7 @@ var CBrowser = new function () {
         toAddrs = typeof toAddrs !== 'undefined' ? toAddrs : [];
         fNewOld = typeof fNewOld !== 'undefined' ? fNewOld : true;
         page = typeof page !== 'undefined' ? page : "new";
-        var rc = 2;
+        var rc = 10;
         var flink; // from link
         var dParam = {nFile: -1, nPos: -1, nRange: -1, ftxCount: -1, isEnd: false};
         var ctts = [];
@@ -597,7 +577,7 @@ var CBrowser = new function () {
 //        console.log(fNewOld + " " + sbh);
                 var clink = flink;
                 console.log(flink);
-                var blkPR = 10;  // todo change to about 10
+                var blkPR = 10; // todo change to about 10
                 var i = 0;
                 while (ctts.length < rc && CLink.set(clink).nHeight > 0) {
                     var tmp = BrowserAPI.getContents(clink, blkPR, false, frAddrs, toAddrs);
@@ -636,6 +616,7 @@ var CBrowser = new function () {
                 var param = typeof gParam[page] === "undefined" ? dParam : gParam[page];
                 if (param.isEnd)
                     break;
+                console.log(param);
                 while (ctts.length < rc) {
                     var tmp = BrowserAPI.getContentsByAddresses(param.nFile, param.nPos, param.nRange, param.ftxCount, frAddrs, toAddrs, false);
                     console.log("call count out " + tmp.contents.length);
@@ -660,7 +641,6 @@ var CBrowser = new function () {
                             param.ftxCount = -1;
                         else
                             param.isEnd = true;
-
                         if (param.nFile === 0)
                             break;
                         else
@@ -682,11 +662,9 @@ var CBrowser = new function () {
 
 
 
-//        console.log(ctts);
+        console.log(ctts);
         return ctts;
-
     };
-
     this.switchTab = function (tabid) {
         if ($("#" + tabid).parent().hasClass("active"))
             return;
@@ -698,7 +676,7 @@ var CBrowser = new function () {
         $("#mainframe").children("hr").remove();
 //        this.showTopLoader();
 //        setTimeout(function () {
-        gParam = {};
+        CUtil.initGParam();
         CBrowser.switchTabCore(tabid);
 //            this.hideTopLoader();
 //        }, tabid);
@@ -710,7 +688,6 @@ var CBrowser = new function () {
         console.log(tabid);
         this.clearFollowList();
         switch (tabid) {
-            case "br-home-btn":
             case "br-new-btn":
                 this.newAction();
                 break;
@@ -740,11 +717,9 @@ var CBrowser = new function () {
                 break;
         }
         this.regBottomAction();
-
     };
     this.newAction = function () {
         newDisp = [];
-        console.log($("#slider").length);
         if ($("#slider").length == 0)
             CBrowser.refreshImages(true);
         this.refreshNew();
@@ -776,17 +751,9 @@ var CBrowser = new function () {
         $("#slider").remove();
         this.refreshNewDevpage();
     };
-    this.showNotice = function (n, s) {
-        s = typeof s !== 'undefined' ? s : 5;
-        $("#notices").html(n).show();
-        $("#notices").delay(s * 1000).hide(0);
-    };
     this.bottomAction = function () {
         var tabid = this.getCurrentTab();
         switch (tabid) {
-            case "br-home-btn":
-                this.refreshOld();
-                break;
             case "br-new-btn":
                 this.refreshOld();
                 break;
@@ -820,60 +787,86 @@ var CBrowser = new function () {
         return $("#navi-bar").find(".tabbar").find(".active").find("a").attr("id");
     };
     this.refreshImages = function (fFrBuffer, cbh) {
-
         console.log("refreshImages");
         this.addSlider();
         var app = "browser";
         var path = "buffer";
         var filename = "sliderBuffer.json";
-        var sCount = $('#slider ul li').length;
+//        var sCount = $('#slider ul li').length;
         fFrBuffer = typeof fFrBuffer === "undefined" ? false : fFrBuffer;
         var imgs;
-        if (fFrBuffer) {
-            var json = BrowserAPI.readFile(app, path, filename);
-            if (!json)
-                imgs = CBrowser.getNewImages();
-            else {
+        console.log(imageParam);
+//        if (fFrBuffer) {
+        var json = BrowserAPI.readFile(app, path, filename);
+        if (!json)
+            imgs = CBrowser.getNewImages(imageParam.maxc);
+        else {
 //                console.log(json.length);
-                var tmp = JSON.parse(json);
-                imgs = tmp.imgs;
-                if (imgs.length <= 0)
-                    imgs = CBrowser.getNewImages();
-            }
-        } else {
-            cbh = typeof cbh === "undefined" ? Number(BrowserAPI.getBlockCount()) : cbh;
-            var pbh = Number($('#cblc').html());
-            if (pbh === cbh && sCount >= 5)
-                return;
-//            console.log(pbh + "   " + cbh);
-            imgs = CBrowser.getNewImages();
-
+            var tmp = JSON.parse(json);
+            imgs = tmp.imgs;
+            if (imgs.length <= 0)
+                imgs = CBrowser.getNewImages();
         }
+//        } else {
+        if (!fFrBuffer) {
+            cbh = typeof cbh === "undefined" ? Number(BrowserAPI.getBlockCount()) : cbh;
+            if (imageParam.frblk) {
+                if (imageParam.frblk === cbh)
+                    return;
+            }
+//            var pbh = Number($('#cblc').html());
+//            if (pbh === cbh && sCount >= 5)
+//                return;
+//            console.log(pbh + "   " + cbh);
+            var maxb = imageParam.frblk ? cbh - imageParam.frblk : 100;
+            var newimgs = CBrowser.getNewImages(imageParam.maxc, maxb);
+            if (newimgs) {
+                if (newimgs.length === imageParam.maxc)
+                    imgs = newimgs;
+                else {
+                    var tmp = imgs;
+                    imgs = newimgs;
+                    for (var i in tmp) {
+                        if (imgs.length >= imageParam.maxc)
+                            break;
+                        imgs.push(tmp[i]);
+                    }
+                }
+            }
+            imageParam.frblk = cbh;
+        }
+//        console.log(imgs);
+        if (!imgs)
+            return;
         if (imgs.length > 0) {
 //            console.log(imgs);
             CBrowser.addSlideImage(imgs);
-            var tmp = {imgs: imgs};
+            var tmp = {imgs: imgs, frblk: cbh};
             var jtmp = JSON.stringify(tmp);
-            var tmp2 = JSON.parse(jtmp);
+//            var tmp2 = JSON.parse(jtmp);
             BrowserAPI.writeFile(app, path, filename, jtmp);
             this.prepareSlider();
         }
         $("a").click(function () {
             CBrowser.regLink($(this));
         });
+        console.log("refreshImg end");
     };
-    this.getNewImages = function () {
-        var ctts = BrowserAPI.getImages(parseInt(BrowserAPI.getBlockCount()), 100, false, 10); // todo change to about 10
+    this.getNewImages = function (maxc, maxb) {
+        maxc = typeof maxc === "undefined" ? 100 : maxc;
+        maxb = typeof maxb === "undefined" ? 100 : maxb;
+        var ctts = BrowserAPI.getImages(parseInt(BrowserAPI.getBlockCount()), maxb, false, maxc);
         var r = [];
         for (var i in ctts) {
-            var cttParsed = this.parseCtt(ctts[i]);
+            var cttParsed = CUtil.parseCtt(ctts[i]);
             if (typeof cttParsed.ftype === "undefined")
                 continue;
             if ($.inArray(cttParsed.ftype, CONTENT_FILE_TYPE.image) < 0)
                 continue;
-            r.push(cttParsed);
+            var head = base64.decode(cttParsed.fdata).substr(0, 3);
+            if (head.toLowerCase() !== "gif")
+                r.push(cttParsed);
         }
-        console.log(r.length);
         return r;
     };
     this.createSliderImage = function (cttParsed) {
@@ -886,7 +879,6 @@ var CBrowser = new function () {
         idiv.find("img").attr("id", CLink.setString(cttParsed.selflink).toHtmlId());
         idiv.find("img").attr("type", cttParsed.ftype);
         idiv.find("img").attr("src", this.createImgSrc(cttParsed.ftype, cttParsed.fdata));
-
         if (cttParsed.ltype) {
             if (cttParsed.ltype === "BLOCKCHAIN") {
                 var lname = cttParsed.lname.length > 0 ? cttParsed.lname : cttParsed.ldata;
@@ -903,88 +895,6 @@ var CBrowser = new function () {
         $("#slider ul").html("");
         for (var i in imgs)
             $("#slider ul").append(this.createSliderImage(imgs[i]));
-    };
-    this.notifyBlock = function (b) {
-        $('#cblc').html(b.blockHeight);
-        if (currentTab === "br-hot-btn")
-            $('#getnew-btn').addClass("hide");
-        $('#getnew-btn').removeClass("hide");
-//        this.refreshImages(b.blockHeight);
-//        var imgs = CBrowser.getNewImages();  // need improvement
-//        CBrowser.addSlideImage(imgs);
-    };
-    this.parseCtt = function (ctt) {
-        var r = {};
-        r.text = null;
-        r.fdata = null;
-        r.ldata = null;
-        r.ltext = null;
-        r.ltype = null;
-        r.selflink = typeof ctt.link === "undefined" ? null : ctt.link;
-
-        if (typeof ctt.cc_name === "undefined") {
-            var pcc = ctt.content[0].cc_name;
-            var c = ctt.content[0];
-        } else {
-            var pcc = ctt.cc_name;
-            var c = ctt;
-        }
-        if (pcc === "CC_TEXT") {
-            r.text = CUtil.escapeHtml(base64.decode(c.content));
-        } else if (pcc === "CC_LINK") {
-            r.ldata = c.link;
-            r.ltext = CUtil.escapeHtml(base64.decode(c.content));
-        } else if (icc === "CC_LINK_TYPE_BLOCKCHAIN") {
-            r.ltype = "BLOCKCHAIN";
-        } else if (icc === "CC_NAME") {
-            r.name = base64.decode(cCtt);
-        } else if (icc === "CC_FILE_TYPESTRING") {
-            r.ftype = base64.decode(cCtt);
-        } else if (icc === "CC_FILE") {
-            r.fdata = cCtt;
-        } else if (pcc === "CC_P" || pcc === "CC_FILE_P" || pcc === "CC_TEXT_P" || pcc === "CC_LINK_P") {
-            for (var i in c.content) {
-                var icc = c.content[i].cc_name;
-                var cCtt = c.content[i].content;
-                if (icc === "CC_FILE_P" || icc === "CC_TEXT_P" || icc === "CC_LINK_P") {
-                    var tmp = this.parseCtt(c.content[i]);
-                    if (icc === "CC_FILE_P") {
-                        r.fname = tmp.name;
-                        r.fdata = tmp.fdata;
-                        r.ftype = tmp.ftype;
-                    } else if (icc === "CC_TEXT_P") {
-                        r.text = tmp.text;
-                    } else if (icc === "CC_LINK_P") {
-                        r.lname = tmp.name;
-                        r.ldata = tmp.ldata;
-                        r.ltype = tmp.ltype;
-                        r.ltext = tmp.ltext;
-                    }
-                } else if (icc === "CC_TEXT") {
-                    r.text = CUtil.escapeHtml(base64.decode(cCtt));
-                } else if (icc === "CC_LINK") {
-                    r.ldata = c.content[i].link;
-                    r.ltext = CUtil.escapeHtml(base64.decode(cCtt));
-                } else if (icc === "CC_LINK_TYPE_BLOCKCHAIN") {
-                    r.ltype = "BLOCKCHAIN";
-                } else if (icc === "CC_LINK_TYPE_HTTP") {
-                    r.ltype = "HTTP";
-                } else if (icc === "CC_NAME") {
-                    r.name = base64.decode(cCtt);
-                    if (pcc === "CC_LINK_P")
-                        r.lname = r.name;
-                    else if (pcc === "CC_FILE_P")
-                        r.fname = r.name;
-                } else if (icc === "CC_FILE_TYPESTRING") {
-                    r.ftype = base64.decode(cCtt);
-                } else if (icc === "CC_FILE") {
-                    r.fdata = cCtt;
-                }
-            }
-        }
-        if (!r.lname)
-            r.lname = r.ldata;
-        return r;
     };
     this.setFollow = function (str2fl, type) {
         type = (typeof type === "undefined") ? "id" : type;
@@ -1054,7 +964,6 @@ var CBrowser = new function () {
             var fkey = "followed-" + type;
             var followedstr = BrowserAPI.getConf("browser", myid, "", fkey);
             r = JSON.parse(followedstr);
-
         } else if (type === "domain") {
             var fkey = "followed-" + type;
             var domains = JSON.parse(BrowserAPI.getConf("browser", myid, "", fkey));
@@ -1072,7 +981,6 @@ var CBrowser = new function () {
         r = CUtil.cleanNullElem(r);
         return r;
     };
-
     this.showTopLoader = function () {
         $(".loader.top").removeClass("hide");
     };
@@ -1088,15 +996,15 @@ var CBrowser = new function () {
     this.sliderId = [];
     this.prepareSlider = function () {
         // slider code from http://codepen.io/zuraizm/pen/vGDHl
-        for (var id in this.sliderId) {
-            clearInterval(this.sliderId[id]);
+        for (var id in CBrowser.sliderId) {
+            clearInterval(CBrowser.sliderId[id]);
         }
-        this.sliderId = [];
-        var sliderInterval = 3000;
+        CBrowser.sliderId = [];
+        var sliderInterval = 5000;
         var sliderAuto = setInterval(function () {
             moveRight();
         }, sliderInterval);
-        this.sliderId.push(sliderAuto);
+        CBrowser.sliderId.push(sliderAuto);
         var slideCount = $('#slider ul li').length;
         var slideWidth = $('#slider ul li').width();
         var slideHeight = $('#slider ul li').height();
@@ -1104,9 +1012,11 @@ var CBrowser = new function () {
         $('#slider').css({width: slideWidth, height: slideHeight});
         $('#slider ul').css({width: sliderUlWidth, marginLeft: -slideWidth});
         $('#slider ul li:last-child').prependTo('#slider ul');
-        $('#slider').mouseover(function () {
+        $('#slider').unbind().mouseover(function () {
             clearInterval(sliderAuto);
         }).mouseleave(function () {
+            for (var id in CBrowser.sliderId)
+                clearInterval(CBrowser.sliderId[id]);
             sliderAuto = setInterval(function () {
                 moveRight();
             }, sliderInterval);
@@ -1136,66 +1046,18 @@ var CBrowser = new function () {
         });
     };
     this.getPageName = function () {
+        if (CUtil.getGet("share"))
+            return "share";
+        if (CUtil.getGet("cmt"))
+            return "cmt";
         var id = CUtil.getGet("id");
         var link = CUtil.getGet("link");
-//        console.log(id);
-//        console.log(link);
         if (id !== null)
             return "homepage";
         else if (link !== null)
             return "link";
         else
             return "browser";
-    };
-    this.getBalanceLevel = function (balance) {
-        var l = 0;
-        var b;
-        console.log(balance);
-        if (typeof balance === "number")
-            b = balance;
-        else {
-            if (typeof balance.balance_total === "undefined")
-                return l;
-            else
-                b = balance.balance_total;
-        }
-        b += 0.1; // correct the error for large number division
-        l = Math.floor(((Math.log(b) / Math.log(10)) * 2 + 1));
-        return l;
-    };
-    this.getBalanceHtml = function (bl, number) {
-        number = typeof number === "undefined" ? false : number;
-        if (bl == 0)
-            return "";
-        var ml = Math.min(Math.floor((bl - 1) / 4), 4);
-        var sl = bl - ml * 4;
-        var p = $("<div></div>");
-        var div = $("<div></div>");
-        div.addClass("icon20");
-        switch (ml) {
-            case 0:
-                div.addClass("silvercoin");
-                break;
-            case 1:
-                div.addClass("goldcoin");
-                break;
-            case 2:
-                div.addClass("goldbar");
-                break;
-            case 3:
-                div.addClass("diamond");
-                break;
-            case 4:
-                div.addClass("crown");
-                break;
-            default:
-                return "";
-        }
-        for (var i = 0; i < sl; i++)
-            p.append(div.clone(true, true));
-        if (number)
-            p.append($("<span />").html(TR("Deposit: ") + fai + number).css("margin", 20).addClass("grey_a"));
-        return p;
     };
     this.viewLink = function (link) {
         var url = "fai:browser/?link=" + link;
@@ -1217,26 +1079,11 @@ var CBrowser = new function () {
                 if ($(".column2").hasScrollBar())
                     $(this).addClass("hide");
             });
-        }
-
-    };
-    this.prepareNotice = function (page) {
-        var nDiv = $("#main-notices-container-tpl").clone(true, true);
-        nDiv.attr("id", "main-notices-container").removeClass("hide");
-//        console.log(nDiv);
-        switch (page) {
-            case "homepage":
-            case "link":
-                $(".column2").prepend(nDiv);
-                break;
-            case "browser":
-            default:
-                $("#shdr").prepend(nDiv);
-                break;
-        }
+        } else
+            $("#getold-btn").addClass("hide");
     };
     this.refreshFollowList = function (flist) {
-        $("#list").html("");
+        $("#list").html($("<div />").html(TR("Follow List")).addClass("flheader"));
         for (var i in flist) {
             var url = "fai:browser/?id=" + flist[i];
             var f = $("<a />").html(flist[i]).attr("href", url).click(function () {
@@ -1249,7 +1096,6 @@ var CBrowser = new function () {
         $("#list").html("");
     }
 };
-
 var CPublisher = new function () {
     var CPublisher = this;
     this.getLink = function () {
@@ -1264,28 +1110,55 @@ var CPublisher = new function () {
         });
         return r;
     };
-    this.handleFiles = function (files, type) {
-        for (var i = 0, f; f = files[i]; i++) {
-            this.handleFile(f, type);
+    this.ctts = [];
+    this.handleBatchFiles = function (files, type) {
+        CPublisher.ctts = [];
+        for (var i in files) {
+            var f = files[i];
+            var l = i == files.length - 1;
+            if (f.name) {
+                var r = new FileReader();
+                r.readAsDataURL(f);
+                r.onload = (function (f, l) {
+                    return function (e) {
+                        var raw = e.target.result;
+                        var nf = CUtil.decodeDataUrl(raw);
+                        nf.name = f.name;
+                        var cttH = BrowserAPI.createFileContent(nf);
+                        CPublisher.ctts.push(cttH);
+                        if (l) {
+                            var feer = BrowserAPI.getFeeRate(0.15);
+                            var r = BrowserAPI.createTxByContents(CPublisher.ctts, feer);
+                            console.log(r);
+                            CPage.showNotice(TR(r));
+                        }
+                    };
+                })(f, l);
+            }
         }
+
     };
+    this.handleFiles = function (files, type) {
+        for (var i = 0, f; f = files[i]; i++)
+            this.handleFile(f, type);
+    }
     this.handleFile = function (f, type) {
         type = typeof type === "undefined" ? "simple" : type;
         console.log(type);
         var largeFileLimit = 1000000000;
         var perblockLimit = 1000000;
         if (f.size > perblockLimit && type !== "large") {
-            CBrowser.showNotice(TR('The maximum file size is 1MB'));
+            CPage.showNotice(TR('The maximum file size is 1MB'));
             return;
         } else if (f.size > largeFileLimit && type === "large") {
-            CBrowser.showNotice(TR('The maximum file size is 1GB'));
+            CPage.showNotice(TR('The maximum file size is 1GB'));
             return;
         }
-        var fDirect = type === "batch" ? true : false;
         if (f.name && f.size <= perblockLimit) {
             var r = new FileReader();
             r.readAsDataURL(f);
-            r.onload = (function (f, fDirect) {
+            console.log(f);
+            r.onload = (function (f) {
                 return function (e) {
                     var raw = e.target.result;
                     var nf = CUtil.decodeDataUrl(raw);
@@ -1294,12 +1167,6 @@ var CPublisher = new function () {
                         return;
                     nf.name = f.name;
                     var cttH = BrowserAPI.createFileContent(nf);
-                    if (fDirect) {
-                        var feer = BrowserAPI.getFeeRate(0.15);
-                        var r = BrowserAPI.createTxByContent(cttH, feer);
-                        console.log(r);
-                        return;
-                    }
                     var ctt = BrowserAPI.getContentByString(cttH.hex);
                     ctt.poster = {id: BrowserAPI.getAccountID()};
                     ctt.hex = cttH.hex;
@@ -1313,7 +1180,7 @@ var CPublisher = new function () {
                     CPublisher.showDetails();
                     CPublisher.refreshFee();
                 };
-            })(f, fDirect);
+            })(f);
         } else if (f.name && perblockLimit < f.size <= largeFileLimit) {
             var maxFilePartSize = 1000000;
             var parts = Math.ceil(f.size / maxFilePartSize);
@@ -1329,7 +1196,6 @@ var CPublisher = new function () {
                 if (i === parts)
                     return;
                 var size = Math.min(maxFilePartSize, f.size - i * maxFilePartSize);
-//                console.log(i * maxFilePartSize + "    --   " + (i * maxFilePartSize + size));
                 var fp = f.slice(i * maxFilePartSize, i * maxFilePartSize + size);
                 fp.name = f.name;
                 fp.filetype = f.type;
@@ -1371,16 +1237,20 @@ var CPublisher = new function () {
 //        console.log(deposit);
         var locktime = Math.ceil($("#promctt-date").datepicker("getDate") === null ? 0 : $("#promctt-date").datepicker("getDate").getTime() / 1000 + 86400); // add 24 hour
         var locktime = deposit > 0 ? (locktime > 0 ? locktime : 0) : 0;
-//        console.log(deposit);
-//        console.log(locktime);
         var toId = $("#pubto").find("input[type='text']").val();
         if (toId)
             deposit = locktime = 0;
         var r = BrowserAPI.createTxByContent(ctt, feer, toId, deposit, locktime);
-//        console.log(r);
         if (typeof r !== "undefined") {
-            if (r.success.length > 0)
-                this.clear();
+            if (r.success) {
+                if (r.success.length > 0) {
+                    this.clear();
+                    CPage.showNotice(TR("Successfully published, will be visible after first confirmation"));
+                }
+            } else {
+                CPage.showNotice(TR(r), "e");
+                console.log(r);
+            }
         }
     };
     this.handleDragOver = function (evt) {
@@ -1424,6 +1294,10 @@ var CPublisher = new function () {
 
         if (evt.dataTransfer.files.length > 1 && type !== "batch") {
             alert(TR('Only one file is allowed per time'));
+            return;
+        }
+        if (type === "batch") {
+            CPublisher.handleBatchFiles(evt.dataTransfer.files, type);
             return;
         }
         CPublisher.handleFiles(evt.dataTransfer.files, type);
@@ -1500,29 +1374,109 @@ var CPublisher = new function () {
         }
     };
     this.addTagField = function () {
-        var tagdiv = $("#pubtag-tpl").clone(true, true);
+        var maxTag = this.getMaxPromTag();
+        var tagdiv = $("#pubtag-tpl").clone(true, true).addClass("tag-container");
         var tagId = "tag-" + tagCount;
         var tagChkId = "chktag-" + tagCount;
         tagdiv.removeAttr("id").removeClass("hide").find("input[name='tag']").attr('id', tagId);
-        tagdiv.find("input[type='checkbox']").attr('id', tagChkId);
+        var c = this.getPromTagCount();
+        if (c >= maxTag)
+            tagdiv.find("input[type='checkbox']").attr("disabled", true);
+        tagdiv.find("input[type='checkbox']").attr('id', tagChkId).change(function () {
+            CPublisher.refreshPromTag();
+        });
         if ($("#promctt").length === 0)
             $(tagdiv).insertBefore($('#pubbtnh'));
         else
             $(tagdiv).insertBefore($('#promctt'));
         tagCount++;
     };
-    this.addPromCttField = function () {
+    this.getPromTagCount = function () {
+        var r = 0;
+        $(".tag-container").find("input[name='tag']").each(function () {
+            var tagChkId = "#chk" + $(this).attr("id");
+            if ($(tagChkId).prop("checked"))
+                r++;
+        });
+        return r;
+    };
+    this.getMaxPromTag = function () {
+        var maxTag = $("#promctt-value").val() > 0 ? Math.floor($("#promctt-value").val()) : 10;
+        maxTag = Math.min(maxTag, 10);
+        return maxTag;
+    }
+    this.refreshPromTag = function () {
+        var maxTag = this.getMaxPromTag();
+        var r = this.getPromTagCount();
+        if (r >= maxTag) {
+            var chkCount = 0;
+            $(".tag-container").find("input[name='tag']").each(function () {
+                var tagChkId = "#chk" + $(this).attr("id");
+                if (!$(tagChkId).prop("checked"))
+                    $(tagChkId).attr("disabled", true);
+                else {
+                    if (++chkCount > maxTag)
+                        $(tagChkId).prop("checked", false).attr("disabled", true);
+                }
+            });
+        } else if (r < maxTag) {
+            $(".tag-container").find("input[name='tag']").each(function () {
+                var t = maxTag - r;
+                var tagChkId = "#chk" + $(this).attr("id");
+                if ($(tagChkId).attr("disabled") && t > 0) {
+                    $(tagChkId).removeAttr("disabled");
+                    t--;
+                }
+            });
+        }
+
+//        var deposit = Math.floor($("#promctt-value").val() > 0 ? $("#promctt-value").val() : 0);
+//        console.log(deposit);
+//        var deposit = maxTag;
+//        var id = 0;
+//        var count = 0;
+//        $("input[name='tag']").each(function () {
+//            if (count < deposit) {
+//                if ($(this).val() === "") {
+//                    id++;
+//                    return true; // continue
+//                } else {
+//                    var tagChkId = "#chktag-" + id;
+//                    $(tagChkId).prop('checked', true);
+//                    count++;
+//                }
+//            } else {
+//                var tagChkId = "#chktag-" + id;
+//                $(tagChkId).prop('checked', false);
+//            }
+//            id++;
+//        });
+    };
+    this.addPromCttField = function (fTip) {
+        fTip = typeof fTip === "undefined" ? false : fTip;
         var promcttdiv = $("#promctt-tpl").clone(true, true);
         promcttdiv.attr("id", "promctt").removeClass("hide");
         $(promcttdiv).insertBefore($('#pubbtnh'));
-        var tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
+        console.log(fTip);
+        if (fTip) {
+            $("promctt-check").remove();
+            $(".input-tag-wrapper").removeClass("hide");
+            $("#pub-value-span").html(TR("Tip value"));
+            $("#promctt-value").attr("placeholder", TR("Tip value"))
+            $("#pub-until-span").remove();
+            $("#promctt-date").remove();
+        } else {
+
+            $("#promctt-value").attr("placeholder", TR("Value locked for ranking"))
+            var tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
 //        console.log(tomorrow);
-        $("#promctt-date").datepicker({
-            altFormat: '@',
-            dateFormat: 'yy-mm-dd',
-            minDate: tomorrow
-        });
+            $("#promctt-date").datepicker({
+                altFormat: '@',
+                dateFormat: 'yy-mm-dd',
+                minDate: tomorrow
+            });
+        }
 
     };
     this.addLinkField = function () {
@@ -1536,9 +1490,11 @@ var CPublisher = new function () {
         $(linkdiv).insertAfter($('#theText'));
     };
     this.addPubToField = function () {
-        var pubto = $("#pubto-tpl").clone(true, true);
-        pubto.attr("id", "pubto").removeClass("hide");
-        $(pubto).insertBefore($('#pubbtnh'));
+        if ($("#pubto").length <= 0) {
+            var pubto = $("#pubto-tpl").clone(true, true);
+            pubto.attr("id", "pubto").removeClass("hide");
+            $(pubto).insertBefore($('#pubbtnh'));
+        }
     };
     this.showPreview = function (file) {
         console.log(file);
@@ -1550,11 +1506,10 @@ var CPublisher = new function () {
         sdiv.find(".container").attr("id", file.hash);
         var id = CBrowser.getIdFrContent(file.ctt);
         sdiv.find(".id").find(".text").attr("fullid", id);
-        sdiv.find(".id").find(".text").html(CBrowser.getShortPId(id));
+        sdiv.find(".id").find(".text").html(CUtil.getShortPId(id));
         sdiv.find(".linkspan").attr("clink", file.ctt.link);
 //        log("before fill");
         sdiv = CBrowser.fillSdiv(sdiv, file.ctt);
-
         if (sdiv === false)
             return false;
         $("#pubpreview").removeClass("hide").append(sdiv.children());
@@ -1585,17 +1540,25 @@ var CPublisher = new function () {
             return false;
         return $("#CC_LANG").attr("lang");
     };
-    this.showDetails = function () {
-        if ($("#input-feerate").hasClass("visible"))
-            return;
+    this.showDetails = function (fTip) {
+        fTip = typeof fTip === "undefined" ? false : fTip;
+//        if ($("#input-feerate").hasClass("visible")){
+//            return;
+        console.log("show details");
         $("#cclang-span").html(TR("tag-" + langCode));
         $("#CC_LANG").attr("lang", langCode);
         $("#pubdfttag").removeClass("hide");
         var feediv = $("#fee-tpl")
         feediv.removeAttr("id").removeClass("hide").find("input[type='text']").addClass("visible");
         $(feediv).insertBefore($('#pubbtnh'));
-        if ($("#promctt").length === 0 & $("#pubto").length === 0)
-            this.addPromCttField();
+        console.log("show details 2");
+        if ($("#promctt").length === 0) {
+            console.log("show details 3");
+            this.addPromCttField(fTip);
+        }
+//        else {
+
+//        }
     };
     this.refreshFee = function (size) {
         var len = typeof size === "undefined" ? 260 : size;
@@ -1605,7 +1568,6 @@ var CPublisher = new function () {
         var sgstPK = currentFeeRate.sgstfeer / COIN * K;
         if ($("#input-feerate").val() == "")
             $("#input-feerate").val(sgstPK);
-
         var feeRatePK = typeof Number($("#input-feerate").val()) !== "number" ? sgstPK : $("#input-feerate").val();
 //        console.log(typeof $("#input-feerate").val());
         var minPK = currentFeeRate.minfeer / COIN * K;
@@ -1615,28 +1577,6 @@ var CPublisher = new function () {
         $("#sgstr").html(sgstPK.toString().substring(0, 6) + " φ/KB");
         $("#minr").html(minPK.toString().substring(0, 6) + " φ/KB");
     };
-    this.refreshProTag = function () {
-        var deposit = Math.floor($("#promctt-value").val() > 0 ? $("#promctt-value").val() : 0);
-//        console.log(deposit);
-        var id = 0;
-        var count = 0;
-        $("input[name='tag']").each(function () {
-            if (count < deposit) {
-                if ($(this).val() === "") {
-                    id++;
-                    return true; // continue
-                } else {
-                    var tagChkId = "#chktag-" + id;
-                    $(tagChkId).prop('checked', true);
-                    count++;
-                }
-            } else {
-                var tagChkId = "#chktag-" + id;
-                $(tagChkId).prop('checked', false);
-            }
-            id++;
-        });
-    };
     this.addDefaultProUntil = function () {
         if ($("#promctt-date").datepicker("getDate") === null) {
             var tomorrow = new Date();
@@ -1645,6 +1585,10 @@ var CPublisher = new function () {
         }
     };
     this.shareLink = function (link) {
+        if (currentPage === "homepage") {
+            BrowserAPI.goToCustomPage("fai:browser/?share=true&link=" + link);
+            return;
+        }
         $('#pubbtnh').show();
         if (!$("#addlink").attr("disabled")) {
             this.addLinkField();
@@ -1653,6 +1597,16 @@ var CPublisher = new function () {
         $("#input-link").val(link);
     };
     this.shareId = function (id) {
+//        if (typeof currentPage === "undefined") {
+//            BrowserAPI.goToCustomPage("fai:browser/?share=true&id=" + id);
+//            return;
+//        }
+        if (typeof currentPage !== "undefined") {
+            if (currentPage === "homepage") {
+                BrowserAPI.goToCustomPage("fai:browser/?share=true&id=" + id);
+                return;
+            }
+        }
         $("#theText").val(id + "\n");
         $("#confirmpub").removeAttr('disabled');
         CPublisher.showDetails();
@@ -1668,15 +1622,23 @@ var CPublisher = new function () {
         } else
             this.addPromCttField();
     };
-
-    this.commentLink = function (link, id) {
+    this.commentLink = function (link, id, fTip) {
+        fTip = typeof fTip === "undefined" ? false : fTip;
+        if (currentPage === "homepage") {
+            BrowserAPI.goToCustomPage("fai:browser/?cmt=true&link=" + link + "&id=" + id);
+            return;
+        }
         this.shareLink(link);
-        if ($("#promctt").length > 0)
-            $("#promctt").remove();
-        if ($("#pubto").length <= 0)
-            this.addPubToField();
+        console.log(fTip)
+//        if (fTip) {
+        this.showDetails(fTip);
+//        }
+//        else if ($("#promctt").length > 0)
+//            $("#promctt").remove();
+//        console.log($("#pubto").length)
+////        if ($("#pubto").length <= 0)
+        this.addPubToField();
         $("#pubto").find("input[type='text']").val(id);
-
     };
     this.clearWithAlert = function () {
         if ($("#theText").val() !== "") {
@@ -1691,7 +1653,7 @@ var CPublisher = new function () {
         $("#theText").val("");
         $("#promctt-value").val("");
         $("#promctt-date").val("");
-        $(".input-tag").val("");
+        $(".tag-container").remove();
         $(".pubtf input[type='checkbox']").prop("checked", false);
         $("#input-link-name").val("");
         $("#input-link").val("");

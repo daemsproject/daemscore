@@ -1,0 +1,29 @@
+#tx-detail-modal{
+    min-width:700px;width:70%;max-width: 90%;
+}#tx-detail-modal .ph{
+    clear:both;height:30px;
+}#tx-detail-modal .title{
+    margin: 0 30px 20px;font-size: 16px;font-weight: bold;color: #888;
+}#tx-detail-modal .vins{
+    word-wrap: break-word
+}#tx-detail-modal .vouts{
+    width:80%;float:right;word-wrap: break-word;clear:both;
+}.primary-account-id{
+    min-width: 500px;
+}.txicon{
+    width:16px;height:16px;
+}.pointer:hover{
+    cursor: pointer;
+}.txid-holder{
+
+}.time-holder{
+
+}.height-holder{
+
+}.inputs-holder{
+    width:80%;float:left;clear:both;text-align: left;
+}.outputs-holder{
+    width:80%;float:right;clear:both;text-align:right;
+}.value{
+    color:blue;
+}

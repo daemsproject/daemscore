@@ -1,0 +1,9 @@
+.tab-content{
+    overflow: hidden;overflow-y: scroll;
+}.prd{
+    max-width: 1000px;
+}.container.prd{
+    text-align: left;
+}.sid:hover{
+    cursor: pointer;
+}

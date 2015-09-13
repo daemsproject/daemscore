@@ -1,636 +1,452 @@
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-var Messenger = new function() {
-    var i = this;
-    var tx_page;
-    this.skip_init = false; //Set on sign up page
-    var cVisible; //currently visible view    
-    var accountID;    
-    var transactions = []; //List of all transactions (initially populated from /multiaddr updated through websockets)    
-    var contacts=[];
-    var archTimer; //Delayed Backup wallet timer
-    var currentContact;
-    var event_listeners = []; //Emits Did decrypt wallet event (used on claim page)
-    var messages=[];
-    var isInitialized = false;    
-    var language = 'en'; //Current language    
-    var haveBoundReady = false;
-    
-    var sync_pubkeys = false;    
-    var wallet_options = {    
-        fee_policy : 0,  //Default Fee policy (-1 Tight, 0 Normal, 1 High)
-        html5_notifications : false, //HTML 5 Desktop notifications    
-        tx_display : 0, //Compact or detailed transactions    
-        transactions_per_page : 1000, //Number of transactions per page    
+var Messenger = new function () {
+    var latestBlock = 0;
+    var messages = [];
+    this.switchToContact = function (id) {
+        $('#' + currentContact).removeClass("active");
+        $('#' + id).addClass('active');
+        currentContact = id;
+        var pdiv = $("#poster-tpl").clone(true, true).removeAttr("id");
+        pdiv.find(".id-follow-btn").parent().remove();
+        pdiv.find(".id-unfollow-btn").parent().remove();
+        pdiv.find(".id-chat-btn").parent().remove();
+        pdiv.find(".id-share-btn").parent().remove();
+        pdiv.find(".poster").attr("id", id);
+        pdiv.find(".id").find("a.text").html(id);
+        $("#msg-header").addClass("msg-ha");
+        var domain = BrowserAPI.getDomainByForward(id);
+        var id2show = $.isEmptyObject(domain) ? CUtil.getShortPId(id) : (domain.alias ? domain.alias + " (" + domain.domain + ")" : domain.domain);
+        id2show = contacts[currentContact].alias ? contacts[currentContact].alias : id2show;
+        var intro = $.isEmptyObject(domain) ? "" : " " + domain.intro;
+        var idtype = $.isEmptyObject(domain) ? "" : "(domain)";
+        pdiv.find(".id").find(".text").html(id2show);
+        pdiv.find(".id").find(".text").attr("fullid", id);
+        if (!$.isEmptyObject(domain))
+            pdiv.find(".id").find(".text").attr("domain", domain.domain);
+        pdiv.find(".id").find(".idtype").html(idtype + intro);
+        if (domain.icon) {
+            console.log(domain.icon);
+            var iconCtt = BrowserAPI.getContentByLink(domain.icon);
+            var iconCttP = CUtil.parseCtt(iconCtt);
+            var icon = CBrowser.createImgHtml(iconCttP);
+            console.log(icon);
+            pdiv.find(".icon").html(icon);
+        }
+        $("#current-contact").html("").prepend(pdiv.children());
+        console.log('edi')
+        $("#btn-edit-ctct").removeClass("hide").unbind().click(function () {
+            console.log('ed')
+            Messenger.showModal("edit");
+        });
+        console.log($("#btn-edit-ctct"));
+        this.showMessages(id);
+    }
+
+    this.showContactInList = function (id) {
+        var a = this.readContactInfo(id);
+        if (a.alias)
+            contacts[id].alias = a.alias;
+        if (a.icon)
+            contacts[id].icon = a.icon;
+        if (a.intro)
+            contacts[id].intro = a.intro;
+        if (a.category)
+            contacts[id].category = a.category;
+        var domain = BrowserAPI.getDomainByForward(id);
+        console.log(domain);
+        if (domain && domain.domain) {
+            contacts[id].domainName = domain.domain;
+            if (!contacts.intro && domain.intro)
+                contacts[id].intro = domain.intro;
+            if (!contacts.icon && domain.icon)
+                contacts[id].icon = {link: domain.icon};
+        }
+        else {
+            contacts[id].domainName = "";
+        }
+        var pdiv = $("#poster-tpl").clone(true, true).removeAttr("id");
+        pdiv.find(".poster").attr("id", id);
+        $("#contact-list").append(pdiv.children().addClass("ctct").click(function () {
+            Messenger.switchToContact(id);
+        }));
+        this.updateContactDisplay(id);
+    }
+    this.updateContactDisplay = function (id) {
+        if (!contacts[id])
+            return;
+        var c = contacts[id];
+        if (c.icon) {
+            var iconCtt = BrowserAPI.getContentByLink(c.icon.link);
+            var iconCttP = CUtil.parseCtt(iconCtt);
+            var icon = CBrowser.createImgHtml(iconCttP);
+            contacts[id].icon.data = iconCttP.fdata;
+            contacts[id].icon.type = iconCttP.ftype;
+            $("#" + id).find(".icon").html(icon);
+        }
+        var id2show;
+        if (c.alias)
+            id2show = c.alias;
+        else if (c.domainName)
+            id2show = c.domainName;
+        else
+            id2show = showID(id);
+        id2show += "<div class='ntcno1'></div>";
+        $("#" + id).find(".id").html(id2show);
+        this.updateUnreadLen(id);
+    }
+    this.getMsgHtml = function (msg, icon, time, mode, direction) {
+        var mdiv = $("#msg-tpl").clone(true, true).removeAttr("id").removeClass("hide");
+        var lr = (direction == "in") ? "left" : "right";
+//        var rlr = (direction == "in") ? "right" : "left";
+        mdiv.find(".icon").html(icon).css("float", lr);
+        mdiv.find(".msg-wrapper").css("float", lr).addClass("bubble-" + lr).css("margin-" + lr, 30).addClass("msg-color-" + lr);
+        mdiv.find(".time").html(CUtil.dateToShortString(time)).css("float", lr);
+        mdiv.find(".msg").html(msg).css("float", lr).css("clear", lr);
+        return mdiv;
     };
-    this.setNTransactionsPerPage = function(val) {
-        wallet_options.transactions_per_page = val;
-    }
-
-    this.getNTransactionsPerPage = function() {
-        return wallet_options.transactions_per_page;
-    }
-    function bindInitial() {       
-
-        $('.modal').on('show', function() {
-            hidePopovers();
-
-            $(this).center();
-        }).on('hidden', function () {
-                var visible = $('.modal:visible');
-
-                var notices = $('#notices').remove();
-
-                if (visible.length > 0)
-                    visible.find('.modal-body').prepend(notices);
-                else
-                    $('#main-notices-container').append(notices);
-
-            }).on('shown', function() {
-                hidePopovers();
-
-                var self = $(this);
-                setTimeout(function() {
-                    if (self.is(':visible')) {
-                        self.find('.modal-body').prepend($('#notices').remove());
-                    }
-                }, 100);
-
-                self.center();
-            });
-    }
-    function hidePopovers() {
-        try {
-            $('.popover').remove();
-        } catch (e) {}
-    }
-    this.makeNotice = function(type, id, msg, timeout) {
-
-        if (msg == null || msg.length == 0)
-            return;
-
-        console.log(msg);
-
-        var el = $('<div class="alert alert-block alert-'+type+'"></div>');
-
-        el.text(''+msg);
-
-        if ($('#'+id).length > 0) {
-            el.attr('id', id);
-            return;
+    this.getIcon = function (id) {
+        var r = $("<div />");
+        var img;
+        if (id === gParam.accountID) {
+            img = gParam.icon ? CPage.createImgHtml(gParam.icon.type, gParam.icon.data) : this.getIconFrId(id);
+        } else {
+            var c = contacts[id];
+            if (!c) {
+                img = this.getIconFrId(id);
+                console.log(c);
+            } else if (c.icon) {
+                img = CPage.createImgHtml(c.icon.type, c.icon.data);
+            }
+            else
+                img = this.getIconFrId(id);
         }
-
-        $("#notices").append(el).hide().fadeIn(200);
-
-        (function() {
-            var tel = el;
-
-            setTimeout(function() {
-                tel.fadeOut(250, function() {
-                    $(this).remove();
-                });
-            }, timeout ? timeout : 5000);
-        })();
-    }
-    this.switchToContact=function(id){
-        updateCurrentContactDisplay(id);
-        //$("#current-contact").html(id);
-        $('#'+currentContact).attr('class', '');
-        $('#'+id).attr('class', 'active');
-        currentContact=id;
-        $("#btn-currentcontact").show();
-        i.showMessages(id);
-    }
-    function updateCurrentContactDisplay(id){        
-        var c=contacts[id];  
-        var html="<table><tr><td>";
-        if (c.icon){     
-            console.log(c.icon);
-            if(!c.icon.data&&c.icon.link)
-                c.icon.data=CBrowser.getB64DataFromLink(c.icon.link);  
-            
-            //console.log(c.icon.data);
-            if (c.icon.data)
-            html+=CBrowser.createIconHtml(c.icon.data)+'</td><td>';
-            //html+=CBrowser.getImage(c.icon.link);   
-            
+        r.html(img).attr("title", id);
+        return r;
+    };
+    this.getIconFrId = function (id) {
+        return $("<div />").html(id.substr(0, 3)).css("font-weight", "bold").addClass("grey_8").css("padding-left", 2);
+    };
+    this.showMessage = function (msg, idForeign, time, mode, direction, fOld) {
+        mode = typeof mode === "undefined" ? "" : mode;
+        var icon = direction === "in" ? this.getIcon(idForeign) : this.getIcon(gParam.accountID);
+        if (!time)
+            time = new Date();
+        var html = this.getMsgHtml(msg, icon, time, mode, direction);
+        if (!fOld) {
+            $('#msg-history').append(html);
+            $('#msg-history').scrollTop($('#msg-history').scrollTop() + $('#msg-history').innerHeight());
+        } else {
+            $('#msg-history').prepend(html);
         }
-        if(c.alias)
-        html+=c.alias+'<br>';
-        if(c.domainName)
-            html+=c.domainName+'<br>';
-        html+=id+'<br>'; 
-        if(c.intro)
-            html+=c.intro+'<br></tr><table>';
-        $("#current-contact").html(html);
-    }
-    function addContact(id){        
-        if(contacts[id])
-            return;
-        contacts[id]={};
-        var a=i.readContactInfo(id);
-        if(a.alias)
-            contacts[id].alias=a.alias;
-        if(a.icon)
-            contacts[id].icon=a.icon;
-        if(a.intro)
-            contacts[id].intro=a.intro;
-        if(a.category)
-            contacts[id].category=a.category;
-        var domains=BrowserAPI.getDomainsByForward(id);
-        console.log(domains);
-        if(domains&&domains[0]&&domains[0].domain){
-            contacts[id].domainName=domains[0].domain;
-            if(!contacts.intro&&domains[0].intro)
-                contacts[id].intro=domains[0].intro;
-            if(!contacts.icon&&domains[0].icon)
-                contacts[id].icon={link:domains[0].icon};            
-        }
-        //contacts[id].id=id;            
-        var html='<div id="'+id+'" onclick="{Messenger.switchToContact(\''+id+'\')}" style="margin-top:20px"></div';
-        $("#contact-list").append(html);
-        i.updateContactDisplay(id);
-    }    
-    this.updateContactDisplay=function(id){
-        if(!contacts[id])
-            return;
-        var c=contacts[id];  
-        var html="";
-        if (c.icon){     
-            console.log(c.icon);
-            if(!c.icon.data&&c.icon.link)
-                c.icon.data=CBrowser.getB64DataFromLink(c.icon.link);                
-            //console.log(c.icon.data);
-            if (c.icon.data)
-            html+='<div style="float:left">'+CBrowser.createIconHtml(c.icon.data)+'</div>';
-            //html+=CBrowser.getImage(c.icon.link);   
-            
-        }
-        //c.alias=i.getAlias(c.id);
-        if(c.alias)
-        html+='<div style="float:left">'+c.alias+'&nbsp  </div>';
-        else if(c.domainName)
-            html+='<div style="float:left">'+c.domainName+'&nbsp  </div>';
-        else
-        html+=" "+showID(id);
-        html+="<div class='nmsgs' style='text-align:right'></div>";        
-        $("#"+id).html(html);
-        i.updateUnreadLen(id);
-        if(currentContact==id){
-            updateCurrentContactDisplay(id);
+    };
+    this.showMessages = function (id) {
+        $('#msg-history').html("");
+        messages[id] = BrowserAPI.getMessages(gParam.accountID, [id], 0, true, false, 0, 0, 100);
+        if (this.decryptAndShow(id, messages[id])) {
+            contacts[id].offset = messages[id].length;
+            contacts[id].unreadLen = 0;
+            this.setUnreadLen(id, 0);
         }
     }
-    this.showMessage=function(msg,time,mode,direction){    
-        if(!time)
-            time= new Date();
-        var html='<div style="color:green;text-align:'+direction+'">'+dateToString(time)+" "+mode+'</div>';        
-        html+='<div style="text-align:'+direction+';margin-'+(direction=='right'?'left':'right')+':100px">';
-        if(direction=="left")
-            html+="->";
-        else
-            html+="<-";
-                html+=msg+'</div>';
-        //console.log(html);
-        $('#history-message').append(html);
-        $('#history-message').scrollTop($('#history-message').scrollTop()+$('#history-message').innerHeight());
+    this.showOldMessages = function () {
+        var id = currentContact;
+        var oldMsgs = BrowserAPI.getMessages(gParam.accountID, [id], 0, true, false, 0, contacts[id].offset, 20);
+        messages[id] = oldMsgs.concat(messages[id]);
+        console.log(messages[id].length);
+        this.decryptAndShow(id, oldMsgs, true);
+        contacts[id].offset += oldMsgs.length;
     }
-    this.showMessages=function(id){
-        
-        $('#history-message').html(" ");
-//        var msgs=[];
-//        for(var j in messages[id]){
-//            msgs.push(messages[id][j].content);
-//        }
-//        console.log(msgs);
-        i.decryptAndShow(id,messages[id]);
-        
-    }    
-    this.decryptAndShow=function(id,msgs){
-        
-        var msgs2=[];
-        for(var j in msgs){
-//            if (Object.prototype.toString.call(msgs[j].content) != '[object Array]')   {
-//                console.log(j);
-//                console.log(msgs[j]);
-//            }
+
+    this.decryptAndShow = function (id, msgs, fOld) {
+        var msgs2 = [];
+        for (var j in msgs) {
             msgs2.push(msgs[j].content);
         }
-        //console.log(msgs2);
-        BrowserAPI.decryptMessages(accountID,[{idForeign:id,messages:msgs2}],function(decryptmsgs){
-            //console.log(decryptmsgs);        
-            for(var j=decryptmsgs[0].messages.length-1;j>=0;j--){
-                if(decryptmsgs[0].messages[j]){
-                    //console.log(messages[id][j]);
-                    //console.log(id);
-                    //console.log(BrowserAPI.areIDsEqual(messages[id][j].IDTo,id));
-                    var direction=BrowserAPI.areIDsEqual(msgs[j].IDTo,id)?"right":"left";   
-                    if(decryptmsgs[0].messages[j][0]){
-                        msgs[j].decrypted=base64.decode(decryptmsgs[0].messages[j][0].content[0].content);                        
-                        i.updateMessage(msgs[j]);
-                        //console.log(msgs[j]);
-                        //var msg=base64.decode(decryptmsgs[0].messages[j][0].content[0].content);
-                        var t=new Date(msgs[j].nTime * 1000);
-                        i.showMessage(msgs[j].decrypted,t,msgs[j].mode,direction);
+        var rs = false;
+        BrowserAPI.decryptMessages(gParam.accountID, [{idForeign: id, messages: msgs2}], function (decryptmsgs) {
+            if (fOld) {
+                for (var j = 0; j < decryptmsgs[0].messages.length; j++) {
+                    if (decryptmsgs[0].messages[j]) {
+                        var direction = BrowserAPI.areIDsEqual(msgs[j].IDTo, id) ? "out" : "in";
+                        if (decryptmsgs[0].messages[j][0]) {
+                            msgs[j].decrypted = base64.decode(decryptmsgs[0].messages[j][0].content[0].content);
+                            Messenger.updateMessage(msgs[j]);
+                            var t = new Date(msgs[j].nTime * 1000);
+                            Messenger.showMessage(msgs[j].decrypted, id, t, msgs[j].mode, direction, fOld);
+                        }
                     }
                 }
-            } 
-            i.setLastUpdateTime(id);
-            i.updateUnreadLen(id);
-        },function(e){console.log(e)});
-    }
-    this.updateMessage=function(msg){
-        if(msg.IDForeign){
-            for( var j in messages[msg.IDForeign]){
-                var msg2=messages[msg.IDForeign][j];
-                if(msg2.txid==msg.txid&&msg2.nVout==msg.nVout)
-                    msg2.decrypted=msg.decrypted;
+            } else {
+                for (var j = decryptmsgs[0].messages.length - 1; j >= 0; j--) {
+                    if (decryptmsgs[0].messages[j]) {
+                        var direction = BrowserAPI.areIDsEqual(msgs[j].IDTo, id) ? "out" : "in";
+                        if (decryptmsgs[0].messages[j][0]) {
+                            msgs[j].decrypted = base64.decode(decryptmsgs[0].messages[j][0].content[0].content);
+                            Messenger.updateMessage(msgs[j]);
+                            var t = new Date(msgs[j].nTime * 1000);
+                            Messenger.showMessage(msgs[j].decrypted, id, t, msgs[j].mode, direction, fOld);
+                        }
+                    }
+                }
+            }
+            Messenger.setLastUpdateTime(id);
+            rs = true;
+        }, function (e) {
+            console.log(e);
+            rs = false;
+        });
+        return rs;
+    };
+    this.updateMessage = function (msg) {
+        if (msg.IDForeign) {
+            for (var j in messages[msg.IDForeign]) {
+                var msg2 = messages[msg.IDForeign][j];
+                if (msg2.txid == msg.txid && msg2.nVout == msg.nVout)
+                    msg2.decrypted = msg.decrypted;
             }
         }
+    };
+    this.addContact = function (id) {
+        console.log(id);
+        if (contacts[id] || id == accountID)
+            return false;
+        contacts[id] = {};
+        Messenger.showContactInList(id);
+        return true;
     }
-    this.addMessage=function(msg){         
-        msg.IDForeign=BrowserAPI.areIDsEqual(msg.IDFrom,accountID)?msg.IDTo:msg.IDFrom;
-        if(i.hasMessage(msg))
+    this.addMessage = function (msg) {
+        msg.IDForeign = BrowserAPI.areIDsEqual(msg.IDFrom, gParam.accountID) ? msg.IDTo : msg.IDFrom;
+        if (this.hasMessage(msg))
             return;
-        addContact(msg.IDForeign);
-        if(!messages[msg.IDForeign]){
-            messages[msg.IDForeign]=[];
-            //messages[msg.IDForeign].updateTime=i.getLastUpdateTime(msg.IDForeign);
+        if (this.addContact(msg.IDForeign))
+            this.saveContacts();
+        if (!messages[msg.IDForeign]) {
+            messages[msg.IDForeign] = [];
         }
         messages[msg.IDForeign].push(msg);
-        //msg.unreadLen=i.getUnreadLen(msg.IDForeign);
-        //if(msg.unreadLen)
-            i.updateUnreadLen(msg.IDForeign);
+        this.updateUnreadLen(msg.IDForeign, 1);
     }
-    this.getLastUpdateTime=function(id){
-        var t=BrowserAPI.getConf("messenger",accountID,id,"updatetime");  
-        if(!t||isNaN(t))
+    this.getLastUpdateTime = function (id) {
+        var t = BrowserAPI.getConf("messenger", gParam.accountID, id, "updatetime");
+        if (!t || isNaN(t))
             return 0;
         return t;
     }
-    this.setLastUpdateTime=function(id){
-        return BrowserAPI.setConf("messenger",accountID,id,"updatetime",String(new Date().getTime()));        
+    this.setLastUpdateTime = function (id) {
+        return BrowserAPI.setConf("messenger", gParam.accountID, id, "updatetime", String(new Date().getTime()));
     }
-    this.updateUnreadLen=function(id){    
-        var a=i.getUnreadLen(id);
-        if(!a)
-            a=".";
-         $("#"+id).find(".nmsgs").html(a);
+    this.updateUnreadLen = function (id, n) {
+        if (typeof n == "undefined")
+            n = 0;
+        if (!contacts[id])
+            return false;
+        if (!contacts[id].unreadLen)
+            this.getUnreadLen(id);
+        contacts[id].unreadLen += n;
+        var a = contacts[id].unreadLen;
+        if (!a)
+            a = "";
+        $("#" + id).find(".ntcno1").html(a);
     }
-    this.getUnreadLen=function(id){
-        if(!messages[id])
-            return 0;                            
-        var t0=i.getLastUpdateTime(id);
-        //console.log(t0);
-        var n=0;
-        for(var j in messages[id]){
-            //var t=new Date(messages[id][j].nTime * 1000);
-            if(messages[id][j].nTime*1000>t0)
-                n++;
-        }
-        //console.log(n);
-        return n;
+    this.getUnreadLen = function (id) {
+        var l = BrowserAPI.getConf("messenger", gParam.accountID, id, "unreadlen");
+        if (typeof l === "undefined")
+            l = 0;
+        contacts[id].unreadLen = Number(l);
     }
-    this.getAlias=function(id){
-        var alias=BrowserAPI.getConf("messenger",accountID,id,"alias");   
-        if(alias.error)
-            alias="";
+    this.setUnreadLen = function (id, n) {
+        if (!n)
+            n == "0";
+        contacts[id].unreadLen = n;
+        this.saveContacts();
+        BrowserAPI.setConf("messenger", gParam.accountID, id, "unreadlen", n);
+        if (n == "0")
+            n = "";
+        $("#" + id).find(".ntcno1").html(n);
+    }
+    this.getAlias = function (id) {
+        var alias = BrowserAPI.getConf("messenger", gParam.accountID, id, "alias");
+        if (alias.error)
+            alias = "";
         return alias;
     }
-    this.setAlias=function(id,alias){
-        var result=BrowserAPI.setConf("messenger",accountID,id,"alias",alias);   
-        if(result=="success")
-            return true;
-        return false;
+    this.setAlias = function (id, alias) {
+        return BrowserAPI.setConf("messenger", gParam.accountID, id, "alias", alias);
     }
-    this.getCategory=function(id){
-        var category=BrowserAPI.getConf("messenger",accountID,id,"category");   
-        if(category.error)
-            category="";
+    this.getCategory = function (id) {
+        var category = BrowserAPI.getConf("messenger", gParam.accountID, id, "category");
+        if (category.error)
+            category = "";
         return category;
     }
-    this.setCategory=function(id,category){
-        var result=BrowserAPI.setConf("messenger",accountID,id,"category",category);   
-        if(result=="success")
-            return true;
-        return false;
+    this.setCategory = function (id, category) {
+        return BrowserAPI.setConf("messenger", gParam.accountID, id, "category", category);
     }
-    this.readContactInfo=function(id){
-        var c={};
-        c.alias=i.getAlias(id);
-        c.updateTime=i.getLastUpdateTime(id);
-        c.category=i.getCategory(id);        
+    this.readContactInfo = function (id) {
+        var c = {};
+        c.alias = this.getAlias(id);
+        c.updateTime = this.getLastUpdateTime(id);
+        c.category = this.getCategory(id);
         return c;
     }
-    this.getMessagesAll=function(){
-        console.log("getMessages");      
-        
-        BrowserAPI.getMessages(accountID,null,0,true,false,0,1000,function(data){
-            if (!data||data.error){
-                if (error) error();
-                return;                
-            }
-            console.log(data); 
-                for(var l in data){                    
-                    data[l].mode="onchain";
-                    i.addMessage(data[l]);
-                }
-        }, function() {
-            console.log("getMessage error"); 
-        });
-    };
+    this.getMessagesAll = function () {
+        lastBlock = BrowserAPI.getConf("messenger", gParam.accountID, "", "lastUpdateBlock");
+        if (typeof lastBlock === "undefined")
+            lastBlock = 0;
+        contacts = $.parseJSON(BrowserAPI.readFile("messenger", gParam.accountID, "contacts"));
+        if (!contacts || typeof contacts === "undefined" || contacts.length == 0)
+            contacts = {};
+        console.log(contacts);
+        for (var id in contacts)
+            this.showContactInList(id);
+        var data = BrowserAPI.getMessages(gParam.accountID, null, 0, true, true, Number(lastBlock) + 1, 0, 100000);
 
-    function registerNotifications(){
-        //var aa=fuction(a){(a);};
-//        var aa=function(a){
-//            MyWallet.notifiedBlock(a);
-//        };
-        console.log("regnotifications");
-        var ab=function(a){
-            Messenger.notifiedTx(a);
-        };
-        var ac=function(a){
-            console.log("refresh");
-            window.location.href=window.location.href;
+        console.log(data);
+        if (data && !data.error) {
+            for (var l in data) {
+                this.addContact(l);
+                this.updateUnreadLen(l, data[l]);
+            }
+            this.saveContacts();
         }
-        //BrowserAPI.regNotifyBlocks(aa);        
-        BrowserAPI.regNotifyTxs(ab,[accountID]);
-        BrowserAPI.regNotifyAccount(ac);
-        console.log("regnotifications success");
-//        BrowserAPI.regNotifyPeers(this.notifiedPeers);
+        latestBlock = BrowserAPI.getBlockCount();
+        BrowserAPI.setConf("messenger", gParam.accountID, "", "lastUpdateBlock", latestBlock);
+    };
+    this.saveContacts = function () {
+        BrowserAPI.writeFile("messenger", gParam.accountID, "contacts", JSON.stringify(contacts));
     }
-    this.hasMessage=function(msg){
-        if(!messages[msg.IDForeign])
+
+
+    this.hasMessage = function (msg) {
+        if (!messages[msg.IDForeign])
             return false;
-        for(var j in messages[msg.IDForeign]){
-            if (messages[msg.IDForeign][j].txid==msg.txid&&messages[msg.IDForeign][j].nVout==msg.nVout)
+        for (var j in messages[msg.IDForeign]) {
+            if (messages[msg.IDForeign][j].txid == msg.txid && messages[msg.IDForeign][j].nVout == msg.nVout)
                 return true;
         }
-            return false;
+        return false;
     }
-    this.notifiedTx=function(x){
-        console.log(x);
-        var data=BrowserAPI.getTxMessages(accountID,[x.tx.txid]);     
+    this.notifiedTx = function (x) {
+        //console.log(x);
+        var data = BrowserAPI.getTxMessages(gParam.accountID, [x.tx.txid]);
         console.log(data);
-        if (data||!data.error){
-            var msgs=[];
-            for(var j in data){   
-                msg=data[j];                
+        if (data && !data.error) {
+            var msgs = [];
+            for (var j in data) {
+                msg = data[j];
                 msgs.push(msg);
-               Messenger.addMessage(msg);        
+                this.addMessage(msg);
             }
-            //console.log(msg.IDFrom);
-            //console.log(currentContact);
-            //console.log(msg.IDTo);
-            //console.log(accountID);           
-            if(BrowserAPI.areIDsEqual(msg.IDFrom,currentContact)&&BrowserAPI.areIDsEqual(msg.IDTo,accountID)){
-               // console.log(JSON.stringify(data));
-                   i.decryptAndShow(currentContact,data);
-           }
-        }               
+            if (BrowserAPI.areIDsEqual(msg.IDFrom, currentContact) && BrowserAPI.areIDsEqual(msg.IDTo, gParam.accountID)) {
+                this.decryptAndShow(currentContact, data);
+                this.setUnreadLen(currentContact, 0);
+            }
+            if (BrowserAPI.areIDsEqual(msg.IDTo, currentContact)) 
+                this.setUnreadLen(currentContact, 0);
+        }
     };
-    
-    this.notifiedPeers=function(data){
-        
-    }
-   
-    //Reset is true when called manually with changeview
-    function buildVisibleViewPre() {
-        //Hide any popovers as they can get stuck whent the element is re-drawn
-        hidePopovers();
-
-        //Update the account balance
-        if (balance == null) {
-            //$('#balance').html('Loading...');
-        } else {
-            //$('#balance').html(formatSymbol(final_balance, symbol, true));
-            //$('#balance2').html(formatSymbol(final_balance, (symbol === symbol_local) ? symbol_btc : symbol_local), true);
-        }
-
-        //Only build when visible
-        return cVisible.attr('id');
-    }
-    function changeCategory(id) {
-        //if (id === cVisible)
-        //    return;
-
-        if (cVisible != null) {
-            if ($('#' + cVisible.attr('id') ).length > 0)
-                $('#' + cVisible.attr('id') ).parent().attr('class', '');
-
-           // cVisible.hide();
-        }
-        cVisible = id;
-        //cVisible.show();
-        if ($('#' + cVisible.attr('id') ).length > 0)
-            $('#' + cVisible.attr('id') ).parent().attr('class', 'active');        
-        switch (id.attr('id')){
-            case "list-all":        
-                for(var j in contacts){   
-                    $("#"+j).hide();
-                     if(contacts[j].category!="black")
-                    $("#"+j).show();
-                }
-            break;
-        case "list-friends":
-                for(var j in contacts){                    
-                    $("#"+j).hide();
-                    if(contacts[j].category=="friend")
-                        $("#"+j).show();
-                }       
-            break;
-        case "list-black":
-                for(var j in contacts){                    
-                    $("#"+j).hide();
-                    if(contacts[j].category=="black")
-                        $("#"+j).show();
-                }       
-            break;
-        }
-    
-    }
-    function bindReady() {
-        if (haveBoundReady) {
-            return;
-        }
-        
-        haveBoundReady = true;
-        $("#list-all").click(function() {
-            changeCategory($("#list-all"));
-        });
-        $("#list-friends").click(function() {
-            changeCategory($("#list-friends"));
-        });
-        $("#list-black").click(function() {
-            changeCategory($("#list-black"));
-        });
-        $("#add-contact").find(".btn-secondary").unbind().click(function() {               
-            $("#add-contact").modal("hide");
-       });
-        $("#add-contact").find(".btn-primary").unbind().click(function() { 
-            var id=$("#add-contact").find('input[name="contact-id"]').val();
-            if(contacts[id]){
-                Messenger.makeNotice('error', 'error', 'ID already in contact list');    
-                return;
-            }            
-            if(!BrowserAPI.checkNameKey(id)){
-                 Messenger.makeNotice('error', 'error', 'ID is not valid');                 
-                return;
-            }            
-            addContact(id);            
-            //var arr=[{id:$("#add-contact").find('input[name="contact-id"]').val()}];            
-//            BrowserAPI.add_contacts(accountID,arr,function(a){
-//            },function(e){
-//                Messenger.makeNotice('error', 'add-contact-error',e);
-//            })
-            $("#add-contact").modal("hide");
-       });    
-        
-        
-        $('#btn-send').unbind().click(function() {   
-            //console.log($("#send-message-box").val());
-            var msg=$("#send-message-box").val();
-            if(currentContact&&msg){                
-                BrowserAPI.sendMessage(accountID,currentContact,msg,function(){
-                    i.showMessage(msg,0,"onchain","right");
-                    i.setLastUpdateTime(currentContact);
-                    $("#send-message-box").val("");
-                    
-                },function(e){
-                    i.makeNotice('error', 'send-message-error', e);
-           
-                });
-                    
-            }
-       });
-       $('#btn-add').unbind().click(function() { 
-           $("#add-contact").modal({backdrop: "static", show: true});
-           //$("#add-contact").show();
-           $("#add-contact").center();
-           
-       });    
-       $("#btn-currentcontact").unbind().click(function() { 
-           $("#edit-modal-contact").html(currentContact);
-           $("#edit-contact").find("input[name='contact-alias']").val(contacts[currentContact].alias);           
-           var cc=contacts[currentContact].category;
-           if(!cc)
-               cc="none";
-           $('#contact-category').html(cc);
-           switch(cc){
-               case "none":
-                $("#btn-friend").text("Add To Friends");
-                 $("#btn-black").text("Add To blacklist");
-                 break;
-             case "friend":
-                 $("#btn-friend").text("Add To blacklist");
-                 $("#btn-black").text("Remove from Friends");
-                 break;
-             case "black":
-                 $("#btn-friend").text("Add To Friends");
-                 $("#btn-black").text("Remove from blacklist");
-           }
-           $("#edit-contact").modal({backdrop: "static", show: true});
-           $("#edit-contact").center();
-       });
-        $("#edit-contact").find(".btn-secondary").unbind().click(function() {               
-            $("#edit-contact").modal("hide");
-       });
-        $("#btn-friend").unbind().click(function() {              
-            if(contacts[currentContact].category!="friend"){
-                contacts[currentContact].category="friend";
-                i.setCategory(currentContact,"friend");
-                $('#contact-category').html("friend");
-                $("#btn-friend").text("Remove from Friends");
-                $("#btn-black").text("Add To blacklist");
-            }else{
-                contacts[currentContact].category="none";
-                i.setCategory(currentContact,"none");
-                $('#contact-category').html("none");
-                $("#btn-friend").text("Add To Friends");
-                $("#btn-black").text("Add To blacklist");
-            }
-            changeCategory(cVisible);
-       });
-        $("#btn-black").unbind().click(function() {               
-            if(contacts[currentContact].category!="black"){
-                contacts[currentContact].category="black";
-                i.setCategory(currentContact,"black");
-                $('#contact-category').html("black");
-                $("#btn-black").text("Remove from blacklist");
-                $("#btn-friend").text("Add To Friends");
-            }else{
-                contacts[currentContact].category="none";
-                i.setCategory(currentContact,"none");
-                $('#contact-category').html("none");
-                $("#btn-black").text("Add To blacklist");
-                $("#btn-friend").text("Add To Friends");
-            }
-            changeCategory(cVisible);
-       });
-       $("#btn-alias").unbind().click(function() { 
-           //console.log($("#edit-contact").find("input[name='contact-alias']").val());
-           var alias=$("#edit-contact").find("input[name='contact-alias']").val();
-           i.setAlias(currentContact,alias);
-           contacts[currentContact].alias=alias;
-           i.updateContactDisplay(currentContact);
-       });
+    this.notifiedBlock = function (l) {
+//        console.log(l);
+        latestBlock = l.blockHeight;
+        BrowserAPI.setConf("messenger", gParam.accountID, "", "lastUpdateBlock", latestBlock);
     }
 
-    function initAccount(){
-        accountID=BrowserAPI.getAccountID();          
-        $("#account-id").html(accountID);
-        //IDs=BrowserAPI.getIDs(accountID);  
-        //BrowserAPI.getNewID(accountID);
-        registerNotifications();
-        //readContacts(Messenger.get_history);    
-        Messenger.getMessagesAll();
-    }
-    
-    
-   $(document).ready(function() {
 
-        if (!$.isEmptyObject({}) || !$.isEmptyObject([])) {
-            Messenger.makeNotice('error', 'error', 'Object.prototype has been extended by a browser extension. Please disable this extensions and reload the page.');
-            return;
-        }
-
-        //Listener to reload the page on App Cache update
-        window.applicationCache.addEventListener('updateready', function () {
-            if(window.applicationCache.status === window.applicationCache.UPDATEREADY) {
-                window.applicationCache.swapCache();
-                location.reload();
-            }
-        });
-
-        //Disable autocomplete in firefox
-        $("input,button,select").attr("autocomplete","off");
-        var body = $(document.body);
-
-        
-         
-        bindInitial();  
-        initAccount(); 
-        bindReady();
-        changeCategory($("#list-all"));
-        //Frame break
-        if (top.location != self.location) {
-            top.location = self.location.href
-        }
-
-       
-
-        
-
-        $(document).ajaxStart(function() {
-                setLogoutImageStatus('loading_start');
-
-                $('.loading-indicator').fadeIn(200);
-            }).ajaxStop(function() {
-                setLogoutImageStatus('loading_stop');
-
-                $('.loading-indicator').hide();
+    this.showModal = function (type) {
+        var id = type + "-contact";
+        if ($("#" + id).length <= 0) {
+            var div = $("#modal-tpl").clone(true, true).attr("id", id);
+            div.find(".cancel").unbind().click(function () {
+                div.modal("hide");
             });
-    });
+            if (type === "add") {
+                div.find(".modal-header").find("h3").html(TR("Add New Contact"));
+                div.find(".modal-body").find("p").html(TR("Please input the contact's account ID or domain name below:"));
+                div.find(".modal-body").find("input").attr("placeholder", "FAIcoin Account ID").attr("name", "contact-id").addClass("input-id");
+                div.find(".idbtn.cancel").html(TR("Cancel"));
+                div.find(".idbtn.ok").html(TR("Add New")).unbind().click(function () {
+                    console.log("add btin")
+                    var id = $("#add-contact").find('input[name="contact-id"]').val();
+                    if (contacts[id]) {
+                        $("#add-contact").modal("hide");
+                        CPage.showNotice(TR('ID already in contact list'));
+                        return;
+                    }
+                    for (var iid in contacts) {
+                        if (contacts[iid].domainname && contacts[iid].domainname == id) {
+                            $("#add-contact").modal("hide");
+                            CPage.showNotice(TR('Domain already in contact list'));
+                            return;
+                        }
+                    }
+                    if (id == accountID || (gParam.domain && gParam.domain.domain == id)) {
+                        $("#add-contact").modal("hide");
+                        CPage.showNotice(TR('can not add self to contact list'));
+                        return;
+                    }
+                    if (!BrowserAPI.checkNameKey(id)) {
+                        var dm = BrowserAPI.getDomainInfo(id);
+                        console.log(dm);
+                        if (!dm || dm.length == 0) {
+                            CPage.showNotice(TR('ID is not valid'));
+                            return;
+                        }
+                        if (!dm.forward || dm.forward.linkType != "ID") {
+                            CPage.showNotice(TR('ID is not valid'));
+                            return;
+                        }
+                        id = dm.forward.target;
+                    }
+                    if (Messenger.addContact(id)) {
+                        CPage.showNotice(TR('ID successfully added to contact list'));
+                        Messenger.saveContacts();
+                    } else
+                        CPage.showNotice(TR('add ID failed'));
+                    $("#add-contact").modal("hide");
+                });
+            } else if (type === "edit") {
+                div.find(".modal-header").find("h3").html(TR("Edit Contact"));
+                div.find(".modal-body").html("").append($("#edit-contact-body-tpl").clone(true, true).children())
+                $("#edit-contact-body-tpl").remove();
+                div.find(".idbtn.cancel").html(TR("Close"));
+                div.find(".modal-footer").find(".idbtn.ok").remove();
+            }
+            //doTranslate();
+            $("body").append(div);
+        }
+        this.updateModal(type);
+    };
+    this.updateModal = function (type) {
+        var id = type + "-contact";
+        var div = $("#" + id);
+        if (type === "edit") {
+            div.find(".edit-modal-contact").html(currentContact);
+            div.find("input[name='contact-alias']").val(contacts[currentContact].alias);
+            var cc = contacts[currentContact].category;
+            if (!cc)
+                cc = "no category";
+            div.find('.contact-category').html(TR(cc));
+            switch (cc) {
+                case "no category":
+                    $("#btn-friend").text(TR('Add to friends'));
+                    $("#btn-black").text(TR('Add_to_blacklist'));
+                    break;
+                case "friend":
+                    $("#btn-friend").text(TR('Remove from Friends'));
+                    $("#btn-black").text(TR('Add_to_blacklist'));
+                    break;
+                case "blacklisted":
+                    $("#btn-friend").text(TR('Add to friends'));
+                    $("#btn-black").text(TR('Remove from blacklist'));
+            }
+
+        }
+        div.modal({show: true}).center();
+    }
+    this.getPageName = function () {
+        var id = CUtil.getGet("chatto");
+        if (id !== null)
+            return "chatto";
+        else
+            return "messenger";
+    }
 }

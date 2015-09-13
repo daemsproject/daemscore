@@ -5,34 +5,31 @@ var langJS = null;
 var trlist;
 var translate = function (jsdata) {
     $("[tr]").each(function (index) {
-        
+
         var strTr = jsdata [$(this).attr('tr')];
-        if(typeof strTr==="undefined")
-            strTr=$(this).attr('tr');
+        if (typeof strTr === "undefined")
+            strTr = $(this).attr('tr');
         $(this).html(strTr);
 
     });
     $("[placeholder]").each(function (index) {
         var strTr = jsdata [$(this).attr('placeholder')];
-        $(this).attr("placeholder",strTr);
+        $(this).attr("placeholder", strTr);
+    });
+    $("[title]").each(function (index) {
+        var strTr = jsdata [$(this).attr('title')];
+        $(this).attr("title", strTr);
     });
 };
-
-//langCodeF = navigator.language;
-//langCode = langCodeF.substr(0, 2);
-console.log(navigator.language);
-langCodeF = BrowserAPI.getLang();
-console.log(langCodeF);
+langCodeF = typeof BrowserAPI === "undefined" ? navigator.language || navigator.userLanguage : BrowserAPI.getLang();
 if (langCodeF.userlang)
     langCodeF = langCodeF.userlang;
-else
+else if (langCodeF.systemlang)
     langCodeF = langCodeF.systemlang;
 langCode = langCodeF.substr(0, 2);
 
 var doTranslate = function () {
     var langFile = ($.inArray(langCode, langs) >= 0) ? '../js/lang/' + langCode + '.json' : '../js/lang/en.json';
-    console.log(langCode);
-    console.log(langFile);
     var t;
     $.getJSON(langFile, translate);
     $.ajax({
@@ -45,8 +42,8 @@ var doTranslate = function () {
     });
     trlist = t;
 }
-var TR=function(a){
-    if(typeof trlist[a]==="undefined")
-            return a;
-        return trlist[a];
+var TR = function (a) {
+    if (typeof trlist[a] === "undefined")
+        return a;
+    return trlist[a];
 }
