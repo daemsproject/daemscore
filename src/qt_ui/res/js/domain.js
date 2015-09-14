@@ -123,7 +123,6 @@ var DomainManager = new function () {
             CPage.updateBalance();
         };
         var ac = function (a) {
-            console.log("refresh");
             window.location.href = window.location.href;
         }
         FAI_API.regNotifyTxs(ab, [accountID]);
@@ -154,7 +153,6 @@ var DomainManager = new function () {
                 CPage.showNotice(TR("Please choose a domain first"));
                 return;
             }
-            console.log(domains[currentDomain].group);
             $("#value-needed-renew").text(domains[currentDomain].group);
             $("#renew-domain").find("input[name='value-to-lock']").val(domains[currentDomain].group);
             $("#domain-to-renew").text(currentDomain);
@@ -258,7 +256,6 @@ var DomainManager = new function () {
         });
         $("#renew-domain").find(".ok").unbind().click(function () {
             var locktime = $("#renew-domain").find("input[name='lock_time']").val();
-            console.log(locktime);
             if (isNaN(locktime) || locktime < 1) {
                 i.makeNotice('error', 'reg-domain-error', TR("lock time is too short"));
                 return;
@@ -325,7 +322,6 @@ var DomainManager = new function () {
             }
 
             if (changed) {
-                console.log(d);
                 var feerate = FAI_API.getFeeRate(0.15);
                 FAI_API.updateDomain(accountID, currentDomain, d, feerate, function (newd) {
                     i.makeNotice('success', 'update-domain-success', TR('domain updated!Please wait for 1 confirmation to validate update.'));
@@ -338,9 +334,7 @@ var DomainManager = new function () {
         });
         $("#home").find("input[name='forward']").unbind().change(function () {
             var forward = $("#home").find("input[name='forward']").val();
-            console.log(forward);
             var dF = FAI_API.b32CheckDecode(forward);
-            console.log(dF);
             if (dF && forward !== gParam.accountID && currentDomain) {
                 getForwardSig();
                 $(".dmn-sig").removeClass("hide");

@@ -5,11 +5,9 @@ var currentTab = "br-new-btn";
 var currentPage;
 var gParam;
 $(document).ready(function () {
-    console.log(new Date());
     $("#tpls").load("templates.html", function () {
         CUtil.initGParam();
         var page = CBrowser.getPageName();
-        console.log(page + "  " + new Date());
         switch (page) {
             case "homepage":
                 prepareStdTpl();
@@ -61,10 +59,6 @@ $(document).ready(function () {
             CBrowser.regLink($(this));
         });
     });
-//    $("#test1-btn").click(function () {
-//    });
-//    $("#test2-btn").click(function () {
-//    });
     $(".bclink").click(function () {
         regBclink($(this));
     });

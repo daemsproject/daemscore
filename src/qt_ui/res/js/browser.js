@@ -77,7 +77,6 @@ var CBrowser = new function () {
         return null;
     };
     this.getTextFrJson = function (ctt) {
-        console.log(ctt);
         if (ctt.content[0].cc_name !== "CC_FILE_P" || ctt.content[0].cc_name !== "CC_P")
             return false;
         for (var i in ctt.content[0].content) {
@@ -139,16 +138,9 @@ var CBrowser = new function () {
                 CBrowser.viewLink(div.attr("href"));
         }
     };
-//    this.showFullImg = function (div) {
-//        if (div.find("img").length !== 0) {
-//            $("#fullImage").html(div.html());
-//            $("#fullImage").find("img").removeClass("brimg");
-//        }
-//    };
     this.getLinkA = function (l) {
         var ldiv = $("#linka").clone(true, true);
         ldiv.find("a").attr("href", l).html(l).show();
-//        console.log(ldiv.html());
         return ldiv.html();
     };
     this.fillSdiv = function (sdiv, ctt, fType) {
@@ -164,7 +156,6 @@ var CBrowser = new function () {
         var pcc = ctt.content[0].cc_name;
         if (pcc !== "CC_P" && pcc !== "CC_FILE_P" && pcc !== "CC_TEXT_P" && pcc !== "CC_LINK_P" && pcc !== "CC_TEXT" && pcc !== "CC_LINK" && pcc !== "CC_FILE_PACKAGE_P")
             return false;
-        console.log(ctt);
         if (typeof fType !== "undefined") {
             if (fType === CONTENT_TYPE_HOT) {
                 var d = $("<span />").html(TR("Deposit: ") + fai + ctt.satoshi / COIN).css("margin-left", 20);
@@ -183,14 +174,11 @@ var CBrowser = new function () {
         }
 
         var idiv;
-//        console.log(r);
         if (r.filepackage) {
             idiv = $("#image-tpl").clone(true, true);
             idiv.find(".ctt-rmdr").removeClass("hide").html(TR("Filepackage")).click(function () {
                 FAI_API.goToCustomPage(r.selflink);
             });
-            console.log(r);
-//            return sdiv;
         } else if (r.fdata) {
             if ($.inArray(r.ftype, CONTENT_FILE_TYPE.image) >= 0) {
                 idiv = $("#image-tpl").clone(true, true);
@@ -210,7 +198,6 @@ var CBrowser = new function () {
             } else
             {
                 idiv = $("#image-tpl").clone(true, true);
-                console.log("rmdr");
                 idiv.find(".ctt-rmdr").removeClass("hide").attr("fdata", r.fdata).attr("fname", r.fname).html(TR("File")).click(function () {
                     var fdata = base64.decode($(this).attr("fdata"));
                     var fname = $(this).attr("fname");
@@ -242,7 +229,6 @@ var CBrowser = new function () {
         return sdiv;
     };
     this.addContent = function (ctt, fType, fPos, fShowProd) {
-//        console.log(ctt);
         fPos = typeof fPos !== 'undefined' ? fPos : true;
         fType = typeof fType !== 'undefined' ? fType : CONTENT_TYPE_FEED;
         fShowProd = typeof fShowProd !== 'undefined' ? fShowProd : true;
@@ -254,7 +240,6 @@ var CBrowser = new function () {
         }
         if (!ctt)
             return false;
-//        console.log(ctt.content);
         if (ctt.content.length === 0)
             return false;
         if (ctt.content[0].content === "non-standard")
@@ -302,7 +287,6 @@ var CBrowser = new function () {
         var ddiv = $("#domain-tpl").clone(true, true).removeAttr("id").removeClass("hide");
         var pdiv = $("#poster-tpl").clone(true, true).removeAttr("id");
         ddiv.find(".container").prepend(pdiv.children());
-        console.log(domain);
         if (domain.forward.target)
             ddiv.find(".id").find(".text").attr("fullid", domain.forward.target);
         else {
@@ -319,14 +303,12 @@ var CBrowser = new function () {
         ddiv.find(".expt").html(CUtil.dateToShortString(vt));
         ddiv.find(".owner").html(domain.owner);
         var bl = CUtil.getBalanceLevel(Number(domain.lockvalue / COIN));
-        console.log(bl);
         ddiv.find(".lckvl").html(CPage.getBalanceHtml(bl, Number(domain.lockvalue / COIN)).html());
         ddiv.find(".fwd-tgt").html(domain.forward.target);
         if (domain.icon) {
             var iconCtt = FAI_API.getContentByLink(domain.icon);
             var iconCttP = CUtil.parseCtt(iconCtt);
             var icon = this.createImgHtml(iconCttP);
-            console.log(icon);
             ddiv.find(".icon").html(icon);
         }
         fPos ? $("#mainframe").prepend(ddiv.children()) : $("#mainframe").append(ddiv.children());
@@ -374,7 +356,6 @@ var CBrowser = new function () {
     };
     this.refreshNew = function () {
         var ctts = this.getContents(true, "new");
-//        console.log(ctts);
         this.clearContent();
         $(".column2").scrollTop(); // this line fixes scroll bar stay bottom issue
         for (var k in ctts) {
@@ -388,13 +369,10 @@ var CBrowser = new function () {
         tags = (tags.length > 0 && fKeyword) ? tags.split(",") : [];
         params.tags = tags;
         params.cformat = 6;
-        //params.ccs=["CC_TEXT"];
         var stype = $("#search input[name='srch-type']:checked").val();
-        console.log(stype);
         this.clearContent();
         if (stype === "ctt") {
             var ctts = FAI_API.getPromotedContents(params);
-//            console.log(ctts);
             $(".column2")[0].scrollHeight; // this line fixes scroll bar stay bottom issue
             for (var k in ctts)
                 this.addContent(ctts[k], CONTENT_TYPE_HOT, false);
@@ -411,7 +389,6 @@ var CBrowser = new function () {
             var params = {};
             params.tags = tags;
             var prods = FAI_API.searchProducts(params);
-            console.log(prods);
             for (var k in prods)
                 this.addProduct(prods[k]);
             if (!prods)
@@ -420,8 +397,6 @@ var CBrowser = new function () {
     }
     this.refreshOld = function () {
         var ctts = this.getOldContents("new");
-        console.log('refreshOld');
-        console.log(ctts);
         for (var k in ctts) {
             this.addContent(ctts[k], CONTENT_TYPE_FEED, false);
         }
@@ -452,8 +427,6 @@ var CBrowser = new function () {
     this.refreshNewDevpage = function () {
         var devid = this.getDevId();
         var myid = [devid];
-//       myid = [""];
-        console.log(myid);
         var ctts = this.getNewContents("myp", myid);
         for (var k in ctts) {
             this.addContent(ctts[k], CONTENT_TYPE_MINE, false);
@@ -465,7 +438,6 @@ var CBrowser = new function () {
     };
     this.refreshOldFollowed = function () {
         var flist = this.getFollowed();
-//        console.log(flist);
         var ctts = this.getOldContents("fll", flist);
         for (var k in ctts) {
             this.addContent(ctts[k], CONTENT_TYPE_FOLLOW, false);
@@ -509,20 +481,17 @@ var CBrowser = new function () {
         var hpheader = $("#hpheader-tpl").clone(true, true);
         hpheader.attr("id", "hpheader").removeClass("hide");
         var domain = FAI_API.getDomainByForward(id);
-        console.log(domain);
         hpheader = this.fillHpheader(hpheader, id, domain);
         $("body").prepend(hpheader);
         $(".navi-name").click(function () {
             CBrowser.toggleIdOpt($(this).parent());
-            console.log('test');
         });
-//        console.log(id);      
         hpgDisp = [];
         this.refreshHpg(id);
     };
     this.goToLinkpage = function (linkstr, format) {
+        currentPage = "link";
         format = typeof format === "undefined" ? 7 : format;
-        console.log("goto");
         $("#shdr").remove();
         $("#navi-bar").remove();
         $("#mainframe").html("");
@@ -531,8 +500,6 @@ var CBrowser = new function () {
         for (var i = 0; i <= 7; i++)
             $("#mainframe").append("<a href='" + linkstr + "&format=" + i + "&showdebug=true'>Format " + i + "</a><br />");
         var ctt2 = FAI_API.getContentByLink(linkstr, format);
-        console.log(linkstr);
-//        var url = "fai:browser/?link=" + linkstr;
 
         var ldiv = $("#linkpage-tpl").clone(true, true).attr("id", "linkpage").removeClass("hide");
         ldiv.find("pre").html(JSON.stringify(ctt2, null, 2));
@@ -549,13 +516,6 @@ var CBrowser = new function () {
         })
         $("#mainframe").append(ldiv);
     };
-//    this.regFileDownload = function () {
-//        console.log("565");
-//        console.log($(".ctt-rmdr").length);
-//        $(".ctt-rmdr").unbind().click(function () {
-//            console.log("cli");
-//        });
-//    }
     this.getNewContents = function (page, addrs) {
         return this.getContents(true, page, addrs);
     };
@@ -575,10 +535,8 @@ var CBrowser = new function () {
         switch (page) {
             case "new":
                 flink = CLink.set(fNewOld ? parseInt(FAI_API.getBlockCount()) : newDisp[1]).toString();
-//        console.log(fNewOld + " " + sbh);
                 var clink = flink;
-                console.log(flink);
-                var blkPR = 10; // todo change to about 10
+                var blkPR = 10; 
                 var i = 0;
                 while (ctts.length < rc && CLink.set(clink).nHeight > 0) {
                     var tmp = FAI_API.getContents(clink, blkPR, false, frAddrs, toAddrs);
@@ -587,13 +545,11 @@ var CBrowser = new function () {
                         var link2 = tmp[tmp.length - 1].link;
                         clink = CLink.set(link1).nHeight === CLink.set(link2).nHeight ? (CLink.cmp(link1, link2) > 0 ? link1 : link2) : (CLink.cmp(link1, link2) > 0 ? link2 : link1);
                         clink = CLink.set(clink).nVoutPP().toString();
-//                console.log(link1 + "   " + link2);
                     } else {
                         clink = CLink.set(CLink.set(clink).nHeight - blkPR).toString();
                         blkPR = blkPR * 10;
                     }
 
-                    console.log(clink + "   " + tmp.length + "  " + ctts.length);
                     ctts = ctts.concat(tmp);
                     if (i++ > 10)
                         break;
@@ -601,36 +557,22 @@ var CBrowser = new function () {
                 if (clink === "")
                     clink = CLink.set(0).toString();
                 newDisp = fNewOld ? [flink, clink] : [newDisp[0], clink];
-                console.log(newDisp + "  " + new Date());
                 break;
-//            case "fll":
-//                fllDisp = fNewOld ? [flink, clink] : [fllDisp[0], clink];
-//                console.log(fllDisp);
-//                break;
-
-
             case "myp":
             case "fll":
             case "hpg":
-
-//                var param = mypDisp.length > 0 ? (fNewOld ? dParam : mypDisp[0]) : dParam;
                 var param = typeof gParam[page] === "undefined" ? dParam : gParam[page];
                 if (param.isEnd)
                     break;
-                console.log(param);
                 while (ctts.length < rc) {
                     var tmp = FAI_API.getContentsByAddresses(param.nFile, param.nPos, param.nRange, param.ftxCount, frAddrs, toAddrs, false);
-                    console.log("call count out " + tmp.contents.length);
-                    console.log(tmp);
                     if (!tmp.contents)
                         break;
                     ctts = ctts.concat(tmp.contents);
-                    param.ftxCount = tmp.totalTxProcessed
+                    param.ftxCount = tmp.totalTxProcessed;
                     param.nFile = tmp.nFile;
                     while (param.ftxCount < tmp.totalTxInRange && ctts.length < rc) {
                         tmp = FAI_API.getContentsByAddresses(param.nFile, param.nPos, param.nRange, param.ftxCount, frAddrs, toAddrs, false);
-                        console.log("call count in " + tmp.contents.length);
-                        console.log(tmp);
                         if (!tmp.contents)
                             break;
                         param.ftxCount += tmp.totalTxProcessed;
@@ -647,46 +589,25 @@ var CBrowser = new function () {
                         else
                             param.nFile--;
                     }
-
                 }
-                console.log(param);
                 gParam[page] = param;
-                console.log(JSON.stringify(gParam));
                 break;
-//            case "hpg":
-//                hpgDisp = fNewOld ? [flink, clink] : [hpgDisp[0], clink];
-//                console.log(hpgDisp);
-//                break;
         }
-
-
-
-
-
-        console.log(ctts);
         return ctts;
     };
     this.switchTab = function (tabid) {
         if ($("#" + tabid).parent().hasClass("active"))
             return;
-        console.log(tabid);
         $("#" + tabid).parent().parent().children("li").removeClass("active");
         $("#" + tabid).parent().addClass("active");
         $("#mainframe").find("#search").remove();
         $("#mainframe").children(".container").remove();
         $("#mainframe").children("hr").remove();
-//        this.showTopLoader();
-//        setTimeout(function () {
         CUtil.initGParam();
         CBrowser.switchTabCore(tabid);
-//            this.hideTopLoader();
-//        }, tabid);
-
-//        newDisp = [];
     };
     this.switchTabCore = function (tabid) {
         currentTab = tabid;
-        console.log(tabid);
         this.clearFollowList();
         switch (tabid) {
             case "br-new-btn":
@@ -724,14 +645,12 @@ var CBrowser = new function () {
         if ($("#slider").length == 0)
             CBrowser.refreshImages(true);
         this.refreshNew();
-//        this.refreshOld();
     };
     this.hotAction = function () {
         if ($("#slider").length == 0)
             CBrowser.refreshImages(true);
         var sDiv = $("#search-tpl").clone(true, true);
         $("#mainframe").prepend(sDiv.removeClass("hide").attr("id", "search"));
-//         $("#search input[name='srch-type',value='ctt']").attr("checked",true);
         $("#search-btn").click(function () {
             CBrowser.refreshHot();
         });
@@ -773,7 +692,6 @@ var CBrowser = new function () {
     this.refreshHpg = function (id, fNewOld) {
         fNewOld = typeof fNewOld !== 'undefined' ? fNewOld : true;
         var ctts = this.getContents(fNewOld, "hpg", [id]);
-        console.log(ctts.length);
         for (var k in ctts) {
             this.addContent(ctts[k], CONTENT_TYPE_HOMEPAGE, false);
         }
@@ -788,40 +706,39 @@ var CBrowser = new function () {
         return $("#navi-bar").find(".tabbar").find(".active").find("a").attr("id");
     };
     this.refreshImages = function (fFrBuffer, cbh) {
-        console.log("refreshImages");
         this.addSlider();
         var app = "browser";
         var path = "buffer";
         var filename = "sliderBuffer.json";
-//        var sCount = $('#slider ul li').length;
         fFrBuffer = typeof fFrBuffer === "undefined" ? false : fFrBuffer;
         var imgs;
-        console.log(imageParam);
-//        if (fFrBuffer) {
+        var writeimg=function(imgs){
+            var tmp = {imgs: imgs, frblk: imageParam.frblk};
+            var jtmp = JSON.stringify(tmp);
+            FAI_API.writeFile(app, path, filename, jtmp);
+        }
         var json = FAI_API.readFile(app, path, filename);
-        if (!json)
+        if (!json){
             imgs = CBrowser.getNewImages(imageParam.maxc);
+            imageParam.frblk = Number(FAI_API.getBlockCount());
+            writeimg(imgs);
+        }
         else {
-//                console.log(json.length);
             var tmp = JSON.parse(json);
             imageParam.frblk = tmp.frblk;
             imgs = tmp.imgs;
             if (imgs.length <= 0){
-                imgs = CBrowser.getNewImages();
+                imgs = CBrowser.getNewImages(imageParam.maxc);
                   imageParam.frblk = Number(FAI_API.getBlockCount());
+                  writeimg(imgs);
             }
         }
-//        } else {
         if (!fFrBuffer) {
             cbh = typeof cbh === "undefined" ? Number(FAI_API.getBlockCount()) : cbh;
             if (imageParam.frblk) {
                 if (imageParam.frblk === cbh)
                     return;
             }
-//            var pbh = Number($('#cblc').html());
-//            if (pbh === cbh && sCount >= 5)
-//                return;
-//            console.log(pbh + "   " + cbh);
             var maxb = imageParam.frblk ? cbh - imageParam.frblk : 100;
             var newimgs = CBrowser.getNewImages(imageParam.maxc, maxb);
             if (newimgs) {
@@ -839,22 +756,16 @@ var CBrowser = new function () {
             }
             imageParam.frblk = cbh;
         }
-//        console.log(imgs);
         if (!imgs)
             return;
         if (imgs.length > 0) {
-//            console.log(imgs);
             CBrowser.addSlideImage(imgs);
-            var tmp = {imgs: imgs, frblk: imageParam.frblk};
-            var jtmp = JSON.stringify(tmp);
-//            var tmp2 = JSON.parse(jtmp);
-            FAI_API.writeFile(app, path, filename, jtmp);
             this.prepareSlider();
+            writeimg(imgs);
         }
         $("a").click(function () {
             CBrowser.regLink($(this));
         });
-        console.log("refreshImg end");
     };
     this.getNewImages = function (maxc, maxb) {
         maxc = typeof maxc === "undefined" ? 100 : maxc;
@@ -892,7 +803,6 @@ var CBrowser = new function () {
                 idiv.find("a").attr("href", cttParsed.ltext).html(lname);
             }
         }
-//        console.log(idiv.html());
         return idiv.html();
     };
     this.addSlideImage = function (imgs) {
@@ -905,7 +815,6 @@ var CBrowser = new function () {
         var myid = FAI_API.getAccountID();
         var fkey = "followed-" + type;
         var followedstr = FAI_API.getConf("browser", myid, "", fkey);
-//        console.log(followed);
         if (!followedstr) {
             if (FAI_API.setConf("browser", myid, "", fkey, JSON.stringify([str2fl])))
                 return [str2fl];
@@ -927,7 +836,6 @@ var CBrowser = new function () {
         var myid = FAI_API.getAccountID();
         if (type === "domain") {
             var domain = FAI_API.getDomainInfo(str2unfl);
-//                console.log(domain);
             if (typeof domain.forward !== "undefined") {
                 if (domain.forward.linkType === "ID") {
                     var fid = domain.forward.target;
@@ -941,7 +849,6 @@ var CBrowser = new function () {
             return false;
         else {
             var followed = JSON.parse(followedstr);
-//            followed.push(id);
             for (var i in followed) {
                 if (followed[i] === str2unfl)
                     followed.splice(i, 1);
@@ -955,7 +862,6 @@ var CBrowser = new function () {
         type = (typeof type === "undefined") ? "all" : type;
         var myid = FAI_API.getAccountID();
         var r = [];
-        console.log(type);
         if (type === "all") {
             var fkey = "followed-id";
             var followedstr = FAI_API.getConf("browser", myid, "", fkey);
@@ -973,7 +879,6 @@ var CBrowser = new function () {
             var domains = JSON.parse(FAI_API.getConf("browser", myid, "", fkey));
             for (var i in domains) {
                 var domain = FAI_API.getDomainInfo(domains[i]);
-//                console.log(domain);
                 if (typeof domain.forward === "undefined")
                     continue;
                 if (typeof domain.forward.linkType === "undefined")
@@ -1108,7 +1013,6 @@ var CPublisher = new function () {
     this.getTags = function () {
         var r = [];
         $('.input-tag').each(function () {
-            console.log($(this).val());
             if ($(this).val() !== "")
                 r.push($(this).val());
         });
@@ -1133,7 +1037,6 @@ var CPublisher = new function () {
                         if (l) {
                             var feer = FAI_API.getFeeRate(0.15);
                             var r = FAI_API.createTxByContents(CPublisher.ctts, feer);
-                            console.log(r);
                             CPage.showNotice(TR(r));
                         }
                     };
@@ -1148,7 +1051,6 @@ var CPublisher = new function () {
     }
     this.handleFile = function (f, type) {
         type = typeof type === "undefined" ? "simple" : type;
-        console.log(type);
         var largeFileLimit = 1000000000;
         var perblockLimit = 1000000;
         if (f.size > perblockLimit && type !== "large") {
@@ -1161,7 +1063,6 @@ var CPublisher = new function () {
         if (f.name && f.size <= perblockLimit) {
             var r = new FileReader();
             r.readAsDataURL(f);
-            console.log(f);
             r.onload = (function (f) {
                 return function (e) {
                     var raw = e.target.result;
@@ -1188,7 +1089,6 @@ var CPublisher = new function () {
         } else if (f.name && perblockLimit < f.size <= largeFileLimit) {
             var maxFilePartSize = 1000000;
             var parts = Math.ceil(f.size / maxFilePartSize);
-//            console.log(parts);
             $('#pubbtnh').show();
             $("#confirmpub").removeAttr('disabled');
             CPublisher.showDetails();
@@ -1214,7 +1114,6 @@ var CPublisher = new function () {
                         nf.nPart = i;
                         var cttH = FAI_API.createFilePartContent(nf);
                         var feer = FAI_API.getFeeRate(0.15);
-                        console.log(feer);
                         var r = FAI_API.createTxByContent(cttH, feer);
                         if (r.success)
                             var rdiv = fp.name + " part " + nf.nPart + " txid:nvout --- " + r.success + ":0 <br />"
@@ -1222,7 +1121,6 @@ var CPublisher = new function () {
                             var rdiv = fp.name + " part " + nf.nPart + "failed " + r.error + "<br />";
                         $("body").append(rdiv);
                         i++;
-                        console.log(i);
                         a(i);
                     };
                 })(fp, i);
@@ -1233,12 +1131,9 @@ var CPublisher = new function () {
     };
     this.handleContent = function (ctt) {
         ctt.link = "";
-//        if (!CBrowser.addContent(ctt, CONTENT_TYPE_MINE, true))  // preview on the right
-//            return false;
         $("#confirmpub").removeAttr('disabled');
         var feer = $("#input-feerate").val() > 0 ? $("#input-feerate").val() * COIN / K : 0;
         var deposit = $("#promctt-value").val() > 0 ? $("#promctt-value").val() * COIN : 0;
-//        console.log(deposit);
         var locktime = Math.ceil($("#promctt-date").datepicker("getDate") === null ? 0 : $("#promctt-date").datepicker("getDate").getTime() / 1000 + 86400); // add 24 hour
         var locktime = deposit > 0 ? (locktime > 0 ? locktime : 0) : 0;
         var toId = $("#pubto").find("input[type='text']").val();
@@ -1272,8 +1167,6 @@ var CPublisher = new function () {
         }
 
         input = document.getElementById('theFile');
-        console.log('length');
-        console.log(input.files.length);
         if (input.files.length > 1 && type !== "batch") {
             alert(TR('Only one file is allowed per time'));
             return;
@@ -1289,12 +1182,8 @@ var CPublisher = new function () {
     };
     this.handleFileSelect = function (evt, type) {
         type = typeof type === "undefined" ? "simple" : type;
-//        console.log(evt);
-//        console.log(type);
         evt.stopPropagation();
         evt.preventDefault();
-//        console.log('length');
-//        console.log(evt.dataTransfer.files.length);
 
         if (evt.dataTransfer.files.length > 1 && type !== "batch") {
             alert(TR('Only one file is allowed per time'));
@@ -1316,7 +1205,6 @@ var CPublisher = new function () {
     };
     this.createLinkContent = function (l) {
         var ctthex = FAI_API.createLinkContent(l);
-//        console.log(ctthex);
         var ctt = FAI_API.getContentByString(ctthex.hex);
         ctt.poster = {id: FAI_API.getAccountID()};
         ctt.hex = ctthex.hex;
@@ -1325,10 +1213,8 @@ var CPublisher = new function () {
     this.createTagContent = function (tags) {
         var ctthex = "";
         for (var i in tags) {
-//            console.log(tags[i]);
             var tgcttH = FAI_API.createTagContent(tags[i]);
             ctthex += tgcttH.hex;
-//            console.log(tgcttH);
 
         }
         var ctt = FAI_API.getContentByString(ctthex);
@@ -1345,7 +1231,6 @@ var CPublisher = new function () {
             langctt = FAI_API.icall("encodecontentunit", ["CC_LANG_ZH", "", 1])
         else
             langctt = FAI_API.icall("encodecontentunit", ["CC_LANG", lang, 1])
-//        console.log(langctt);
         return langctt;
     };
     this.combineCtt = function (tctt, lctt, fctt, tgctt, lgctt) { // text content, link, file, tag, lang
@@ -1373,7 +1258,6 @@ var CPublisher = new function () {
             var ctt = FAI_API.getContentByString(ctthex.hex);
             ctt.poster = {id: FAI_API.getAccountID()};
             ctt.hex = ctthex.hex;
-//            console.log(ctt);
             return ctt;
         }
     };
@@ -1433,35 +1317,12 @@ var CPublisher = new function () {
                 }
             });
         }
-
-//        var deposit = Math.floor($("#promctt-value").val() > 0 ? $("#promctt-value").val() : 0);
-//        console.log(deposit);
-//        var deposit = maxTag;
-//        var id = 0;
-//        var count = 0;
-//        $("input[name='tag']").each(function () {
-//            if (count < deposit) {
-//                if ($(this).val() === "") {
-//                    id++;
-//                    return true; // continue
-//                } else {
-//                    var tagChkId = "#chktag-" + id;
-//                    $(tagChkId).prop('checked', true);
-//                    count++;
-//                }
-//            } else {
-//                var tagChkId = "#chktag-" + id;
-//                $(tagChkId).prop('checked', false);
-//            }
-//            id++;
-//        });
     };
     this.addPromCttField = function (fTip) {
         fTip = typeof fTip === "undefined" ? false : fTip;
         var promcttdiv = $("#promctt-tpl").clone(true, true);
         promcttdiv.attr("id", "promctt").removeClass("hide");
         $(promcttdiv).insertBefore($('#pubbtnh'));
-        console.log(fTip);
         if (fTip) {
             $("promctt-check").remove();
             $(".input-tag-wrapper").removeClass("hide");
@@ -1474,7 +1335,6 @@ var CPublisher = new function () {
             $("#promctt-value").attr("placeholder", TR("Value locked for ranking"))
             var tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
-//        console.log(tomorrow);
             $("#promctt-date").datepicker({
                 altFormat: '@',
                 dateFormat: 'yy-mm-dd',
@@ -1501,18 +1361,15 @@ var CPublisher = new function () {
         }
     };
     this.showPreview = function (file) {
-        console.log(file);
         if (file.ctt.content[0].content === "non-standard")
             return;
         var sdiv = $("#standard-tpl").clone(true, true);
-        console.log(sdiv);
         sdiv.removeAttr("id");
         sdiv.find(".container").attr("id", file.hash);
         var id = CBrowser.getIdFrContent(file.ctt);
         sdiv.find(".id").find(".text").attr("fullid", id);
         sdiv.find(".id").find(".text").html(CUtil.getShortPId(id));
         sdiv.find(".linkspan").attr("clink", file.ctt.link);
-//        log("before fill");
         sdiv = CBrowser.fillSdiv(sdiv, file.ctt);
         if (sdiv === false)
             return false;
@@ -1546,23 +1403,15 @@ var CPublisher = new function () {
     };
     this.showDetails = function (fTip) {
         fTip = typeof fTip === "undefined" ? false : fTip;
-//        if ($("#input-feerate").hasClass("visible")){
-//            return;
-        console.log("show details");
         $("#cclang-span").html(TR("tag-" + langCode));
         $("#CC_LANG").attr("lang", langCode);
         $("#pubdfttag").removeClass("hide");
         var feediv = $("#fee-tpl")
         feediv.removeAttr("id").removeClass("hide").find("input[type='text']").addClass("visible");
         $(feediv).insertBefore($('#pubbtnh'));
-        console.log("show details 2");
         if ($("#promctt").length === 0) {
-            console.log("show details 3");
             this.addPromCttField(fTip);
         }
-//        else {
-
-//        }
     };
     this.refreshFee = function (size) {
         var len = typeof size === "undefined" ? 260 : size;
@@ -1573,9 +1422,7 @@ var CPublisher = new function () {
         if ($("#input-feerate").val() == "")
             $("#input-feerate").val(sgstPK);
         var feeRatePK = typeof Number($("#input-feerate").val()) !== "number" ? sgstPK : $("#input-feerate").val();
-//        console.log(typeof $("#input-feerate").val());
         var minPK = currentFeeRate.minfeer / COIN * K;
-//        console.log(feeRatePK + "   " + len);
         var estfee = feeRatePK * len / K;
         $("#estfee").html("φ" + estfee.toString().substring(0, 8));
         $("#sgstr").html(sgstPK.toString().substring(0, 6) + " φ/KB");
@@ -1589,7 +1436,7 @@ var CPublisher = new function () {
         }
     };
     this.shareLink = function (link) {
-        if (currentPage === "homepage") {
+        if (currentPage === "homepage"||currentPage === "link") {
             FAI_API.goToCustomPage("fai:browser/?share=true&link=" + link);
             return;
         }
@@ -1601,10 +1448,6 @@ var CPublisher = new function () {
         $("#input-link").val(link);
     };
     this.shareId = function (id) {
-//        if (typeof currentPage === "undefined") {
-//            FAI_API.goToCustomPage("fai:browser/?share=true&id=" + id);
-//            return;
-//        }
         if (typeof currentPage !== "undefined") {
             if (currentPage === "homepage") {
                 FAI_API.goToCustomPage("fai:browser/?share=true&id=" + id);
@@ -1628,19 +1471,12 @@ var CPublisher = new function () {
     };
     this.commentLink = function (link, id, fTip) {
         fTip = typeof fTip === "undefined" ? false : fTip;
-        if (currentPage === "homepage") {
+        if (currentPage === "homepage"||currentPage === "link") {
             FAI_API.goToCustomPage("fai:browser/?cmt=true&link=" + link + "&id=" + id);
             return;
         }
         this.shareLink(link);
-        console.log(fTip)
-//        if (fTip) {
         this.showDetails(fTip);
-//        }
-//        else if ($("#promctt").length > 0)
-//            $("#promctt").remove();
-//        console.log($("#pubto").length)
-////        if ($("#pubto").length <= 0)
         this.addPubToField();
         $("#pubto").find("input[type='text']").val(id);
     };
@@ -1652,7 +1488,6 @@ var CPublisher = new function () {
             this.clear();
     };
     this.clear = function () {
-        console.log("call clear");
         $("#pubpreview").addClass("hide");
         $("#theText").val("");
         $("#promctt-value").val("");
@@ -1670,10 +1505,8 @@ var CPublisher = new function () {
         currentFeeRate.minfeer = FAI_API.getFeeRate();
     };
     this.pubSimpleAction = function () {
-//        $("#mainframe").html("<div class=")
         $("#mainframe").html($("#maininput-tpl").html()).attr("id", "maininput");
         $("#maininput").html($("#maininput-tpl").html());
-        console.log("m1");
         prepareSimplePub();
         prepareStdTpl();
     };
@@ -1682,7 +1515,6 @@ var CPublisher = new function () {
         var pkgdiv = $("#pkginput-tpl").clone(true, true);
         $("#maininput").html(pkgdiv.removeClass("hide").attr("id", "pkginput"));
         preparePkgPub();
-//        prepareStdTpl();
     };
     this.pubLFileAction = function () {
         $("#mainframe").html($("#maininput-tpl").html()).attr("id", "maininput");

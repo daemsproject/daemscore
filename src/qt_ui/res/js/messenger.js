@@ -24,20 +24,15 @@ var Messenger = new function () {
             pdiv.find(".id").find(".text").attr("domain", domain.domain);
         pdiv.find(".id").find(".idtype").html(idtype + intro);
         if (domain.icon) {
-            console.log(domain.icon);
             var iconCtt = FAI_API.getContentByLink(domain.icon);
             var iconCttP = CUtil.parseCtt(iconCtt);
             var icon = CBrowser.createImgHtml(iconCttP);
-            console.log(icon);
             pdiv.find(".icon").html(icon);
         }
         $("#current-contact").html("").prepend(pdiv.children());
-        console.log('edi')
         $("#btn-edit-ctct").removeClass("hide").unbind().click(function () {
-            console.log('ed')
             Messenger.showModal("edit");
         });
-        console.log($("#btn-edit-ctct"));
         this.showMessages(id);
     }
 
@@ -52,7 +47,6 @@ var Messenger = new function () {
         if (a.category)
             contacts[id].category = a.category;
         var domain = FAI_API.getDomainByForward(id);
-        console.log(domain);
         if (domain && domain.domain) {
             contacts[id].domainName = domain.domain;
             if (!contacts.intro && domain.intro)
@@ -112,7 +106,6 @@ var Messenger = new function () {
             var c = contacts[id];
             if (!c) {
                 img = this.getIconFrId(id);
-                console.log(c);
             } else if (c.icon) {
                 img = CPage.createImgHtml(c.icon.type, c.icon.data);
             }
@@ -151,7 +144,6 @@ var Messenger = new function () {
         var id = currentContact;
         var oldMsgs = FAI_API.getMessages(gParam.accountID, [id], 0, true, false, 0, contacts[id].offset, 20);
         messages[id] = oldMsgs.concat(messages[id]);
-        console.log(messages[id].length);
         this.decryptAndShow(id, oldMsgs, true);
         contacts[id].offset += oldMsgs.length;
     }
@@ -206,7 +198,6 @@ var Messenger = new function () {
         }
     };
     this.addContact = function (id) {
-        console.log(id);
         if (contacts[id] || id == accountID)
             return false;
         contacts[id] = {};
@@ -295,12 +286,9 @@ var Messenger = new function () {
         contacts = $.parseJSON(FAI_API.readFile("messenger", gParam.accountID, "contacts"));
         if (!contacts || typeof contacts === "undefined" || contacts.length == 0)
             contacts = {};
-        console.log(contacts);
         for (var id in contacts)
             this.showContactInList(id);
         var data = FAI_API.getMessages(gParam.accountID, null, 0, true, true, Number(lastBlock) + 1, 0, 100000);
-
-        console.log(data);
         if (data && !data.error) {
             for (var l in data) {
                 this.addContact(l);
@@ -326,9 +314,7 @@ var Messenger = new function () {
         return false;
     }
     this.notifiedTx = function (x) {
-        //console.log(x);
         var data = FAI_API.getTxMessages(gParam.accountID, [x.tx.txid]);
-        console.log(data);
         if (data && !data.error) {
             var msgs = [];
             for (var j in data) {
@@ -345,7 +331,6 @@ var Messenger = new function () {
         }
     };
     this.notifiedBlock = function (l) {
-//        console.log(l);
         latestBlock = l.blockHeight;
         FAI_API.setConf("messenger", gParam.accountID, "", "lastUpdateBlock", latestBlock);
     }
@@ -364,7 +349,6 @@ var Messenger = new function () {
                 div.find(".modal-body").find("input").attr("placeholder", "FAIcoin Account ID").attr("name", "contact-id").addClass("input-id");
                 div.find(".idbtn.cancel").html(TR("Cancel"));
                 div.find(".idbtn.ok").html(TR("Add New")).unbind().click(function () {
-                    console.log("add btin")
                     var id = $("#add-contact").find('input[name="contact-id"]').val();
                     if (contacts[id]) {
                         $("#add-contact").modal("hide");
@@ -385,7 +369,6 @@ var Messenger = new function () {
                     }
                     if (!FAI_API.checkNameKey(id)) {
                         var dm = FAI_API.getDomainInfo(id);
-                        console.log(dm);
                         if (!dm || dm.length == 0) {
                             CPage.showNotice(TR('ID is not valid'));
                             return;

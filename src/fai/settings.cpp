@@ -32,7 +32,7 @@ CSettings::CSettings()
 bool CSettings::LoadSettings()
 {
     filesystem::path fpFile=GetDataDir() / "appdata" / "settings.json";
-    LogPrintf("LoadSettings1 \n");
+    //LogPrintf("LoadSettings1 \n");
     if(!FileExists(fpFile.string()))
         return SaveSettings();
     Value val;
@@ -41,7 +41,7 @@ bool CSettings::LoadSettings()
          SaveSettings();
         return false;
     }
-    LogPrintf("LoadSettings2 \n");
+    //LogPrintf("LoadSettings2 \n");
     
     Object& obj= val.get_obj();
     //LogPrintf("LoadSettings obj size%i \n",obj.size());
@@ -67,7 +67,7 @@ bool CSettings::LoadSettings()
        SaveSettings();
         return false;
     }
-    LogPrintf("LoadSettings3 \n");
+    //LogPrintf("LoadSettings3 \n");
     Object& obj2 = val2.get_obj();
     //BOOST_FOREACH(Object& pair, obj2)
     for(unsigned int i=0;i<obj2.size();i++)

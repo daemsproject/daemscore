@@ -279,25 +279,25 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle *networkStyle,QString languageIn,  QWi
 
     // Accept D&D of URIs
     setAcceptDrops(true);
-LogPrintf("bitcoingui: 1 \n");
+//LogPrintf("bitcoingui: 1 \n");
     // Create actions for the toolbar, menu bar and tray/dock icon
     // Needs mainView to be initialized
     createActions(networkStyle);
-LogPrintf("bitcoingui: 2 \n");
+//LogPrintf("bitcoingui: 2 \n");
 // Create application menu bar
     createMenuBar();
 
     
-LogPrintf("bitcoingui: 3 \n");
+//LogPrintf("bitcoingui: 3 \n");
     // Create the toolbars
     createToolBars();
-LogPrintf("bitcoingui: 4 \n");
+//LogPrintf("bitcoingui: 4 \n");
     // Create system tray icon and notification
     createTrayIcon(networkStyle);
-LogPrintf("bitcoingui: 5 \n");
+//LogPrintf("bitcoingui: 5 \n");
     // Create status bar
     statusBar();
-LogPrintf("bitcoingui: 6 \n");
+//LogPrintf("bitcoingui: 6 \n");
     // Status bar notification icons
     QFrame *frameBlocks = new QFrame();
     frameBlocks->setContentsMargins(0,0,0,0);
@@ -309,7 +309,7 @@ LogPrintf("bitcoingui: 6 \n");
     labelEncryptionIcon = new QLabel();
     labelConnectionsIcon = new QLabel();
     labelBlocksIcon = new QLabel();
-    LogPrintf("bitcoingui: 7 \n");
+    //LogPrintf("bitcoingui: 7 \n");
     if(enableWallet)
     {
         //frameBlocksLayout->addStretch();
@@ -322,14 +322,14 @@ LogPrintf("bitcoingui: 6 \n");
     frameBlocksLayout->addStretch();
     frameBlocksLayout->addWidget(labelBlocksIcon);
     frameBlocksLayout->addStretch();
-LogPrintf("bitcoingui: 8 \n");
+//LogPrintf("bitcoingui: 8 \n");
     // Progress bar and label for blocks download
     progressBarLabel = new QLabel();
     progressBarLabel->setVisible(false);
     progressBar = new GUIUtil::ProgressBar();
     progressBar->setAlignment(Qt::AlignCenter);
     progressBar->setVisible(false);
-LogPrintf("bitcoingui: 9 \n");
+//LogPrintf("bitcoingui: 9 \n");
     // Override style sheet for progress bar for styles that have a segmented progress bar,
     // as they make the text unreadable (workaround for issue #1071)
     // See https://qt-project.org/doc/qt-4.8/gallery.html
@@ -342,7 +342,7 @@ LogPrintf("bitcoingui: 9 \n");
     statusBar()->addWidget(progressBarLabel);
     statusBar()->addWidget(progressBar);
     statusBar()->addPermanentWidget(frameBlocks);
-LogPrintf("bitcoingui: 10 \n");
+//LogPrintf("bitcoingui: 10 \n");
     //connect(openRPCConsoleAction, SIGNAL(triggered()), rpcConsole, SLOT(show()));
 
     // prevents an open debug window from becoming stuck/unusable on client shutdown
@@ -884,58 +884,58 @@ void BitcoinGUI::createToolBars()
         //toolbar->addAction(downloaderAction);
         
         
-           LogPrintf("bitcoingui createToolBars: 1 \n");    
+           //LogPrintf("bitcoingui createToolBars: 1 \n");    
         //m_navigationBar = addToolBar(tr("Navigation"));
         m_navigationBar->setMaximumHeight(30);
         m_navigationBar->setToolButtonStyle(Qt::ToolButtonIconOnly);
-         LogPrintf("bitcoingui createToolBars: 2 \n"); 
+         //LogPrintf("bitcoingui createToolBars: 2 \n"); 
         connect(m_navigationBar->toggleViewAction(), SIGNAL(toggled(bool)),
             this, SLOT(updateToolbarActionText(bool)));
-         LogPrintf("bitcoingui createToolBars: 3 \n"); 
+         //LogPrintf("bitcoingui createToolBars: 3 \n"); 
         m_historyBack->setIcon(QApplication::style()->standardIcon(QStyle::SP_ArrowBack, 0, this));
         m_historyBackMenu = new QMenu(this);
         m_historyBack->setMenu(m_historyBackMenu);
-         LogPrintf("bitcoingui createToolBars: 4 \n"); 
+         //LogPrintf("bitcoingui createToolBars: 4 \n"); 
         connect(m_historyBackMenu, SIGNAL(aboutToShow()),
             this, SLOT(slotAboutToShowBackMenu()));
-         LogPrintf("bitcoingui createToolBars: 5 \n"); 
+         //LogPrintf("bitcoingui createToolBars: 5 \n"); 
         connect(m_historyBackMenu, SIGNAL(triggered(QAction*)),
             this, SLOT(slotOpenActionUrl(QAction*)));
-         LogPrintf("bitcoingui createToolBars: 6 \n"); 
+        //LogPrintf("bitcoingui createToolBars: 6 \n"); 
     m_navigationBar->addAction(m_historyBack);
     
     m_historyForward->setIcon(QApplication::style()->standardIcon(QStyle::SP_ArrowForward, 0, this));
     m_historyForward->setIconVisibleInMenu(true);
     m_historyForwardMenu = new QMenu(this);
-     LogPrintf("bitcoingui createToolBars: 7 \n"); 
+    // LogPrintf("bitcoingui createToolBars: 7 \n"); 
     connect(m_historyForwardMenu, SIGNAL(aboutToShow()),
             this, SLOT(slotAboutToShowForwardMenu()));
-     LogPrintf("bitcoingui createToolBars: 8 \n"); 
+    // LogPrintf("bitcoingui createToolBars: 8 \n"); 
     connect(m_historyForwardMenu, SIGNAL(triggered(QAction*)),
             this, SLOT(slotOpenActionUrl(QAction*)));
-     LogPrintf("bitcoingui createToolBars: 9 \n"); 
+    // LogPrintf("bitcoingui createToolBars: 9 \n"); 
     m_historyForward->setMenu(m_historyForwardMenu);
     m_navigationBar->addAction(m_historyForward);
- LogPrintf("bitcoingui createToolBars: 10 \n"); 
+ //LogPrintf("bitcoingui createToolBars: 10 \n"); 
     m_stopReload = new QAction(this);
     m_historyBack->setIconVisibleInMenu(true);
     m_reloadIcon = QApplication::style()->standardIcon(QStyle::SP_BrowserReload);
     m_stopReload->setIcon(m_reloadIcon);
- LogPrintf("bitcoingui createToolBars: 11 \n"); 
+ //LogPrintf("bitcoingui createToolBars: 11 \n"); 
     m_navigationBar->addAction(m_stopReload);
- LogPrintf("bitcoingui createToolBars: 12 \n"); 
+ //LogPrintf("bitcoingui createToolBars: 12 \n"); 
     m_navigationBar->addWidget(mainView->lineEditStack());
- LogPrintf("bitcoingui createToolBars: 13 \n"); 
+ //LogPrintf("bitcoingui createToolBars: 13 \n"); 
    // m_toolbarSearch = new ToolbarSearch(m_navigationBar);
-     LogPrintf("bitcoingui createToolBars: 14 \n"); 
+     //LogPrintf("bitcoingui createToolBars: 14 \n"); 
    // m_navigationBar->addWidget(m_toolbarSearch);
-     LogPrintf("bitcoingui createToolBars: 15 \n"); 
+     //LogPrintf("bitcoingui createToolBars: 15 \n"); 
     //connect(m_toolbarSearch, SIGNAL(search(QUrl)), SLOT(loadUrl(QUrl)));
- LogPrintf("bitcoingui createToolBars: 16 \n"); 
+ //LogPrintf("bitcoingui createToolBars: 16 \n"); 
     m_chaseWidget = new ChaseWidget(this);
-     LogPrintf("bitcoingui createToolBars: 17 \n"); 
+    // LogPrintf("bitcoingui createToolBars: 17 \n"); 
     m_navigationBar->addWidget(m_chaseWidget);
-     LogPrintf("bitcoingui createToolBars: 18 \n"); 
+   //  LogPrintf("bitcoingui createToolBars: 18 \n"); 
     }
 }
 

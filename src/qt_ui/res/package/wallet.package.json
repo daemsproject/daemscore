@@ -29,7 +29,7 @@
 		"icons/tx_inout.png":"icons/tx_inout",
 		"icons/tx_mined.png":"icons/tx_mined",
 		"icons/lock_closed.png":"icons/lock_closed",
-		,"icons/transaction2.png":"icons/transaction_confirmed"
+		"icons/transaction2.png":"icons/transaction_confirmed"
 		,"icons/transaction0.png":"icons/transaction_0"
 		,"icons/clock1.png":"icons/transaction_1"
 		,"icons/clock2.png":"icons/transaction_2"

@@ -4,9 +4,7 @@ function preparePkgPub() {
     });
     $("#confirmpub").click(function () {
         var text = $("#theText").val();
-        //console.log(text);
         var feerate = FAI_API.getFeeRate(0.15);
-        console.log(feerate);
         var result = FAI_API.publishPackage(gParam.accountID, text, Number(feerate));
         CPage.showNotice(result);
     });

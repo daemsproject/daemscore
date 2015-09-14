@@ -1059,15 +1059,15 @@ bool AppInit2(boost::thread_group& threadGroup)
                 pcoinsTip = new CCoinsViewCache(pcoinscatcher);
                 //pScript2TxPosDBView = new CScript2TxPosViewDB(nBlockTreeDBCache, false, fReindex);                
                 pScript2TxPosDB=new CScript2TxPosDB(psqliteDB,fReindex);
-                LogPrintf("init:create dbs 1.\n");
+               // LogPrintf("init:create dbs 1.\n");
                 pBlockPosDB=new CBlockPosDB(psqliteDB,fReindex);
-                LogPrintf("init:create dbs 2.\n");
+               // LogPrintf("init:create dbs 2.\n");
                 pDomainDBView = new CDomainViewDB(psqliteDB,fReindex);   
-                LogPrintf("init:create dbs 3.\n");
+               // LogPrintf("init:create dbs 3.\n");
                 pTagDBView = new CTagViewDB(psqliteDB,fReindex); 
-                LogPrintf("init:create dbs 4.\n");
+               // LogPrintf("init:create dbs 4.\n");
                 pScriptCoinDBView = new CScriptCoinDB(psqliteDB,fReindex); 
-                LogPrintf("init:create dbs 5.\n");
+               // LogPrintf("init:create dbs 5.\n");
                 
                 if (fReindex)
                     pblocktree->WriteReindexing(true);
@@ -1182,11 +1182,11 @@ bool AppInit2(boost::thread_group& threadGroup)
 
         nStart = GetTimeMillis();
         bool fFirstRun = true;
-        LogPrintf("loadwallet1 \n");
+        //LogPrintf("loadwallet1 \n");
         pwalletMain = new CWallet();
-        LogPrintf("loadwallet2 \n");
+        //LogPrintf("loadwallet2 \n");
         DBErrors nLoadWalletRet = pwalletMain->LoadWallet(fFirstRun);
-        LogPrintf("loadwallet3 %b\n",fFirstRun);
+        //LogPrintf("loadwallet3 %b\n",fFirstRun);
         if (nLoadWalletRet != DB_LOAD_OK)
         {
             if (nLoadWalletRet == DB_CORRUPT)
@@ -1208,7 +1208,7 @@ bool AppInit2(boost::thread_group& threadGroup)
             else
                 strErrors << _("Error loading wallet.dat") << "\n";
         }
-        LogPrintf("loadwallet30 %b\n",fFirstRun);
+        //LogPrintf("loadwallet30 %b\n",fFirstRun);
         if (GetBoolArg("-upgradewallet", fFirstRun))
         {
             int nMaxVersion = GetArg("-upgradewallet", 0);
@@ -1217,35 +1217,35 @@ bool AppInit2(boost::thread_group& threadGroup)
                 LogPrintf("Performing wallet upgrade to %i\n", FEATURE_LATEST);
                 nMaxVersion = CLIENT_VERSION;
                 pwalletMain->SetMinVersion(FEATURE_LATEST); // permanently upgrade the wallet immediately
-                LogPrintf("loadwallet31 \n");
+               // LogPrintf("loadwallet31 \n");
             }
             else
                 LogPrintf("Allowing wallet upgrade up to %i\n", nMaxVersion);
             if (nMaxVersion < pwalletMain->GetVersion())
                 strErrors << _("Cannot downgrade wallet") << "\n";
-            LogPrintf("loadwallet32 \n");
+            //LogPrintf("loadwallet32 \n");
             pwalletMain->SetMaxVersion(nMaxVersion);
         }
-        LogPrintf("loadwallet33 \n");
+       // LogPrintf("loadwallet33 \n");
         if (fFirstRun)
         {
             // Create new keyUser and set as default key
-            LogPrintf("loadwallet4 \n");
+            //LogPrintf("loadwallet4 \n");
             RandAddSeedPerfmon();
             
             if (pwalletMain->CreateNew()) {  
-                LogPrintf("loadwallet5 \n");
+                //LogPrintf("loadwallet5 \n");
 //                if (!pwalletMain->SetAddressBook(pwalletMain->id, "", "receive"))
 //                    strErrors << _("Cannot write default address") << "\n";
             }
-             LogPrintf("loadwallet6 \n");
+             //LogPrintf("loadwallet6 \n");
            // pwalletMain->SetBestChain(chainActive.GetLocator());
         }
- LogPrintf("loadwallet7 \n");
+ //LogPrintf("loadwallet7 \n");
         LogPrintf("%s", strErrors.str());
         LogPrintf(" wallet      %15dms\n", GetTimeMillis() - nStart);        
         RegisterValidationInterface(pwalletMain);
-         LogPrintf("loadwallet8 \n");
+        // LogPrintf("loadwallet8 \n");
         
 //        CBlockIndex *pindexRescan = chainActive.Tip();
 //        if (GetBoolArg("-rescan", false))

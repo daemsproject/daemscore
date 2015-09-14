@@ -474,7 +474,7 @@ CKey CBitcoinSecret::GetKey()
     CKey ret;
     assert(vchData.size() >= 32);
     ret.Set(vchData.begin(), vchData.end(), vchVersion == Params().Base32Prefix(CChainParams::SECRET_KEY));
-    LogPrintf("vchVersion:%s",HexStr(vchVersion));
+    //LogPrintf("vchVersion:%s",HexStr(vchVersion));
     return ret;
 }
 

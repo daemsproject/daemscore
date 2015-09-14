@@ -268,7 +268,6 @@ function prepareStdTpl() {
         CBrowser.toggleIdOpt($(this).parent());
     });
     $(".cmt").find("a.shrt").unbind().click(function () {
-        console.log("cmt");
         CBrowser.toggleCmt($(this).parent());
     });
     $(".id-follow-btn").unbind().click(function () {
@@ -278,13 +277,11 @@ function prepareStdTpl() {
         var feedback = domain ? CBrowser.setFollow(id2fll, "domain") : CBrowser.setFollow(id2fll, "id");
         for (var k in feedback) {
             if (feedback[k] == id2fll) {
-                console.log("follow");
                 CPage.showNotice(TR('Successfully followed ') + id2fll);
                 return;
             }
         }
         CPage.showNotice("Failed");
-        console.log(feedback);
     });
     $(".id-unfollow-btn").unbind().click(function () {
         var id = $(this).parent().parent().find(".text").attr("fullid");
@@ -296,7 +293,6 @@ function prepareStdTpl() {
             return;
         }
         CPage.showNotice("Failed");
-        console.log(feedback);
     });
     $(".id-copyid-btn").unbind().click(function () {
         var id = $(this).parent().parent().find(".text").attr("fullid");
@@ -383,7 +379,6 @@ var CLink = new function () {
         return this;
     };
     this.set = function (nHeight, nTx, nVout) {
-//        console.log(typeof nHeight);
         if (typeof nHeight === "undefined")
             return this;
         if (typeof nHeight === "string")
@@ -464,7 +459,6 @@ var CUtil = new function () {
     this.getGet = function (val) {
         var result = null;
         var tmp = [];
-//        console.log(location.search);
         var items = location.search.substr(1).split("&");
         for (var index = 0; index < items.length; index++) {
             tmp = items[index].split("=");
@@ -670,7 +664,6 @@ var CUtil = new function () {
         }
     }
     this.dateToShortString = function (a) {
-        console.log(a);  // todo bug on sending msg
         if (a.sameDayAs(new Date())) {
             return TR('Today') + " " + padStr(a.getHours()) + ":" + padStr(a.getMinutes()) + ":" + padStr(a.getSeconds())
         } else {
@@ -681,7 +674,6 @@ var CUtil = new function () {
         return id === "N7IWEOEBHWMBUM3GZD3GXY2LEDTKDSP2HAL5QWCK";
     };
     this.isProd = function (ctt) {
-        console.log(ctt);
         if (!ctt.content)
             return false;
         if (ctt.content.length <= 0)
@@ -692,7 +684,6 @@ var CUtil = new function () {
         if (!ctt.link)
             return false;
         var prod = FAI_API.getProductByLink(ctt.link);
-        console.log(prod);
         return prod;
     };
     this.isArray = function (i) {
@@ -845,7 +836,6 @@ var CPage = new function () {
         if (prod.intro)
             ddiv.find(".intro").html(CUtil.escapeHtml(prod.intro));
         if (typeof prod.icon !== "undefined") {
-            console.log(prod.icon);
             var ctt = FAI_API.getContentByLink(prod.icon);
             var cttP = CUtil.parseCtt(ctt);
             var idiv;
@@ -877,7 +867,6 @@ var CPage = new function () {
     };
     this.notifyBlock = function (b) {
         $('#cblc').html(b.blockHeight);
-        console.log(currentTab);
         if (currentTab === "br-new-btn")
             $('#getnew-btn').removeClass("hide");
         else

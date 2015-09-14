@@ -544,6 +544,19 @@ void MainView::reloadAllTabs()
         }
     }
 }
+bool MainView::openPageIfNotExists(int nPageIDin)
+{
+    for (int i = 0; i < count(); ++i) {
+        QWidget *tabWidget = widget(i);
+        WebView *tab = qobject_cast<WebView*>(tabWidget);
+        if(tab&&tab->nPageID==nPageIDin) {
+            return false;
+        }
+    }
+    QUrl url(QString().fromStdString("fai:"+mapPageNames[nPageIDin]));
+    newTab(true,url,nPageIDin);
+    return true;
+}
 void MainView::nextTab()
 {
     int next = currentIndex() + 1;

@@ -230,6 +230,7 @@ public slots:
     void reloadAllTabs();
     void nextTab();
     void previousTab();
+    bool openPageIfNotExists(int nPageIDin);
         
 private slots:
     void moveTab(int fromIndex, int toIndex);

@@ -280,23 +280,23 @@ bool ReadFilePackageList(const std::string strFileList, std::string& strMainFile
 {
     json_spirit::Value fileData;
     if (!json_spirit::read_string(strFileList, fileData)) {
-        LogPrintf("readFileList %s: fail2 \n", strFileList);
+        LogPrintf("readFileList to json fail:,strFileLIst:%s\n", strFileList);
         return false;
     }
     if (fileData.type() != json_spirit::obj_type) {
-        LogPrintf("readFileList %s:  fail3 \n", strFileList);
+        LogPrintf("readFileList str is not json:%s\n", strFileList);
         return false;
     }
     json_spirit::Object obj = fileData.get_obj();
     json_spirit::Value val = find_value(obj, "files");
     if (val.type() != obj_type) {
-        LogPrintf("readFileList   fail4 %i\n", val.type());
+        LogPrintf("readFileList   fail valtype: %i\n", val.type());
         return false;
     }
     objFiles = val.get_obj();
     val = find_value(obj, "mainfile");
     if (val.type() != str_type) {
-        LogPrintf("readFileList %s:  fail5 \n", strFileList);
+        LogPrintf("readFileList :  main file is not string ,strFileLIst:%s\n", strFileList);
         return false;
     }
     strMainFile = val.get_str();

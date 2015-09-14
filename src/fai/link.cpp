@@ -351,7 +351,7 @@ bool CLinkUni::SetStringNative(const std::string linkStr)
 
 bool CLinkUni::SetStringBlockChain(const std::string linkStr)
 {
-    LogPrintf("CLinkUni::SetStringBlockChain  linkStr %s\n", linkStr);
+    //LogPrintf("CLinkUni::SetStringBlockChain  linkStr %s\n", linkStr);
     CLink link;
     if (!link.SetString(linkStr))
         return false;

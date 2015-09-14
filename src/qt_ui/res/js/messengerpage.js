@@ -6,18 +6,15 @@ function registerNotifications() {
     var aa = function (a) {
         Messenger.notifiedBlock(a);
     };
-    console.log("regnotifications");
     var ab = function (a) {
         Messenger.notifiedTx(a);
     };
     var ac = function (a) {
-        console.log("refresh");
         window.location.href = window.location.href;
     }
     FAI_API.regNotifyBlocks(aa);
     FAI_API.regNotifyTxs(ab, [accountID]);
     FAI_API.regNotifyAccount(ac);
-    console.log("regnotifications success");
 }
 
 function changeCategory(id) {
@@ -131,7 +128,6 @@ $(document).ready(function () {
             $("#edit-contact").modal("hide");
         });
         $("#btn-friend").unbind().click(function () {
-            console.log(contacts[currentContact].category);
             if (contacts[currentContact].category != "friend") {
                 contacts[currentContact].category = "friend";
                 Messenger.setCategory(currentContact, "friend");
@@ -163,7 +159,6 @@ $(document).ready(function () {
             }
             changeCategory(cVisible);
         });
-        console.log($("#btn-alias"));
         $("#btn-alias").unbind().click(function () {
             var alias = $("#edit-contact").find("input[name='contact-alias']").val();
             var r = Messenger.setAlias(currentContact, alias);
@@ -175,7 +170,6 @@ $(document).ready(function () {
             else
                 CPage.showNotice(TR("Fail to change alias to ") + alias);
         });
-        console.log($("#btn-alias"));
         $('#msg-history').scroll(function () {
             if ($('#msg-history').scrollTop() == 0) {
                 $('#msg-history').scrollTop(100);
@@ -197,7 +191,6 @@ $(document).ready(function () {
         resetCl();
         if (page === "chatto") {
             var id = CUtil.getGet("chatto");
-            console.log(FAI_API.checkNameKey(id));
             if (!FAI_API.checkNameKey(id)) {
                 CPage.showNotice(TR('ID is not valid'));
             } else {

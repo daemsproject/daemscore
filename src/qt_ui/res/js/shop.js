@@ -45,17 +45,14 @@ var Shop = new function () {
         }
     }
     function registerNotifications() {
-        console.log("regnotifications");
         var ab = function (a) {
             CPage.updateBalance();
         };
         var ac = function (a) {
-            console.log("refresh");
             window.location.href = window.location.href;
         }
         FAI_API.regNotifyTxs(ab, [accountID]);
         FAI_API.regNotifyAccount(ac);
-        console.log("regnotifications success");
     }
     this.initAddNew = function ()
     {
@@ -73,7 +70,6 @@ var Shop = new function () {
         params.offset = page * pagelen;
         params.maxc = pagelen;
         products = FAI_API.searchProducts(params);
-        console.log(products);
         if (!products || products.error || products.length == 0) {
             $('#buy-product-list').html("<tr><td>" + TR('no products found, please change search tags and retry') + "</td></tr>");
             return;
@@ -240,7 +236,6 @@ var Shop = new function () {
     };
     this.showMyOrders = function () {
         var records = FAI_API.getPurchaseRecord([accountID]);
-        console.log(records);
         if (!records || records.error || records.length == 0) {
             $('#my-orders').html("<tr><td>" + TR('no purchase records') + "</td></tr>");
             return;
@@ -445,17 +440,12 @@ var Shop = new function () {
         $("#cart-list tr").find("input[name='quantity']").unbind().bind("keyup change blur", function () {
             if (isNaN($(this).val()) || $(this).val() <= 0)
                 $(this).val("");
-            console.log($(this).parent());
-            console.log($(this).parent().parent().find(".subtotal"));
             $(this).parent().next().html($(this).val() * cart[$(this).attr("title")].price + cart[$(this).attr("title")].shipmentfee);
             i.calCartTotal();
         });
         $("#cart-list").find(".cancel").unbind().click(function () {
-            //console.log($(this));
 
             for (var j in cart) {
-                //console.log(cart[j].link);
-                //console.log($(this).parent().parent().attr("id"));
                 if ($(this).parent().parent().attr("id") == "tr-" + cart[j].link) {
                     delete cart[j];
                     // console.log(j);
@@ -464,7 +454,6 @@ var Shop = new function () {
                     break;
                 }
             }
-            //$(this).parent().parent().remove();
         });
         this.calCartTotal();
     }
@@ -497,7 +486,6 @@ var Shop = new function () {
                     fValid = false;
                     return;
                 }
-                console.log(q);
                 var found = false;
                 for (var j in l)
                     if (l[j].recipient == p.recipient) {
@@ -658,13 +646,10 @@ var Shop = new function () {
             if (!cart)
                 cart = {};
             var page = Shop.getPageName();
-            console.log(page);
             if (page === "buy") {
                 var link = CUtil.getGet("buy");
-                console.log(link);
                 // get prod by link
                 var prod = FAI_API.getProductByLink(link);
-                console.log(prod);
                 cart[link] = prod;
                 FAI_API.writeFile("shop", "", "cart", JSON.stringify(cart));
                 $("#shopping-cart-btn").click();

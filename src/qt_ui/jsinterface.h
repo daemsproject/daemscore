@@ -53,6 +53,7 @@ private:
     //CWallet *wallet;
     WalletModel *walletModel;
     QString GoToCustomPage(json_spirit::Array arr,int nPageID);
+    QString relayInternalMessage(const json_spirit::Array arr) ;
 };
 //bool DecodeSigs(string ssInput,std::vector<CScript> sigs);
 

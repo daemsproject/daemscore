@@ -129,7 +129,6 @@ var Miner = new function () {
     }
     this.getMiningInfo = function () {
         info = FAI_API.getMiningInfo();
-        console.log(info);
         if (info.kernelrate)
             hashrate = info.kernelrate;
         if (info.kernelrevenueperday)
@@ -187,7 +186,6 @@ var Miner = new function () {
                     error();
                 return;
             }
-            console.log(data);
             txs = data.txs;
             for (var j in txs)
                 txs[j] = parseTx(txs[j], IDs);
@@ -252,7 +250,6 @@ var Miner = new function () {
     this.notifiedPeers = function (data) {
     }
     this.notifiedID = function (a) {
-        console.log(a);
         for (var j in IDs)
             if (IDs[j] == a.id)
                 return;

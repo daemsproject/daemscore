@@ -2143,7 +2143,7 @@ json_spirit::Value getdomaininfo(const json_spirit::Array& params, bool fHelp)
         pDomainDBView->GetDomainByName(arrDomainNames[i].get_str(), domain);
         arrDomains.push_back(domain.ToJson());
     }
-    LogPrintf("getdomaininfo toJson%i \n", arrDomains.size());
+    //LogPrintf("getdomaininfo toJson%i \n", arrDomains.size());
     return Value(arrDomains);
 }
 
@@ -2168,7 +2168,7 @@ json_spirit::Value getdomainsbyowner(const json_spirit::Array& params, bool fHel
     {
         arrDomains.push_back(vDomain[i].ToJson());
     }
-    LogPrintf("getdomainsbyowner toJson%i \n", arrDomains.size());
+    //LogPrintf("getdomainsbyowner toJson%i \n", arrDomains.size());
     return Value(arrDomains);
 }
 
@@ -2216,18 +2216,18 @@ json_spirit::Value getdomainsbytags(const json_spirit::Array& params, bool fHelp
         throw JSONRPCError(RPC_INVALID_PARAMETER, "too many tags");
     for (unsigned int i = 0; i < arrTags.size(); i++)
     {
-        LogPrintf("getdomainsbytags tag:%s \n", arrTags[i].get_str());
+        //LogPrintf("getdomainsbytags tag:%s \n", arrTags[i].get_str());
         vTags.push_back(arrTags[i].get_str());
     }
 
     pDomainDBView->GetDomainByTags(vTags, vDomain, fInclude100, nMax, true);
-    LogPrintf("getdomainsbytags domains:%i \n", vDomain.size());
+    //LogPrintf("getdomainsbytags domains:%i \n", vDomain.size());
     Array arrDomains;
     for (unsigned int i = 0; i < vDomain.size(); i++)
     {
         arrDomains.push_back(vDomain[i].ToJson());
     }
-    LogPrintf("getdomainsbytags toJson%i \n", arrDomains.size());
+    //LogPrintf("getdomainsbytags toJson%i \n", arrDomains.size());
     return Value(arrDomains);
 }
 
@@ -2243,7 +2243,7 @@ json_spirit::Value getdomainsbyalias(const json_spirit::Array& params, bool fHel
     {
         arrDomains.push_back(vDomain[i].ToJson());
     }
-    LogPrintf("getdomainsbyalias toJson%i \n", arrDomains.size());
+    //LogPrintf("getdomainsbyalias toJson%i \n", arrDomains.size());
     return Value(arrDomains);
 }
 
@@ -2261,7 +2261,7 @@ json_spirit::Value getdomainsexpiring(const json_spirit::Array& params, bool fHe
     {
         arrDomains.push_back(vDomain[i]);
     }
-    LogPrintf("getdomainsexpiring toJson%i \n", arrDomains.size());
+    //LogPrintf("getdomainsexpiring toJson%i \n", arrDomains.size());
     return Value(arrDomains);
 }
 

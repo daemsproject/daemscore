@@ -12,6 +12,7 @@ var FAI_API = new function () {
     var notifyaccountfunc;
     var notifyidfunc;
     var notifyfallbackfunc;
+    var notifyimsgfunc;
     var callIDs = [];
     this.connectSlots = function ()
     {
@@ -19,33 +20,20 @@ var FAI_API = new function () {
             apiconnected = true;
             jsinterface.feedback.connect(this, this.feedback);
             jsinterface.notify.connect(this, this.notify);
-            //jsinterface.updateWalletFeedback.connect(this, MyWallet.updateWalletFeedback);
         }
     };
     //! <!--  [ connect slots ] -->
 
     this.feedback = function (feedbackjson, func) {
-        //console.log(feedbackjson);
-        //console.log(func);
-        //var a=func;
         var msg = $.parseJSON(feedbackjson);
-        //console.log(msg);
         if (msg.error)
             msg = msg.error;
-        //console.log(msg);
         if (msg.message)
             msg = msg.message;
-        //console.log(msg);
         var cmd = 'var a=' + func + ';a("' + msg + '")';
-        console.log(cmd);
         eval(cmd);
-        //a($.parseJSON(feedbackjson));
-        //console.log(1);
-        //setStatus('Idle');
-        //document.getElementById('testdiv').innerHTML = a;        
     }
     this.notify = function (notifyjson) {
-//        console.log("notify:" + notifyjson);
         var data = $.parseJSON(notifyjson);
         var cmd;
         if (!data | !data.type)
@@ -59,10 +47,8 @@ var FAI_API = new function () {
                     return;
                 var found = false;
                 for (var i in notifytx.ids) {
-                    //console.log("notifytx id:" + notifytx.ids[i]);
                     for (var j in data.tx.ids) {
                         if (data.tx.ids[j] == notifytx.ids[i]) {
-                            console.log("notifytx found:" + data.tx.ids[j]);
                             found = true;
                             break;
                         }
@@ -83,9 +69,10 @@ var FAI_API = new function () {
             case "fallback":
                 cmd = 'var a=' + notifyfallbackfunc + ';a(data);';
                 break;
-
+            case "imsg":
+                cmd = 'var a=' + notifyimsgfunc + ';a(data);';
+                break;
         }
-        //console.log(cmd);
         eval(cmd);
     }
     this.call = function (cmd, datajson, successfunc, errorfunc, async) {
@@ -93,19 +80,16 @@ var FAI_API = new function () {
         if (async) {
             var callID = jsinterface.jscallasync(cmd, JSON.stringify(datajson), successfunc, errorfunc);
             callIDs.push(callID);
-            console.log(callID);
             return;
         }
         var jsreply;
         var jsreplyjson = jsinterface.jscall(cmd, JSON.stringify(datajson));
-//        console.log("fai-api.call:" + jsreplyjson);
         try {
             jsreply = $.parseJSON(jsreplyjson);
         }
         catch (e) {
             errorfunc(jsreplyjson);
         }
-//        console.log("fai-api.call:" + jsreply);
         if (!jsreply) {
             errorfunc("api error");
             return;
@@ -117,17 +101,14 @@ var FAI_API = new function () {
                 errorfunc(jsreply.error);
             return;
         }
-//        console.log("fai-api.call:" + jsreply);
         successfunc(jsreply);
     };
     this.icall = function (cmd, datajson) {
         var jsreply;
         var jsreplyjson = jsinterface.jscall(cmd, JSON.stringify(datajson));
-        //console.log("fai-api.call:" + jsreplyjson);
         if (jsreplyjson == "null" || !jsreplyjson) {
             return null;
         }
-//        console.log(String(jsreplyjson));
         if (jsreplyjson == '"OK"' || jsreplyjson == '"success"' || jsreplyjson == "OK" || jsreplyjson == "success")
             return true;
         try {
@@ -191,7 +172,6 @@ var FAI_API = new function () {
             request.feerate = feerate;
         request.vout[0] = vout;
         data[0] = request;
-        console.log(JSON.stringify(data));
         this.call("requestpayment", data, success, error, false);
 
     }
@@ -201,7 +181,6 @@ var FAI_API = new function () {
             p.locktime = locktime;
         if (feerate && (!isNaN(feerate)))
             p.feerate = feerate;
-        console.log(p);
         this.call("requestoverride", [id, txid, p], success, error, false);
     }
     this.createTxByContent = function (ctt, feeRate, toId, deposit, locktime) {
@@ -210,25 +189,19 @@ var FAI_API = new function () {
         deposit = typeof deposit === "undefined" ? 0 : deposit;
 
         var accountID = FAI_API.getAccountID();
-//        console.log(feeRate);
         var targetID = toId ? toId : (locktime > 0 ? accountID : "");
-//        console.log(targetID);
         var f;
         if (toId)
             deposit = locktime = 0;
         this.call("requestpayment2", [accountID, targetID, [ctt.hex], feeRate, deposit, locktime], function (r) {
-            console.log('r ' + new Date());
-            console.log(r);
             f = r;
         }, function (e) {
-            console.log('e ' + new Date());
             console.log(e);
             f = e;
         }, false);
         return f;
     };
     this.createTxByContents = function (ctts, feeRate, toId, deposit, locktime) {
-        console.log(ctts);
         locktime = typeof locktime === "undefined" ? 0 : locktime;
         deposit = typeof deposit === "undefined" ? 0 : deposit;
         var accountID = FAI_API.getAccountID();
@@ -241,10 +214,6 @@ var FAI_API = new function () {
         var cttInput = [];
         for (var i in ctts)
             cttInput.push(ctts[i].hex);
-        console.log(cttInput);
-        console.log(feeRate);
-        console.log(deposit);
-        console.log(locktime);
         this.call("requestpayment2", [accountID, targetID, cttInput, feeRate, deposit, locktime], function (r) {
             f = r;
         }, function (e) {
@@ -313,15 +282,6 @@ var FAI_API = new function () {
         f = typeof f === "undefined" ? 6 : f;
         return this.icall("getcontentbylink", [c, f]);
     };
-//    this.setFollow = function (a) {
-//        return this.icall("setfollow", [[a]]);
-//    };
-//    this.setUnfollow = function (a) {
-//        return this.icall("setunfollow", [[a]]);
-//    };
-//    this.getFollowed = function () {
-//        return this.icall("getfollowed", []);
-//    };
     this.getHash = function (a) {
         return this.icall("gethash", [a]);
     };
@@ -336,7 +296,6 @@ var FAI_API = new function () {
         var wcc = ["CC_FILE_P", "CC_TEXT_P", "CC_TEXT", "CC_LINK_P", "CC_LINK", "CC_PRODUCT_P", "CC_FILE_PACKAGE_P"];
         var wocc = ["CC_DOMAIN_P", "CC_MESSAGE_P", "CC_NULL"];
         var d = [{flink: flink, maxc: 10, maxb: 3000000, withcc: wcc, withoutcc: wocc, cformat: 6, fAsc: fAsc, mincsize: 3, blkc: blkc}];
-        console.log(JSON.stringify(d));
         return this.icall("getcontents", d);
     };
     this.getContentsByAddresses = function (nFile, nPos, nRange, ftxCount, frAddrs, toAddrs, fAsc) {
@@ -354,13 +313,11 @@ var FAI_API = new function () {
             d.nRange = nRange;
         if (ftxCount >= 0)
             d.ftxCount = ftxCount;
-        console.log(JSON.stringify(d));
         return this.icall("getcontentsbyaddresses", [d]);
     };
     this.getProductContentsByAddresses = function (ids) {
         var wcc = ["CC_PRODUCT_P"];
         var d = {maxc: 1000, maxb: 10000000, withcc: wcc, cformat: 7, mincsize: 3, frAddrs: ids};
-        console.log(JSON.stringify(d));
         return this.icall("getcontentsbyaddresses", [d]);
     };
     this.getPromotedContents = function (params)
@@ -383,7 +340,6 @@ var FAI_API = new function () {
         return this.icall("getpurchaserecord", [id, nMax, nOffset]);
     };
     this.isContentImage = function (ctt) {
-//        console.log(atob(ctt.content[0].content[1].content));
         var imgMIME = ["image/jpeg", "image/png", "image/gif", "image/bmp", "image/tiff"];
         if (ctt.content[0].cc_name !== "CC_FILE_P")
             return false;
@@ -403,16 +359,9 @@ var FAI_API = new function () {
         var wccc = {"cc_name": "CC_FILE_TYPESTRING", "ccontent": IMAGE_FILE_TYPE, "format": "bin"};
         var wcc = ["CC_FILE_P", "CC_P", "CC_FILE_TYPESTRING"];
         var d = [{fbh: fbh, maxc: maxc, maxb: 20000000, withcc: wcc, withccc: wccc, withoutcc: wocc, cformat: 6, fAsc: fAsc, mincsize: 3, blkc: blkc}];
-//        console.log(JSON.stringify(d));
         var r = this.icall("getcontents", d);
-//        console.log(r);
         return r;
     };
-//    this.testGetContents = function (fbh) {
-//        var fcc = ["CC_FILE_P", "CC_TEXT_P", "CC_LINK_P", "CC_LINK"];
-//        var d = [{"fbh": fbh, "maxc": 20, "maxb": 3000000, "firstcc": fcc, "cformat": 6, "fAsc": false, "mincsize": 3, "blkc": 10}];
-//        return this.icall("getcontents", d);
-//    };
     this.getMessages = function (idsLocal, idsForeign, directionFilter, fIncludeMempool, fListOnly, startBlock, offset, number, success, error) {
         var d = {};
         if (!idsLocal) {
@@ -424,7 +373,6 @@ var FAI_API = new function () {
 
         if (Object.prototype.toString.call(idsLocal) != '[object Array]')
             idsLocal = [idsLocal];
-        //if idsForeign is provided, only gets messages between local & foreign.
         if (idsForeign)
         {
             if (Object.prototype.toString.call(idsForeign) != '[object Array]')
@@ -573,11 +521,9 @@ var FAI_API = new function () {
         });
     }
     this.searchProducts = function (params) {
-//        console.log(params);
         return this.icall("searchproducts", [params]);
     }
     this.getProductByLink = function (link) {
-        //console.log(params);
         return this.icall("getproductbylink", [link]);
     }
     this.buyProducts = function (id, products, feerate, success, error) {
@@ -603,8 +549,6 @@ var FAI_API = new function () {
             id = [id];
         return this.icall("listunspent2", [id]);
     }
-    //this.read_contacts = function (id) {return this.icall("readcontacts", [id]);};
-    //this.add_contacts = function (id, contacts) {return this.icall("addcontacts", [id, contact])}
     this.setConf = function (app, idlocal, idforeign, conf, value) {
         if (!value)
             value = "";
@@ -675,8 +619,6 @@ var FAI_API = new function () {
         return this.icall("encodecontentunit", ["CC_P", hex, 0]);
     };
     this.createContentC = function (t, c) {  // deprecated
-        console.log("t " + t);
-        console.log("c " + JSON.stringify(c));
         switch (t)
         {
             case "text/plain":
@@ -694,24 +636,16 @@ var FAI_API = new function () {
                 var r = this.icall("encodecontentunit", ["CC_FILE_P", s, 0]);
                 break;
         }
-        console.log(u1);
-        console.log(u2);
-        console.log(r);
         return r;
     };
     this.createHexContentByJson = function (ctt) {
         var hex = "";
         if (typeof ctt.content === "object") {
             var tmp0 = "";
-            console.log(ctt);
             for (var i in ctt.content) {
-                console.log(i);
                 var tmp = this.createHexContentByJson(ctt.content[i]);
-                console.log(tmp);
                 tmp0 += tmp;
-                console.log(tmp0);
             }
-            console.log(ctt);
             if (typeof ctt.cc_name !== "undefined") {
                 var tmp1 = this.icall("encodecontentunit", [ctt.cc_name, tmp0, 0]);
                 hex = tmp1.hex;
@@ -721,9 +655,7 @@ var FAI_API = new function () {
         else if ((typeof ctt.content === "undefined"))
             console.log(ctt);
         else {
-            console.log(ctt);
             var tmp = this.icall("encodecontentunit", [ctt.cc_name, ctt.content, ctt.encoding]);
-            console.log(tmp);
             hex = tmp.hex;
         }
         return hex;

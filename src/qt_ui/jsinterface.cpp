@@ -13,6 +13,8 @@
 #include "core_io.h"
 #include "random.h"
 #include "bitcoingui.h"
+#include "mainview.h"
+//#include "webpage.h"
 #include "wallet.h"
 #include "walletmodel.h"
 
@@ -170,6 +172,20 @@ void JsInterface::notifyNewExtendedKey(const std::string id)
     notifyObj.push_back(Pair("id",Value(id)));
     emit notify(QString().fromStdString(write_string(Value(notifyObj),false)));
 }
+QString JsInterface::relayInternalMessage(const Array arr) 
+{
+    int targetPageID=arr[0].get_int();
+    if(targetPageID<=0||targetPageID>HELPPAGE_ID)
+        return QString().fromStdString("{\"error\":\"can't send internal message to non-native pages\"}");
+    BitcoinGUI *mw=qobject_cast<BitcoinGUI*>(parent());
+    if(mw->getMainView()->openPageIfNotExists(targetPageID))
+        return QString("{\"error\":\"page starting,please resend\"}");
+    Object notifyObj;
+    notifyObj.push_back(Pair("type",Value("imsg")));
+    notifyObj.push_back(Pair("message",arr));
+    emit notify(QString().fromStdString(write_string(Value(notifyObj),false)));
+    return QString("OK");
+}
 //enum pageid
 //{
 //    WALLETPAGE_ID=1,
@@ -264,6 +280,12 @@ QString JsInterface::jscall(const QString command,const QString dataJson,const i
                 ClearFilePackageCache();
                 return QString("OK");
             }
+        if (strCmd==string("internalmessage"))
+        {
+            if(nPageID>HELPPAGE_ID)
+                    return QString().fromStdString("{\"error\":\"Invalid pageID, internalmessage is forbidden\"}");   
+            return relayInternalMessage(arrData);
+        }
         //return QString("{\"error\":\"empty data\"}");
         valResult= tableRPC.execute(strCmd,arrData);            
         

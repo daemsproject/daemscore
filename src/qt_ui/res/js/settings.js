@@ -32,40 +32,19 @@ var Settings = new function () {
         }
     }
     this.makeNotice = function (type, id, msg, timeout) {
-//        if (msg == null || msg.length == 0)
-//            return;
-//        var el = $('<div class="alert alert-block alert-' + type + '"></div>');
-//        el.text('' + msg);
-//        if ($('#' + id).length > 0) {
-//            el.attr('id', id);
-//            return;
-//        }
-//        $("#notices").append(el).hide().fadeIn(200);
-//        (function () {
-//            var tel = el;
-//            setTimeout(function () {
-//                tel.fadeOut(250, function () {
-//                    $(this).remove();
-//                });
-//            }, timeout ? timeout : 5000);
-//        })();
         console.log(msg);
         CPage.showNotice(msg, timeout);
     }
     this.updateDomain = function (name, reset) {
-        console.log(name);
         var html = "input[name='" + name + "']";
         var value = $(html).val();
-        console.log(value);
         if (reset)
             value = "";
         else {
             if (!value || value == settings.pagedomains[name])
                 return;
         }
-        console.log(2);
         var r = FAI_API.updateSettings("pagedomain", name, value);
-        console.log(typeof r);
         if (r === true)
             this.makeNotice("success", "domain", TR("update success"));
         else
@@ -92,7 +71,6 @@ var Settings = new function () {
         if (value < 1)
             this.makeNotice("error", "timeout", TR('value is too small'));
         var r = FAI_API.updateSettings("filepackagetimeout", "", value * 1000);
-        //      console.log(r);
         if (r == true)
             this.makeNotice("success", "cache", TR("update success"));
         else

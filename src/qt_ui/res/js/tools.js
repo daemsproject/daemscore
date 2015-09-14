@@ -72,7 +72,6 @@ var Tools = new function () {
     this.addNode = function () {
         var peer = $("#add-peers").find("input[name='add-peer']").val();
         var r = FAI_API.icall("addnode", [peer, "add"]);
-        //console.log(r);
 
         if (!r || r.error) {
             i.makeNotice('error', 'addNode-error', TR("Add node failed"));
@@ -85,13 +84,11 @@ var Tools = new function () {
     {
         var html = "<tr><th>" + TR('Package Name') + "</th><th>" + TR('Size') + "</th><th>" + TR('Action') + "</th></tr>";
         var d = FAI_API.getDomainInfo("installpackages.f");
-        console.log(d);
         var p = {};
         p.frAddrs = [d.forward.target];
         p.withcc = ["CC_FILE_PACKAGE_P"];
         p.cformat = 5;
         var list = FAI_API.icall("getcontentsbyaddresses", [p]);
-        console.log(list);
         for (var i in list) {
             var package = list[i].content[0].content;
             var packagename;

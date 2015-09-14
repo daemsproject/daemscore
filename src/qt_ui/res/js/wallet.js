@@ -336,7 +336,6 @@ var MyWallet = new function () {
                     error();
                 return;
             }
-            console.log(data);
             txs = data.txs;
             for (var j in txs)
                 txs[j] = parseTx(txs[j], IDs);
@@ -360,7 +359,6 @@ var MyWallet = new function () {
         });// ,MyWallet.getNTransactionsPerPage(), tx_page *MyWallet.getNTransactionsPerPage());
     };
     function setLatestBlock(block) {
-        console.log(block);
         if (block != null) {
             latest_block = block;
             for (var j in txs) {
@@ -418,7 +416,6 @@ var MyWallet = new function () {
         i.get_history();
     }
     this.notifiedID = function (a) {
-        console.log(a);
         for (var j in IDs)
             if (IDs[j] == a.id)
                 return;
@@ -528,7 +525,6 @@ var MyWallet = new function () {
             }
             hidePopovers();
             var pagination = $('.pagination ul').empty();
-            console.log(MyWallet.getNTransactionsPerPage());
             if (tx_page == 0 && txs.length < MyWallet.getNTransactionsPerPage()) {
                 pagination.hide();
                 return;
@@ -537,7 +533,6 @@ var MyWallet = new function () {
             }
 
             var pages = Math.ceil(txs.length / MyWallet.getNTransactionsPerPage());
-            console.log(pages);
             var disabled = ' disabled';
             if (tx_page > 0)
                 disabled = '';
@@ -597,7 +592,6 @@ var MyWallet = new function () {
         return tx_tr;
     }
     function getValueSpan(value) {
-        console.log(value);
         return $("<span />").addClass("value").html("φ" + value);
     }
     function openTransactionDetailModal(tx)
@@ -646,11 +640,8 @@ var MyWallet = new function () {
             var locktimespan = $("<span />");
             if (tx.vout[i].locktime) {
                 timeleft = FAI_API.getMatureTime(tx.vout[i].locktime).time;
-                console.log(FAI_API.getMatureTime(tx.vout[i].locktime));
             }
-            console.log(timeleft);
             var locktimespan = $("<span />").html(timeleft > 0 ? TR(" unlock in: ") + CUtil.formatTimeLength(timeleft) : "");
-            console.log(locktimespan);
             var vout = $("<div />").append(i).append(":").append(idspan).append(": ").append(getValueSpan(tx.vout[i].value)).append(contentspan).append(locktimespan);
             m.find(".vouts").append(vout);
         }
@@ -676,7 +667,6 @@ var MyWallet = new function () {
     this.initAccount = function () {
         accountID = FAI_API.getAccountID();
         $("#account-id").html(accountID);
-        console.log(accountID);
         IDs = FAI_API.getIDs(accountID);
         registerNotifications();
         MyWallet.get_history();

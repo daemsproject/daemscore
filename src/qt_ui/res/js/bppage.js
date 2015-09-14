@@ -1,6 +1,5 @@
 $(document).ready(function () {
     $(".tabbar").children("li").children("a.ntcbtn").unbind().click(function () {
-        console.log("switchtab");
         CBrowser.switchTab($(this).attr("id"));
     });
     CPublisher.regFeeRate();
@@ -89,7 +88,6 @@ function prepareSimplePub(type) {
             tctt = CPublisher.createTextContent(text);
         if (link.linktype === "HTTP" || (link.linktype === "BLOCKCHAIN" && link.isValid()))
             lctt = CPublisher.createLinkContent(link);
-//        console.log(lctt);
         if (haveFile)
             fctt = bufferedFile.ctt;
         if (inputlang)

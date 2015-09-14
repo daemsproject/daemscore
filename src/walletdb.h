@@ -89,12 +89,12 @@ public:
     boost::filesystem::path fpConfFile;//= GetDataDir() / "ids" / "ids.conf";
     CWalletDB()
     {   
-        LogPrintf("Cwalletdb() \n");
+        //LogPrintf("Cwalletdb() \n");
         fpWalletPath = GetDataDir() / "ids" ; 
         boost::filesystem::create_directories(fpWalletPath);
         fpConfFile = GetDataDir() / "ids" / "ids.conf"; 
         nWalletDBUpdated=0;
-        LogPrintf("Cwalletdb()2 %s\n",fpWalletPath.string());
+        LogPrintf("Cwalletdb()path: %s\n",fpWalletPath.string());
     }    
     DBErrors LoadWallet(CWallet* pwallet,CPubKey id);    
     bool GetDefaultWallet(CPubKey& id);
