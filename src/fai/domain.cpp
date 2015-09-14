@@ -201,8 +201,8 @@ json_spirit::Value CDomain::ToJson()const
     //obj.push_back(json_spirit::Pair("forward",redirect.ToJson()));
     obj.push_back(json_spirit::Pair("expireTime",(uint64_t)(nExpireTime)));
     obj.push_back(json_spirit::Pair("lockvalue",nLockValue));
-    obj.push_back(json_spirit::Pair("alias",strAlias));
-    obj.push_back(json_spirit::Pair("intro",strIntro));
+    obj.push_back(json_spirit::Pair("alias",EncodeBase64(strAlias)));
+    obj.push_back(json_spirit::Pair("intro",EncodeBase64(strIntro)));
     obj.push_back(json_spirit::Pair("icon",iconLink.ToString(LINK_FORMAT_DEC)));
     Array arrHistory;
     for(unsigned int i=0;i<vDirectHistory.size();i++)
@@ -210,7 +210,7 @@ json_spirit::Value CDomain::ToJson()const
     obj.push_back(json_spirit::Pair("forwardHistory",arrHistory));
     Array arrTags;
     for(unsigned int i=0;i<vTags.size();i++)
-        arrTags.push_back(Value(vTags[i]));
+        arrTags.push_back(Value(EncodeBase64(vTags[i])));
     obj.push_back(json_spirit::Pair("tags",arrTags));    
     return Value(obj);
 }

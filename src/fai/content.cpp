@@ -714,7 +714,7 @@ bool CContent::DecodeDomainInfo(string& strAlias, string& strIntro, CLink& iconL
         else if(cc==CC_TAG&&str.size()<=32){
             
         //LogPrintf("CContent DecodeDomainInfo tag:%s\n",str);
-            vTags.push_back(str);
+            vTags.insert(vTags.begin(),str);
         }
     }
     //LogPrintf("CContent DecodeDomainInfo done\n");

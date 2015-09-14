@@ -21,7 +21,7 @@ Value CProduct::ToJson(bool fLinkOnly)const
     json_spirit::Object obj;
     obj.push_back(Pair("link",Value(link.ToString())));
     obj.push_back(Pair("id",Value(id)));
-    obj.push_back(Pair("name",Value(name)));    
+    obj.push_back(Pair("name",Value(EncodeBase64(name))));    
     obj.push_back(Pair("price",_ValueFromAmount(price)));
     if(shipmentFee!=-1)
         obj.push_back(Pair("shipmentfee",_ValueFromAmount(shipmentFee)));    
@@ -47,12 +47,12 @@ Value CProduct::ToJson(bool fLinkOnly)const
     if(!icon.IsEmpty())
         obj.push_back(Pair("icon",Value(icon.ToString()))); 
     if(intro.size()>0)
-        obj.push_back(Pair("intro",Value(intro)));
+        obj.push_back(Pair("intro",Value(EncodeBase64(intro))));
     if(nExpireTime>0)
         obj.push_back(Pair("expiretime",Value((uint64_t)nExpireTime)));
     Array arrTag;
     for(unsigned int j=0;j<vTag.size();j++)    
-        arrTag.push_back(vTag[j]);    
+        arrTag.push_back(EncodeBase64(vTag[j]));    
     obj.push_back(Pair("tags",arrTag));
     return Value(obj);
 }

@@ -483,7 +483,7 @@ CPaymentOrder ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJso
         }
         else if (valtmp.type()==str_type){
             std::string str = valtmp.get_str();
-            ctt = _create_text_content(str);
+            ctt.EncodeUnit(CC_TEXT,str);//_create_text_content(str);
         }
         valtmp=find_value(objvout, "locktime");
         uint32_t nLockTime=0;
@@ -929,7 +929,7 @@ CPaymentOrder GetUpdateDomainPaymentRequest(const Array arr)
     {
             LogPrintf("domain info request link nheight %i,ntx %i,nvout %i\n",link.nHeight,link.nTx,link.nVout);
             string str=link2.Serialize();
-            LogPrintf("domain info request link %s\n",HexStr(str.begin(),str.end()));
+           // LogPrintf("domain info request link %s\n",HexStr(str.begin(),str.end()));
             //vcInfo.push_back(make_pair(CC_DOMAIN_INFO_ICON,strlink));
             cInfo.EncodeUnit(CC_DOMAIN_INFO_ICON,link2.Serialize());
     }  
@@ -937,12 +937,12 @@ CPaymentOrder GetUpdateDomainPaymentRequest(const Array arr)
     if (tmp.type() == array_type)              
     {
         Array arrTags=tmp.get_array();
-        CContent cTag;
+        //CContent cTag;
         for(unsigned int i=0;i<arrTags.size();i++)  
         {
             if(arrTags[i].get_str().size()<=32)
                 cInfo.EncodeUnit(CC_TAG,arrTags[i].get_str());
-            LogPrintf("domain info request tag %s\n",arrTags[i].get_str());
+           // LogPrintf("domain info request tag %s\n",arrTags[i].get_str());
         }
     } 
     std::vector<std::pair<int,string> > vcc;
