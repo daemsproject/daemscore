@@ -53,6 +53,10 @@ var Shop = new function () {
         }
         FAI_API.regNotifyTxs(ab, [accountID]);
         FAI_API.regNotifyAccount(ac);
+         var aa = function (a) {
+            CPage.notifyBlock(a);
+        };        
+        FAI_API.regNotifyBlocks(aa);
     }
     this.initAddNew = function ()
     {
@@ -74,10 +78,12 @@ var Shop = new function () {
             $('#buy-product-list').html("<tr><td>" + TR('no products found, please change search tags and retry') + "</td></tr>");
             return;
         }
-        var html = "<tr><th>" + TR('Icon') + "</th><th>" + TR('Product Name') + "</th><th>" + TR('Price') + "</th><th>" + TR('Seller') + "</th><th>" + TR('Action') + "</th></tr>";
+        var html = "<tr><th>" + TR('Product ID') + "</th><th>"+ TR('Icon') + "</th><th>" + TR('Product Name') + "</th><th>" + TR('Price') + "</th><th>" + TR('Seller') + "</th><th>" + TR('Action') + "</th></tr>";
         for (var j in products) {
-            html += "<tr><td>";
             var p = products[j];
+            html += "<tr><td>";
+                html += p.id;
+            html += '</td><td>';
             if (p.icon) {
                 html += CPage.createImgHtml("image/jpeg", CBrowser.getB64DataFromLink(p.icon)).prop('outerHTML');
 
@@ -448,7 +454,6 @@ var Shop = new function () {
             for (var j in cart) {
                 if ($(this).parent().parent().attr("id") == "tr-" + cart[j].link) {
                     delete cart[j];
-                    // console.log(j);
                     FAI_API.writeFile("shop", "", "cart", JSON.stringify(cart));
                     Shop.refreshCart();
                     break;
@@ -641,7 +646,6 @@ var Shop = new function () {
             CPage.prepareNotice("shop");
             CPage.updateBalance();
             CPage.updateCblc();
-            CPage.registerNotifications();
             cart = $.parseJSON(FAI_API.readFile("shop", "", "cart"));
             if (!cart)
                 cart = {};

@@ -39,7 +39,7 @@
 }#contact-list .icon{
     width:40px;height:40px;margin: 12px 10px 0;border-radius: 3px;background-size: 40px 40px;background-color: #eee;
 }#contact-list .icon:empty{
-    background: url("../icons/bitcoin.png");background-size: 40px 40px;background-color: #ccc;
+    background: url("../icons/fai.png");background-size: 40px 40px;background-color: #ccc;
 }#msg-header{
     height:45px;background-color: #fafafa;
 }#msg-container .ph{

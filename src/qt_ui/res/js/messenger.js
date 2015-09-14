@@ -17,7 +17,7 @@ var Messenger = new function () {
         var id2show = $.isEmptyObject(domain) ? CUtil.getShortPId(id) : (domain.alias ? domain.alias + " (" + domain.domain + ")" : domain.domain);
         id2show = contacts[currentContact].alias ? contacts[currentContact].alias : id2show;
         var intro = $.isEmptyObject(domain) ? "" : " " + domain.intro;
-        var idtype = $.isEmptyObject(domain) ? "" : "(domain)";
+        var idtype = $.isEmptyObject(domain) ? "" : "("+TR("domain")+")";
         pdiv.find(".id").find(".text").html(id2show);
         pdiv.find(".id").find(".text").attr("fullid", id);
         if (!$.isEmptyObject(domain))

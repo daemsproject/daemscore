@@ -450,27 +450,51 @@ var FAI_API = new function () {
     this.getDomainsByOwner = function (id) {
         if (Object.prototype.toString.call(id) != '[object Array]')
             id = [id];
-        return this.icall("getdomainsbyowner", [id]);
+        var d = this.icall("getdomainsbyowner", [id]);
+        return this.parseDomains(d);
     }
     this.getDomainByForward = function (id) {
-        return this.icall("getdomainbyforward", [id]);
+        var d = this.icall("getdomainbyforward", [id]);
+        return this.parseDomains(d);
     };
     this.getDomainsByForward = function (id) {
         if (Object.prototype.toString.call(id) != '[object Array]')
             id = [id];
-        return this.icall("getdomainsbyforward", [id]);
+        var d = this.icall("getdomainsbyforward", [id]);
+        return this.parseDomains(d);
     };
     this.getDomainsByTags = function (tags, nMax, finclude100) {
         nMax = nMax ? nMax : 1000;
         finclude100 = finclude100 ? true : false;
         if (Object.prototype.toString.call(tags) != '[object Array]')
             tags = [tags];
-        return this.icall("getdomainsbytags", [tags, nMax, finclude100]);
+        var d = this.icall("getdomainsbytags", [tags, nMax, finclude100]);
+        return this.parseDomains(d);
     };
+    this.parseDomains = function (d) {
+        if (!d || d.error || d.length == 0)
+            return false;
+        if (Object.prototype.toString.call(d) != '[object Array]') {
+            if (d.alias)
+                d.alias = base64.decode(d.alias);
+            if (d.intro)
+                d.intro = base64.decode(d.intro);
+            if (d.tags) {
+                for (var j in d.tags)
+                    d.tags[j] = base64.decode(d.tags[j]);
+            }
+        } else {
+            for (var k in d) {
+                d[k] = this.parseDomains(d[k]);
+            }
+        }
+        return d;
+    }
     this.getDomainInfo = function (d) {
         if (Object.prototype.toString.call(d) != '[object Array]')
             d = [d];
         var domain = this.icall("getdomaininfo", [d]);
+        domain = this.parseDomains(domain);
         return domain[0] ? domain[0] : "";
     }
     this.registerDomain = function (id, domain, lockvalue, locktime, feerate, success, error) {
@@ -521,10 +545,31 @@ var FAI_API = new function () {
         });
     }
     this.searchProducts = function (params) {
-        return this.icall("searchproducts", [params]);
+        var p = this.icall("searchproducts", [params]);
+        if (!p || p.error || p.length == 0)
+            return false;
+        for (var i in p) {
+            p[i] = this.parseProduct(p[i]);
+        }
+        return p;
     }
     this.getProductByLink = function (link) {
-        return this.icall("getproductbylink", [link]);
+        var p = this.icall("getproductbylink", [link]);
+        return this.parseProduct(p);
+    }
+    this.parseProduct = function (p) {
+        if (!p || p.error || p.length == 0)
+            return false;
+        if (p.name)
+            p.name = base64.decode(p.name);
+        if (p.intro)
+            p.intro = base64.decode(p.intro);
+        if (p.tags)
+            for (var j in p.tags)
+                p.tags[j] = base64.decode(p.tags[j]);
+        if (p.seller && p.seller.domain)
+            p.seller.domain = this.parseDomains(p.seller.domain);
+        return p;
     }
     this.buyProducts = function (id, products, feerate, success, error) {
         if (Object.prototype.toString.call(products) != '[object Array]')

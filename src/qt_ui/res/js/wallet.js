@@ -374,11 +374,13 @@ var MyWallet = new function () {
     function registerNotifications() {
         var aa = function (a) {
             MyWallet.notifiedBlock(a);
+            CPage.notifyBlock(a);
         };
         var ab = function (a) {
             MyWallet.notifiedTx(a);
         };
         var ac = function (a) {
+            console.log("refresh");
             window.location.href = window.location.href;
         };
         var ad = function (a) {
@@ -390,6 +392,7 @@ var MyWallet = new function () {
         FAI_API.regNotifyBlocks(aa);
         FAI_API.regNotifyTxs(ab, IDs);
         FAI_API.regNotifyAccount(ac);
+        
         FAI_API.regNotifyID(ad);
         FAI_API.regNotifyFallback(af);
     }
@@ -411,6 +414,7 @@ var MyWallet = new function () {
     this.notifiedBlock = function (obj) {
         setLatestBlock(obj);
         buildVisibleView();
+        
     }
     this.notifiedFallback = function (obj) {
         i.get_history();
@@ -685,7 +689,6 @@ var MyWallet = new function () {
             CPage.prepareNotice("wallet");
             CPage.updateBalance();
             CPage.updateCblc();
-            CPage.registerNotifications();
         });
     });
 }

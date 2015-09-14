@@ -1280,12 +1280,28 @@ Do you want to reload all pages?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+1"/>
+        <location line="+2"/>
+        <location line="+19"/>
+        <location line="+101"/>
+        <source>Bookmarks Bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-115"/>
         <source>Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+131"/>
+        <location line="+1"/>
+        <location line="+2"/>
+        <location line="+18"/>
+        <location line="+80"/>
+        <source>Bookmarks Menu</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+30"/>
         <source>Open File</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3014,7 +3030,7 @@ Do you want to ignore these errors for this host?</source>
 <context>
     <name>TabBar</name>
     <message>
-        <location filename="../mainview.cpp" line="+470"/>
+        <location filename="../mainview.cpp" line="+483"/>
         <source>New &amp;Tab</source>
         <translation type="unfinished"></translation>
     </message>

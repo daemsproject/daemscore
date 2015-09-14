@@ -690,6 +690,7 @@ bool CContent::DecodeDomainInfo(string& strAlias, string& strIntro, CLink& iconL
     Decode(vDecoded);
     int cc;
     string str;
+    bool fHasTags=false;
     for(unsigned int i=0;i<vDecoded.size();i++)
     {        
         cc=vDecoded[i].first;
@@ -712,7 +713,9 @@ bool CContent::DecodeDomainInfo(string& strAlias, string& strIntro, CLink& iconL
             iconLink.Unserialize(str);
         }
         else if(cc==CC_TAG&&str.size()<=32){
-            
+            if(!fHasTags)
+                vTags.clear();
+            fHasTags=true;
         //LogPrintf("CContent DecodeDomainInfo tag:%s\n",str);
             vTags.insert(vTags.begin(),str);
         }

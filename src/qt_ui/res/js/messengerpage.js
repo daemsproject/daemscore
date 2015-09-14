@@ -5,6 +5,7 @@ var contacts = {};
 function registerNotifications() {
     var aa = function (a) {
         Messenger.notifiedBlock(a);
+        CPage.notifyBlock(a);
     };
     var ab = function (a) {
         Messenger.notifiedTx(a);
@@ -198,6 +199,6 @@ $(document).ready(function () {
                 Messenger.switchToContact(id);
             }
         }
-        CPage.registerNotifications();
+        //CPage.registerNotifications();
     });
 });

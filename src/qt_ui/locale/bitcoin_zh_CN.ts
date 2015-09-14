@@ -837,11 +837,11 @@ Do you want to reload all pages?</source>
     </message>
     <message>
         <source>Bookmarks bar</source>
-        <translation type="unfinished">收藏夹栏</translation>
+        <translation type="obsolete">收藏夹栏</translation>
     </message>
     <message>
         <source>Bookmarks Menu</source>
-        <translation type="unfinished">收藏夹菜单</translation>
+        <translation type="obsolete">收藏夹菜单</translation>
     </message>
     <message>
         <source>Show Status Bar</source>
@@ -1001,6 +1001,14 @@ Do you want to reload all pages?</source>
     <message>
         <source>Address Change</source>
         <translation type="unfinished">修改地址</translation>
+    </message>
+    <message>
+        <source>Bookmarks Bar</source>
+        <translation type="unfinished">收藏夹工具栏</translation>
+    </message>
+    <message>
+        <source>Bookmarks Menu</source>
+        <translation type="unfinished">收藏夹菜单</translation>
     </message>
 </context>
 <context>

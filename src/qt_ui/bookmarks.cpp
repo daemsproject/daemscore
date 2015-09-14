@@ -117,17 +117,17 @@ void BookmarksManager::load()
         if (node->type() == BookmarkNode::Folder) {
             // Automatically convert
             if (node->title == tr("Toolbar Bookmarks") && !toolbar) {
-                node->title = tr(BOOKMARKBAR);
+                node->title = tr("Bookmarks Bar");
             }
-            if (node->title == tr(BOOKMARKBAR) && !toolbar) {
+            if (node->title == tr("Bookmarks Bar") && !toolbar) {
                 toolbar = node;
             }
 
             // Automatically convert
             if (node->title == tr("Menu") && !menu) {
-                node->title = tr(BOOKMARKMENU);
+                node->title = tr("Bookmarks Menu");
             }
-            if (node->title == tr(BOOKMARKMENU) && !menu) {
+            if (node->title == tr("Bookmarks Menu") && !menu) {
                 menu = node;
             }
         } else {
@@ -138,14 +138,14 @@ void BookmarksManager::load()
     Q_ASSERT(m_bookmarkRootNode->children().count() == 0);
     if (!toolbar) {
         toolbar = new BookmarkNode(BookmarkNode::Folder, m_bookmarkRootNode);
-        toolbar->title = tr(BOOKMARKBAR);
+        toolbar->title = tr("Bookmarks Bar");
     } else {
         m_bookmarkRootNode->add(toolbar);
     }
 
     if (!menu) {
         menu = new BookmarkNode(BookmarkNode::Folder, m_bookmarkRootNode);
-        menu->title = tr(BOOKMARKMENU);
+        menu->title = tr("Bookmarks Menu");
     } else {
         m_bookmarkRootNode->add(menu);
     }
@@ -225,7 +225,7 @@ BookmarkNode *BookmarksManager::menu()
 
     for (int i = m_bookmarkRootNode->children().count() - 1; i >= 0; --i) {
         BookmarkNode *node = m_bookmarkRootNode->children().at(i);
-        if (node->title == tr(BOOKMARKMENU))
+        if (node->title == tr("Bookmarks Menu"))
             return node;
     }
     Q_ASSERT(false);
@@ -239,7 +239,7 @@ BookmarkNode *BookmarksManager::toolbar()
 
     for (int i = m_bookmarkRootNode->children().count() - 1; i >= 0; --i) {
         BookmarkNode *node = m_bookmarkRootNode->children().at(i);
-        if (node->title == tr(BOOKMARKBAR))
+        if (node->title == tr("Bookmarks Bar"))
             return node;
     }
     Q_ASSERT(false);

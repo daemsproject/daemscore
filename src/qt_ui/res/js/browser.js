@@ -147,7 +147,7 @@ var CBrowser = new function () {
         var id = this.getIdFrContent(ctt);
         sdiv.find(".id").find(".text").attr("fullid", id);
         var domain = this.getDomainFrContent(ctt);
-        var id2show = domain ? domain.domain : CUtil.getShortPId(id);
+        var id2show = domain ? (domain.alias ? base64.decode(domain.alias) + " (" + domain.domain + ")" : domain.domain) : CUtil.getShortPId(id);
         id2show = CUtil.isIdDev(id) ? TR("Φ Developers") : id2show;
         var idtype = domain ? "(" + TR("domain") + ")" : "";
         sdiv.find(".id").find(".text").html(id2show);
@@ -293,8 +293,8 @@ var CBrowser = new function () {
             ddiv.find(".id-homepage-btn").parent().remove();
             ddiv.find(".id-copyid-btn").parent().remove();
         }
-        var id2show = domain.domain;
-        var idtype = domain ? "(domain)" : "";
+        var id2show = (domain.alias ? domain.alias + " (" + domain.domain + ")" : domain.domain);
+        var idtype = domain ? "("+TR("domain")+")" : "";
         ddiv.find(".id").find(".text").html(id2show).attr("domain", domain.domain);
         ddiv.find(".id").find(".idtype").html(idtype);
         ddiv.find(".alias").html(domain.alias);
@@ -341,7 +341,7 @@ var CBrowser = new function () {
         var id = this.getIdFrContent(ctt);
         sdiv.find(".id").find(".text").attr("fullid", id);
         var domain = this.getDomainFrContent(ctt);
-        var id2show = domain ? domain.domain : CUtil.getShortPId(id);
+        var id2show = domain ? (domain.alias ? domain.alias + " (" + domain.domain + ")" : domain.domain) : CUtil.getShortPId(id);
         sdiv.find(".id").find(".text").html(id2show);
         sdiv.find(".linkspan").attr("clink", ctt.link);
         return this.fillSdiv(sdiv, ctt);
@@ -1335,11 +1335,7 @@ var CPublisher = new function () {
             $("#promctt-value").attr("placeholder", TR("Value locked for ranking"))
             var tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
-            $("#promctt-date").datepicker({
-                altFormat: '@',
-                dateFormat: 'yy-mm-dd',
-                minDate: tomorrow
-            });
+            $("#promctt-date").datepicker(CPage.initDatePickerOptions());
         }
 
     };

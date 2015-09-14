@@ -1,45 +1,79 @@
 {
-    "Home":{
-        "name":"Home",
-        "text":"<p><h1>Φ</h1>--Free Anonymous Internet, upgrades internet by providing ultimate freedom and anonymity</p>        <p>Ultimate <h1>F</h1>reedom</p>"
-    <p>Never can be deleted,freezed, modified or filtered.</p>
-    Accessible from anywhere."
-    <p>Ultimate <h1>A</h1>anonymity</p>
-    No real-world personal data needed.
-    Footprint untrackable.
-    <p>Infrastructure for next generation <h1>I</h1>nternet</p>    
-        Fully compatible with existing internet system.
-        Plentiful of general-purpose APIs enabling quick and powerful Apps development."
-        Open source to ensure safety and upgradability.
-        Core Innovations:
-        Φ account   
-            The Φ account system is based on asymmetric cryptography,specifically, ECDSA technology. 
-            Each user can create a universe-unique Φ account by himself. A Φ account is a private key-name key(public key)pair.Name key represents the Φaccount,and digital signatures signed by private key proofs the controlling of the Φ account and triggers digital operations.
-            The Φ account is fully owned and controlled by the user only. No website , organization, or government can have access to Φ accounts.
-            The Φ account has no correspondancy to real-world personal information, ensuring ultimate anonymity. 
-            Φ accounts are free. Users can create, possess, use or abandon as many Φ accounts as they want, ensuring ultimate freedom.
-            Φ accounts are compatible with all kinds of digital system and extremely easy to implement, \"one account for all apps\" will become true in the near future.
-        Φ network
-            The Φ network system is based on P2P technology,i.e. decentralized network.
-            The Φ network has no center, every nodes in the Φ network are equal. Users can communicate point-to-point, or broadcast and relay Φ information.
-            Becuase of the cascade-spreading of Φ information in the Φ network, there're no way to block ,filter or modify Φ information,ensuring ultimate freedom;
-            Also becuase of the cascade-spreading of Φ information in the Φ network,it's extremely difficult to track the origin of Φ information,ensuring ultimate anonymity.
-            Any digital device can join the Φ network if it follows the basic Φ network protocol.All kinds of apps can be run on Φ network,even without a server.
-        Φ database
-            The Φ database system is based on blockchain technology.
-            There's always only one valid version of Φ database in the whole internet, while many node/digital devices keep a full copy of it.
-            Because every digital device in the Φ network can have a full copy of the Φ database, so it will never be deleted.
-            Φ information following Φ database rules  will go into Φ database if confirmed by Φ miners. The Φ database rules strictly require digital signature from the sender for the Φ information, so no one else can modify the Φ information,i.e. the Φ information will be stored in the Φ database as what it was forever. Because of the decentrality of miners, there're no ways to block any valid Φ information going into Φ database ,ensuring ultimate freedom;
-            Because everbody has exactly the same copy of Φ database, so there're no ways to know what data a user has browsed,ensuring ultimate anonymity.
-            The Φ database is open for all kinds of information,not only text,image,vedio,but also programmes,settings,opeartion commands--nothing is impossible, oh ,impossible is nothing.
-        Φ currency
-           The Φ currency system is based on Bitcoin technology.
-           The Φ currency is published and distributed independantly on Φ system. It has no relationship with traditional currencies, so it's indepent from all traditional banking and financial system.
-           Any Φ account can receive and send Φ currency. Obviously , The Φ currency system inherits the freedom and anonymity of Φ account .
-          A big unique advantage of Φ currency system is that, the currency transaction is processed together with information and operation commands on the Φ system, it's unimaginably easy for merchants or app developers to integrete currency functions into their programmes. 
-        Screen-captures
-        Downloads
-        APIs
-            "
+    "Home": {
+        "name": "Home",
+        "home": {
+            "name": "Home",
+            "text": [
+                "<h1><b>Φ</b>--<b>F</b>ree <b>A</b>nonymous <b>I</b>nternet, upgrades internet by providing ultimate freedom and anonymity</h1>",
+                "<div class='ph' />",
+                "<h1>Ultimate <b>F</b>reedom</h1>",
+                "<p>Can NEVER be deleted, locked, modified or censored</p>",
+                "<p>Accessible from anywhere</p>",
+                "<div class='ph' />",
+                "<h1>Ultimate <b>A</b>nonymity</h1>",
+                "<p>No real world personal data needed</p>",
+                "<p>Footprint untraceable</p>",
+                "<div class='ph' />",
+                "<h1>Next generation <b>I</b>nternet infrastructure</h1>",
+                "<p>Full compatibility to existing internet system</p>",
+                "<p>Plenty of general purpose APIs enabling quick and powerful Apps development</p>",
+                "<p>Open source to ensure safety and upgradability</p>",
+                "<div class='ph' />",
+                "<h1>Core Innovations :</h1>",
+                "<div class='ph' />",
+                "<h4>Φ Account</h4>",
+                "<p>The Φ account system is based on asymmetric cryptography, specifically, ECDSA technology</p>",
+                "<p>Each user can create a unique Φ account by himself/herself. A Φ account is a privatekey – namekey (publickey) pair. Namekey represents the Φ account, and digital signatures signed by private key proofs the control of the Φ account and triggers digital operations</p>",
+                "<p>A Φ account is fully owned and controlled by the user only. No website, organization, or government is able to access your Φ accounts</p>",
+                "<p>The absence of any link between Φ account and real world personal information ensures ultimate anonymity</p>",
+                "<p>Φ account is free. The zero cost to create, possess, use and abandon as many Φ accounts as needed ensures ultimate freedom</p>",
+                "<p>Φ accounts are compatible with all kinds of digital system and are extremely easy to implement. \"One account for any app\" will become true in the near future</p>",
+                "<h4>Φ Network</h4>",
+                "<p>Φ network system is based on P2P technology, aka decentralized network</p>",
+                "<p>Φ network has no centers. Every node in the Φ network is equal. Users can communicate point-to-point, or broadcast and relay Φ information</p>",
+                "<p>Because of the cascade spreading of Φ information in the Φ network, there's no way to block, censor or modify Φ information</p>",
+                "<p>Also because of the cascade-spreading of Φ information in the Φ network, it's extremely difficult to track the origin of Φ information. Ultimate anonymity is ensured meanwhile</p>",
+                "<p>Any digital device can join the Φ network by following the basic Φ network protocol. Many kinds of apps can run on Φ network, even without a server</p>",
+                "<h4>Φ Database</h4>",
+                "<p>The Φ database system is based on blockchain technology</p>",
+                "<p>There's always only one valid version of Φ database in the whole network, while many node/digital devices keep a full copy of it</p>",
+                "<p>No Φ information can be deleted, because every node in the Φ network has a full copy of the Φ database </p>",
+                "<p>Φ information following Φ database rules will go into Φ database after confirmed by Φ miners. The Φ database rules strictly require digital signature from the sender of the Φ information, so that no one else can modify the Φ information, i.e. the Φ information will be stored in the Φ database as what it is forever. Because of the decentrality of miners, there’s no way to block any valid Φ information going into Φ database</p>",
+                "<p>Because everybody has exactly the same copy of Φ database, there're no ways to know what data a user has browsed. Ultimate anonymity is ensured</p>",
+                "<p>The Φ database is open for any kind of digital information, including not only text, image, video, but also programs, settings, operation commands, etc</p>",
+                "<h4>Φ Currency</h4>",
+                "<p>The Φ currency system is based on Bitcoin technology</p>",
+                "<p>The Φ currency is published and distributed independently on Φ system. It has no relationship with traditional currencies, so it's independent from any traditional banking and financial system</p>",
+                "<p>Any Φ account can receive and send Φ currency. Naturally, the Φ currency system inherits the freedom and anonymity of Φ account </p>",
+                "<p>A unique advantage of Φ currency system is that, the currency transaction is processed together with information and operation commands on the Φ system. It is unimaginably easy for merchants or app developers to integrate currency functions into their programs<p>"
+            ]
+        }
+    },
+    "Screen-captures": {
+        "name": "Screen-captures",
+        "screen-captures": {
+            "name": "Screen-captures",
+            "text": [
+                "Will come soon"
+            ]
+        }
+    },
+    "Downloads": {
+        "name": "Downloads",
+        "downloads": {
+            "name": "Downloads",
+            "text": [
+                "Coming soon"
+            ]
+        }
+    },
+    "APIs": {
+        "name": "APIs",
+        "apis": {
+            "name": "APIs",
+            "text": [
+                "API List"
+            ]
+        }
     }
 }

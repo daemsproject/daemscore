@@ -17,6 +17,8 @@
 		"js/translate.js":"js/translate.js",
 		"js/lang/zh.json":"js/lang/zh.json",
 		"js/lang/en.json":"js/lang/en.json",
+		"json/help_en.json":"json/help_en.json",
+		"json/help_zh.json":"json/help_zh.json",
 		"icons/crown.png":"icons/crown",
 		"icons/silvercoin.png":"icons/silvercoin",
 		"icons/goldcoin.png":"icons/goldcoin",

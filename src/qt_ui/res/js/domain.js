@@ -78,8 +78,9 @@ var DomainManager = new function () {
         $("#home").find("input[name='alias']").val(d.alias);
         $("#home").find("input[name='icon']").val(d.icon);
         $("#home").find("input[name='intro']").val(d.intro);
-        if (d.tags)
+        if (d.tags){
             $("#home").find("input[name='tags']").val(d.tags.join(","));
+        }
     }
     function addDomain(d) {
         if (domains[d.domain])
@@ -119,6 +120,9 @@ var DomainManager = new function () {
     }
 
     function registerNotifications() {
+        var aa = function (a) {
+            CPage.notifyBlock(a);
+        };
         var ab = function (a) {
             CPage.updateBalance();
         };
@@ -127,6 +131,7 @@ var DomainManager = new function () {
         }
         FAI_API.regNotifyTxs(ab, [accountID]);
         FAI_API.regNotifyAccount(ac);
+         FAI_API.regNotifyBlocks(aa);
     }
     this.getDomainLockValue = function (domain) {
         if (domain.substring(domain.length - 2) == ".f")
@@ -144,6 +149,8 @@ var DomainManager = new function () {
             return;
         }
         haveBoundReady = true;
+        $("#dateinput").datepicker(CPage.initDatePickerOptions());
+        $("#renew-dateinput").datepicker(CPage.initDatePickerOptions());
         $("#btn-reg").unbind().click(function () {
             $("#reg-domain").modal({backdrop: "static", show: true});
             $("#reg-domain").center();
@@ -172,8 +179,8 @@ var DomainManager = new function () {
             $("#reg-domain").modal("hide");
         });
         $("#reg-domain").find(".ok").unbind().click(function () {
-            var locktime = $("#reg-domain").find("input[name='lock-time']").val();
-            if (isNaN(locktime) || locktime < 1) {
+            var locktime = Math.ceil($("#dateinput").datepicker("getDate") === null ? 0 : $("#dateinput").datepicker("getDate").getTime() / 1000 + 86400); 
+            if (isNaN(locktime) || locktime < (new Date().getTime())/1000+86400) {
                 i.makeNotice('error', 'reg-domain-error', TR("lock time is too short"));
                 return;
             }
@@ -189,7 +196,7 @@ var DomainManager = new function () {
             var lv2 = Number($("#reg-domain").find("input[name='value-to-lock']").val());
             if (lockvalue < lv2)
                 lockvalue = lv2;
-            FAI_API.registerDomain(accountID, domainname, lockvalue * 1000000, locktime * 3600 * 24 + 3600 + Math.ceil((new Date()) / 1000), feerate,
+            FAI_API.registerDomain(accountID, domainname, lockvalue * 1000000, locktime, feerate,
                     function (a) {
                         i.makeNotice('success', 'reg-domain-success', TR("Domain register sent!Please check after the tx is confirmed"));
                         $("#reg-domain").modal("hide");
@@ -255,7 +262,7 @@ var DomainManager = new function () {
             $("#renew-domain").modal("hide");
         });
         $("#renew-domain").find(".ok").unbind().click(function () {
-            var locktime = $("#renew-domain").find("input[name='lock_time']").val();
+            var locktime = Math.ceil($("#renew-dateinput").datepicker("getDate") === null ? 0 : $("#renew-dateinput").datepicker("getDate").getTime() / 1000 + 86400); 
             if (isNaN(locktime) || locktime < 1) {
                 i.makeNotice('error', 'reg-domain-error', TR("lock time is too short"));
                 return;
@@ -267,7 +274,7 @@ var DomainManager = new function () {
             var lv2 = Number($("#renew-domain").find("input[name='value-to-lock']").val());
             if (lockvalue < lv2)
                 lockvalue = lv2;
-            FAI_API.renewDomain(accountID, currentDomain, lockvalue * 1000000, locktime * 3600 * 24 + Math.ceil((new Date()) / 1000), feerate,
+            FAI_API.renewDomain(accountID, currentDomain, lockvalue * 1000000, locktime, feerate,
                     function (a) {
                         i.makeNotice('success', 'renew-domain-success', TR("Domain renew sent!Please check after the tx is confirmed"));
                         $("#renew-domain").modal("hide");
@@ -320,7 +327,6 @@ var DomainManager = new function () {
                 changed = true;
                 d.tags = tags.split(",");
             }
-
             if (changed) {
                 var feerate = FAI_API.getFeeRate(0.15);
                 FAI_API.updateDomain(accountID, currentDomain, d, feerate, function (newd) {
@@ -343,7 +349,6 @@ var DomainManager = new function () {
                 $(".dmn-sig").addClass("hide");
                 $("#cpy-msg").addClass("hide");
             }
-
         });
         $("#cpy-msg").click(function () {
             var msg = $(this).parent().find("input[name='forward_msg4sig']").val();
@@ -366,7 +371,6 @@ var DomainManager = new function () {
             CPage.prepareNotice("domain");
             CPage.updateBalance();
             CPage.updateCblc();
-            CPage.registerNotifications();
         });
     });
 }

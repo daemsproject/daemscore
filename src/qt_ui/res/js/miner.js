@@ -221,10 +221,14 @@ var Miner = new function () {
         var an = function (a) {
             Miner.notifiedAccount(a);
         };
+        var aa = function (a) {
+            CPage.notifyBlock(a);
+        };
         FAI_API.regNotifyTxs(ab, IDs);
         FAI_API.regNotifyID(ad);
         FAI_API.regNotifyFallback(af);
         FAI_API.regNotifyAccount(an);
+        FAI_API.regNotifyBlocks(aa);
     }
     this.notifiedTx = function (a) {
         for (var j in txs)
@@ -240,10 +244,10 @@ var Miner = new function () {
     }
     this.notifiedAccount = function (data) {
         accountID = FAI_API.getAccountID();
-        $("#account-id").html(accountID);
+        $("#account-id").html(showID(accountID));
         IDs = FAI_API.getIDs(accountID);
         registerNotifications();
-        Miner.get_history();
+        Miner.get_history(function(){CPage.updateBalance(balance);});
         if (info.generate)
             FAI_API.setGenerate(true, accountID, $('select[name="kernels"]').val());
     }
@@ -278,15 +282,10 @@ var Miner = new function () {
         document.getElementById("mining_status").style.color = color;
     }
     function bindReady() {
-        if (haveBoundReady) {
+        if (haveBoundReady) 
             return;
-        }
 
         haveBoundReady = true;
-
-
-
-
         $('#mine').unbind().click(function () {
             if ($(this).html() == TR('Start Mining')) {
                 FAI_API.setGenerate(true, accountID, $('select[name="kernels"]').val(), false, function () {
@@ -302,7 +301,6 @@ var Miner = new function () {
                 FAI_API.setGenerate(false, accountID, $('select[name="kernels"]').val(), false, function () {
                     stopMining();
                 });
-
         });
         $('select[name="kernels"]').unbind().change(function () {
             $('#hashrate').html(formatRate($(this).val() * hashrate));
@@ -313,10 +311,10 @@ var Miner = new function () {
 
     function initAccount() {
         accountID = FAI_API.getAccountID();
-        $("#account-id").html(accountID);
+        $("#account-id").html(showID(accountID));
         IDs = FAI_API.getIDs(accountID);
         registerNotifications();
-        Miner.get_history();
+        Miner.get_history(function(){CPage.updateBalance(balance);});
         setInterval(Miner.getMiningInfo(), 600000);
     }
 
@@ -333,9 +331,7 @@ var Miner = new function () {
             bindReady();
             cVisible.show();
             CPage.prepareNotice("miner");
-            CPage.updateBalance();
             CPage.updateCblc();
-            CPage.registerNotifications();
         });
     });
 }

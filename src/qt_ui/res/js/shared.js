@@ -820,8 +820,8 @@ var CPage = new function () {
     this.fillProdDiv = function (ddiv, prod) {
         ddiv.find(".linkspan").attr("clink", prod.link);
         var domain = FAI_API.getDomainByForward(prod.seller.id);
-        var id2show = $.isEmptyObject(domain) ? CUtil.getShortPId(prod.seller.id) : domain.domain;
-        var idtype = $.isEmptyObject(domain) ? "" : "(domain)";
+        var id2show = $.isEmptyObject(domain) ? CUtil.getShortPId(prod.seller.id) : (domain.alias ? domain.alias + " (" + domain.domain + ")" : domain.domain);
+        var idtype = $.isEmptyObject(domain) ? "" : "(" + TR("domain") + ")";
         ddiv.find(".id").find(".text").html(id2show);
         ddiv.find(".id").find(".text").attr("fullid", prod.seller.id);
         if (!$.isEmptyObject(domain))
@@ -885,5 +885,20 @@ var CPage = new function () {
         };
         FAI_API.regNotifyBlocks(aa);
         FAI_API.regNotifyAccount(ab);
+    }
+    this.initDatePickerOptions = function () {
+        var tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        var options = {
+            altFormat: '@',
+            dateFormat: 'yy-mm-dd',
+            minDate: tomorrow
+        };
+        if (langCode == "zh") {
+            for (var k in $.datepicker.regional["zh-CN"])
+                options[k] = $.datepicker.regional["zh-CN"][k];
+        }
+        return options;
+
     }
 };

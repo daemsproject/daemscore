@@ -100,6 +100,7 @@
     <qresource prefix="/js">
         <file alias="jquery.min.js">res/js/jquery.min.js</file>
         <file alias="jquery-ui.min.js">res/js/jquery-ui.min.js</file>
+        <file alias="jquery-ui.datepicker-zh-CN.js">res/js/jquery-ui.datepicker-zh-CN.js</file>
         <file alias="bootstrap.min.js">res/js/bootstrap.min.js</file>
         <file alias="base64.js">res/js/base64.js</file>
         <file alias="fai-api.js">res/js/fai-api.js</file>

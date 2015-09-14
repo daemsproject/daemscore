@@ -1,7 +1,7 @@
 var CHelp = new function () {
     CHelp = this;
     this.HELP = {};
-    this.helpFile = '../json/help_en.json';
+    this.helpFile = '../json/help.json';
     this.keyWords = ["name", "text", "class"];
     this.getJson = function (path) {
         path = typeof path === "undefined" ? this.helpFile : path;
@@ -38,6 +38,7 @@ var CHelp = new function () {
     }
     this.renderHelp = function () {
         console.log(this.HELP);
+         $("#drop-menu").html("");
         for (var i in this.HELP) {
             var menu = $("#dropdown-menu-tpl").clone(true, true).removeAttr("id");
             menu.find("a").find(".name").attr("tr", this.HELP[i].name);

@@ -7,6 +7,8 @@ var gParam;
 $(document).ready(function () {
     $("#tpls").load("templates.html", function () {
         CUtil.initGParam();
+        if(FAI_API.getBlockCount()<26000)
+            FAI_API.goToCustomPage("fai:help/?init=true");
         var page = CBrowser.getPageName();
         switch (page) {
             case "homepage":

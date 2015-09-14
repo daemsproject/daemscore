@@ -111,6 +111,14 @@ var Tools = new function () {
             window.location.href = window.location.href;
         }
         FAI_API.regNotifyAccount(ac);
+        var aa = function (a) {
+            CPage.notifyBlock(a);
+        };
+        var ab = function (a) {
+            CPage.updateBalance();
+        };
+        FAI_API.regNotifyTxs(ab, [accountID]);
+        FAI_API.regNotifyBlocks(aa);
     }
     function bindReady() {
         if (haveBoundReady) {
@@ -148,7 +156,6 @@ var Tools = new function () {
             CPage.prepareNotice("wallet");
             CPage.updateBalance();
             CPage.updateCblc();
-            CPage.registerNotifications();
         });
     });
 }
