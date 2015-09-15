@@ -849,12 +849,8 @@ bool StringToFile(const std::string& filename,const std::string& str)
 {
     ofstream fout;  
     //LogPrintf("util.cpp StringToFile file name:%s content len:%i\n",filename,str.size());
-    fout.open(filename.c_str());  
-#ifdef WIN32
-    if(!fout.is_open(),ios_base::out |ios_base::trunc|ios_base::binary){
-#else
+    fout.open(filename.c_str(),ios_base::out |ios_base::trunc|ios_base::binary);  
         if(!fout.is_open()){
-#endif
         LogPrintf("util.cpp StringToFile open failed file name:%s content len:%i\n",filename,str.size());
         return false;
     }
