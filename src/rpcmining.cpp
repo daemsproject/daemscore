@@ -319,7 +319,7 @@ Value getmininginfo(const Array& params, bool fHelp)
     double timeUsed=clock()-startTime;
     //LogPrintf("time used:%d \n",timeUsed);
     temphash=NULL;    
-    double kernelRate=100*1000000/timeUsed;//(double)gethashespersec(params, false))/nKernels;
+    double kernelRate=100*CLOCKS_PER_SEC/timeUsed;//(double)gethashespersec(params, false))/nKernels;
     obj.push_back(Pair("kernelrate",         kernelRate));
     obj.push_back(Pair("kernelrevenueperday",(double)(blockReward*kernelRate/GetBlockProof(*(chainActive.Tip())).getdouble()/COIN*(24*60*60))));
     obj.push_back(Pair("kernelblockinterval",GetBlockProof(*(chainActive.Tip())).getdouble()/kernelRate));

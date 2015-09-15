@@ -262,7 +262,7 @@ double WalletModel::testEccSpeed()
     }
     double timeUsed=clock()-startTime;
     //LogPrintf("time used:%d \n",timeUsed);    
-    double kernelRate=1000*1000000/timeUsed;
+    double kernelRate=1000*CLOCKS_PER_SEC/timeUsed;
     return kernelRate*nKernels;
 }
 static void NotifyEcMinerResult(WalletModel* walletModel,const CPubKey basePub,const CKey stepKey,const std::string strHeader){
