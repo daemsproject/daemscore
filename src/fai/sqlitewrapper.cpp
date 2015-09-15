@@ -1084,7 +1084,7 @@ bool CSqliteWrapper::SearchContents(const vector<int64_t>& vSenderIDs,const vect
     string strtmp;
     if(vTagIDs.size()>0)
     {
-        if(vTagIDs.size()>10)
+        if(vTagIDs.size()>9)
             return false;  
         const char* tagselectstatement="SELECT link FROM tag WHERE tagid =%lld ";  
         sprintf(chTag,tagselectstatement,vTagIDs[0]);
@@ -1122,12 +1122,12 @@ bool CSqliteWrapper::SearchContents(const vector<int64_t>& vSenderIDs,const vect
     {
         if(vCCs.size()>10)
             return false;     
-        sprintf(chCC,"%lld",vCCs[0]);     
+        sprintf(chCC,"%i",vCCs[0]);     
         //LogPrintf("CSqliteWrapper GetContents chCC: %s\n",chCC); 
         for(unsigned int i=1;i<vCCs.size();i++)     
         {
             strCC.assign(chCC);
-            sprintf(chCC,"%s,%lld",strCC.c_str(),vCCs[i]);  
+            sprintf(chCC,"%s,%i",strCC.c_str(),vCCs[i]);  
         }
        // LogPrintf("CSqliteWrapper GetContents chCC: %s\n",chCC);   
         strCC.assign(chCC);

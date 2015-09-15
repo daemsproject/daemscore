@@ -50,20 +50,20 @@
         }
     },
     "Screen-captures": {
-        "name": "Screen-captures",
+        "name": "截屏",
         "screen-captures": {
-            "name": "Screen-captures",
+            "name": "截屏",
             "text": [
-                "Will come soon"
+                "即将发布"
             ]
         }
     },
     "Downloads": {
-        "name": "Downloads",
+        "name": "下载",
         "downloads": {
-            "name": "Downloads",
+            "name": "下载",
             "text": [
-                "Coming soon"
+                "即将发布"
             ]
         }
     },
@@ -72,7 +72,7 @@
         "apis": {
             "name": "APIs",
             "text": [
-                "API List"
+                "API 列表"
             ]
         }
     }

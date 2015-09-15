@@ -346,7 +346,7 @@ var Messenger = new function () {
             if (type === "add") {
                 div.find(".modal-header").find("h3").html(TR("Add New Contact"));
                 div.find(".modal-body").find("p").html(TR("Please input the contact's account ID or domain name below:"));
-                div.find(".modal-body").find("input").attr("placeholder", "FAIcoin Account ID").attr("name", "contact-id").addClass("input-id");
+                div.find(".modal-body").find("input").attr("placeholder", TR("FAIcoin Account ID")).attr("name", "contact-id").addClass("input-id");
                 div.find(".idbtn.cancel").html(TR("Cancel"));
                 div.find(".idbtn.ok").html(TR("Add New")).unbind().click(function () {
                     var id = $("#add-contact").find('input[name="contact-id"]').val();

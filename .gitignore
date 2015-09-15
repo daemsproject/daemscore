@@ -94,7 +94,7 @@ moc*.cpp
 *.la
 
 # Compilation and Qt preprocessor part
-*.qm
+#*.qm
 Makefile
 bitcoin-qt
 Bitcoin-Qt.app

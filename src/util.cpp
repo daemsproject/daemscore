@@ -836,7 +836,7 @@ bool ReadFileToJson(const string file_name, json_spirit::Value& fileData){
 bool WriteJsonToFile(const json_spirit::Value& valContent,const string file_name){    
     ofstream fout;  
     //LogPrintf("util.cpp WriteJsonToFile file name:%s content:%s\n",file_name,json_spirit::write_string(valContent,true));
-    fout.open(file_name.c_str());  
+    fout.open(file_name.c_str(),ios_base::out |ios_base::trunc|ios_base::binary);  
     if(!fout.is_open())
         return false;
     fout << json_spirit::write_string(valContent,true) << endl; 

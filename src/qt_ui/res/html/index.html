@@ -22,6 +22,7 @@
                         langCode = CUtil.getGet("lang");
                         path = "../json/homepage_" + langCode + ".json";
                     }
+                    console.log(langCode)
                     doTranslate();
                     CHelp.getJson(path);
                     CHelp.renderHelp();
@@ -40,11 +41,8 @@
                     $(".langflag").unbind().click(function () {
                         langCodeF = $(this).attr("lang");
                         langCode = langCodeF.substr(0, 2);
-                        doTranslate();
-                        console.log(langCode);
-                        var path = "../json/homepage_" + langCode + ".json";
-                        CHelp.getJson(path);
-                        CHelp.renderHelp();
+                        var url = CUtil.setGet("lang", langCode, url);
+                        window.location.href = url;
                     });
                 });
             });
@@ -78,8 +76,10 @@
                     <div id="drop-menu-content" style="margin-top:50px"></div>
                 </div>
             </div>
-        </div>        
-<a href="http://www.freedomain.co.nr/" target="_blank" title="Free Domain Registration" rel="nofollow"><img src="http://eczza.imdrv.net/usa/c.gif" width="88" height="31" border="0" alt="Free Domain Registration"></a>
+        </div>  
+        <div class="ph"></div>
+        <div class="ph"></div>
+        <a href="http://www.freedomain.co.nr/" target="_blank" title="Free Domain Registration" rel="nofollow"><img src="http://eczza.imdrv.net/usa/c.gif" width="88" height="31" border="0" alt="Free Domain Registration"></a>
     </body>
     <div id="tpls" class="hide"></div>
 </html>

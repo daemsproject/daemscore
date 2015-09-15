@@ -537,7 +537,7 @@ QString WalletModel::HandlePaymentRequest2(const Array arrData,const int nPageIn
         switch((int)arrData[3].type())
         {
             case int_type:
-                dFeeRate=(double)arrData[3].get_int();
+                dFeeRate=(double)arrData[3].get_int64();
                 break;
             case real_type:
                 dFeeRate=arrData[3].get_real();
@@ -573,7 +573,7 @@ QString WalletModel::HandleOverrideRequest(const Array arrData,const int nPageIn
     double dFeeRate=1000;
     switch((int)valtmp.type()){
         case int_type:
-            dFeeRate=(double)valtmp.get_int();
+            dFeeRate=(double)valtmp.get_int64();
             break;
         case real_type:
             dFeeRate=valtmp.get_real();
@@ -1307,7 +1307,7 @@ QString WalletModel::RegisterDomain(json_spirit::Array arrData,const int nPageIn
     double dFeeRate=1000;
     switch((int)arrData[4].type()){
         case int_type:
-            dFeeRate=(double)arrData[4].get_int();
+            dFeeRate=(double)arrData[4].get_int64();
             break;
         case real_type:
             dFeeRate=arrData[4].get_real();
@@ -1381,7 +1381,7 @@ QString WalletModel::RenewDomain(json_spirit::Array arrData,const int nPageIndex
     double dFeeRate=1000;
         switch((int)arrData[4].type()){
         case int_type:
-            dFeeRate=(double)arrData[4].get_int();
+            dFeeRate=(double)arrData[4].get_int64();
             break;
         case real_type:
             dFeeRate=arrData[4].get_real();

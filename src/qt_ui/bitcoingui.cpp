@@ -578,7 +578,7 @@ LogPrintf("bitcoingui:createactions 2 \n");
 //    showHideTabBarAction->setCheckable(true);
     showHelpMessageAction = new QAction(QApplication::style()->standardIcon(QStyle::SP_MessageBoxInformation), tr("&Command-line options"), this);
     showHelpMessageAction->setStatusTip(tr("Show the Φ DeskTop Client help message to get a list with possible Fai command-line options"));
-    settingsAction = new QAction(QIcon(":/icons/key"), tr("&Settings"), this);
+    settingsAction = new QAction(QIcon(":/icons/fai"), tr("&Settings"), this);
     settingsAction->setStatusTip(tr("Settings"));
     settingsAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_S)); 
     helpAction = new QAction(QApplication::style()->standardIcon(QStyle::SP_MessageBoxInformation), tr("&Help"), this);

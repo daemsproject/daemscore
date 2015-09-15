@@ -508,7 +508,7 @@ CPaymentOrder ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJso
             break;
         }
         case int_type:
-            pr.dFeeRate=valtmp.get_int();
+            pr.dFeeRate=valtmp.get_int64();
             break;
         case str_type:
         {
@@ -571,7 +571,7 @@ CPaymentOrder GetPublisherPaymentRequest(const std::string idLocal, const std::s
         strError = "id is not valid format";
         throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
     }
-    LogPrintf("rpcmist MessageRequestToPaymentRequest script %s\n", scriptPubKey.ToString());
+    //LogPrintf("rpcmist MessageRequestToPaymentRequest script %s\n", scriptPubKey.ToString());
     pr.vFrom.push_back(scriptPubKey);
 
     if (idTarget == "")
@@ -585,7 +585,7 @@ CPaymentOrder GetPublisherPaymentRequest(const std::string idLocal, const std::s
             throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
         }
     }
-    LogPrintf("rpcmist MessageRequestToPaymentRequest vout scriptpubkey:%s\n", scriptPubKey.ToString());
+   // LogPrintf("rpcmist MessageRequestToPaymentRequest vout scriptpubkey:%s\n", scriptPubKey.ToString());
     CAmount amount = deposit > 0 ? deposit : 0;
     for (std::vector<CContent>::const_iterator it = ctts.begin(); it != ctts.end(); it++)
         pr.vout.push_back(CTxOut(amount, scriptPubKey, *it, nLockTime));
@@ -682,7 +682,7 @@ CPaymentOrder GetPublishProductPaymentRequest(const Array arr)
     if(arr.size()>3)
     {
         if(arr[3].type()==int_type)
-        pr.dFeeRate=(double)arr[3].get_int();
+        pr.dFeeRate=(double)arr[3].get_int64();
         if(arr[3].type()==real_type)
         pr.dFeeRate=arr[3].get_real();
     }
@@ -853,7 +853,7 @@ CPaymentOrder GetUpdateDomainPaymentRequest(const Array arr)
         if (arr[3].type() == int_type)              
         {
 
-            pr.dFeeRate=(double)arr[3].get_int();
+            pr.dFeeRate=(double)arr[3].get_int64();
         } else if(arr[3].type() == real_type)
         {
              pr.dFeeRate=arr[3].get_real();
@@ -997,7 +997,7 @@ CPaymentOrder GetBuyProductPaymentRequest(const Array arr)
     if(arr.size()>2)
     {
         if(arr[2].type()==int_type)
-        pr.dFeeRate=(double)arr[2].get_int();
+        pr.dFeeRate=(double)arr[2].get_int64();
         if(arr[2].type()==real_type)
         pr.dFeeRate=arr[2].get_real();
     }
@@ -1062,7 +1062,7 @@ CPaymentOrder GetPublishPackagetPaymentRequest(const Array arr)
     if(arr.size()>2)
     {
         if(arr[2].type()==int_type)
-            pr.dFeeRate=arr[2].get_int();
+            pr.dFeeRate=arr[2].get_int64();
         if(arr[2].type()==real_type)
             pr.dFeeRate=arr[2].get_real();
     }

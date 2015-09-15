@@ -1794,11 +1794,11 @@ bool CWallet::CreateOverrideTransaction(const CTransaction & txIn,
         return false;
     }
     //get target feerate,fee
-    double targetFeeRate=txIn.GetFeeRate()*1.1;
+    double targetFeeRate=txIn.GetFeeRate()*1.101;
     if(targetFeeRate<dFeeRate)
         targetFeeRate=dFeeRate;
-    CAmount targetMinFee=txIn.GetFee()*1.1;
-    CAmount nCoinNeeded=max(targetMinFee,(CAmount)((txIn.GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION)+104)*targetFeeRate))-txIn.GetFee();
+    CAmount targetMinFee=txIn.GetFee()*1.101;
+    CAmount nCoinNeeded=max(targetMinFee,(CAmount)(ceil(txIn.GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION)+104)*targetFeeRate))-txIn.GetFee();
     wtxNew.fTimeReceivedIsTxTime = true;
     wtxNew.BindWallet(this);
     CMutableTransaction txNew(txIn);   

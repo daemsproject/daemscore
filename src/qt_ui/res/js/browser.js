@@ -1133,6 +1133,7 @@ var CPublisher = new function () {
         ctt.link = "";
         $("#confirmpub").removeAttr('disabled');
         var feer = $("#input-feerate").val() > 0 ? $("#input-feerate").val() * COIN / K : 0;
+        console.log(feer);
         var deposit = $("#promctt-value").val() > 0 ? $("#promctt-value").val() * COIN : 0;
         var locktime = Math.ceil($("#promctt-date").datepicker("getDate") === null ? 0 : $("#promctt-date").datepicker("getDate").getTime() / 1000 + 86400); // add 24 hour
         var locktime = deposit > 0 ? (locktime > 0 ? locktime : 0) : 0;

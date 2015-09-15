@@ -301,7 +301,7 @@ Value getmininginfo(const Array& params, bool fHelp)
     obj.push_back(Pair("kernels",          nKernels      ));
     CAmount blockReward=0;
     CBlockIndex* pLastBlockIndex=chainActive.Tip();
-    for(int i=1;i<=3;i++){
+    for(int i=1;i<=10;i++){
         CBlock lastBlock;
         ReadBlockFromDisk(lastBlock, pLastBlockIndex);        
         blockReward+=lastBlock.vtx[0].GetValueOut();
@@ -309,7 +309,7 @@ Value getmininginfo(const Array& params, bool fHelp)
             break;        
         pLastBlockIndex=pLastBlockIndex->pprev;        
     }    
-    blockReward/=3;
+    blockReward/=10;
     uint256* temphash=new uint256(0);
     double startTime=clock();
     //LogPrintf("time:%d \n",startTime);

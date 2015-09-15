@@ -2311,18 +2311,18 @@ json_spirit::Value searchproducts(const json_spirit::Array& params, bool fHelp)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "too many tags");
     vector<string> vTags;
     BOOST_FOREACH(const Value& tag, arrTags)
-    vTags.push_back(tag.get_str());
+        vTags.push_back(tag.get_str());
     vector<CContentDBItem> vContents;
     Array r;
-    int b = 0;
+    //int b = 0;
     if (!SearchPromotedContents(vSenders, vCCs, vTags, vContents, nMaxResults, nOffset))
         throw JSONRPCError(RPC_INTERNAL_ERROR, "SearchPromotedContents failed");
     Array arrProducts;
     vector<CProduct> vProduct;
     for (int i = 0; i < (int) vContents.size(); i++)
     {
-        if (b > maxb)
-            return r;
+        //if (b > maxb)
+        //    return r;
         CTxOut out;
         if (!GetTxOutFromVoutPos(vContents[i].pos, out))
             continue;
