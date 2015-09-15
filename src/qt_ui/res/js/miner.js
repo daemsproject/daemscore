@@ -294,7 +294,7 @@ var Miner = new function () {
                 }, function (e) {
                     console.log(e);
                     stopMining();
-                    Miner.makeNotice('error', 'send-tx-error', e);
+                    Miner.makeNotice('error', 'send-tx-error', TR(e));
                 });
             }
             else
