@@ -296,8 +296,9 @@ var DomainManager = new function () {
                 changed = true;
             }
             var forward = $.trim($("#home").find("input[name='forward']").val());
-            var forwardmsg4sig = $("#home").find("input[name='forward_msg4sig']").val();
-            if (forward.length > 0 && (!domains[currentDomain].forward || !domains[currentDomain].forward.target || forward != domains[currentDomain].forward.target)) {
+            console.log(forward);
+            if ((forward.length==0&&domains[currentDomain].forward&&domains[currentDomain].forward.target)||
+                    (forward.length > 0 && (!domains[currentDomain].forward || !domains[currentDomain].forward.target || forward != domains[currentDomain].forward.target))) {
                 d.forward = forward;
                 if (getStrLinkType(forward) == "id") {
                     if (!checkForwardSig()) {
@@ -323,7 +324,7 @@ var DomainManager = new function () {
                 changed = true;
             }
             var tags = $.trim($("#home").find("input[name='tags']").val());
-            if (tags && (tags != domains[currentDomain].tags.join(","))) {
+            if (tags != domains[currentDomain].tags.join(",")) {
                 changed = true;
                 d.tags = tags.split(",");
             }
