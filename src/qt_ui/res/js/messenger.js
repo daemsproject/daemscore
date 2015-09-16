@@ -17,7 +17,7 @@ var Messenger = new function () {
         var id2show = $.isEmptyObject(domain) ? CUtil.getShortPId(id) : (domain.alias ? domain.alias + " (" + domain.domain + ")" : domain.domain);
         id2show = contacts[currentContact].alias ? contacts[currentContact].alias : id2show;
         var intro = $.isEmptyObject(domain) ? "" : " " + domain.intro;
-        var idtype = $.isEmptyObject(domain) ? "" : "("+TR("domain")+")";
+        var idtype = $.isEmptyObject(domain) ? "" : "(" + TR("domain") + ")";
         pdiv.find(".id").find(".text").html(id2show);
         pdiv.find(".id").find(".text").attr("fullid", id);
         if (!$.isEmptyObject(domain))
@@ -207,7 +207,7 @@ var Messenger = new function () {
     this.addMessage = function (msg) {
         msg.IDForeign = FAI_API.areIDsEqual(msg.IDFrom, gParam.accountID) ? msg.IDTo : msg.IDFrom;
         if (this.hasMessage(msg))
-            return;
+            return false;
         if (this.addContact(msg.IDForeign))
             this.saveContacts();
         if (!messages[msg.IDForeign]) {
@@ -215,6 +215,7 @@ var Messenger = new function () {
         }
         messages[msg.IDForeign].push(msg);
         this.updateUnreadLen(msg.IDForeign, 1);
+        return true;
     }
     this.getLastUpdateTime = function (id) {
         var t = FAI_API.getConf("messenger", gParam.accountID, id, "updatetime");
@@ -316,18 +317,17 @@ var Messenger = new function () {
     this.notifiedTx = function (x) {
         var data = FAI_API.getTxMessages(gParam.accountID, [x.tx.txid]);
         if (data && !data.error) {
-            var msgs = [];
             for (var j in data) {
                 msg = data[j];
-                msgs.push(msg);
-                this.addMessage(msg);
-            }
+                if (this.addMessage(msg)) {
             if (FAI_API.areIDsEqual(msg.IDFrom, currentContact) && FAI_API.areIDsEqual(msg.IDTo, gParam.accountID)) {
-                this.decryptAndShow(currentContact, data);
+                        this.decryptAndShow(currentContact, [msg]);
                 this.setUnreadLen(currentContact, 0);
             }
             if (FAI_API.areIDsEqual(msg.IDTo, currentContact)) 
                 this.setUnreadLen(currentContact, 0);
+        }
+            }
         }
     };
     this.notifiedBlock = function (l) {

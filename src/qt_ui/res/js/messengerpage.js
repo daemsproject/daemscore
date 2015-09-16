@@ -2,6 +2,7 @@ var cVisible; //currently visible view
 //var balance = {};
 var currentContact;
 var contacts = {};
+var accountID;
 function registerNotifications() {
     var aa = function (a) {
         Messenger.notifiedBlock(a);

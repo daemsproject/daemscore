@@ -219,7 +219,7 @@ var Miner = new function () {
             Miner.notifiedFallback(a);
         };
         var an = function (a) {
-            Miner.notifiedAccount(a);
+            CPage.notifyAccount(a);
         };
         var aa = function (a) {
             CPage.notifyBlock(a);

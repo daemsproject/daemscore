@@ -461,7 +461,7 @@ public:
              nTimeLast = nTimeIn;
      }
 };
-
+int GetBlockFileSize(const int nFile);
 /** Capture information about block/transaction validation */
 class CValidationState {
 private:

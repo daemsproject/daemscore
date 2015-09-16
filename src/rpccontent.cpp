@@ -675,9 +675,7 @@ bool _parse_getcontents_params(const Array& params, int& fbh, int& fntx, int&fno
         if (fAsc) nPos = 0;
         else
         {
-            CBlockFileInfo info;
-            pblocktree->ReadBlockFileInfo(nFile, info);
-            nPos = info.nSize;
+            nPos = GetBlockFileSize(nFile);
         }
     }
     const Value& nRange_v = find_value(param, "nRange");
@@ -686,9 +684,7 @@ bool _parse_getcontents_params(const Array& params, int& fbh, int& fntx, int&fno
         nRange = nRange_v.get_int();
     } catch (std::exception& e)
     {
-        CBlockFileInfo info;
-        pblocktree->ReadBlockFileInfo(nFile, info);
-        nRange = info.nSize;
+        nRange = GetBlockFileSize(nFile);
     }
     const Value& ftxCount_v = find_value(param, "ftxCount");
     try
@@ -936,8 +932,8 @@ bool GetDiskTxPoses(const std::vector<CScript>& vIds, std::vector<CTxPosItem>& v
 {
     unsigned int nBeginDataPos = 0;
     int nBeginFile = -1;
-    unsigned int nEndDataPos = 0;
-    int nEndFile = -1;
+    unsigned int nEndDataPos = 0x7fffffff;
+    int nEndFile = 0x7fffffff;
 
     unsigned int tmp = nRange;
     int cFile = nFile;
@@ -954,11 +950,9 @@ bool GetDiskTxPoses(const std::vector<CScript>& vIds, std::vector<CTxPosItem>& v
     while (tmp > 0)
     {
         //        std::cout << "cFile " << cFile << "\n";
-        CBlockFileInfo info;
-        pblocktree->ReadBlockFileInfo(cFile, info);
-        if (cPos > info.nSize)
-            cPos = info.nSize;
-        unsigned int cFileRange = fAsc ? info.nSize - cPos : cPos;
+        if ((int)cPos > GetBlockFileSize(cFile))
+            cPos = GetBlockFileSize(cFile);
+        unsigned int cFileRange = fAsc ? GetBlockFileSize(cFile) - cPos : cPos;
         bool fileInRange = fAsc ? cFile < chainActive.Tip()->nFile : cFile > 0;
         if (tmp > cFileRange && fileInRange)
         {
@@ -977,7 +971,7 @@ bool GetDiskTxPoses(const std::vector<CScript>& vIds, std::vector<CTxPosItem>& v
             } else
             {
                 nBeginFile = cFile;
-                nBeginDataPos = info.nSize - tmp;
+                nBeginDataPos = GetBlockFileSize(cFile) - tmp;
             }
             break;
         }
@@ -1028,7 +1022,9 @@ bool GetDiskTxPoses(const std::vector<CScript>& vIds, std::vector<CTxPosItem>& v
                     continue;
                 //                std::cout << "mark " << "\n";
                 if ((it2->nFile < nBeginFile) || ((it2->nFile == nBeginFile)&&(it2->nPos < nBeginDataPos)))
-                    continue;
+                    break;
+               //      LogPrintf("GetDiskTxPoses 5 \n");
+            
                 mTxPos[*it2] = "";
                 i++;
             }
@@ -1245,8 +1241,11 @@ Value getcontentsbyaddresses(const Array& params, bool fHelp) // withcc and with
             //            std::cout << "nHeight " << nHeight << " nTx " << nTx << " nFile " << it->nFile << " nPos " << it->nPos << "\n";
             //            if (nHeight == fbh && (fAsc ? nTx < fntx : nTx > fntx))
             //                continue;
-            if (!GetTransaction(*it, tx))
-                throw JSONRPCError(RPC_INTERNAL_ERROR, "Get transaction failed");
+            if (!GetTransaction(*it, tx)){
+                LogPrintf("getcontentsbyaddresses tx not found:height %i,ntx %i \n",nHeight,nTx);
+                continue;
+            }
+                //throw JSONRPCError(RPC_INTERNAL_ERROR, "Get transaction failed");
             //            std::cout << "m2 \n";
 
             string address;

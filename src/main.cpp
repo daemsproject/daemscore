@@ -791,7 +791,12 @@ bool IsFrozen(const CCoins &tx,const unsigned int nPos, int nBlockHeight, int64_
         return false;
     return true;
 }
-
+int GetBlockFileSize(const int nFile)
+    {
+        if(nFile>=(int)vinfoBlockFile.size())
+            return 0;
+        return (int)vinfoBlockFile[nFile].nSize;
+    }
 /**
  * Check transaction inputs to mitigate two
  * potential denial-of-service attacks:

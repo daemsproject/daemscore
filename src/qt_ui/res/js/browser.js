@@ -235,7 +235,7 @@ var CBrowser = new function () {
         if (fShowProd) {
             if (CUtil.isProd(ctt)) {
                 var prod = CUtil.parseProd(ctt);
-                this.addProduct(prod);
+                this.addProduct(prod,fType);
             }
         }
         if (!ctt)
@@ -249,6 +249,16 @@ var CBrowser = new function () {
         var cdiv = $("#cmt-tpl").clone(true, true).removeAttr("id");
         sdiv.find(".container").prepend(pdiv.children());
         sdiv.find(".container").find(".brctt").append(cdiv.children());
+        sdiv=this.filterCttDiv(sdiv,fType);
+        sdiv.removeAttr("id");
+        ctt.fShowValue = false;
+        sdiv = this.fillSdiv(sdiv, ctt, fType);
+        if (sdiv === false)
+            return false;
+        fPos ? $("#mainframe").prepend(sdiv.children()) : $("#mainframe").append(sdiv.children());
+        return true;
+    };
+    this.filterCttDiv=function(sdiv,fType){
         switch (fType) {
             case CONTENT_TYPE_FEED:
                 sdiv.find(".id-unfollow-btn").parent().remove();
@@ -274,14 +284,8 @@ var CBrowser = new function () {
             default:
                 break;
         }
-        sdiv.removeAttr("id");
-        ctt.fShowValue = false;
-        sdiv = this.fillSdiv(sdiv, ctt, fType);
-        if (sdiv === false)
-            return false;
-        fPos ? $("#mainframe").prepend(sdiv.children()) : $("#mainframe").append(sdiv.children());
-        return true;
-    };
+        return sdiv;
+    }
     this.addDomain = function (domain, fPos) {
         fPos = typeof fPos !== 'undefined' ? fPos : false;
         var ddiv = $("#domain-tpl").clone(true, true).removeAttr("id").removeClass("hide");
@@ -314,9 +318,10 @@ var CBrowser = new function () {
         fPos ? $("#mainframe").prepend(ddiv.children()) : $("#mainframe").append(ddiv.children());
         return true;
     };
-    this.addProduct = function (prod, fPos) {
+    this.addProduct = function (prod,fType, fPos) {
         fPos = typeof fPos !== 'undefined' ? fPos : false;
         var ddiv = CPage.prepareProdDiv();
+        ddiv=this.filterCttDiv(ddiv,fType);
         ddiv = CPage.fillProdDiv(ddiv, prod);
         fPos ? $("#mainframe").prepend(ddiv.children()) : $("#mainframe").append(ddiv.children());
         return true;
@@ -390,7 +395,7 @@ var CBrowser = new function () {
             params.tags = tags;
             var prods = FAI_API.searchProducts(params);
             for (var k in prods)
-                this.addProduct(prods[k]);
+                this.addProduct(prods[k],CONTENT_TYPE_HOT);
             if (!prods)
                 CPage.showNotice(TR("No result, please change the key word"));
         }
@@ -476,6 +481,7 @@ var CBrowser = new function () {
     };
     this.goToHomepage = function (id) {
         currentPage = "homepage";
+        currentTab = "homepage";
         $("#shdr").remove();
         $("#navi-bar").remove();
         var hpheader = $("#hpheader-tpl").clone(true, true);
@@ -1494,6 +1500,7 @@ var CPublisher = new function () {
         $("#input-link-name").val("");
         $("#input-link").val("");
         $("#input-feerate").val("");
+        bufferedFile = {};
         if ($("#pubto").length > 0)
             this.togglePromCtt();
     };

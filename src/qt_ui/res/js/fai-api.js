@@ -48,7 +48,7 @@ var FAI_API = new function () {
                 var found = false;
                 for (var i in notifytx.ids) {
                     for (var j in data.tx.ids) {
-                        if (data.tx.ids[j] == notifytx.ids[i]) {
+                        if (FAI_API.areIDsEqual(data.tx.ids[j],notifytx.ids[i])) {
                             found = true;
                             break;
                         }
@@ -658,7 +658,7 @@ var FAI_API = new function () {
         return this.call("encryptmessages", [idLocal, msgArr, false], success, error);
     }
     this.areIDsEqual = function (id1, id2) {
-        return this.icall("comparebase32", [id1, id2]) == 0
+        return this.icall("comparebase32", [id1, id2]) === 0;
     };
     this.createPContent = function (hex) {
         return this.icall("encodecontentunit", ["CC_P", hex, 0]);
