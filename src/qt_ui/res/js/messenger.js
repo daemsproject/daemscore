@@ -49,9 +49,9 @@ var Messenger = new function () {
         var domain = FAI_API.getDomainByForward(id);
         if (domain && domain.domain) {
             contacts[id].domainName = domain.domain;
-            if (!contacts.intro && domain.intro)
+            if (!contacts[id].intro && domain.intro)
                 contacts[id].intro = domain.intro;
-            if (!contacts.icon && domain.icon)
+            if (!contacts[id].icon && domain.icon)
                 contacts[id].icon = {link: domain.icon};
         }
         else {
@@ -59,7 +59,7 @@ var Messenger = new function () {
         }
         var pdiv = $("#poster-tpl").clone(true, true).removeAttr("id");
         pdiv.find(".poster").attr("id", id);
-        $("#contact-list").append(pdiv.children().addClass("ctct").click(function () {
+        $("#contact-list").append(pdiv.children().addClass("ctct").unbind().click(function () {
             Messenger.switchToContact(id);
         }));
         this.updateContactDisplay(id);
@@ -320,13 +320,13 @@ var Messenger = new function () {
             for (var j in data) {
                 msg = data[j];
                 if (this.addMessage(msg)) {
-            if (FAI_API.areIDsEqual(msg.IDFrom, currentContact) && FAI_API.areIDsEqual(msg.IDTo, gParam.accountID)) {
+                    if (FAI_API.areIDsEqual(msg.IDFrom, currentContact) && FAI_API.areIDsEqual(msg.IDTo, gParam.accountID)) {
                         this.decryptAndShow(currentContact, [msg]);
-                this.setUnreadLen(currentContact, 0);
-            }
-            if (FAI_API.areIDsEqual(msg.IDTo, currentContact)) 
-                this.setUnreadLen(currentContact, 0);
-        }
+                        this.setUnreadLen(currentContact, 0);
+                    }
+                    if (FAI_API.areIDsEqual(msg.IDTo, currentContact))
+                        this.setUnreadLen(currentContact, 0);
+                }
             }
         }
     };

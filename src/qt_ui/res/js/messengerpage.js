@@ -9,14 +9,17 @@ function registerNotifications() {
         CPage.notifyBlock(a);
     };
     var ab = function (a) {
+        console.log(a);
         Messenger.notifiedTx(a);
     };
     var ac = function (a) {
         window.location.href = window.location.href;
     }
+    
     FAI_API.regNotifyBlocks(aa);
     FAI_API.regNotifyTxs(ab, [accountID]);
     FAI_API.regNotifyAccount(ac);
+    console.log(accountID);
 }
 
 function changeCategory(id) {
