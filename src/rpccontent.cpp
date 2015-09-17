@@ -953,7 +953,7 @@ bool GetDiskTxPoses(const std::vector<CScript>& vIds, std::vector<CTxPosItem>& v
         if ((int)cPos > GetBlockFileSize(cFile))
             cPos = GetBlockFileSize(cFile);
         unsigned int cFileRange = fAsc ? GetBlockFileSize(cFile) - cPos : cPos;
-        bool fileInRange = fAsc ? cFile < chainActive.Tip()->nFile : cFile > 0;
+        bool fileInRange = fAsc ? cFile <= chainActive.Tip()->nFile : cFile >= 0;
         if (tmp > cFileRange && fileInRange)
         {
             cFile = fAsc ? cFile + 1 : cFile - 1;
@@ -977,7 +977,7 @@ bool GetDiskTxPoses(const std::vector<CScript>& vIds, std::vector<CTxPosItem>& v
         }
 
     }
-   // LogPrintf("GetDiskTxPoses nendfile %i, nendpos %i \n",nEndFile,nEndDataPos);
+    //LogPrintf("GetDiskTxPoses nbeginfile %i, nbeginpos %i,nendfile %i, nendpos %i \n",nBeginFile,nBeginDataPos,nEndFile,nEndDataPos);
     std::map<CTxPosItem, std::string> mTxPos;
 
     //    std::cout << "nBeginDataPos " << nBeginDataPos << "\n";
@@ -1012,13 +1012,13 @@ bool GetDiskTxPoses(const std::vector<CScript>& vIds, std::vector<CTxPosItem>& v
         {
             for (std::vector<CTxPosItem>::reverse_iterator it2 = vTxPos.rbegin(); it2 != vTxPos.rend(); it2++)
             {
-               //   LogPrintf("GetDiskTxPoses txpos:nfile %i,npos %i,ntx %i \n",it2->nFile,it2->nPos,it2->nTx);
+                  //LogPrintf("GetDiskTxPoses txpos:nfile %i,npos %i,ntx %i \n",it2->nFile,it2->nPos,it2->nTx);
               
                 //std::cout << "mark0 " << "\n";
                 if (!(it2->nFlags & flags))
                     continue;
                 //     
-               //      LogPrintf("GetDiskTxPoses 2\n");
+                     //LogPrintf("GetDiskTxPoses 2\n");
                 if (i > maxc)
                     break;
               // LogPrintf("GetDiskTxPoses 3 \n");
@@ -1027,12 +1027,12 @@ bool GetDiskTxPoses(const std::vector<CScript>& vIds, std::vector<CTxPosItem>& v
                 //                std::cout << "nFile " << it2->nFile << "\n";
                 if ((it2->nFile > nEndFile) || ((it2->nFile == nEndFile)&&(it2->nPos > nEndDataPos)))
                     continue;
-               //   LogPrintf("GetDiskTxPoses 4 \n");
+                 // LogPrintf("GetDiskTxPoses 4 \n");
             
                 //                std::cout << "mark " << "\n";
                 if ((it2->nFile < nBeginFile) || ((it2->nFile == nBeginFile)&&(it2->nPos < nBeginDataPos)))
                     break;
-               //      LogPrintf("GetDiskTxPoses 5 \n");
+                    // LogPrintf("GetDiskTxPoses 5 \n");
             
                 mTxPos[*it2] = "";
                 i++;
@@ -1046,7 +1046,7 @@ bool GetDiskTxPoses(const std::vector<CScript>& vIds, std::vector<CTxPosItem>& v
         //            vTxPosAll.insert(vTxPosAll.begin(), it3->first);
         //        else 
         //        std::cout << "it " << it3->first.nFile << "    " << "it " << it3->first.nPos<<"\n";
-       //  LogPrintf("GetDiskTxPoses txpos:nfile %i,npos %i,ntx %i \n",it3->first.nFile,it3->first.nPos,it3->first.nTx);
+        // LogPrintf("GetDiskTxPoses txpos:nfile %i,npos %i,ntx %i \n",it3->first.nFile,it3->first.nPos,it3->first.nTx);
               
         vTxPosAll.push_back(it3->first);
     }
@@ -1177,7 +1177,7 @@ Value getcontentsbyaddresses(const Array& params, bool fHelp) // withcc and with
     int ftxCount;
     if (!_parse_getcontents_params(params, fbh, fntx, fnout, maxc, maxb, blkc, withcc, withoutcc, firstcc, cformat, cflag, minsz, fAsc, frAddrs, toAddrs, nFile, nPos, nRange, ftxCount,withccc))
         throw runtime_error("Error parsing parameters");
-    //    std::cout << "params: " << " nFile-" << nFile << " nPos-" << nPos << " nRange-" << nRange << " fAsc-" << fAsc << " maxc-" << maxc<< " ftxCount-" << ftxCount << "\n";
+        std::cout << "params: " << " nFile-" << nFile << " nPos-" << nPos << " nRange-" << nRange << " fAsc-" << fAsc << " maxc-" << maxc<< " ftxCount-" << ftxCount << "\n";
 
     Object r;
     r.push_back(Pair("fAsc", fAsc));
