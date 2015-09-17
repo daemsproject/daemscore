@@ -262,6 +262,7 @@ std::string CLink::ToString(const linkformat linkFormat)const
     if (nVout > 0) {
         r += URI_SEPERATOR;
         switch (linkFormat) {
+            case LINK_FORMAT_DEC_NOSCHEMA:
             case LINK_FORMAT_DEC:
                 r += strpatch::to_string(nVout);
                 break;
@@ -312,11 +313,14 @@ bool CLinkUni::SetString(const std::string linkStr)
     //        return false;
     if (IsValidDomainFormat(strLink)) {
         linkType = CC_LINK_TYPE_DOMAIN;
-        if (linkStr.find("/") != linkStr.npos) {
-            strDomain = linkStr.substr(0, linkStr.find("/"));
-            strDomainExtension = linkStr.substr(linkStr.find("/"));
-        } else
-            strDomain = strLink;
+        strDomain=strLink;
+        std::size_t posColon = strDomain.find(URI_COLON);    
+            if (posColon != std::string::npos)  // full link with colon
+                strDomain = strDomain.substr(posColon + 1);
+        if (strDomain.find("/") != strDomain.npos) {
+            strDomainExtension = strDomain.substr(strDomain.find("/"));
+            strDomain = strDomain.substr(0, strDomain.find("/"));            
+        } 
         return true;
     }
 
@@ -482,6 +486,7 @@ std::string CLinkUni::ToStringBlockChain(const linkformat linkFormat)const
     if (nVout > 0) {
         r += URI_SEPERATOR;
         switch (linkFormat) {
+            case LINK_FORMAT_DEC_NOSCHEMA:
             case LINK_FORMAT_DEC:
                 r += strpatch::to_string(nVout);
                 break;
@@ -491,6 +496,7 @@ std::string CLinkUni::ToStringBlockChain(const linkformat linkFormat)const
             case LINK_FORMAT_B32:
                 r += EncodeBase32(nVout);
                 break;
+            
         }
     }
     return r;

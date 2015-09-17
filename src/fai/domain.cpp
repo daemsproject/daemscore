@@ -16,17 +16,30 @@
 using namespace std;
 bool CheckDomainName(const string str)
 {
-    if(str.find("-")==0||str.find(".")==0)
+    string str1=str.substr(0,str.find("/"));  
+    
+    if(str1.size()<3||str1.size()>64)
         return false;
-    if(str.find("--")!=str.npos)
+    std::size_t posColon = str1.find(URI_COLON);    
+    if (posColon != std::string::npos) { // full link with colon
+        std::string sn = str1.substr(0, posColon);
+        if (sn != URI_SCHEME_NAME) {
+            LogPrintf("%s: Non-standard link header %s", __func__, sn);
         return false;
-    if(str.find("-.")!=str.npos||str.find(".-")!=str.npos)
+        }
+        str1 = str1.substr(posColon + 1);
+    } 
+    if(str1.find("-")==0||str1.find(".")==0)
         return false;
-    if(str.find("..")!=str.npos)
+    if(str1.find("--")!=str1.npos)
+        return false;
+    if(str1.find("-.")!=str1.npos||str1.find(".-")!=str1.npos)
+        return false;
+    if(str1.find("..")!=str1.npos)
         return false;
     const char* pszBaseDomain = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-";  
-    const char* ch=str.c_str();
-    for(int i=0;i<(int)str.size();i++)
+    const char* ch=str1.c_str();
+    for(int i=0;i<(int)str1.size();i++)
     {
         const char* v = strchr(pszBaseDomain, *ch);
     
@@ -66,7 +79,7 @@ bool CDomain::SetContent(const CContent content,const CScript ownerIn,bool& fReg
             if(str.size()<3||str.size()>64)
                 return false;
            // LogPrintf("domain SetContent  cc_domain 3\n");    
-            if(!CheckDomainName(str))
+            if(!IsValidDomainFormat(str))
                 return false;
             //LogPrintf("domain SetContent  cc_domain 4\n");    
             boost::algorithm::to_lower(str);
@@ -87,6 +100,10 @@ bool CDomain::SetContent(const CContent content,const CScript ownerIn,bool& fReg
                     
            // LogPrintf("SetContent nDomainGroup %i,domain %s\n",nDomainGroup,str); 
             fHasDomain=true;
+            std::size_t posColon = str.find(URI_COLON);    
+            if (posColon != std::string::npos)  // full link with colon
+                str = str.substr(posColon + 1);
+            //LogPrintf("CDomain::SetContent domain:%s \n",str);
             strDomain=str;//.substr(0,str.size()-nDomainGroup=DOMAIN_EXTENSION_F?2:4);
         }
     }
@@ -257,7 +274,7 @@ bool IsValidDomainFormat(const string strDomain){//TODO:enable extension
         }
         str = str.substr(posColon + 1);
     } 
-    if (str.find(":")!=str.npos)
+    if (str.find(URI_COLON)!=str.npos)
         return false;
     if (str.find("\\")!=str.npos)
         return false;
