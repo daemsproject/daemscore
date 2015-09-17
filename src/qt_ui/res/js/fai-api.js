@@ -48,7 +48,7 @@ var FAI_API = new function () {
                 var found = false;
                 for (var i in notifytx.ids) {
                     for (var j in data.tx.ids) {
-                        if (FAI_API.areIDsEqual(data.tx.ids[j],notifytx.ids[i])) {
+                        if (FAI_API.areIDsEqual(data.tx.ids[j], notifytx.ids[i])) {
                             found = true;
                             break;
                         }
@@ -734,8 +734,8 @@ var FAI_API = new function () {
             }
             f = f === "" ? u1.hex + u2.hex : f;
             var r = this.icall("encodecontentunit", ["CC_LINK_P", f, 0]);
-        } else if (l.linktype === "HTTP") {
-            var u1 = this.icall("encodecontentunit", ["CC_LINK_TYPE_HTTP"]);
+        } else if (l.linktype === "HTTP" || l.linktype === "HTTPS"|| l.linktype === "DOMAIN") {
+            var u1 = this.icall("encodecontentunit", ["CC_LINK_TYPE_" + l.linktype]);
             var u2 = this.icall("encodecontentunit", ["CC_LINK", l.linkstr, 1]);
             var f = "";
             if (l.linkname !== "") {

@@ -21,11 +21,16 @@ $(document).ready(function () {
             case "link":
                 prepareStdTpl();
                 var link = CUtil.getGet("link");
-                var format = CUtil.getGet("format");
-                format = format ? Number(format) : 7;
-                format = format > 7 ? 7 : format;
-                CBrowser.goToLinkpage(link, format);
-                resetC2();
+                if (CUtil.isLinkBlockChain(link)) {
+                    var format = CUtil.getGet("format");
+                    format = format ? Number(format) : 7;
+                    format = format > 7 ? 7 : format;
+                    CBrowser.goToLinkpage(link, format);
+                    resetC2();
+                } else {
+                    console.log(link);
+                    FAI_API.goToCustomPage(link);
+                }
                 break;
             case "share":
             case "cmt":

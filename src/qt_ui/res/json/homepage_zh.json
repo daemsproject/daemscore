@@ -54,7 +54,30 @@
         "screen-captures": {
             "name": "截屏",
             "text": [
-                "即将发布"
+                "<h3>截屏</h3>",
+                "<div class='ph'></div>",
+                "<h4>浏览器首页</h4>",
+                "<a href='../scr/new_zh.PNG' target='_blank'><img src='../scr/new_zh.PNG' /></a>",
+                "<h4>浏览器热门内容页</h4>",
+                "<a href='../scr/hot_zh.PNG' target='_blank'><img src='../scr/hot_zh.PNG' /></a>",
+                "<h4>浏览器关注页面</h4>",
+                "<a href='../scr/follow_zh.PNG' target='_blank'><img src='../scr/follow_zh.PNG' /></a>",
+                "<h4>浏览器个人页面</h4>",
+                "<a href='../scr/mypage_zh.PNG' target='_blank'><img src='../scr/mypage_zh.PNG' /></a>",
+                "<h4>个人主页</h4>",
+                "<a href='../scr/homepage_zh.PNG' target='_blank'><img src='../scr/homepage_zh.PNG' /></a>",
+                "<h4>密信页面</h4>",
+                "<a href='../scr/messenger_zh.PNG' target='_blank'><img src='../scr/messenger_zh.PNG' /></a>",
+                "<h4>钱包概览页面</h4>",
+                "<a href='../scr/wallet_zh.PNG' target='_blank'><img src='../scr/wallet_zh.PNG' /></a>",
+                "<h4>商城概览页面</h4>",
+                "<a href='../scr/shop_overview_zh.PNG' target='_blank'><img src='../scr/shop_overview_zh.PNG' /></a>",
+                "<h4>商城产品详情页面</h4>",
+                "<a href='../scr/shop_detail_zh.PNG' target='_blank'><img src='../scr/shop_detail_zh.PNG' /></a>",
+                "<h4>商城发布产品页面</h4>",
+                "<a href='../scr/shop_sell_zh.PNG' target='_blank'><img src='../scr/shop_sell_zh.PNG' /></a>",
+                "<h4>抢币页面</h4>",
+                "<a href='../scr/miner_zh.PNG' target='_blank'><img src='../scr/miner_zh.PNG' /></a>"
             ]
         }
     },
@@ -63,7 +86,13 @@
         "downloads": {
             "name": "下载",
             "text": [
-                "即将发布"
+                "<h3>下载 Φ FAI windows版客户端</h3>",
+                "<div class='ph'></div>",
+                "<a href='../download/FAI_2.0.0.exe'>FAI_2.0.0.exe (27MB) 自解压版</a>",
+                "<a href='../download/FAI_2.0.0.zip'>FAI_2.0.0.zip (40MB)</a>",
+                "<div class='ph'></div>",
+                "<a href='../download/FAI_2.0.1.exe'>FAI_2.0.1.exe (27MB) 自解压版</a>",
+                "<a href='../download/FAI_2.0.1.zip'>FAI_2.0.1.zip (40MB)</a>"
             ]
         }
     },

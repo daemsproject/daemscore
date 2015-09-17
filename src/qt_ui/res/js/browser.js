@@ -10,7 +10,7 @@ var currentFeeRate = {sgstfeer: false, minfeer: 1000.0};
 var COIN = 1000000;
 var K = 1000;
 var tagCount = 0;
-var imageParam = {frblk: null, maxc: 15};
+var imageParam = {frblk: null, maxc: 100};
 (function ($) {
     $.fn.hasScrollBar = function () {
         if (typeof this.get(0) === "undefined")
@@ -134,8 +134,17 @@ var CBrowser = new function () {
     };
     this.regLink = function (div) {
         if (typeof div.attr("href") !== "undefined") {
-            if (CUtil.isLinkFai(div.attr("href")))
-                CBrowser.viewLink(div.attr("href"));
+            if (CUtil.isLinkFai(div.attr("href"))) {
+                if (CUtil.isLinkBlockChain())
+                    CBrowser.viewLink(div.attr("href"));
+                else {
+                    // work around todo: redo
+                    var fullLink = div.attr("href");
+                    var p = fullLink.indexOf(":");
+                    var link = fullLink.substring(p + 1);
+                    FAI_API.goToCustomPage(link);
+                }
+            }
         }
     };
     this.getLinkA = function (l) {
@@ -210,11 +219,14 @@ var CBrowser = new function () {
             idiv.find(".text").html(r.text);
         if (r.ltype) {
             if (r.ltype === "BLOCKCHAIN") {
-                var lname = r.lname.length > 0 ? r.lname : r.ldata;
+                var lname = r.lname ? (r.lname.length > 0 ? r.lname : r.ldata) : r.ldata;
                 idiv.find(".bclink").html(lname).attr("href", r.ldata).attr("title", r.ldata);
-            } else if (r.ltype === "HTTP") {
-                var lname = r.lname.length > 0 ? r.lname : r.ltext;
-                idiv.find(".bclink").html(lname).attr("href", r.ltext).attr("title", r.ltext);
+            } else if (r.ltype === "HTTP" || r.ltype === "HTTPS" || r.ltype === "DOMAIN") {
+                var lname = r.lname ? (r.lname.length > 0 ? r.lname : r.ltext) : r.ltext;
+                if (r.ltype === "DOMAIN")
+                    idiv.find(".bclink").html(lname).attr("href", r.ltext).attr("title", r.ltext);
+                else
+                    idiv.find(".bclink").html(lname).attr("href", r.ltext).attr("title", r.ltext).attr("target", "_blank");
             }
         }
         var bl = CUtil.getBalanceLevel(ctt.satoshi / COIN);
@@ -235,7 +247,7 @@ var CBrowser = new function () {
         if (fShowProd) {
             if (CUtil.isProd(ctt)) {
                 var prod = CUtil.parseProd(ctt);
-                this.addProduct(prod,fType);
+                this.addProduct(prod, fType);
             }
         }
         if (!ctt)
@@ -249,7 +261,7 @@ var CBrowser = new function () {
         var cdiv = $("#cmt-tpl").clone(true, true).removeAttr("id");
         sdiv.find(".container").prepend(pdiv.children());
         sdiv.find(".container").find(".brctt").append(cdiv.children());
-        sdiv=this.filterCttDiv(sdiv,fType);
+        sdiv = this.filterCttDiv(sdiv, fType);
         sdiv.removeAttr("id");
         ctt.fShowValue = false;
         sdiv = this.fillSdiv(sdiv, ctt, fType);
@@ -258,7 +270,7 @@ var CBrowser = new function () {
         fPos ? $("#mainframe").prepend(sdiv.children()) : $("#mainframe").append(sdiv.children());
         return true;
     };
-    this.filterCttDiv=function(sdiv,fType){
+    this.filterCttDiv = function (sdiv, fType) {
         switch (fType) {
             case CONTENT_TYPE_FEED:
                 sdiv.find(".id-unfollow-btn").parent().remove();
@@ -298,7 +310,7 @@ var CBrowser = new function () {
             ddiv.find(".id-copyid-btn").parent().remove();
         }
         var id2show = (domain.alias ? domain.alias + " (" + domain.domain + ")" : domain.domain);
-        var idtype = domain ? "("+TR("domain")+")" : "";
+        var idtype = domain ? "(" + TR("domain") + ")" : "";
         ddiv.find(".id").find(".text").html(id2show).attr("domain", domain.domain);
         ddiv.find(".id").find(".idtype").html(idtype);
         ddiv.find(".alias").html(domain.alias);
@@ -318,10 +330,10 @@ var CBrowser = new function () {
         fPos ? $("#mainframe").prepend(ddiv.children()) : $("#mainframe").append(ddiv.children());
         return true;
     };
-    this.addProduct = function (prod,fType, fPos) {
+    this.addProduct = function (prod, fType, fPos) {
         fPos = typeof fPos !== 'undefined' ? fPos : false;
         var ddiv = CPage.prepareProdDiv();
-        ddiv=this.filterCttDiv(ddiv,fType);
+        ddiv = this.filterCttDiv(ddiv, fType);
         ddiv = CPage.fillProdDiv(ddiv, prod);
         fPos ? $("#mainframe").prepend(ddiv.children()) : $("#mainframe").append(ddiv.children());
         return true;
@@ -395,7 +407,7 @@ var CBrowser = new function () {
             params.tags = tags;
             var prods = FAI_API.searchProducts(params);
             for (var k in prods)
-                this.addProduct(prods[k],CONTENT_TYPE_HOT);
+                this.addProduct(prods[k], CONTENT_TYPE_HOT);
             if (!prods)
                 CPage.showNotice(TR("No result, please change the key word"));
         }
@@ -542,7 +554,7 @@ var CBrowser = new function () {
             case "new":
                 flink = CLink.set(fNewOld ? parseInt(FAI_API.getBlockCount()) : newDisp[1]).toString();
                 var clink = flink;
-                var blkPR = 10; 
+                var blkPR = 10;
                 var i = 0;
                 while (ctts.length < rc && CLink.set(clink).nHeight > 0) {
                     var tmp = FAI_API.getContents(clink, blkPR, false, frAddrs, toAddrs);
@@ -718,13 +730,13 @@ var CBrowser = new function () {
         var filename = "sliderBuffer.json";
         fFrBuffer = typeof fFrBuffer === "undefined" ? false : fFrBuffer;
         var imgs;
-        var writeimg=function(imgs){
+        var writeimg = function (imgs) {
             var tmp = {imgs: imgs, frblk: imageParam.frblk};
             var jtmp = JSON.stringify(tmp);
             FAI_API.writeFile(app, path, filename, jtmp);
         }
         var json = FAI_API.readFile(app, path, filename);
-        if (!json){
+        if (!json) {
             imgs = CBrowser.getNewImages(imageParam.maxc);
             imageParam.frblk = Number(FAI_API.getBlockCount());
             writeimg(imgs);
@@ -733,10 +745,10 @@ var CBrowser = new function () {
             var tmp = JSON.parse(json);
             imageParam.frblk = tmp.frblk;
             imgs = tmp.imgs;
-            if (imgs.length <= 0){
+            if (imgs.length <= 0) {
                 imgs = CBrowser.getNewImages(imageParam.maxc);
-                  imageParam.frblk = Number(FAI_API.getBlockCount());
-                  writeimg(imgs);
+                imageParam.frblk = Number(FAI_API.getBlockCount());
+                writeimg(imgs);
             }
         }
         if (!fFrBuffer) {
@@ -790,23 +802,26 @@ var CBrowser = new function () {
         }
         return r;
     };
-    this.createSliderImage = function (cttParsed) {
+    this.createSliderImage = function (r) {
 
-        if (!cttParsed.fdata)
+        if (!r.fdata)
             return false;
-        if ($.inArray(cttParsed.ftype, CONTENT_FILE_TYPE.image) < 0)
+        if ($.inArray(r.ftype, CONTENT_FILE_TYPE.image) < 0)
             return false;
         var idiv = $("#s-image-tpl").clone(true, true);
-        idiv.find("img").attr("id", CLink.setString(cttParsed.selflink).toHtmlId());
-        idiv.find("img").attr("type", cttParsed.ftype);
-        idiv.find("img").attr("src", this.createImgSrc(cttParsed.ftype, cttParsed.fdata));
-        if (cttParsed.ltype) {
-            if (cttParsed.ltype === "BLOCKCHAIN") {
-                var lname = cttParsed.lname.length > 0 ? cttParsed.lname : cttParsed.ldata;
-                idiv.find("a").attr("href", cttParsed.ldata).html(lname);
-            } else if (cttParsed.ltype === "HTTP") {
-                var lname = cttParsed.lname.length > 0 ? cttParsed.lname : cttParsed.ltext;
-                idiv.find("a").attr("href", cttParsed.ltext).html(lname);
+        idiv.find("img").attr("id", CLink.setString(r.selflink).toHtmlId());
+        idiv.find("img").attr("type", r.ftype);
+        idiv.find("img").attr("src", this.createImgSrc(r.ftype, r.fdata));
+        if (r.ltype) {
+            if (r.ltype === "BLOCKCHAIN") {
+                var lname = r.lname ? (r.lname.length > 0 ? r.lname : r.ldata) : r.ldata;
+                idiv.find("a").html(lname).attr("href", r.ldata).attr("title", r.ldata);
+            } else if (r.ltype === "HTTP") {
+                var lname = r.lname ? (r.lname.length > 0 ? r.lname : r.ltext) : r.ltext;
+                if (r.ltype === "DOMAIN")
+                    idiv.find("a").html(lname).attr("href", r.ltext).attr("title", r.ltext);
+                else
+                    idiv.find("a").html(lname).attr("href", r.ltext).attr("title", r.ltext).attr("target", "_blank");
             }
         }
         return idiv.html();
@@ -1211,7 +1226,9 @@ var CPublisher = new function () {
         return ctt;
     };
     this.createLinkContent = function (l) {
+        console.log(l);
         var ctthex = FAI_API.createLinkContent(l);
+        console.log(ctthex);
         var ctt = FAI_API.getContentByString(ctthex.hex);
         ctt.poster = {id: FAI_API.getAccountID()};
         ctt.hex = ctthex.hex;
@@ -1439,7 +1456,7 @@ var CPublisher = new function () {
         }
     };
     this.shareLink = function (link) {
-        if (currentPage === "homepage"||currentPage === "link") {
+        if (currentPage === "homepage" || currentPage === "link") {
             FAI_API.goToCustomPage("fai:browser/?share=true&link=" + link);
             return;
         }
@@ -1474,7 +1491,7 @@ var CPublisher = new function () {
     };
     this.commentLink = function (link, id, fTip) {
         fTip = typeof fTip === "undefined" ? false : fTip;
-        if (currentPage === "homepage"||currentPage === "link") {
+        if (currentPage === "homepage" || currentPage === "link") {
             FAI_API.goToCustomPage("fai:browser/?cmt=true&link=" + link + "&id=" + id);
             return;
         }
@@ -1491,7 +1508,7 @@ var CPublisher = new function () {
             this.clear();
     };
     this.clear = function () {
-        $("#pubpreview").addClass("hide");
+        $("#pubpreview").html("").addClass("hide");
         $("#theText").val("");
         $("#promctt-value").val("");
         $("#promctt-date").val("");

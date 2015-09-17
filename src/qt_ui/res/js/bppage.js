@@ -68,14 +68,21 @@ function prepareSimplePub(type) {
         if (CUtil.isLinkHttp(linkstr)) {
             var link = {linktype: "HTTP", linkstr: linkstr};
             link.linkname = inputLname.length > 0 ? inputLname : "";
+        }
+        else if (CUtil.isLinkHttps(linkstr)) {
+            var link = {linktype: "HTTPS", linkstr: linkstr};
+            link.linkname = inputLname.length > 0 ? inputLname : "";
         } else {
             var link = CLink.setString(linkstr, inputLname);
         }
         if (link.linktype === "BLOCKCHAIN") {
-            if (!link.isValid() && !link.isEmpty()) {
+            if (!link.isValid()) {
                 CPage.showNotice("Link is invalid");
                 return;
             }
+        } else if (link.linktype === "DOMAIN") {
+            link = {linktype: "DOMAIN", linkstr: linkstr};
+            link.linkname = inputLname.length > 0 ? inputLname : "";
         }
         var inputlang = CPublisher.getInputLang();
         var tags = CPublisher.getInputTags();
@@ -86,8 +93,12 @@ function prepareSimplePub(type) {
         var lgctt = null;
         if (text !== "")
             tctt = CPublisher.createTextContent(text);
-        if (link.linktype === "HTTP" || (link.linktype === "BLOCKCHAIN" && link.isValid()))
+        if (link.linktype === "HTTP" || link.linktype === "HTTPS" || link.linktype === "DOMAIN" || (link.linktype === "BLOCKCHAIN" && link.isValid()))
             lctt = CPublisher.createLinkContent(link);
+        else if (link.linktype === "" && linkstr.length > 0) {
+            CPage.showNotice("Link is invalid");
+            return;
+        }
         if (haveFile)
             fctt = bufferedFile.ctt;
         if (inputlang)

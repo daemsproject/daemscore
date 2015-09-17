@@ -54,7 +54,30 @@
         "screen-captures": {
             "name": "Screen-captures",
             "text": [
-                "Will come soon"
+                "<h3>Screen Captures</h3>",
+                "<div class='ph'></div>",
+                "<h4>Browser new content page</h4>",
+                "<a href='../scr/new_en.PNG' target='_blank'><img src='../scr/new_en.jpg' /></a>",
+                "<h4>Browser Hot content page</h4>",
+                "<a href='../scr/hot_en.PNG' target='_blank'><img src='../scr/hot_en.jpg' /></a>",
+                "<h4>Browser Follow page</h4>",
+                "<a href='../scr/follow_en.PNG' target='_blank'><img src='../scr/follow_en.jpg' /></a>",
+                "<h4>Browser Personal page</h4>",
+                "<a href='../scr/mypage_en.PNG' target='_blank'><img src='../scr/mypage_en.jpg' /></a>",
+                "<h4>Personal Homepage</h4>",
+                "<a href='../scr/homepage_en.PNG' target='_blank'><img src='../scr/homepage_en.jpg' /></a>",
+                "<h4>Messenger page</h4>",
+                "<a href='../scr/messenger_en.PNG' target='_blank'><img src='../scr/messenger_en.PNG' /></a>",
+                "<h4>Wallet Overview page</h4>",
+                "<a href='../scr/wallet_en.PNG' target='_blank'><img src='../scr/wallet_en.PNG' /></a>",
+                "<h4>Shop Overview page</h4>",
+                "<a href='../scr/shop_overview_en.PNG' target='_blank'><img src='../scr/shop_overview_en.PNG' /></a>",
+                "<h4>Shop product detail page</h4>",
+                "<a href='../scr/shop_detail_en.PNG' target='_blank'><img src='../scr/shop_detail_en.jpg' /></a>",
+                "<h4>Shop publish product page</h4>",
+                "<a href='../scr/shop_sell_en.PNG' target='_blank'><img src='../scr/shop_sell_en.PNG' /></a>",
+                "<h4>Miner page</h4>",
+                "<a href='../scr/miner_en.PNG' target='_blank'><img src='../scr/miner_en.PNG' /></a>"
             ]
         }
     },
@@ -63,7 +86,13 @@
         "downloads": {
             "name": "Downloads",
             "text": [
-                "Coming soon"
+                "<h3>Download Φ FAI client for windows</h3>",
+                "<div class='ph'></div>",
+                "<a href='../download/FAI_2.0.0.exe'>FAI_2.0.0.exe (27MB) Auto extract version</a>",
+                "<a href='../download/FAI_2.0.0.zip'>FAI_2.0.0.zip (40MB)</a>",
+                "<div class='ph'></div>",
+                "<a href='../download/FAI_2.0.1.exe'>FAI_2.0.1.exe (27MB) Auto extract version</a>",
+                "<a href='../download/FAI_2.0.1.zip'>FAI_2.0.1.zip (40MB)</a>"
             ]
         }
     },

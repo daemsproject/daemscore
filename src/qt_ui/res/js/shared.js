@@ -359,23 +359,42 @@ var CLink = new function () {
         this.nHeight = -1;
         this.nTx = -1;
         this.nVout = -1;
+        this.linktype="";
         if (typeof str === 'undefined')
             return this;
         var pc = str.indexOf(":");
+        var head = pc > 0 ? str.substring(0, pc) : "";
         if (pc >= 0)
             str = str.substring(pc + 1);
         var pfd = str.indexOf(".");
-        this.nHeight = parseInt(str.substring(0, pfd));
+
         var psd = str.indexOf(".", pfd + 1);
         if (psd >= 0) {
-            this.nTx = parseInt(str.substring(pfd + 1, psd));
-            this.nVout = parseInt(str.substring(psd + 1));
+            var ptd = str.indexOf(".", psd + 1);
+            if (ptd >= 0)
+                return this;
+            if (!isNaN(parseInt(str.substring(0, pfd))))
+                this.nHeight = parseInt(str.substring(0, pfd));
+            if (!isNaN(parseInt(str.substring(pfd + 1))))
+                this.nTx = parseInt(str.substring(pfd + 1, psd));
+            if (!isNaN(parseInt(str.substring(psd + 1))))
+                this.nVout = parseInt(str.substring(psd + 1));
         } else {
-            this.nTx = parseInt(str.substring(pfd + 1));
-            this.nVout = 0;
+            if (!isNaN(parseInt(str.substring(0, pfd))))
+                this.nHeight = parseInt(str.substring(0, pfd));
+            if (!isNaN(parseInt(str.substring(pfd + 1)))) {
+                this.nTx = parseInt(str.substring(pfd + 1));
+                this.nVout = 0;
+            }
         }
         if (this.isValid())
             this.linktype = "BLOCKCHAIN";
+        //console.log("pfd " + pfd + "  psd " + psd);
+        if (pfd >= 0 && psd < 0) {
+            var dext = str.substring(pfd + 1).toLowerCase();
+            if (dext === "f" || dext === "fai")
+                this.linktype = "DOMAIN";
+        }
         return this;
     };
     this.set = function (nHeight, nTx, nVout) {
@@ -494,8 +513,15 @@ var CUtil = new function () {
     this.isLinkHttp = function (lstr) {
         return lstr.substr(0, 4).toLowerCase() === "http";
     };
+    this.isLinkHttps = function (lstr) {
+        return lstr.substr(0, 5).toLowerCase() === "https";
+    };
     this.isLinkFai = function (lstr) {
         return lstr.substr(0, 3).toLowerCase() === "fai";
+    };
+    this.isLinkBlockChain = function (lstr) {
+        var link = CLink.setString(lstr);
+        return link.isValid();
     };
     this.cleanNullElem = function (a) { // input of this function must be array
         if (!Array.isArray(a))
@@ -575,13 +601,19 @@ var CUtil = new function () {
         } else if (pcc === "CC_LINK") {
             r.ldata = c.link;
             r.ltext = CUtil.escapeHtml(base64.decode(c.content));
-        } else if (icc === "CC_LINK_TYPE_BLOCKCHAIN") {
+        } else if (pcc === "CC_LINK_TYPE_BLOCKCHAIN") {
             r.ltype = "BLOCKCHAIN";
-        } else if (icc === "CC_NAME") {
+        } else if (pcc === "CC_LINK_TYPE_HTTP") {
+            r.ltype = "HTTP";
+        } else if (pcc === "CC_LINK_TYPE_HTTPS") {
+            r.ltype = "HTTPS";
+        } else if (pcc === "CC_LINK_TYPE_DOMAIN") {
+            r.ltype = "DOMAIN";
+        } else if (pcc === "CC_NAME") {
             r.name = base64.decode(cCtt);
-        } else if (icc === "CC_FILE_TYPESTRING") {
+        } else if (pcc === "CC_FILE_TYPESTRING") {
             r.ftype = base64.decode(cCtt);
-        } else if (icc === "CC_FILE") {
+        } else if (pcc === "CC_FILE") {
             r.fdata = cCtt;
         } else if (pcc === "CC_P" || pcc === "CC_FILE_P" || pcc === "CC_TEXT_P" || pcc === "CC_LINK_P") {
             for (var i in c.content) {
@@ -610,6 +642,10 @@ var CUtil = new function () {
                     r.ltype = "BLOCKCHAIN";
                 } else if (icc === "CC_LINK_TYPE_HTTP") {
                     r.ltype = "HTTP";
+                }else if (icc === "CC_LINK_TYPE_HTTPS") {
+                    r.ltype = "HTTPS";
+                }else if (icc === "CC_LINK_TYPE_DOMAIN") {
+                    r.ltype = "DOMAIN";
                 } else if (icc === "CC_NAME") {
                     r.name = base64.decode(cCtt);
                     if (pcc === "CC_LINK_P")
@@ -626,7 +662,6 @@ var CUtil = new function () {
             r.filepackage = true;
         if (!r.lname)
             r.lname = r.ldata;
-
         return r;
     };
     this.hasChild = function (o) {

@@ -90,7 +90,6 @@ var Messenger = new function () {
     this.getMsgHtml = function (msg, icon, time, mode, direction) {
         var mdiv = $("#msg-tpl").clone(true, true).removeAttr("id").removeClass("hide");
         var lr = (direction == "in") ? "left" : "right";
-//        var rlr = (direction == "in") ? "right" : "left";
         mdiv.find(".icon").html(icon).css("float", lr);
         mdiv.find(".msg-wrapper").css("float", lr).addClass("bubble-" + lr).css("margin-" + lr, 30).addClass("msg-color-" + lr);
         mdiv.find(".time").html(CUtil.dateToShortString(time)).css("float", lr);
@@ -198,8 +197,15 @@ var Messenger = new function () {
         }
     };
     this.addContact = function (id) {
-        if (contacts[id] || id == accountID)
+        for (var j in contacts)
+            if (FAI_API.areIDsEqual(j, id)) {
+                CPage.showNotice(TR('ID already in contact list'));
+                return false;
+            }
+        if (FAI_API.areIDsEqual(id, accountID)) {
+            CPage.showNotice(TR("Can't add self to contact"));
             return false;
+        }
         contacts[id] = {};
         Messenger.showContactInList(id);
         return true;
@@ -382,8 +388,7 @@ var Messenger = new function () {
                     if (Messenger.addContact(id)) {
                         CPage.showNotice(TR('ID successfully added to contact list'));
                         Messenger.saveContacts();
-                    } else
-                        CPage.showNotice(TR('add ID failed'));
+                    }
                     $("#add-contact").modal("hide");
                 });
             } else if (type === "edit") {
@@ -393,7 +398,6 @@ var Messenger = new function () {
                 div.find(".idbtn.cancel").html(TR("Close"));
                 div.find(".modal-footer").find(".idbtn.ok").remove();
             }
-            //doTranslate();
             $("body").append(div);
         }
         this.updateModal(type);
