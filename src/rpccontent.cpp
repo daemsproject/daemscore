@@ -977,7 +977,7 @@ bool GetDiskTxPoses(const std::vector<CScript>& vIds, std::vector<CTxPosItem>& v
         }
 
     }
-
+   // LogPrintf("GetDiskTxPoses nendfile %i, nendpos %i \n",nEndFile,nEndDataPos);
     std::map<CTxPosItem, std::string> mTxPos;
 
     //    std::cout << "nBeginDataPos " << nBeginDataPos << "\n";
@@ -991,10 +991,12 @@ bool GetDiskTxPoses(const std::vector<CScript>& vIds, std::vector<CTxPosItem>& v
         pScript2TxPosDB->GetTxPosList(*it, vTxPos);
         //        std::cout << "vTxPosS " << vTxPos.size() << "\n";
         int i = 0;
+       // LogPrintf("GetDiskTxPoses direction:%b \n",fAsc);
         if (fAsc)
         {
             for (std::vector<CTxPosItem>::iterator it2 = vTxPos.begin(); it2 != vTxPos.end(); it2++)
             {
+              //  LogPrintf("GetDiskTxPoses txpos:nfile %i,npos %i,ntx %i \n",it2->nFile,it2->nPos,it2->nTx);
                 if (!(it2->nFlags & flags))
                     continue;
                 if (i > maxc)
@@ -1010,16 +1012,23 @@ bool GetDiskTxPoses(const std::vector<CScript>& vIds, std::vector<CTxPosItem>& v
         {
             for (std::vector<CTxPosItem>::reverse_iterator it2 = vTxPos.rbegin(); it2 != vTxPos.rend(); it2++)
             {
+               //   LogPrintf("GetDiskTxPoses txpos:nfile %i,npos %i,ntx %i \n",it2->nFile,it2->nPos,it2->nTx);
+              
                 //std::cout << "mark0 " << "\n";
                 if (!(it2->nFlags & flags))
                     continue;
-                //                                std::cout << "mark 0 " << "\n";   
+                //     
+               //      LogPrintf("GetDiskTxPoses 2\n");
                 if (i > maxc)
                     break;
+              // LogPrintf("GetDiskTxPoses 3 \n");
+            
                 //                std::cout << "nPos " << it2->nPos << "\n";
                 //                std::cout << "nFile " << it2->nFile << "\n";
                 if ((it2->nFile > nEndFile) || ((it2->nFile == nEndFile)&&(it2->nPos > nEndDataPos)))
                     continue;
+               //   LogPrintf("GetDiskTxPoses 4 \n");
+            
                 //                std::cout << "mark " << "\n";
                 if ((it2->nFile < nBeginFile) || ((it2->nFile == nBeginFile)&&(it2->nPos < nBeginDataPos)))
                     break;
@@ -1037,6 +1046,8 @@ bool GetDiskTxPoses(const std::vector<CScript>& vIds, std::vector<CTxPosItem>& v
         //            vTxPosAll.insert(vTxPosAll.begin(), it3->first);
         //        else 
         //        std::cout << "it " << it3->first.nFile << "    " << "it " << it3->first.nPos<<"\n";
+       //  LogPrintf("GetDiskTxPoses txpos:nfile %i,npos %i,ntx %i \n",it3->first.nFile,it3->first.nPos,it3->first.nTx);
+              
         vTxPosAll.push_back(it3->first);
     }
     //    for (std::vector<CTxPosItem>::iterator it = vTxPosAll.begin(); it != vTxPosAll.end(); it++)
@@ -1234,10 +1245,12 @@ Value getcontentsbyaddresses(const Array& params, bool fHelp) // withcc and with
             //            ttlTxPosCountP++;
             uint256 hashBlock;
             int nHeight = 0;
+           // LogPrintf("getcontentsbyaddresses:nfile %i,npos %i",it->nFile, it->nPos);
             if (!pBlockPosDB->GetByPos(it->nFile, it->nPos, hashBlock, nHeight))
                 continue;
             CTransaction tx;
             int nTx = it->nTx;
+           // LogPrintf("getcontentsbyaddresses:nfile %i,npos %i,height %i,ntx %i \n",it->nFile, it->nPos,nHeight,nTx);
             //            std::cout << "nHeight " << nHeight << " nTx " << nTx << " nFile " << it->nFile << " nPos " << it->nPos << "\n";
             //            if (nHeight == fbh && (fAsc ? nTx < fntx : nTx > fntx))
             //                continue;
