@@ -1177,7 +1177,7 @@ Value getcontentsbyaddresses(const Array& params, bool fHelp) // withcc and with
     int ftxCount;
     if (!_parse_getcontents_params(params, fbh, fntx, fnout, maxc, maxb, blkc, withcc, withoutcc, firstcc, cformat, cflag, minsz, fAsc, frAddrs, toAddrs, nFile, nPos, nRange, ftxCount,withccc))
         throw runtime_error("Error parsing parameters");
-        std::cout << "params: " << " nFile-" << nFile << " nPos-" << nPos << " nRange-" << nRange << " fAsc-" << fAsc << " maxc-" << maxc<< " ftxCount-" << ftxCount << "\n";
+        //std::cout << "params: " << " nFile-" << nFile << " nPos-" << nPos << " nRange-" << nRange << " fAsc-" << fAsc << " maxc-" << maxc<< " ftxCount-" << ftxCount << "\n";
 
     Object r;
     r.push_back(Pair("fAsc", fAsc));
@@ -1280,7 +1280,7 @@ Value getcontentsbyaddresses(const Array& params, bool fHelp) // withcc and with
                 if (c >= maxc)
                 {
                     fBreak = true;
-                    break;
+                    //break;
                 }
 
                 CLink clink(nHeight, nTx, nVout);
@@ -1293,7 +1293,7 @@ Value getcontentsbyaddresses(const Array& params, bool fHelp) // withcc and with
                 if (b > maxb)
                 {
                     fBreak = true;
-                    break;
+                    //break;
                 }
                 if (!_check_cc(ctt, withcc, withoutcc, firstcc, nMaxCC,withccc))
                 {
