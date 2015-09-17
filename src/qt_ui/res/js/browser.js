@@ -138,11 +138,8 @@ var CBrowser = new function () {
                 if (CUtil.isLinkBlockChain())
                     CBrowser.viewLink(div.attr("href"));
                 else {
-                    // work around todo: redo
                     var fullLink = div.attr("href");
-                    var p = fullLink.indexOf(":");
-                    var link = fullLink.substring(p + 1);
-                    FAI_API.goToCustomPage(link);
+                    FAI_API.goToCustomPage(fullLink);
                 }
             }
         }

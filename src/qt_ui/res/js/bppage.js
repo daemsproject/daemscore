@@ -77,7 +77,7 @@ function prepareSimplePub(type) {
         }
         if (link.linktype === "BLOCKCHAIN") {
             if (!link.isValid()) {
-                CPage.showNotice("Link is invalid");
+                CPage.showNotice(TR("Link is invalid"));
                 return;
             }
         } else if (link.linktype === "DOMAIN") {
@@ -96,7 +96,7 @@ function prepareSimplePub(type) {
         if (link.linktype === "HTTP" || link.linktype === "HTTPS" || link.linktype === "DOMAIN" || (link.linktype === "BLOCKCHAIN" && link.isValid()))
             lctt = CPublisher.createLinkContent(link);
         else if (link.linktype === "" && linkstr.length > 0) {
-            CPage.showNotice("Link is invalid");
+            CPage.showNotice(TR("Link is invalid"));
             return;
         }
         if (haveFile)
