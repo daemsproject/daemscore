@@ -538,7 +538,7 @@ bool DecodeVarInt(const std::vector<unsigned char>& sv, uint64_t& n)
 
 bool EncodeVarInt(const uint64_t nIn, string& str)
 {
-    int n = nIn;
+    uint64_t n = nIn;
     char tmp[8];
     int len = 0;
     while (true) {
