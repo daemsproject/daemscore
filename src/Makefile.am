@@ -397,7 +397,8 @@ libbitcoinconsensus_la_SOURCES = \
   script/interpreter.cpp \
   script/bitcoinconsensus.cpp \
   uint256.cpp \
-  utilstrencodings.cpp
+  utilstrencodings.cpp \
+  fai/mhash.cpp
 
 if GLIBC_BACK_COMPAT
   libbitcoinconsensus_la_SOURCES += compat/glibc_compat.cpp

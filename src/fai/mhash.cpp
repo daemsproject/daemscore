@@ -73,5 +73,12 @@ void mixAdd(uint256* roller) {
     r1 |= lchunk;
     *roller += r1;
 }
+unsigned char* mixHash(unsigned char* hashIn,const int height)
+{
+    std::vector<unsigned char> vh(hashIn,hashIn+31);
+    uint256 input(vh);
+    mixHash(&input, (unsigned int)height);
+    return input.begin();
+}
 
 
