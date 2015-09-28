@@ -21,6 +21,7 @@ $(document).ready(function () {
             case "link":
                 prepareStdTpl();
                 var link = CUtil.getGet("link");
+                console.log(link);
                 if (CUtil.isLinkBlockChain(link)) {
                     var format = CUtil.getGet("format");
                     format = format ? Number(format) : 7;

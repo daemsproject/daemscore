@@ -192,7 +192,7 @@ var FAI_API = new function () {
         var targetID = toId ? toId : (locktime > 0 ? accountID : "");
         var f;
         if (toId)
-            deposit = locktime = 0;
+            locktime = 0;
         this.call("requestpayment2", [accountID, targetID, [ctt.hex], feeRate, deposit, locktime], function (r) {
             f = r;
         }, function (e) {
@@ -734,7 +734,7 @@ var FAI_API = new function () {
             }
             f = f === "" ? u1.hex + u2.hex : f;
             var r = this.icall("encodecontentunit", ["CC_LINK_P", f, 0]);
-        } else if (l.linktype === "HTTP" || l.linktype === "HTTPS"|| l.linktype === "DOMAIN") {
+        } else if (l.linktype === "HTTP" || l.linktype === "HTTPS" || l.linktype === "DOMAIN") {
             var u1 = this.icall("encodecontentunit", ["CC_LINK_TYPE_" + l.linktype]);
             var u2 = this.icall("encodecontentunit", ["CC_LINK", l.linkstr, 1]);
             var f = "";

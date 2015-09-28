@@ -513,7 +513,7 @@ var CBrowser = new function () {
         var ctt = FAI_API.getContentByLink(linkstr);
         this.addContent(ctt);
         for (var i = 0; i <= 7; i++)
-            $("#mainframe").append("<a href='" + linkstr + "&format=" + i + "&showdebug=true'>Format " + i + "</a><br />");
+            $("#mainframe").append("<a href='fai:browser/?link=" + linkstr + "&format=" + i + "&showdebug=true'>Format " + i + "</a><br />");
         var ctt2 = FAI_API.getContentByLink(linkstr, format);
 
         var ldiv = $("#linkpage-tpl").clone(true, true).attr("id", "linkpage").removeClass("hide");
@@ -1151,13 +1151,12 @@ var CPublisher = new function () {
         ctt.link = "";
         $("#confirmpub").removeAttr('disabled');
         var feer = $("#input-feerate").val() > 0 ? $("#input-feerate").val() * COIN / K : 0;
-        console.log(feer);
         var deposit = $("#promctt-value").val() > 0 ? $("#promctt-value").val() * COIN : 0;
         var locktime = Math.ceil($("#promctt-date").datepicker("getDate") === null ? 0 : $("#promctt-date").datepicker("getDate").getTime() / 1000 + 86400); // add 24 hour
         var locktime = deposit > 0 ? (locktime > 0 ? locktime : 0) : 0;
         var toId = $("#pubto").find("input[type='text']").val();
         if (toId)
-            deposit = locktime = 0;
+            locktime = 0;
         var r = FAI_API.createTxByContent(ctt, feer, toId, deposit, locktime);
         if (typeof r !== "undefined") {
             if (r.success) {

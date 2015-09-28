@@ -179,7 +179,9 @@ public:
         assert(hashGenesisBlock == uint256("f4223192597ffb0964962c959302355ca1b278b644b9ec65e5c7453345bae2d4"));
         assert(genesis.hashMerkleRoot == uint256("3ce17a884bd5e0133fe6f4a234bc66c459ef6075e6acd64a7f72634d3e20a9ca"));
         
-        vSeeds.push_back(CDNSSeedData("dns.f", "dnsseed.f"));
+        vSeeds.push_back(CDNSSeedData("dns1.f-a-i.net", "dns1.f-a-i.net"));
+        vSeeds.push_back(CDNSSeedData("dns2.f-a-i.net", "dns2.f-a-i.net"));
+        vSeeds.push_back(CDNSSeedData("dns3.f-a-i.net", "dns3.f-a-i.net"));
 
         base32Prefixes[PUBKEY_ADDRESS_2]    = list_of(0x02);    //  (51 bytes)(AE/AF/QE/QF)(7 bytes)
         base32Prefixes[PUBKEY_ADDRESS_3]    = list_of(0x03);    //  (51 bytes)(AG/AH/QG/QH)(7 bytes)
