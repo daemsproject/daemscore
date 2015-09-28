@@ -54,15 +54,25 @@ static void convertSeed6(std::vector<CAddress> &vSeedsOut, const SeedSpec6 *data
 static Checkpoints::MapCheckpoints mapCheckpoints =
         boost::assign::map_list_of
         (  0, uint256("f4223192597ffb0964962c959302355ca1b278b644b9ec65e5c7453345bae2d4"))
+        (  1000, uint256("fb40901f112de425d73978f06120304670af3ba51e9fbf4d2ae7f83253a37c45"))
+        (  2000, uint256("6cfab7a51fec44b814d795de9a3221b6d2408bc2627b40a855c3bb2ab382a2df"))
+(  3000, uint256("c3228974e6af31018ab8a960057c83cd6e5283378d31ac6b8ecedf134d5f8b45"))
+(  4000, uint256("2bc641e4d2ef9ec771d5af334b8da5cf801e497fcd037b4c503c6c63b6baa2eb"))
+(  5000, uint256("93053cc70b31a1af52ebea48a37be37830203e0ec1e05207cd419de0ba75c53a"))
+(  6000, uint256("2b860d72398a554dc968975eb56843abb43f75626a6872f92d8d320efeef3f68"))
+(  7000, uint256("8d42b11025990981ceeaa67053a79254136621ed445d3ec8d2a844315834c517"))
+(  8000, uint256("be0c32496b80329cb2745f963151a8ae9f2b8d14ab4141eb8ffd179bb76ab529"))
+(  9000, uint256("4c4cf03d136df8c0c95492ba58f0c6f111d6cd68a9881ac5b892059e5044f8d7"))
         (  10000, uint256("90ceb12d27059bcf50126c7cae93ca580fb022ff160fb8893ba3968e1ea97f9b"))
         (  20000, uint256("7c1d0fa458897898f6f4d8c91a4fed8c1f9d52356ad5275bdbb89993b17d4f80"))
+(  32513, uint256("44e0be4f4f387d376761280bf217ceb31ce7e9e1dde5c4a33f5866b016ef0dbc"))
         ;
 static const Checkpoints::CCheckpointData data = {
         &mapCheckpoints,
-        1441353409, // * UNIX timestamp of last checkpoint block
-        22625,  // * total number of transactions between genesis and last checkpoint
+        1443415890, // * UNIX timestamp of last checkpoint block
+        40809,  // * total number of transactions between genesis and last checkpoint
                     //   (the tx=... number in the SetBestChain debug.log lines)
-        500     // * estimated number of transactions per day after checkpoint
+        1000     // * estimated number of transactions per day after checkpoint
     };
 
 static Checkpoints::MapCheckpoints mapCheckpointsTestnet =

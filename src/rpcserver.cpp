@@ -260,19 +260,19 @@ static const CRPCCommand vRPCCommands[] =
 { //  category              name                      actor (function)         okSafeMode threadSafe reqWallet
   //  --------------------- ------------------------  -----------------------  ---------- ---------- ---------
     /* Overall control/query calls */
-    { "control",            "getinfo",                &getinfo,                true,      true,      false }, /* uses wallet if enabled */
+    { "control",            "getinfo",                &getinfo,                true,      false,      false }, /* uses wallet if enabled */
     { "control",            "help",                   &help,                   true,      true,       false },
     { "control",            "stop",                   &stop,                   true,      true,       false },
 
     /* P2P networking */
-    { "network",            "getnetworkinfo",         &getnetworkinfo,         true,      true,      false },
+    { "network",            "getnetworkinfo",         &getnetworkinfo,         true,      false,      false },
     { "network",            "addnode",                &addnode,                true,      true,       false },
     { "network",            "getaddednodeinfo",       &getaddednodeinfo,       true,      true,       false },
     { "network",            "getconnectioncount",     &getconnectioncount,     true,      true,      false },
     { "network",            "getnettotals",           &getnettotals,           true,      true,       false },
     { "network",            "getpeerinfo",            &getpeerinfo,            true,      true,      false },
     { "network",            "ping",                   &ping,                   true,      true,      false },
-    { "network",            "broadcastmessage",       &broadcastmessage,       true,      true,      false },
+    //{ "network",            "broadcastmessage",       &broadcastmessage,       true,      true,      false },
  
 
 

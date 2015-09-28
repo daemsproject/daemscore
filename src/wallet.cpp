@@ -1698,7 +1698,7 @@ bool CWallet::CreateTransactionUnsigned(const CPaymentOrder& pr,
                 CAmount nValueIn = 0;
                 if (!SelectCoins(nTotalValue, setCoins, nValueIn))
                 {
-                    strFailReason = _("Insufficient funds");
+                    strFailReason = _("Insufficient available funds");
                     return false;
                 }
                 CAmount nChange = nValueIn - nValue - nFeeRet;
@@ -1828,7 +1828,7 @@ bool CWallet::CreateOverrideTransaction(const CTransaction & txIn,
                         CAmount nValueIn = 0;
                 if (!SelectCoins(nFeeRet, setCoins, nValueIn))
                 {
-                    strFailReason = _("Insufficient funds");
+                    strFailReason = _("Insufficient available funds");
                     return false;
                 }
                 CAmount nChange = nValueIn -  nFeeRet;
