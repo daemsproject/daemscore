@@ -40,12 +40,14 @@ function prepareSimplePub(type) {
     ;
     $("#theText").bind('input propertychange', function () {
         $("#confirmpub").removeAttr('disabled');
-        CPublisher.showDetails();
+        var flag = CPublisher.getInputFlag();
+        CPublisher.showDetails(flag);
         CPublisher.refreshFee();
     });
     $("#input-link").bind('input propertychange', function () {
         $("#confirmpub").removeAttr('disabled');
-        CPublisher.showDetails();
+        var flag = CPublisher.getInputFlag();
+        CPublisher.showDetails(flag);
         CPublisher.refreshFee();
     });
     $("#input-feerate").bind('input propertychange', function () {
@@ -58,7 +60,12 @@ function prepareSimplePub(type) {
         $(this).val(this.value.replace(/[^0-9\.]+/g, ''));
     });
     $("#promctt-check").unbind().click(function () {
-        $(".input-tag-wrapper").removeClass("hide");
+        if ($(this).prop("checked"))
+            $(".input-tag-wrapper").removeClass("hide");
+        else {
+            $("#promctt-value").val("");
+            $(".input-tag-wrapper").addClass("hide");
+        }
     });
     $("#confirmpub").unbind().click(function () {
         var text = $("#theText").val();

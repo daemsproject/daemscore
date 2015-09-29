@@ -289,4 +289,6 @@ html,body{
     opacity:1;
 }.logo{
     background: url('../icons/fai.png') no-repeat left center;background-size: 64px 64px;width:64px;height:64px;
+}.promctt-check{
+    display:inline;
 }

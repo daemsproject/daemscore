@@ -624,6 +624,8 @@ var CBrowser = new function () {
     this.switchTabCore = function (tabid) {
         currentTab = tabid;
         this.clearFollowList();
+        $("#getnew-btn").addClass("hide");
+        $("#getold-btn").addClass("hide");
         switch (tabid) {
             case "br-new-btn":
                 this.newAction();
@@ -1152,6 +1154,10 @@ var CPublisher = new function () {
         $("#confirmpub").removeAttr('disabled');
         var feer = $("#input-feerate").val() > 0 ? $("#input-feerate").val() * COIN / K : 0;
         var deposit = $("#promctt-value").val() > 0 ? $("#promctt-value").val() * COIN : 0;
+        if ($("#promctt-check").length > 0) {
+            if (!$("#promctt-check").prop("checked"))
+                deposit = 0;
+        }
         var locktime = Math.ceil($("#promctt-date").datepicker("getDate") === null ? 0 : $("#promctt-date").datepicker("getDate").getTime() / 1000 + 86400); // add 24 hour
         var locktime = deposit > 0 ? (locktime > 0 ? locktime : 0) : 0;
         var toId = $("#pubto").find("input[type='text']").val();
@@ -1184,12 +1190,11 @@ var CPublisher = new function () {
             elem.dispatchEvent(evt);
         }
 
-        input = document.getElementById('theFile');
+        var input = document.getElementById('theFile');
         if (input.files.length > 1 && type !== "batch") {
             alert(TR('Only one file is allowed per time'));
             return;
         }
-
         this.handleFiles(input.files, type);
     };
     this.handleFileSelectLarge = function (evt) {
@@ -1338,24 +1343,30 @@ var CPublisher = new function () {
             });
         }
     };
-    this.addPromCttField = function (fTip) {
-        fTip = typeof fTip === "undefined" ? false : fTip;
+    this.addPromCttField = function (flag) {
+        flag = typeof flag === "undefined" ? "default" : flag;
         var promcttdiv = $("#promctt-tpl").clone(true, true);
         promcttdiv.attr("id", "promctt").removeClass("hide");
         $(promcttdiv).insertBefore($('#pubbtnh'));
-        if (fTip) {
-            $("promctt-check").remove();
-            $(".input-tag-wrapper").removeClass("hide");
-            $("#pub-value-span").html(TR("Tip value"));
-            $("#promctt-value").attr("placeholder", TR("Tip value"))
-            $("#pub-until-span").remove();
-            $("#promctt-date").remove();
-        } else {
-
+        if (flag === "default" || flag === "shareid" || flag === "sharectt") {
+            $(".promctt-check").show();
             $("#promctt-value").attr("placeholder", TR("Value locked for ranking"))
             var tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             $("#promctt-date").datepicker(CPage.initDatePickerOptions());
+        } else if (flag === "cmt") {
+            $("#promctt").remove();
+        } else {
+            $("promctt-check").remove();
+            $(".input-tag-wrapper").removeClass("hide");
+            $("#promctt-value").attr("placeholder", TR("Tip value"))
+            $("#pub-until-span").remove();
+            $("#promctt-date").remove();
+            $(".promctt-check").hide();
+            if (flag === "tip") {
+                $("#pub-value-span").html(TR("Tip value"));
+                $("#promctt-check").prop("checked", true);
+            }
         }
 
     };
@@ -1417,17 +1428,22 @@ var CPublisher = new function () {
             return false;
         return $("#CC_LANG").attr("lang");
     };
-    this.showDetails = function (fTip) {
-        fTip = typeof fTip === "undefined" ? false : fTip;
+    this.showDetails = function (flag) {
+        flag = typeof flag === "undefined" ? "default" : flag;
         $("#cclang-span").html(TR("tag-" + langCode));
         $("#CC_LANG").attr("lang", langCode);
         $("#pubdfttag").removeClass("hide");
         var feediv = $("#fee-tpl")
         feediv.removeAttr("id").removeClass("hide").find("input[type='text']").addClass("visible");
         $(feediv).insertBefore($('#pubbtnh'));
+        if (flag === "default")
+            $(".promctt-check").show();
+        else
+            $(".promctt-check").hide();
         if ($("#promctt").length === 0) {
-            this.addPromCttField(fTip);
+            this.addPromCttField(flag);
         }
+        $("#maininput").attr("flag", flag);
     };
     this.refreshFee = function (size) {
         var len = typeof size === "undefined" ? 260 : size;
@@ -1472,8 +1488,9 @@ var CPublisher = new function () {
         }
         $("#theText").val(id + "\n");
         $("#confirmpub").removeAttr('disabled');
-        CPublisher.showDetails();
+        CPublisher.showDetails("shareid");
         CPublisher.refreshFee();
+        $('#pubbtnh').show();
     }
     this.togglePromCtt = function () {
         if ($("#promctt").length > 0) {
@@ -1485,25 +1502,25 @@ var CPublisher = new function () {
         } else
             this.addPromCttField();
     };
-    this.commentLink = function (link, id, fTip) {
-        fTip = typeof fTip === "undefined" ? false : fTip;
+    this.commentLink = function (link, id, flag) {
         if (currentPage === "homepage" || currentPage === "link") {
             FAI_API.goToCustomPage("fai:browser/?cmt=true&link=" + link + "&id=" + id);
             return;
         }
         this.shareLink(link);
-        this.showDetails(fTip);
+        this.showDetails(flag);
         this.addPubToField();
         $("#pubto").find("input[type='text']").val(id);
     };
-    this.clearWithAlert = function () {
+    this.clearWithAlert = function (flag) {
         if ($("#theText").val() !== "") {
             if (confirm(TR('Please confirm to clear unpublished content')))
-                this.clear();
+                this.clear(flag);
         } else
-            this.clear();
+            this.clear(flag);
     };
     this.clear = function () {
+//        flag = typeof flag === "undefined" ? "default" : flag;
         $("#pubpreview").html("").addClass("hide");
         $("#theText").val("");
         $("#promctt-value").val("");
@@ -1513,10 +1530,18 @@ var CPublisher = new function () {
         $("#input-link-name").val("");
         $("#input-link").val("");
         $("#input-feerate").val("");
+        $("#promctt").remove();
         bufferedFile = {};
-        if ($("#pubto").length > 0)
-            this.togglePromCtt();
+        $("#pubto").remove();
+        $("#maininput").attr("flag", "default");
+        $('#theFile').val("");
+        $("#confirmpub").attr('disabled', true);
     };
+    this.getInputFlag = function () {
+        var flag = $("#maininput").attr("flag");
+        flag = typeof flag === "undefined" ? "default" : flag;
+        return flag;
+    }
     this.regFeeRate = function () {
         currentFeeRate.sgstfeer = FAI_API.getFeeRate(0.15);
         currentFeeRate.minfeer = FAI_API.getFeeRate();

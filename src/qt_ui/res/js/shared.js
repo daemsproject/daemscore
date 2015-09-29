@@ -311,34 +311,34 @@ function prepareStdTpl() {
         var url = "fai:messenger/?chatto=" + id;
         FAI_API.goToCustomPage(url);
     });
+    $(".id-share-btn").unbind().click(function () {
+        var id = $(this).parent().parent().find(".text").attr("fullid");
+        var domain = $(this).parent().parent().find(".text").attr("domain");
+        var id2share = domain ? domain : id;
+        CPublisher.clearWithAlert("shareid");
+        CPublisher.shareId(id2share);
+    });
     $(".ctt-link-btn").unbind().click(function () {
         var link = $(this).parent().parent().find(".linkspan").attr("clink");
         CUtil.copyToClipboard(link);
     });
     $(".ctt-share-btn").unbind().click(function () {
         var link = $(this).parent().parent().find(".linkspan").attr("clink");
-        CPublisher.clearWithAlert();
+        CPublisher.clearWithAlert("sharectt");
         CPublisher.shareLink(link);
     });
 
     $(".ctt-cmt-btn").unbind().click(function () {
         var link = $(this).parent().parent().find(".linkspan").attr("clink");
         var id = $(this).parent().parent().parent().parent().parent().find(".id").find(".text").attr("fullid");
-        CPublisher.clearWithAlert();
-        CPublisher.commentLink(link, id);
+        CPublisher.clearWithAlert("cmt");
+        CPublisher.commentLink(link, id, "cmt");
     });
     $(".ctt-tip-btn").unbind().click(function () {
         var link = $(this).parent().parent().find(".linkspan").attr("clink");
         var id = $(this).parent().parent().parent().parent().parent().find(".id").find(".text").attr("fullid");
-        CPublisher.clearWithAlert();
-        CPublisher.commentLink(link, id, true);
-    });
-    $(".id-share-btn").unbind().click(function () {
-        var id = $(this).parent().parent().find(".text").attr("fullid");
-        var domain = $(this).parent().parent().find(".text").attr("domain");
-        var id2share = domain ? domain : id;
-        CPublisher.clearWithAlert();
-        CPublisher.shareId(id2share);
+        CPublisher.clearWithAlert("tip");
+        CPublisher.commentLink(link, id, "tip");
     });
     $(".prd-pchs-btn").unbind().click(function () {
         var link = $(this).parent().parent().find(".linkspan").attr("clink");
@@ -359,7 +359,7 @@ var CLink = new function () {
         this.nHeight = -1;
         this.nTx = -1;
         this.nVout = -1;
-        this.linktype="";
+        this.linktype = "";
         if (typeof str === 'undefined')
             return this;
         var pc = str.indexOf(":");
@@ -642,9 +642,9 @@ var CUtil = new function () {
                     r.ltype = "BLOCKCHAIN";
                 } else if (icc === "CC_LINK_TYPE_HTTP") {
                     r.ltype = "HTTP";
-                }else if (icc === "CC_LINK_TYPE_HTTPS") {
+                } else if (icc === "CC_LINK_TYPE_HTTPS") {
                     r.ltype = "HTTPS";
-                }else if (icc === "CC_LINK_TYPE_DOMAIN") {
+                } else if (icc === "CC_LINK_TYPE_DOMAIN") {
                     r.ltype = "DOMAIN";
                 } else if (icc === "CC_NAME") {
                     r.name = base64.decode(cCtt);
