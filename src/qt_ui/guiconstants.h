@@ -45,7 +45,7 @@ static const int MAX_URI_LENGTH = 255;
 #define SPINNER_FRAMES 35
 
 #define QAPP_ORG_NAME "FAI"
-#define QAPP_ORG_DOMAIN "www.fai03a6.co.nr"
+#define QAPP_ORG_DOMAIN "www.f-a-i.net"
 #define QAPP_APP_NAME_DEFAULT "ΦDesktop-Client"
 #define QAPP_APP_NAME_TESTNET "ΦDesktop-Client-testnet"
 

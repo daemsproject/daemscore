@@ -913,7 +913,7 @@ void CWallet::SyncTransaction(const CTransaction& tx, const CBlock* pblock)
         //LogPrintf("notfiytransactionchanged\n");
     //}
    // LogPrintf("SyncTransaction2\n");
-    if(!HasMyMessage(tx))
+    if(!IsFromMe(tx)&&!HasMyMessage(tx))
         return;
     NotifyTransactionChanged(tx.GetHash(),blockHash);
     if (!AddToWalletIfInvolvingMe(tx, pblock, true))

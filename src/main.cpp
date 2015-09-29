@@ -1399,50 +1399,63 @@ bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTr
    GetDiskTxPoses (vIds,vTxPosAll);            
     
     //LogPrintf("main:gettx: vtxposall size%u \n",vTxPosAll.size());
-    //sorting
-
-    bool fChanged=true;
-    while(vTxPosAll.size()>1&&fChanged){
-        fChanged=false;
-        for (std::vector<CTxPosItem>::iterator it = vTxPosAll.begin();it <--vTxPosAll.end(); it++) {
-            std::vector<CTxPosItem>::iterator it2=it;            
-            it2++;
-            if(*it2>*it){
-                CTxPosItem tmp=*it;
-                *it=*it2;
-                *it2=tmp;
-                fChanged=true;
-                //speed up rolling
-                std::vector<CTxPosItem>::iterator it3=it;
-                bool fChanged2=true;
-                while(fChanged2&&(it3!=vTxPosAll.begin())){
-                    fChanged2=false;
-                    std::vector<CTxPosItem>::iterator it4=it3;                    
-                    it4--;
-                    if(*it3>*it4){
-                        CTxPosItem tmp=*it4;
-                        *it4=*it3;
-                        *it3=tmp;
-                        fChanged2=true;                                            
-                    }
-                    it3--;
-                }
-            }
-        }
-    }
+    //sorting :this sorting has bug,abandoned
+   
+   
+//    bool fChanged=true;
+//    while(vTxPosAll.size()>1&&fChanged){
+//        fChanged=false;
+//        for (std::vector<CTxPosItem>::iterator it = vTxPosAll.begin();it <--vTxPosAll.end(); it++) {
+//            std::vector<CTxPosItem>::iterator it2=it;            
+//            it2++;
+//            if(*it2>*it){
+//                CTxPosItem tmp=*it;
+//                *it=*it2;
+//                *it2=tmp;
+//                fChanged=true;
+//                //speed up rolling
+//                std::vector<CTxPosItem>::iterator it3=it;
+//                bool fChanged2=true;
+//                while(fChanged2&&(it3!=vTxPosAll.begin())){
+//                    fChanged2=false;
+//                    std::vector<CTxPosItem>::iterator it4=it3;                    
+//                    it4--;
+//                    if(*it3>*it4){
+//                        CTxPosItem tmp=*it4;
+//                        *it4=*it3;
+//                        *it3=tmp;
+//                        fChanged2=true;                                            
+//                    }
+//                    it3--;
+//                }
+//            }
+//        }
+//    }
+   //new sorting
+   map<uint64_t,pair<CTxPosItem,uint256> >mapTxPos;
+   for (std::vector<CTxPosItem>::iterator it = vTxPosAll.begin();it !=vTxPosAll.end(); it++) {
+       uint256 hashBlock;
+       int nHeight=0;
+       pBlockPosDB->GetByPos(it->nFile,it->nPos,hashBlock,nHeight);
+       uint64_t nTxIndex=(((uint64_t)nHeight)<<32)+it->nTx;
+       mapTxPos.insert(make_pair(nTxIndex,make_pair(*it,hashBlock)));
+       
+   }
+   
     //LogPrintf("main:gettx: vtxposall sizeafter sort%u \n",vTxPosAll.size());
-        for (std::vector<CTxPosItem>::iterator it2 = vTxPosAll.begin();it2 != vTxPosAll.end(); it2++) {
+       // for (std::vector<CTxPosItem>::iterator it2 = vTxPosAll.begin();it2 != vTxPosAll.end(); it2++) {
+            for (map<uint64_t,pair<CTxPosItem,uint256> >::reverse_iterator it2 = mapTxPos.rbegin();it2 != mapTxPos.rend(); it2++) {
             CTransaction txOut;
-            uint256 hashBlock;
-            if((!fIncludeNoMoneyChange)&&(!(it2->nFlags&TXITEMFLAG_SENDER)&&(!(it2->nFlags&TXITEMFLAG_RECEIVEMONEY))))
+            //uint256 hashBlock;
+            if((!fIncludeNoMoneyChange)&&(!(it2->second.first.nFlags&TXITEMFLAG_SENDER)&&(!(it2->second.first.nFlags&TXITEMFLAG_RECEIVEMONEY))))
                     continue;
             //LogPrintf("main:gettx:cdisktxpos after sort file:%i,pos:%u,txpos:%i\n",it2->nFile,it2->nPos,it2->nTxOffset);
             if (nTxCount>=nOffset&&nTxCount<nOffset+nNumber)
             {
-                if(GetTransaction(*it2, txOut))
+                if(GetTransaction(it2->second.first, txOut))
                 {
-                    int nHeight=0;
-                    pBlockPosDB->GetByPos(it2->nFile,it2->nPos,hashBlock,nHeight);
+                   // int nHeight=0;
+                   // pBlockPosDB->GetByPos(it2->nFile,it2->nPos,hashBlock,nHeight);
                     //LogPrintf("main:gettxhashBlock %s\n",hashBlock.ToString());
 //                    if (fNoContent)
 //                    {
@@ -1451,7 +1464,8 @@ bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTr
 //                        vTxs.push_back(make_pair(newTx,hashBlock));
 //                    }                
 //                    else
-                        vTxs.push_back(make_pair(txOut,hashBlock));
+                        //vTxs.push_back(make_pair(txOut,hashBlock));
+                        vTxs.push_back(make_pair(txOut,it2->second.second));
                     nTxCount++;
                 }
                 else
@@ -1465,7 +1479,8 @@ bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTr
                         if(it==mapScript2TxPos.end())
                         {
                             vector<CTxPosItem> v;
-                            v.push_back(*it2);
+                            //v.push_back(*it2);
+                            v.push_back(it2->second.first);
                             mapScript2TxPos[id]=v;
                         }   
                     }                        
