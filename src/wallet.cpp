@@ -1207,7 +1207,7 @@ void CWallet::ReacceptWalletTransactions()
     LOCK2(cs_main, cs_wallet);
     std::vector<CWalletTx> vunconfirmedTxs=pwalletdb->ReadUnConfirmedTxs();
     LogPrintf("ReacceptWalletTransactions %i \n",vunconfirmedTxs.size());
-    for(std::vector<CWalletTx>::iterator it=vunconfirmedTxs.begin();it<vunconfirmedTxs.end();it++)
+    for(std::vector<CWalletTx>::iterator it=vunconfirmedTxs.begin();it!=vunconfirmedTxs.end();it++)
     {       
             CWalletTx& wtx=*it;
     //BOOST_FOREACH(PAIRTYPE(const uint256, CWalletTx)& item, mapWallet)
@@ -1284,7 +1284,7 @@ void CWallet::ResendWalletTransactions()
         multimap<unsigned int, CWalletTx*> mapSorted;
         std::vector<CWalletTx> vunconfirmedTxs=pwalletdb->ReadUnConfirmedTxs();
 LogPrintf("ResendWalletTransactions %i \n",vunconfirmedTxs.size());
-        for(std::vector<CWalletTx>::iterator it=vunconfirmedTxs.begin();it<vunconfirmedTxs.end();it++)
+        for(std::vector<CWalletTx>::iterator it=vunconfirmedTxs.begin();it!=vunconfirmedTxs.end();it++)
         {       
             CWalletTx& wtx=*it;
             if(wtx.GetDepthInMainChain()==0)
