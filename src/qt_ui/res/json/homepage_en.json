@@ -88,19 +88,32 @@
             "text": [
                 "<h3>Download Φ FAI client for windows</h3>",
                 "<div class='ph'></div>",
-                "<a href='../download/FAI_2.0.1.exe'>FAI_2.0.1.exe (27MB) Auto extract version</a>",
-                "<a href='../download/FAI_2.0.1.zip'>FAI_2.0.1.zip (43MB)</a>"
+                "The first two version with block data doesn't need to wait for syncing blockchain, simply click on the <b>\"FAI -runhere\"</b> after extraction",
+                "<div class='ph'></div>",
+                "<a href='../download/FAI_win_2.0.2_block33061.exe'>FAI_win_2.0.2_block33061.exe (37MB) Auto extract version</a>",
+                "<a href='../download/FAI_win_2.0.2_block33061.zip'>FAI_win_2.0.2_block33061.zip (67MB)</a>",
+                "<a href='../download/FAI_win_2.0.2_no_blockchain.zip'>FAI_win_2.0.2_no_blockchain.zip (43MB)</a>"
             ]
         },
         "downloads-full": {
             "name": "Downloads (All versions)",
             "text": [
                 "<h3>Download Φ FAI client for windows</h3>",
+                "<div class='ph'></div>",
+                "The first two version with block data doesn't need to wait for syncing blockchain, simply click on the <b>\"FAI -runhere\"</b> after extraction",
+                "<div class='ph'></div>",
+                "<a href='../download/FAI_win_2.0.2_block33061.exe'>FAI_win_2.0.2_block33061.exe (37MB) Auto extract version</a>",
+                "<a href='../download/FAI_win_2.0.2_block33061.zip'>FAI_win_2.0.2_block33061.zip (67MB)</a>",
+                "<a href='../download/FAI_win_2.0.2_no_blockchain.zip'>FAI_win_2.0.2_no_blockchain.zip (43MB)</a>",
+                "<div class='ph'></div>",
+                "<a href='../download/FAI_2.0.1.exe'>FAI_2.0.1.exe (27MB) Auto extract version</a>",
+                "<a href='../download/FAI_2.0.1.zip'>FAI_2.0.1.zip (43MB)</a>",
+                "<div class='ph'></div>",
                 "<a href='../download/FAI_2.0.0.exe'>FAI_2.0.0.exe (27MB) Auto extract version</a>",
                 "<a href='../download/FAI_2.0.0.zip'>FAI_2.0.0.zip (40MB)</a>",
                 "<div class='ph'></div>",
-                "<a href='../download/FAI_2.0.1.exe'>FAI_2.0.1.exe (27MB) Auto extract version</a>",
-                "<a href='../download/FAI_2.0.1.zip'>FAI_2.0.1.zip (43MB)</a>"
+                "<h3>Download Φ FAI client for Ubuntu 14.04 64bit</h3>",
+                "<a href='../download/fai_ubuntu_64bit_v1.0.0.zip'>fai_ubuntu_64bit_v1.0.0.zip (1.6MB)</a>"
             ]
         }
     },

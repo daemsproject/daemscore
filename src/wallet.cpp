@@ -1232,6 +1232,8 @@ void CWallet::ReacceptWalletTransactions()
         else if (nDepth>0)
         {
             vunconfirmedTxs.erase(it);
+            if(it==vunconfirmedTxs.end())
+                    break;
         }
     }
     pwalletdb->WriteUnConfirmedTxs(vunconfirmedTxs);
@@ -1277,7 +1279,6 @@ void CWallet::ResendWalletTransactions()
     nLastResend = GetTime();
 
     // Rebroadcast any of our txes that aren't in a block yet
-    LogPrintf("ResendWalletTransactions()\n");
     {
         LOCK(cs_wallet);
         // Sort them in chronological order
@@ -1297,6 +1298,8 @@ LogPrintf("ResendWalletTransactions %i \n",vunconfirmedTxs.size());
             else
             {
                 vunconfirmedTxs.erase(it);
+                if(it==vunconfirmedTxs.end())
+                    break;
             }
         }
         BOOST_FOREACH(PAIRTYPE(const unsigned int, CWalletTx*)& item, mapSorted)

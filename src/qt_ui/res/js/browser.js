@@ -259,6 +259,8 @@ var CBrowser = new function () {
         sdiv.find(".container").prepend(pdiv.children());
         sdiv.find(".container").find(".brctt").append(cdiv.children());
         sdiv = this.filterCttDiv(sdiv, fType);
+        var t = new Date(ctt.time * 1000);
+        sdiv.find(".ctt2").append(TR("Posted: ") + CUtil.dateToShortString(t));
         sdiv.removeAttr("id");
         ctt.fShowValue = false;
         sdiv = this.fillSdiv(sdiv, ctt, fType);
@@ -286,8 +288,6 @@ var CBrowser = new function () {
                 break;
             case CONTENT_TYPE_HOT:
                 sdiv.find(".id-unfollow-btn").parent().remove();
-                var t = new Date(ctt.time * 1000);
-                sdiv.find(".ctt2").append(TR("Posted: ") + CUtil.dateToShortString(t));
                 break;
             case CONTENT_TYPE_DEFAULT:
             default:
