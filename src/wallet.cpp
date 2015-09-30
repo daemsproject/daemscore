@@ -1442,6 +1442,7 @@ void CWallet::AvailableCoins(vector<COutput>& vCoins, bool fOnlyConfirmed, const
 
     {
         LOCK2(cs_main, cs_wallet);
+        CCoinsViewCache* view = new CCoinsViewCache(pcoinsTip); 
         for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); it++)
         {
             const uint256& wtxid = it->first;
@@ -1456,7 +1457,7 @@ void CWallet::AvailableCoins(vector<COutput>& vCoins, bool fOnlyConfirmed, const
             
             if (nDepth <= 0)
                 continue;
-            CCoinsViewCache* view = new CCoinsViewCache(pcoinsTip); 
+            
             for (unsigned int i = 0; i < pcoin->vout.size(); i++) {
                 if (pcoin->GetBlocksToMaturity(i) > 0)
                     continue;
@@ -1467,8 +1468,9 @@ void CWallet::AvailableCoins(vector<COutput>& vCoins, bool fOnlyConfirmed, const
                     (!coinControl || !coinControl->HasSelected() || coinControl->IsSelected((*it).first, i,pcoin->vout[i].nValue)))
                         vCoins.push_back(COutput(pcoin, i, nDepth, (mine & ISMINE_SPENDABLE) != ISMINE_NO));
             }
-            delete view;
+            
         }
+        delete view;
     }
 }
 
