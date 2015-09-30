@@ -406,7 +406,8 @@ QString WalletModel::saveFileUserConfirm(const Array arr)
     
     QString fileName = QFileDialog::getSaveFileName(gui, tr("Save File"),defaultFileName);
         if (!fileName.isEmpty()) {
-            if(StringToFile(fileName.toStdString(),arr[1].get_str()))
+            string s=DecodeBase64(arr[1].get_str());
+            if(StringToFile(fileName.toStdString(),s))
                 return QString("success");
         }     
      return QString("{\"error\":\"user canceled\"}");

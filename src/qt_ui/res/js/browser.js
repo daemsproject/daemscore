@@ -193,9 +193,9 @@ var CBrowser = new function () {
                 var head = base64.decode(r.fdata).substr(0, 3);
                 if (head.toLowerCase() === "gif") {
                     idiv.find(".ctt-rmdr").removeClass("hide").attr("fdata", r.fdata).attr("fname", r.fname).html(TR("GIF File")).click(function () {
-                        var fdata = base64.decode($(this).attr("fdata"));
+                        var fdata = $(this).attr("fdata");
                         var fname = $(this).attr("fname");
-                        FAI_API.writeFile2(fname, fdata);
+                        FAI_API.writeFileBase64(fname, fdata);
                     });
                 } else
                     idiv.find("img").attr("src", this.createImgSrc(r.ftype, r.fdata));
@@ -205,9 +205,9 @@ var CBrowser = new function () {
             {
                 idiv = $("#image-tpl").clone(true, true);
                 idiv.find(".ctt-rmdr").removeClass("hide").attr("fdata", r.fdata).attr("fname", r.fname).html(TR("File")).click(function () {
-                    var fdata = base64.decode($(this).attr("fdata"));
+                    var fdata = $(this).attr("fdata");
                     var fname = $(this).attr("fname");
-                    FAI_API.writeFile2(fname, fdata);
+                    FAI_API.writeFileBase64(fname, fdata);
                 });
             }
         } else

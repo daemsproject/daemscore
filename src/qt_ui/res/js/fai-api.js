@@ -608,7 +608,7 @@ var FAI_API = new function () {
     this.writeFile = function (app, path, filename, filestring) {
         return this.icall("writefile", [app, path, filename, filestring]);
     }
-    this.writeFile2 = function (filename, filestring) {
+    this.writeFileBase64 = function (filename, filestring) {
         return this.icall("writefile2", [filename, filestring]);
     }
     this.readFile = function (app, path, filename) {
