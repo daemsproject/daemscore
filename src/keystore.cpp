@@ -5,35 +5,29 @@
 
 #include "keystore.h"
 
+#include "crypter.h"
 #include "key.h"
+#include "script/script.h"
+#include "script/standard.h"
 #include "util.h"
 
 #include <boost/foreach.hpp>
 
-bool CKeyStore::GetPubKey(const CKeyID &address, CPubKey &vchPubKeyOut) const
-{
-    CKey key;
-    if (!GetKey(address, key))
-        return false;
-    vchPubKeyOut = key.GetPubKey();
-    return true;
-}
+//bool CKeyStore::GetPubKey(const CKeyID &address, CPubKey &vchPubKeyOut) const
+//{
+//    CKey key;
+//    if (!GetKey(address, key))
+//        return false;
+//    vchPubKeyOut = key.GetPubKey();
+//    return true;
+//}
 
-bool CKeyStore::AddKey(const CKey &key) {
-    return AddKeyPubKey(key, key.GetPubKey());
-}
 
-bool CBasicKeyStore::AddKeyPubKey(const CKey& key, const CPubKey &pubkey)
-{
-    LOCK(cs_KeyStore);
-    mapKeys[pubkey.GetID()] = key;
-    return true;
-}
 
 bool CBasicKeyStore::AddCScript(const CScript& redeemScript)
 {
     if (redeemScript.size() > MAX_SCRIPT_ELEMENT_SIZE)
-        return error("CBasicKeyStore::AddCScript(): redeemScripts > %i bytes are invalid", MAX_SCRIPT_ELEMENT_SIZE);
+        return error("CBasicKeyStore::AddCScript() : redeemScripts > %i bytes are invalid", MAX_SCRIPT_ELEMENT_SIZE);
 
     LOCK(cs_KeyStore);
     mapScripts[CScriptID(redeemScript)] = redeemScript;
@@ -57,38 +51,69 @@ bool CBasicKeyStore::GetCScript(const CScriptID &hash, CScript& redeemScriptOut)
     }
     return false;
 }
-
-bool CBasicKeyStore::AddWatchOnly(const CScript &dest)
+bool CBasicKeyStore::GetSharedKey(const CPubKey IDLocal,const CPubKey IDForeign,CKey& sharedKey)
 {
-    LOCK(cs_KeyStore);
-    setWatchOnly.insert(dest);
+    if(!HasSharedKey(IDLocal,IDForeign))
+        return false;        
+    sharedKey=mapSharedKeys[IDLocal][IDForeign];
     return true;
 }
-
-bool CBasicKeyStore::RemoveWatchOnly(const CScript &dest)
+bool CBasicKeyStore::HasSharedKey(const CPubKey IDLocal,const CPubKey IDForeign)const
 {
-    LOCK(cs_KeyStore);
-    setWatchOnly.erase(dest);
+    SharedKeyMap::const_iterator it=mapSharedKeys.find(IDLocal);
+    if(it==mapSharedKeys.end())
+        return false;
+    std::map<CPubKey, CKey>::const_iterator it2=it->second.find(IDForeign);
+    if(it2==it->second.end())
+        return false;    
     return true;
 }
-
-bool CBasicKeyStore::HaveWatchOnly(const CScript &dest) const
+void CBasicKeyStore::ClearSharedKey(const CPubKey IDLocal,const CPubKey IDForeign)
+{
+    if (IDLocal==CPubKey())
+        mapSharedKeys.clear();
+    else if(IDForeign==CPubKey())
+        mapSharedKeys.erase(IDLocal);
+    else        
+        if(mapSharedKeys.find(IDLocal)!=mapSharedKeys.end())
+              mapSharedKeys[IDLocal].erase(IDForeign);
+}
+void CBasicKeyStore::StoreSharedKey(const CPubKey IDLocal,const CPubKey IDForeign,const CKey& sharedKey)
+{
+    if(mapSharedKeys.find(IDLocal)!=mapSharedKeys.end())
+        mapSharedKeys[IDLocal][IDForeign]=sharedKey;
+    else
+    {
+         std::map<CPubKey, CKey> mapkey;
+         mapkey[IDForeign]=sharedKey;
+         mapSharedKeys[IDLocal]=mapkey;
+    }
+}
+bool CBasicKeyStore::GetKey(const CPubKey &address, CKey& keyOut) const
+{
+    //LogPrintf("CBasicKeyStore::GetKey \n");
+   {
+    LOCK(cs_KeyStore);
+        KeyMap::const_iterator mi = mapKeys.find(address);
+        if (mi != mapKeys.end())
+        {
+            if(mi->second==0){
+                keyOut=baseKey;
+                return true;
+}
+            //baseKey.AddSteps(stepKey,mi->second,keyOut);                
+            baseKey.AddSteps(stepKey,Hash(&(mi->second),&(mi->second)+1),keyOut);                
+            return true;
+        }
+    }
+     //LogPrintf("CBasicKeyStore::GetKey key not found\n");
+    return false;
+}  
+bool CBasicKeyStore::GetExtendPubKey(const uint64_t nStep,CPubKey& pub)const
 {
     LOCK(cs_KeyStore);
-    return setWatchOnly.count(dest) > 0;
-}
-
-bool CBasicKeyStore::HaveWatchOnly() const
-{
-    LOCK(cs_KeyStore);
-    return (!setWatchOnly.empty());
-}
-
-bool CBasicKeyStore::AddSpendingKey(const libzcash::SpendingKey &sk)
-{
-    LOCK(cs_SpendingKeyStore);
-    auto address = sk.address();
-    mapSpendingKeys[address] = sk;
-    mapNoteDecryptors.insert(std::make_pair(address, ZCNoteDecryption(sk.viewing_key())));
+    if(!CanExtendKeys())
+        return false;
+    baseKey.pubKey.AddSteps(stepKey.pubKey,Hash(&nStep,&nStep+1),pub);
     return true;
 }

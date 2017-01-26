@@ -10,10 +10,13 @@
 
 #include <stdint.h>
 
+class CBlock;
+class CBlockHeader;
 class CBlockIndex;
 class CReserveKey;
 class CScript;
 class CWallet;
+class CPubKey;
 namespace Consensus { struct Params; };
 
 struct CBlockTemplate
@@ -24,12 +27,17 @@ struct CBlockTemplate
 };
 
 /** Run the miner threads */
-void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads);
+void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads,bool fExtendID=false);
 /** Generate a new block, without valid proof-of-work */
-CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn);
-CBlockTemplate* CreateNewBlockWithKey(CReserveKey& reservekey);
+CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn,const int nHeightIn=0);
+CBlockTemplate* CreateNewBlockWithKey(CPubKey& miningID);
 /** Modify the extranonce in a block */
 void IncrementExtraNonce(CBlock* pblock, CBlockIndex* pindexPrev, unsigned int& nExtraNonce);
-void UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParams, const CBlockIndex* pindexPrev);
+/** Check mined block */
+bool CheckWork(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey);
+void UpdateTime(CBlockHeader* block, const CBlockIndex* pindexPrev);
+uint64_t PoolMiner(bool fGenerate,CBlockHeader block,uint64_t nNonceBegin,uint64_t nNonceEnd,int nThreads,uint32_t nbit=0);
+extern double dHashesPerSec;
+extern int64_t nHPSTimerStart;
 
 #endif // BITCOIN_MINER_H

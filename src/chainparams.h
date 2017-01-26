@@ -11,8 +11,11 @@
 #include "consensus/params.h"
 #include "primitives/block.h"
 #include "protocol.h"
-
+#include "uint256.h"
+#include "hash.h"
 #include <vector>
+
+typedef unsigned char MessageStartChars[MESSAGE_START_SIZE];
 
 struct CDNSSeedData {
     std::string name, host;

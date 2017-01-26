@@ -55,7 +55,89 @@ struct CDiskBlockPos
     }
 
 };
+struct CDiskTxPos : public CDiskBlockPos
+{
+    unsigned int nTxOffset; // after header
 
+    ADD_SERIALIZE_METHODS;
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
+        READWRITE(*(CDiskBlockPos*)this);
+        READWRITE(VARINT(nTxOffset));
+    }
+
+    CDiskTxPos(const CDiskBlockPos &blockIn, unsigned int nTxOffsetIn) : CDiskBlockPos(blockIn.nFile, blockIn.nPos), nTxOffset(nTxOffsetIn) {
+    }
+
+    CDiskTxPos() {
+        SetNull();
+    }
+    friend bool operator==(const CDiskTxPos &a, const CDiskTxPos &b) {
+        return (a.nFile == b.nFile && a.nPos == b.nPos && a.nTxOffset==b.nTxOffset);
+    }
+    void SetNull() {
+        CDiskBlockPos::SetNull();
+        nTxOffset = 0;
+    }
+};
+enum dbTxItemFlags
+{
+    TXITEMFLAG_SENDER=1<<0,
+    //TXITEMFLAG_RECEIVER,
+    TXITEMFLAG_SENDCONTENT=1<<1,
+    TXITEMFLAG_RECEIVECONTENT=1<<2,
+    TXITEMFLAG_RECEIVEMONEY=1<<3,
+    TXITEMFLAG_MESSAGE=1<<4,
+    TXITEMFLAG_PRODUCT=1<<5,
+    TXITEMFLAG_PURCHASE=1<<6,
+    TXITEMFLAG_DOMAIN=1<<7
+    //TXITEMFLAG_HASLOCKTIME,
+    //TXITEMFLAG_MULTIPLESENDER,
+    //TXITEMFLAG_COINBASE
+};
+struct CTxPosItem: public CDiskBlockPos
+{
+    unsigned int nTx; 
+    uint8_t nFlags;
+
+    ADD_SERIALIZE_METHODS;
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
+        READWRITE(*(CDiskBlockPos*)this);
+        READWRITE(VARINT(nTx));
+        READWRITE(nFlags);
+    }
+
+    CTxPosItem(const int nFileIn,const unsigned int nPosIn, unsigned int nTxIn,uint8_t nFlagsIn) : CDiskBlockPos(nFileIn, nPosIn), nTx(nTxIn),nFlags(nFlagsIn) {
+    }
+
+    CTxPosItem() {
+        SetNull();
+    }
+    friend bool operator==(const CTxPosItem &a, const CTxPosItem &b)
+    {
+        return (a.nFile == b.nFile && a.nPos == b.nPos);
+    }
+
+    friend bool operator>(const CTxPosItem &a, const CTxPosItem &b)
+    {
+        return (a.nFile > b.nFile || (a.nFile == b.nFile && a.nPos > b.nPos));
+    }
+
+    friend bool operator<(const CTxPosItem &a, const CTxPosItem &b)
+    {
+        return (a.nFile < b.nFile || (a.nFile == b.nFile && a.nPos < b.nPos));
+    }
+
+    void SetNull()
+    {
+        CDiskBlockPos::SetNull();
+        nTx = 0;
+        nFlags = 0;
+    }
+};
 enum BlockStatus {
     //! Unused.
     BLOCK_VALID_UNKNOWN      =    0,
@@ -145,6 +227,7 @@ public:
     int nVersion;
     uint256 hashMerkleRoot;
     uint256 hashReserved;
+     unsigned int nBlockHeight;
     unsigned int nTime;
     unsigned int nBits;
     uint256 nNonce;
@@ -172,6 +255,7 @@ public:
         nVersion       = 0;
         hashMerkleRoot = uint256();
         hashReserved   = uint256();
+         nBlockHeight   = 0;
         nTime          = 0;
         nBits          = 0;
         nNonce         = uint256();
@@ -190,6 +274,7 @@ public:
         nVersion       = block.nVersion;
         hashMerkleRoot = block.hashMerkleRoot;
         hashReserved   = block.hashReserved;
+         nBlockHeight   = block.nBlockHeight;
         nTime          = block.nTime;
         nBits          = block.nBits;
         nNonce         = block.nNonce;
@@ -222,6 +307,7 @@ public:
             block.hashPrevBlock = pprev->GetBlockHash();
         block.hashMerkleRoot = hashMerkleRoot;
         block.hashReserved   = hashReserved;
+        block.nBlockHeight   = nBlockHeight;
         block.nTime          = nTime;
         block.nBits          = nBits;
         block.nNonce         = nNonce;
@@ -331,6 +417,7 @@ public:
         READWRITE(hashPrev);
         READWRITE(hashMerkleRoot);
         READWRITE(hashReserved);
+        READWRITE(nBlockHeight);
         READWRITE(nTime);
         READWRITE(nBits);
         READWRITE(nNonce);
@@ -344,6 +431,7 @@ public:
         block.hashPrevBlock   = hashPrev;
         block.hashMerkleRoot  = hashMerkleRoot;
         block.hashReserved    = hashReserved;
+        block.nBlockHeight    = nBlockHeight;
         block.nTime           = nTime;
         block.nBits           = nBits;
         block.nNonce          = nNonce;

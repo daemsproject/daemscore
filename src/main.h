@@ -15,9 +15,10 @@
 #include "chainparams.h"
 #include "coins.h"
 #include "consensus/consensus.h"
-#include "net.h"
 #include "primitives/block.h"
 #include "primitives/transaction.h"
+#include "net.h"
+
 #include "script/script.h"
 #include "script/sigcache.h"
 #include "script/standard.h"
@@ -36,30 +37,43 @@
 #include <vector>
 
 #include <boost/unordered_map.hpp>
-
+class CSqliteWrapper;
 class CBlockIndex;
 class CBlockTreeDB;
+class CDomainViewDB;
+class CTagViewDB;
+class CScriptCoinDB;
+class CScript2TxPosDB;
 class CBloomFilter;
 class CInv;
 class CScriptCheck;
 class CValidationInterface;
 class CValidationState;
-
+class CSettings;
+struct CBlockTemplate;
 struct CNodeStateStats;
 
 /** Default for -blockmaxsize and -blockminsize, which control the range of sizes the mining code will create **/
 static const unsigned int DEFAULT_BLOCK_MAX_SIZE = MAX_BLOCK_SIZE;
 static const unsigned int DEFAULT_BLOCK_MIN_SIZE = 0;
 /** Default for -blockprioritysize, maximum space for zero/low-fee transactions **/
-static const unsigned int DEFAULT_BLOCK_PRIORITY_SIZE = DEFAULT_BLOCK_MAX_SIZE / 2;
+static const unsigned int DEFAULT_BLOCK_PRIORITY_SIZE = 1;
 /** Default for accepting alerts from the P2P network. */
 static const bool DEFAULT_ALERTS = true;
+/** The maximum size for transactions we're willing to relay/mine */
+static const unsigned int MAX_STANDARD_TX_SIZE = 1050000;
+/** The maximum number of vin allowed in one transaction **/
+static const unsigned int MAX_TX_N_VIN = 1000;
+/** The maximum number of vout allowed in one transaction **/
+static const unsigned int MAX_TX_N_VOUT = 65536;
+/** The maximum allowed number of signature check operations in a block (network rule) */
+static const unsigned int MAX_BLOCK_SIGOPS = MAX_BLOCK_SIZE/50;
 /** Minimum alert priority for enabling safe mode. */
 static const int ALERT_PRIORITY_SAFE_MODE = 4000;
 /** Maximum number of signature check operations in an IsStandard() P2SH script */
-static const unsigned int MAX_P2SH_SIGOPS = 15;
+static const unsigned int MAX_P2SH_SIGOPS = 100;
 /** The maximum number of sigops we're willing to relay/mine in a single tx */
-static const unsigned int MAX_STANDARD_TX_SIGOPS = MAX_BLOCK_SIGOPS/5;
+static const unsigned int MAX_TX_SIGOPS = MAX_STANDARD_TX_SIZE/50;
 /** Default for -minrelaytxfee, minimum relay fee for transactions */
 static const unsigned int DEFAULT_MIN_RELAY_TX_FEE = 1000;
 /** Default for -maxorphantx, maximum number of orphan transactions kept in memory */
@@ -70,6 +84,10 @@ static const unsigned int MAX_BLOCKFILE_SIZE = 0x8000000; // 128 MiB
 static const unsigned int BLOCKFILE_CHUNK_SIZE = 0x1000000; // 16 MiB
 /** The pre-allocation chunk size for rev?????.dat files (since 0.8) */
 static const unsigned int UNDOFILE_CHUNK_SIZE = 0x100000; // 1 MiB
+/** Coinbase transaction outputs can only be spent after this number of new blocks (network rule) */
+static const int COINBASE_MATURITY = 40;
+/** Threshold for nLockTime: below this value it is interpreted as block number, otherwise as UNIX timestamp. */
+static const unsigned int LOCKTIME_THRESHOLD = 500000000; // Tue Nov  5 00:53:20 1985 UTC
 /** Maximum number of script-checking threads allowed */
 static const int MAX_SCRIPTCHECK_THREADS = 16;
 /** -par default (number of script-checking threads, 0 = auto) */
@@ -86,12 +104,18 @@ static const unsigned int MAX_HEADERS_RESULTS = 160;
  *  degree of disordering of blocks on disk (which make reindexing and in the future perhaps pruning
  *  harder). We'll probably want to make this a per-peer adaptive value at some point. */
 static const unsigned int BLOCK_DOWNLOAD_WINDOW = 1024;
-/** Time to wait (in seconds) between writing blocks/block index to disk. */
-static const unsigned int DATABASE_WRITE_INTERVAL = 60 * 60;
+/** Time to wait (in seconds) between writing blockchain state to disk. */
+static const unsigned int DATABASE_WRITE_INTERVAL = 360;//3600
 /** Time to wait (in seconds) between flushing chainstate to disk. */
 static const unsigned int DATABASE_FLUSH_INTERVAL = 24 * 60 * 60;
 /** Maximum length of reject messages. */
 static const unsigned int MAX_REJECT_MESSAGE_LENGTH = 111;
+// Tx entrance threshould to mempool, set at 10 blocks
+static const unsigned int MEMPOOL_ENTRANCE_THRESHOLD = DEFAULT_BLOCK_MAX_SIZE * 40;
+//max mempool size,to avoid memory overflow crash. set at 960 blocks~=1.1GB
+//static const unsigned int DEFAULT_MAX_MEMPOOL_SIZE = DEFAULT_BLOCK_MAX_SIZE * 960;
+/** Dust Threshold: outputs below this value in bytes will be rejected  */
+static const unsigned int DUST_THRESHOLD = 104; // bytes
 
 // Sanity check the magic numbers when we change them
 BOOST_STATIC_ASSERT(DEFAULT_BLOCK_MAX_SIZE <= MAX_BLOCK_SIZE);
@@ -129,7 +153,8 @@ extern bool fCoinbaseEnforcedProtectionEnabled;
 extern size_t nCoinCacheUsage;
 extern CFeeRate minRelayTxFee;
 extern bool fAlerts;
-
+extern uint64_t nMaxMempoolSize;
+extern CSettings settings;
 /** Best header we've seen so far (used for getheaders queries' starting points). */
 extern CBlockIndex *pindexBestHeader;
 
@@ -209,6 +234,13 @@ bool IsInitialBlockDownload();
 std::string GetWarnings(std::string strFor);
 /** Retrieve a transaction (from memory pool, or from disk, if possible) */
 bool GetTransaction(const uint256 &hash, CTransaction &tx, uint256 &hashBlock, bool fAllowSlow = false);
+/** Retrieve a transaction by disk position*/
+bool GetTransaction(const CDiskTxPos &postx, CTransaction &txOut, uint256 &hashBlock);
+bool GetTransaction(const CTxPosItem &postx, CTransaction &txOut);
+/**get all transactions related to the id list, with block hash*/
+bool GetTransactions (const std::vector<CScript>& vIds,std::vector<std::pair<CTransaction, uint256> >& vTxs,bool fIncludeUnconfirmed =true,bool fIncludeNoMoneyChange=true,unsigned int nOffset=0,unsigned int nNumber=1000000);
+bool GetDiskTxPoses (const std::vector<CScript>& vIds,std::vector<CTxPosItem>& vTxPosAll);
+
 /** Find the best known block, and make it the tip of the block chain */
 bool ActivateBestChain(CValidationState &state, CBlock *pblock = NULL);
 CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams);
@@ -245,6 +277,7 @@ void Misbehaving(NodeId nodeid, int howmuch);
 void FlushStateToDisk();
 /** Prune block files and flush state to disk. */
 void PruneAndFlush();
+
 
 /** (try to) add transaction to memory pool **/
 bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransaction &tx, bool fLimitFree,
@@ -327,9 +360,8 @@ unsigned int GetP2SHSigOpCount(const CTransaction& tx, const CCoinsViewCache& ma
  * This does not modify the UTXO set. If pvChecks is not NULL, script checks are pushed onto it
  * instead of being performed inline.
  */
-bool ContextualCheckInputs(const CTransaction& tx, CValidationState &state, const CCoinsViewCache &view, bool fScriptChecks,
-                           unsigned int flags, bool cacheStore, const Consensus::Params& consensusParams,
-                           std::vector<CScriptCheck> *pvChecks = NULL);
+bool CheckInputs(const CTransaction& tx,const CTransaction& tx4CheckVins, CValidationState &state, const CCoinsViewCache &view,const CBlock* pblock,bool fScriptChecks,
+                 unsigned int flags, bool cacheStore, std::vector<CScriptCheck> *pvChecks = NULL);
 
 bool NonContextualCheckInputs(const CTransaction& tx, CValidationState &state, const CCoinsViewCache &view, bool fScriptChecks,
                               unsigned int flags, bool cacheStore, const Consensus::Params& consensusParams,
@@ -337,7 +369,7 @@ bool NonContextualCheckInputs(const CTransaction& tx, CValidationState &state, c
 
 /** Apply the effects of this transaction on the UTXO set represented by view */
 void UpdateCoins(const CTransaction& tx, CValidationState &state, CCoinsViewCache &inputs, int nHeight);
-
+void GetTxPrevouts(const CTransaction&tx,const CCoinsViewCache& inputs,vector<vector<pair<CScript,uint32_t> > >& vPrevouts,bool fReverse=false);
 /** Context-independent validity checks */
 bool CheckTransaction(const CTransaction& tx, CValidationState& state, libzcash::ProofVerifier& verifier);
 bool CheckTransactionWithoutProofVerification(const CTransaction& tx, CValidationState &state);
@@ -352,7 +384,10 @@ bool IsStandardTx(const CTransaction& tx, std::string& reason);
  * specified height and time. Consensus critical.
  */
 bool IsFinalTx(const CTransaction &tx, int nBlockHeight, int64_t nBlockTime);
-
+//daems: Check if tx is in frozen period
+bool IsFrozen(const CTransaction &tx, const unsigned int nPos, int nBlockHeight=0, int64_t nBlockTime=0);
+bool IsFrozen(const CCoins &tx,const unsigned int nPos, int nBlockHeight=0, int64_t nBlockTime=0);
+uint32_t LockTimeToTime(uint32_t nLockTime
 /**
  * Check if transaction will be final in the next block to be created.
  *
@@ -438,7 +473,6 @@ bool AcceptBlock(CBlock& block, CValidationState& state, CBlockIndex **pindex, b
 bool AcceptBlockHeader(const CBlockHeader& block, CValidationState& state, CBlockIndex **ppindex= NULL);
 
 
-
 class CBlockFileInfo
 {
 public:
@@ -512,9 +546,16 @@ bool ReconsiderBlock(CValidationState& state, CBlockIndex *pindex);
 
 /** The currently-connected chain of blocks. */
 extern CChain chainActive;
-
+extern CSqliteWrapper *psqliteDB;
 /** Global variable that points to the active CCoinsView (protected by cs_main) */
 extern CCoinsViewCache *pcoinsTip;
+/** Global variable that points to the active CScript2TxPosDB (protected by cs_main) */
+extern CScript2TxPosDB *pScript2TxPosDB;
+class CBlockPosDB;
+extern CBlockPosDB *pBlockPosDB;
+extern CDomainViewDB *pDomainDBView;
+extern CTagViewDB *pTagDBView;
+extern CScriptCoinDB *pScriptCoinDBView;
 
 /** Global variable that points to the active block tree (protected by cs_main) */
 extern CBlockTreeDB *pblocktree;

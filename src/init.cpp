@@ -24,6 +24,7 @@
 #include "scheduler.h"
 #include "txdb.h"
 #include "ui_interface.h"
+#include "cc/settings.h"
 #include "util.h"
 #include "utilmoneystr.h"
 #include "validationinterface.h"
@@ -54,7 +55,7 @@ using namespace std;
 
 extern void ThreadSendAlert();
 
-ZCJoinSplit* pzcashParams = NULL;
+ZCJoinSplit* pdaemsParams = NULL;
 
 #ifdef ENABLE_WALLET
 CWallet* pwalletMain = NULL;
@@ -157,12 +158,12 @@ void Shutdown()
     /// for example if the data directory was found to be locked.
     /// Be sure that anything that writes files or flushes caches only does this if the respective
     /// module was initialized.
-    RenameThread("zcash-shutoff");
+    RenameThread("daems-shutoff");
     mempool.AddTransactionsUpdated(1);
     StopRPCThreads();
 #ifdef ENABLE_WALLET
-    if (pwalletMain)
-        pwalletMain->Flush(false);
+    //if (pwalletMain)
+        //bitdb.Flush(false);
     GenerateBitcoins(false, NULL, 0);
 #endif
     StopNode();
@@ -192,10 +193,24 @@ void Shutdown()
         pcoinsdbview = NULL;
         delete pblocktree;
         pblocktree = NULL;
+        //delete pScript2TxPosDBView;
+        //pScript2TxPosDBView = NULL; 
+        delete pScript2TxPosDB;
+        pScript2TxPosDB=NULL;
+        delete pDomainDBView;
+        pDomainDBView = NULL;    
+        delete pTagDBView;
+        pTagDBView = NULL; 
+        delete pScriptCoinDBView;
+        pScriptCoinDBView =NULL;
+        delete pBlockPosDB;
+        pBlockPosDB=NULL;
+        delete psqliteDB;
+        psqliteDB = NULL;
     }
 #ifdef ENABLE_WALLET
-    if (pwalletMain)
-        pwalletMain->Flush(true);
+    //if (pwalletMain)
+       // bitdb.Flush(true);
 #endif
 #ifndef WIN32
     try {
@@ -209,8 +224,8 @@ void Shutdown()
     delete pwalletMain;
     pwalletMain = NULL;
 #endif
-    delete pzcashParams;
-    pzcashParams = NULL;
+    delete pdaemsParams;
+    pdamesParams = NULL;
     ECC_Stop();
     LogPrintf("%s: done\n", __func__);
 }
@@ -463,7 +478,7 @@ std::string HelpMessage(HelpMessageMode mode)
 std::string LicenseInfo()
 {
     return FormatParagraph(strprintf(_("Copyright (C) 2009-%i The Bitcoin Core Developers"), COPYRIGHT_YEAR)) + "\n" +
-           FormatParagraph(strprintf(_("Copyright (C) 2015-%i The Zcash Developers"), COPYRIGHT_YEAR)) + "\n" +
+           FormatParagraph(strprintf(_("Copyright (C) 2015-%i The Daems Developers"), COPYRIGHT_YEAR)) + "\n" +
            "\n" +
            FormatParagraph(_("This is experimental software.")) + "\n" +
            "\n" +
@@ -539,7 +554,7 @@ void CleanupBlockRevFiles()
 
 void ThreadImport(std::vector<boost::filesystem::path> vImportFiles)
 {
-    RenameThread("zcash-loadblk");
+    RenameThread("daems-loadblk");
     // -reindex
     if (fReindex) {
         CImportingNow imp;
@@ -772,6 +787,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     // Make sure enough file descriptors are available
     int nBind = std::max((int)mapArgs.count("-bind") + (int)mapArgs.count("-whitebind"), 1);
     nMaxConnections = GetArg("-maxconnections", 125);
+    nMaxMempoolSize = GetArg("-maxmempoolsize", 960)*DEFAULT_BLOCK_MAX_SIZE;
     nMaxConnections = std::max(std::min(nMaxConnections, (int)(FD_SETSIZE - nBind - MIN_CORE_FILEDESCRIPTORS)), 0);
     int nFD = RaiseFileDescriptorLimit(nMaxConnections + MIN_CORE_FILEDESCRIPTORS);
     if (nFD < MIN_CORE_FILEDESCRIPTORS)
@@ -879,12 +895,12 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     }
     if (mapArgs.count("-paytxfee"))
     {
-        CAmount nFeePerK = 0;
-        if (!ParseMoney(mapArgs["-paytxfee"], nFeePerK))
+        CAmount nFeePerB = 0;
+        if (!ParseMoney(mapArgs["-paytxfee"], nFeePerB))
             return InitError(strprintf(_("Invalid amount for -paytxfee=<amount>: '%s'"), mapArgs["-paytxfee"]));
-        if (nFeePerK > nHighTransactionFeeWarning)
+        if (nFeePerB > nHighTransactionFeeWarning)
             InitWarning(_("Warning: -paytxfee is set very high! This is the transaction fee you will pay if you send a transaction."));
-        payTxFee = CFeeRate(nFeePerK, 1000);
+        payTxFee = CFeeRate(nFeePerB, 1);
         if (payTxFee < ::minRelayTxFee)
         {
             return InitError(strprintf(_("Invalid amount for -paytxfee=<amount>: '%s' (must be at least %s)"),
@@ -899,14 +915,14 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
         if (nMaxFee > nHighTransactionMaxFeeWarning)
             InitWarning(_("Warning: -maxtxfee is set very high! Fees this large could be paid on a single transaction."));
         maxTxFee = nMaxFee;
-        if (CFeeRate(maxTxFee, 1000) < ::minRelayTxFee)
+        if (CFeeRate(maxTxFee, 1) < ::minRelayTxFee)
         {
             return InitError(strprintf(_("Invalid amount for -maxtxfee=<amount>: '%s' (must be at least the minrelay fee of %s to prevent stuck transactions)"),
                                        mapArgs["-maxtxfee"], ::minRelayTxFee.ToString()));
         }
     }
     nTxConfirmTarget = GetArg("-txconfirmtarget", DEFAULT_TX_CONFIRM_TARGET);
-    bSpendZeroConfChange = GetBoolArg("-spendzeroconfchange", true);
+    bSpendZeroConfChange = false; //GetBoolArg("-spendzeroconfchange", true);
     fSendFreeTransactions = GetBoolArg("-sendfreetransactions", false);
 
     std::string strWalletFile = GetArg("-wallet", "wallet.dat");
@@ -917,6 +933,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 
     fAlerts = GetBoolArg("-alerts", DEFAULT_ALERTS);
 
+    
     // ********************************************************* Step 4: application initialization: dir lock, daemonize, pidfile, debug log
 
     // Initialize libsodium
@@ -929,13 +946,13 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 
     // Sanity check
     if (!InitSanityCheck())
-        return InitError(_("Initialization sanity check failed. Zcash is shutting down."));
+        return InitError(_("Initialization sanity check failed. Daems is shutting down."));
 
     std::string strDataDir = GetDataDir().string();
 #ifdef ENABLE_WALLET
     // Wallet file must be a plain filename without a directory
-    if (strWalletFile != boost::filesystem::basename(strWalletFile) + boost::filesystem::extension(strWalletFile))
-        return InitError(strprintf(_("Wallet %s resides outside data directory %s"), strWalletFile, strDataDir));
+    //if (strWalletFile != boost::filesystem::basename(strWalletFile) + boost::filesystem::extension(strWalletFile))
+    //    return InitError(strprintf(_("Wallet %s resides outside data directory %s"), strWalletFile, strDataDir));
 #endif
     // Make sure only a single Bitcoin process is using the data directory.
     boost::filesystem::path pathLockFile = GetDataDir() / ".lock";
@@ -956,10 +973,10 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     if (GetBoolArg("-shrinkdebugfile", !fDebug))
         ShrinkDebugFile();
     LogPrintf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-    LogPrintf("Zcash version %s (%s)\n", FormatFullVersion(), CLIENT_DATE);
+    LogPrintf("daems version %s (%s)\n", FormatFullVersion(), CLIENT_DATE);
     LogPrintf("Using OpenSSL version %s\n", SSLeay_version(SSLEAY_VERSION));
 #ifdef ENABLE_WALLET
-    LogPrintf("Using BerkeleyDB version %s\n", DbEnv::version(0, 0, 0));
+    //LogPrintf("Using BerkeleyDB version %s\n", DbEnv::version(0, 0, 0));
 #endif
     if (!fLogTimestamps)
         LogPrintf("Startup time: %s\n", DateTimeStrFormat("%Y-%m-%d %H:%M:%S", GetTime()));
@@ -1014,23 +1031,24 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     int64_t nStart;
 
     // ********************************************************* Step 5: verify wallet database integrity
+    //browser:don't need this step anymore, browser supports start running with no wallet, and import wallet at any time.
 #ifdef ENABLE_WALLET
-    if (!fDisableWallet) {
-        LogPrintf("Using wallet %s\n", strWalletFile);
-        uiInterface.InitMessage(_("Verifying wallet..."));
-
-        std::string warningString;
-        std::string errorString;
-        
-        if (!CWallet::Verify(strWalletFile, warningString, errorString))
-            return false;
-        
-        if (!warningString.empty())
-            InitWarning(warningString);
-        if (!errorString.empty())
-            return InitError(warningString);
-        
-    } // (!fDisableWallet)
+//    if (!fDisableWallet) {
+//        LogPrintf("Using wallet %s\n", strWalletFile);
+//        uiInterface.InitMessage(_("Verifying wallet..."));
+//
+//        std::string warningString;
+//        std::string errorString;
+//        
+//        if (!CWallet::Verify(strWalletFile, warningString, errorString))
+//            return false;
+//        
+//        if (!warningString.empty())
+//            InitWarning(warningString);
+//        if (!errorString.empty())
+//            return InitError(warningString);
+//        
+//    } // (!fDisableWallet)
 #endif // ENABLE_WALLET
     // ********************************************************* Step 6: network initialization
 
@@ -1194,11 +1212,26 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
                 delete pcoinsdbview;
                 delete pcoinscatcher;
                 delete pblocktree;
+                  delete psqliteDB;
 
+        
+            
+                psqliteDB=new CSqliteWrapper(GetDataDir() / "sqlitedb");
                 pblocktree = new CBlockTreeDB(nBlockTreeDBCache, false, fReindex);
                 pcoinsdbview = new CCoinsViewDB(nCoinDBCache, false, fReindex);
                 pcoinscatcher = new CCoinsViewErrorCatcher(pcoinsdbview);
                 pcoinsTip = new CCoinsViewCache(pcoinscatcher);
+                //pScript2TxPosDBView = new CScript2TxPosViewDB(nBlockTreeDBCache, false, fReindex);                
+                pScript2TxPosDB=new CScript2TxPosDB(psqliteDB,fReindex);
+               // LogPrintf("init:create dbs 1.\n");
+                pBlockPosDB=new CBlockPosDB(psqliteDB,fReindex);
+               // LogPrintf("init:create dbs 2.\n");
+                pDomainDBView = new CDomainViewDB(psqliteDB,fReindex);   
+               // LogPrintf("init:create dbs 3.\n");
+                pTagDBView = new CTagViewDB(psqliteDB,fReindex); 
+               // LogPrintf("init:create dbs 4.\n");
+                pScriptCoinDBView = new CScriptCoinDB(psqliteDB,fReindex); 
+               // LogPrintf("init:create dbs 5.\n");
 
                 if (fReindex) {
                     pblocktree->WriteReindexing(true);
@@ -1224,10 +1257,10 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
                 }
 
                 // Check for changed -txindex state
-                if (fTxIndex != GetBoolArg("-txindex", false)) {
-                    strLoadError = _("You need to rebuild the database using -reindex to change -txindex");
-                    break;
-                }
+//                if (fTxIndex != GetBoolArg("-txindex", true)) {
+//                    strLoadError = _("You need to rebuild the database using -reindex to change -txindex");
+//                    break;
+//                }
 
                 // Check for changed -prune state.  What we are concerned about is a user who has pruned blocks
                 // in the past, but is now trying to run unpruned.
@@ -1273,7 +1306,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
             }
         }
     }
-
+    settings.LoadSettings();
     // As LoadBlockIndex can take several minutes, it's possible the user
     // requested to kill the GUI during the last operation. If so, exit.
     // As the program has not fully started yet, Shutdown() is possibly overkill.
@@ -1300,27 +1333,13 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     } else {
 
         // needed to restore wallet transaction meta data after -zapwallettxes
-        std::vector<CWalletTx> vWtx;
-
-        if (GetBoolArg("-zapwallettxes", false)) {
-            uiInterface.InitMessage(_("Zapping all transactions from wallet..."));
-
-            pwalletMain = new CWallet(strWalletFile);
-            DBErrors nZapWalletRet = pwalletMain->ZapWalletTx(vWtx);
-            if (nZapWalletRet != DB_LOAD_OK) {
-                uiInterface.InitMessage(_("Error loading wallet.dat: Wallet corrupted"));
-                return false;
-            }
-
-            delete pwalletMain;
-            pwalletMain = NULL;
-        }
+        //std::vector<CWalletTx> vWtx;
 
         uiInterface.InitMessage(_("Loading wallet..."));
 
         nStart = GetTimeMillis();
         bool fFirstRun = true;
-        pwalletMain = new CWallet(strWalletFile);
+        pwalletMain = new CWallet();
         DBErrors nLoadWalletRet = pwalletMain->LoadWallet(fFirstRun);
         if (nLoadWalletRet != DB_LOAD_OK)
         {
@@ -1365,11 +1384,10 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
             // Create new keyUser and set as default key
             RandAddSeedPerfmon();
 
-            CPubKey newDefaultKey;
-            if (pwalletMain->GetKeyFromPool(newDefaultKey)) {
-                pwalletMain->SetDefaultKey(newDefaultKey);
-                if (!pwalletMain->SetAddressBook(pwalletMain->vchDefaultKey.GetID(), "", "receive"))
-                    strErrors << _("Cannot write default address") << "\n";
+            if (pwalletMain->CreateNew()) {  
+                //LogPrintf("loadwallet5 \n");
+//                if (!pwalletMain->SetAddressBook(pwalletMain->id, "", "receive"))
+//                    strErrors << _("Cannot write default address") << "\n";
             }
 
             pwalletMain->SetBestChain(chainActive.GetLocator());
@@ -1377,60 +1395,53 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 
         LogPrintf("%s", strErrors.str());
         LogPrintf(" wallet      %15dms\n", GetTimeMillis() - nStart);
-
         RegisterValidationInterface(pwalletMain);
 
-        CBlockIndex *pindexRescan = chainActive.Tip();
-        if (GetBoolArg("-rescan", false))
-        {
-            pwalletMain->ClearNoteWitnessCache();
-            pindexRescan = chainActive.Genesis();
-        }
-        else
-        {
-            CWalletDB walletdb(strWalletFile);
-            CBlockLocator locator;
-            if (walletdb.ReadBestBlock(locator))
-                pindexRescan = FindForkInGlobalIndex(chainActive, locator);
-            else
-                pindexRescan = chainActive.Genesis();
-        }
-        if (chainActive.Tip() && chainActive.Tip() != pindexRescan)
-        {
-            uiInterface.InitMessage(_("Rescanning..."));
-            LogPrintf("Rescanning last %i blocks (from block %i)...\n", chainActive.Height() - pindexRescan->nHeight, pindexRescan->nHeight);
-            nStart = GetTimeMillis();
-            pwalletMain->ScanForWalletTransactions(pindexRescan, true);
-            LogPrintf(" rescan      %15dms\n", GetTimeMillis() - nStart);
-            pwalletMain->SetBestChain(chainActive.GetLocator());
-            nWalletDBUpdated++;
-
-            // Restore wallet transaction metadata after -zapwallettxes=1
-            if (GetBoolArg("-zapwallettxes", false) && GetArg("-zapwallettxes", "1") != "2")
-            {
-                CWalletDB walletdb(strWalletFile);
-
-                BOOST_FOREACH(const CWalletTx& wtxOld, vWtx)
-                {
-                    uint256 hash = wtxOld.GetHash();
-                    std::map<uint256, CWalletTx>::iterator mi = pwalletMain->mapWallet.find(hash);
-                    if (mi != pwalletMain->mapWallet.end())
-                    {
-                        const CWalletTx* copyFrom = &wtxOld;
-                        CWalletTx* copyTo = &mi->second;
-                        copyTo->mapValue = copyFrom->mapValue;
-                        copyTo->vOrderForm = copyFrom->vOrderForm;
-                        copyTo->nTimeReceived = copyFrom->nTimeReceived;
-                        copyTo->nTimeSmart = copyFrom->nTimeSmart;
-                        copyTo->fFromMe = copyFrom->fFromMe;
-                        copyTo->strFromAccount = copyFrom->strFromAccount;
-                        copyTo->nOrderPos = copyFrom->nOrderPos;
-                        copyTo->WriteToDisk(&walletdb);
-                    }
-                }
-            }
-        }
-        pwalletMain->SetBroadcastTransactions(GetBoolArg("-walletbroadcast", true));
+//        CBlockIndex *pindexRescan = chainActive.Tip();
+//        if (GetBoolArg("-rescan", false))
+//            pindexRescan = chainActive.Genesis();
+//        else
+//        {
+//            CWalletDB walletdb(strWalletFile);
+//            CBlockLocator locator;
+//            if (walletdb.ReadBestBlock(locator))
+//                pindexRescan = FindForkInGlobalIndex(chainActive, locator);
+//            else
+//                pindexRescan = chainActive.Genesis();
+//        }
+//        if (chainActive.Tip() && chainActive.Tip() != pindexRescan)
+//        {
+//            uiInterface.InitMessage(_("Rescanning..."));
+//            LogPrintf("Rescanning last %i blocks (from block %i)...\n", chainActive.Height() - pindexRescan->nHeight, pindexRescan->nHeight);
+//            nStart = GetTimeMillis();
+//            pwalletMain->ScanForWalletTransactions(pindexRescan, true);
+//            LogPrintf(" rescan      %15dms\n", GetTimeMillis() - nStart);
+//            pwalletMain->SetBestChain(chainActive.GetLocator());
+//            nWalletDBUpdated++;
+//
+//            // Restore wallet transaction metadata after -zapwallettxes=1
+//            if (GetBoolArg("-zapwallettxes", false) && GetArg("-zapwallettxes", "1") != "2")
+//            {
+//                BOOST_FOREACH(const CWalletTx& wtxOld, vWtx)
+//                {
+//                    uint256 hash = wtxOld.GetHash();
+//                    std::map<uint256, CWalletTx>::iterator mi = pwalletMain->mapWallet.find(hash);
+//                    if (mi != pwalletMain->mapWallet.end())
+//                    {
+//                        const CWalletTx* copyFrom = &wtxOld;
+//                        CWalletTx* copyTo = &mi->second;
+//                        copyTo->mapValue = copyFrom->mapValue;
+//                        copyTo->vOrderForm = copyFrom->vOrderForm;
+//                        copyTo->nTimeReceived = copyFrom->nTimeReceived;
+//                        copyTo->nTimeSmart = copyFrom->nTimeSmart;
+//                        copyTo->fFromMe = copyFrom->fFromMe;
+//                        copyTo->strFromAccount = copyFrom->strFromAccount;
+//                        copyTo->nOrderPos = copyFrom->nOrderPos;
+//                        copyTo->WriteToDisk();
+//                    }
+//                }
+//            }
+        //}
     } // (!fDisableWallet)
 #else // ENABLE_WALLET
     LogPrintf("No wallet support compiled in!\n");
@@ -1487,7 +1498,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     LogPrintf("mapBlockIndex.size() = %u\n",   mapBlockIndex.size());
     LogPrintf("nBestHeight = %d\n",                   chainActive.Height());
 #ifdef ENABLE_WALLET
-    LogPrintf("setKeyPool.size() = %u\n",      pwalletMain ? pwalletMain->setKeyPool.size() : 0);
+    //LogPrintf("setKeyPool.size() = %u\n",      pwalletMain ? pwalletMain->setKeyPool.size() : 0);
     LogPrintf("mapWallet.size() = %u\n",       pwalletMain ? pwalletMain->mapWallet.size() : 0);
     LogPrintf("mapAddressBook.size() = %u\n",  pwalletMain ? pwalletMain->mapAddressBook.size() : 0);
 #endif
@@ -1517,7 +1528,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
         pwalletMain->ReacceptWalletTransactions();
 
         // Run a thread to flush wallet periodically
-        threadGroup.create_thread(boost::bind(&ThreadFlushWalletDB, boost::ref(pwalletMain->strWalletFile)));
+        //threadGroup.create_thread(boost::bind(&ThreadFlushWalletDB, boost::ref(pwalletMain->strWalletFile)));
     }
 #endif
 

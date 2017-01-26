@@ -11,11 +11,15 @@
 #include "script/script.h"
 #include "script/standard.h"
 #include "sync.h"
+#include "hash.h"
 #include "zcash/Address.hpp"
 #include "zcash/NoteEncryption.hpp"
 
 #include <boost/signals2/signal.hpp>
 #include <boost/variant.hpp>
+
+class CScript;
+class CScriptID;
 
 /** A virtual base class for key stores */
 class CKeyStore
@@ -28,8 +32,9 @@ public:
     virtual ~CKeyStore() {}
 
     //! Add a key to the store.
-    virtual bool AddKeyPubKey(const CKey &key, const CPubKey &pubkey) =0;
-    virtual bool AddKey(const CKey &key);
+    virtual bool AddKeyPubKey(const CKey &key, const CPubKey &pubkey) =0;    
+    
+    virtual bool AddKey(const CKey &key){return false;};
 
     //! Check whether a key corresponding to a given address is present in the store.
     virtual bool HaveKey(const CKeyID &address) const =0;
@@ -42,22 +47,10 @@ public:
     virtual bool HaveCScript(const CScriptID &hash) const =0;
     virtual bool GetCScript(const CScriptID &hash, CScript& redeemScriptOut) const =0;
 
-    //! Support for Watch-only addresses
-    virtual bool AddWatchOnly(const CScript &dest) =0;
-    virtual bool RemoveWatchOnly(const CScript &dest) =0;
-    virtual bool HaveWatchOnly(const CScript &dest) const =0;
-    virtual bool HaveWatchOnly() const =0;
-
-    //! Add a spending key to the store.
-    virtual bool AddSpendingKey(const libzcash::SpendingKey &sk) =0;
-
-    //! Check whether a spending key corresponding to a given payment address is present in the store.
-    virtual bool HaveSpendingKey(const libzcash::PaymentAddress &address) const =0;
-    virtual bool GetSpendingKey(const libzcash::PaymentAddress &address, libzcash::SpendingKey& skOut) const =0;
-    virtual void GetPaymentAddresses(std::set<libzcash::PaymentAddress> &setAddress) const =0;
 };
 
 typedef std::map<CKeyID, CKey> KeyMap;
+typedef std::map<CPubKey,std::map<CPubKey, CKey> > SharedKeyMap;
 typedef std::map<CScriptID, CScript > ScriptMap;
 typedef std::set<CScript> WatchOnlySet;
 typedef std::map<libzcash::PaymentAddress, libzcash::SpendingKey> SpendingKeyMap;
@@ -67,15 +60,46 @@ typedef std::map<libzcash::PaymentAddress, ZCNoteDecryption> NoteDecryptorMap;
 class CBasicKeyStore : public CKeyStore
 {
 protected:
-    KeyMap mapKeys;
+    
     ScriptMap mapScripts;
     WatchOnlySet setWatchOnly;
     SpendingKeyMap mapSpendingKeys;
     NoteDecryptorMap mapNoteDecryptors;
 
 public:
-    bool AddKeyPubKey(const CKey& key, const CPubKey &pubkey);
-    bool HaveKey(const CKeyID &address) const
+    CKey baseKey;
+    //keystep for extended keys,can be encrypted
+    CKey stepKey;
+    uint32_t nStartTime;
+    uint64_t nMaxSteps;        
+    KeyMap mapKeys;
+    SharedKeyMap mapSharedKeys;
+    bool fHasPriv;
+    bool fHasPub;
+    bool fHasStepPub;
+    bool fHasStepPriv;
+    ScriptMap mapScripts;
+    CBasicKeyStore()
+    {
+        nMaxSteps=0;
+        nStartTime=0;
+        fHasPriv=false;
+        fHasPub=false;
+        fHasStepPub=false;
+        fHasStepPriv=false;
+    }
+    bool GetSharedKey(const CPubKey IDLocal,const CPubKey IDForeign,CKey& sharedKey);
+    bool HasSharedKey(const CPubKey IDLocal,const CPubKey IDForeign)const;
+    
+    void ClearSharedKey(const CPubKey IDLocal=CPubKey(),const CPubKey IDForeign=CPubKey());
+
+    
+    void StoreSharedKey(const CPubKey IDLocal,const CPubKey IDForeign,const CKey& sharedKey);
+    
+    bool HavePriv()const{return fHasPriv;};
+    bool HavePub()const{return fHasPub;};
+    bool CanExtendKeys()const{return fHasPub&&fHasStepPub;};
+    bool HaveKey(const CPubKey &address) const
     {
         bool result;
         {
@@ -97,51 +121,13 @@ public:
             }
         }
     }
-    bool GetKey(const CKeyID &address, CKey &keyOut) const
-    {
-        {
-            LOCK(cs_KeyStore);
-            KeyMap::const_iterator mi = mapKeys.find(address);
-            if (mi != mapKeys.end())
-            {
-                keyOut = mi->second;
-                return true;
-            }
-        }
-        return false;
-    }
+    bool GetKey(const CPubKey &address, CKey& keyOut) const;
+    bool GetExtendPubKey(const uint64_t nStep,CPubKey& pub)const;
     virtual bool AddCScript(const CScript& redeemScript);
     virtual bool HaveCScript(const CScriptID &hash) const;
     virtual bool GetCScript(const CScriptID &hash, CScript& redeemScriptOut) const;
 
-    virtual bool AddWatchOnly(const CScript &dest);
-    virtual bool RemoveWatchOnly(const CScript &dest);
-    virtual bool HaveWatchOnly(const CScript &dest) const;
-    virtual bool HaveWatchOnly() const;
-
-    bool AddSpendingKey(const libzcash::SpendingKey &sk);
-    bool HaveSpendingKey(const libzcash::PaymentAddress &address) const
-    {
-        bool result;
-        {
-            LOCK(cs_SpendingKeyStore);
-            result = (mapSpendingKeys.count(address) > 0);
-        }
-        return result;
-    }
-    bool GetSpendingKey(const libzcash::PaymentAddress &address, libzcash::SpendingKey &skOut) const
-    {
-        {
-            LOCK(cs_SpendingKeyStore);
-            SpendingKeyMap::const_iterator mi = mapSpendingKeys.find(address);
-            if (mi != mapSpendingKeys.end())
-            {
-                skOut = mi->second;
-                return true;
-            }
-        }
-        return false;
-    }
+    
     bool GetNoteDecryptor(const libzcash::PaymentAddress &address, ZCNoteDecryption &decOut) const
     {
         {

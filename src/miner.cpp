@@ -20,6 +20,9 @@
 #include "timedata.h"
 #include "util.h"
 #include "utilmoneystr.h"
+#include "base58.h"
+#include "utilstrencodings.h"
+#include "core_io.h"
 #ifdef ENABLE_WALLET
 #include "crypto/equihash.h"
 #include "wallet/wallet.h"
@@ -47,6 +50,9 @@ using namespace std;
 // The COrphan class keeps track of these 'temporary orphans' while
 // CreateBlock is figuring out which transactions to include.
 //
+
+static uint64_t nPoolMiningResult=0;
+static bool fPoolMiningFinished=false;
 class COrphan
 {
 public:
@@ -98,7 +104,7 @@ void UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParams, 
         pblock->nBits = GetNextWorkRequired(pindexPrev, pblock, consensusParams);
 }
 
-CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
+CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn,const int nHeightIn)
 {
     const CChainParams& chainparams = Params();
     // Create new block
@@ -106,11 +112,32 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
     if(!pblocktemplate.get())
         return NULL;
     CBlock *pblock = &pblocktemplate->block; // pointer for convenience
+    CBlockIndex* pindexPrev;
+    if(nHeightIn<=0)
+    {
+        pindexPrev = chainActive.Tip();
 
+    }
+    else
+        pindexPrev = chainActive[nHeightIn-1];
+    int nHeight = pindexPrev->nBlockHeight + 1;
+    pblock->nBlockHeight=nHeight;
+    UpdateTime(pblock, pindexPrev);
     // -regtest only: allow overriding block.nVersion with
     // -blockversion=N to test forking scenarios
     if (Params().MineBlocksOnDemand())
         pblock->nVersion = GetArg("-blockversion", pblock->nVersion);
+
+    // Create coinbase tx
+    CMutableTransaction txNew;
+    txNew.vin.resize(1);
+    txNew.vin[0].prevout.SetNull();
+    txNew.vin[0].prevout.n=nHeight;    
+    txNew.vin[0].scriptSig=CScript()<<0;
+    txNew.vout.resize(1);
+    txNew.vout[0].scriptPubKey = scriptPubKeyIn;
+    
+    txNew.vout[0].nLockTime=nHeight +COINBASE_MATURITY;
 
     // Add dummy coinbase tx as first transaction
     pblock->vtx.push_back(CTransaction());
@@ -131,12 +158,17 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
     // until there are no more or the block reaches this size:
     unsigned int nBlockMinSize = GetArg("-blockminsize", DEFAULT_BLOCK_MIN_SIZE);
     nBlockMinSize = std::min(nBlockMaxSize, nBlockMinSize);
-
+    //min tx size to judge finish of block.set this a little bit higher so as to make mining faster
+    unsigned int nMinTxSize=200;
     // Collect memory pool transactions into the block
     CAmount nFees = 0;
-
+    uint64_t nBlockSize = 1000;
+    uint64_t nBlockTx = 0;
+    int nBlockSigOps = 100;
     {
         LOCK2(cs_main, mempool.cs);
+                if(nHeightIn<=0)
+        {
         CBlockIndex* pindexPrev = chainActive.Tip();
         const int nHeight = pindexPrev->nHeight + 1;
         pblock->nTime = GetAdjustedTime();
@@ -172,6 +204,10 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
                 // Read prev transaction
                 if (!view.HaveCoins(txin.prevout.hash))
                 {
+                        //don't take in transactions with prevout in mempool,because txs are queued by fee, not sequence, we can't guarantee it's
+                        //previous tx can be included in this block
+                        fMissingInputs = true;
+                        break;
                     // This should never happen; all transactions in the memory
                     // pool should connect to either transactions in the chain
                     // or other transactions in the memory pool.
@@ -199,7 +235,8 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
                 }
                 const CCoins* coins = view.AccessCoins(txin.prevout.hash);
                 assert(coins);
-
+                     if ((int64_t)coins->vout[txin.prevout.n].nLockTime >= ((int64_t)coins->vout[txin.prevout.n].nLockTime < LOCKTIME_THRESHOLD ? (int64_t)nHeight :  std::min((int64_t)pindexPrev->nTime,std::max((int64_t)pindexPrev->GetMedianTimePast()+1, (int64_t)GetAdjustedTime()))))
+                         fMissingInputs = true;
                 CAmount nValueIn = coins->vout[txin.prevout.n].nValue;
                 nTotalIn += nValueIn;
 
@@ -278,18 +315,15 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
 
             if (!view.HaveInputs(tx))
                 continue;
-
-            CAmount nTxFees = view.GetValueIn(tx)-tx.GetValueOut();
-
+                CAmount nTxFees = tx.GetFee();
             nTxSigOps += GetP2SHSigOpCount(tx, view);
             if (nBlockSigOps + nTxSigOps >= MAX_BLOCK_SIGOPS)
                 continue;
-
             // Note that flags: we don't want to set mempool/IsStandard()
             // policy here, but we still have to ensure that the block we
             // create only contains transactions that are valid in new blocks.
             CValidationState state;
-            if (!ContextualCheckInputs(tx, state, view, true, MANDATORY_SCRIPT_VERIFY_FLAGS, true, Params().GetConsensus()))
+            if (!ContextualCheckInputs(tx, tx,state, view, pblock,true, MANDATORY_SCRIPT_VERIFY_FLAGS, true, Params().GetConsensus()))
                 continue;
 
             UpdateCoins(tx, state, view, nHeight);
@@ -302,11 +336,8 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
             ++nBlockTx;
             nBlockSigOps += nTxSigOps;
             nFees += nTxFees;
-
-            if (fPrintPriority)
-            {
-                LogPrintf("priority %.1f fee %s txid %s\n",
-                    dPriority, feeRate.ToString(), tx.GetHash().ToString());
+                if (nBlockSize+nMinTxSize>nBlockMaxSize) 
+                    break;
             }
 
             // Add transactions that depend on this one to the priority queue
@@ -322,37 +353,27 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
                             vecPriority.push_back(TxPriority(porphan->dPriority, porphan->feeRate, porphan->ptx));
                             std::push_heap(vecPriority.begin(), vecPriority.end(), comparer);
                         }
-                    }
-                }
-            }
-        }
-
+        CBlock prevBlock;
+        ReadBlockFromDisk(prevBlock, pindexPrev);
+        CAmount prevCoinbaseFee=prevBlock.vtx[0].GetFee();
         nLastBlockTx = nBlockTx;
         nLastBlockSize = nBlockSize;
         LogPrintf("CreateNewBlock(): total size %u\n", nBlockSize);
 
-        // Create coinbase tx
-        CMutableTransaction txNew;
-        txNew.vin.resize(1);
-        txNew.vin[0].prevout.SetNull();
-        txNew.vout.resize(1);
-        txNew.vout[0].scriptPubKey = scriptPubKeyIn;
-        txNew.vout[0].nValue = GetBlockSubsidy(nHeight, chainparams.GetConsensus());
-
-        if ((nHeight > 0) && (nHeight <= chainparams.GetConsensus().GetLastFoundersRewardBlockHeight())) {
-            // Founders reward is 20% of the block subsidy
-            auto vFoundersReward = txNew.vout[0].nValue / 5;
-            // Take some reward away from us
-            txNew.vout[0].nValue -= vFoundersReward;
-
-            // And give it to the founders
-            txNew.vout.push_back(CTxOut(vFoundersReward, chainparams.GetFoundersRewardScriptAtHeight(nHeight)));
+        // Compute final coinbase transaction.
+        CAmount coinbaseInput=GetBlockValue(nHeight, nFees)+prevCoinbaseFee;        
+        txNew.vin[0].prevout.nValue = coinbaseInput;        
+        txNew.vout[0].nValue = 0;
+        CAmount coinbaseFee=CFeeRate(DEFAULT_TRANSACTION_FEE).GetFee(txNew.GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION)+10);
+        CAmount coinbaseOutput=coinbaseInput-coinbaseFee;
+    if(coinbaseOutput<=minRelayTxFee.GetFee(DUST_THRESHOLD))
+    {
+         if(nHeightIn<=0)
+            return NULL;  
+            txNew.vout[0].nValue =0;
         }
-
-        // Add fees
-        txNew.vout[0].nValue += nFees;
-        txNew.vin[0].scriptSig = CScript() << nHeight << OP_0;
-
+    else
+        txNew.vout[0].nValue =coinbaseOutput;
         pblock->vtx[0] = txNew;
         pblocktemplate->vTxFees[0] = -nFees;
 
@@ -372,10 +393,13 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
         pblocktemplate->vTxSigOps[0] = GetLegacySigOpCount(pblock->vtx[0]);
 
         CValidationState state;
-        if (!TestBlockValidity(state, *pblock, pindexPrev, false, false))
-            throw std::runtime_error("CreateNewBlock(): TestBlockValidity failed");
+        if (nHeightIn<=0&&!TestBlockValidity(state, *pblock, pindexPrev, false, false))
+        {
+            LogPrintf("CreateNewBlock() : TestBlockValidity failed \n" );
+            return NULL;
+          //  throw std::runtime_error("CreateNewBlock() : TestBlockValidity failed");
     }
-
+    }
     return pblocktemplate.release();
 }
 
@@ -389,32 +413,41 @@ void IncrementExtraNonce(CBlock* pblock, CBlockIndex* pindexPrev, unsigned int& 
         hashPrevBlock = pblock->hashPrevBlock;
     }
     ++nExtraNonce;
-    unsigned int nHeight = pindexPrev->nHeight+1; // Height first in coinbase required for block.version=2
+//    unsigned int nHeight = pindexPrev->nHeight+1; // Height first in coinbase required for block.version=2
     CMutableTransaction txCoinbase(pblock->vtx[0]);
-    txCoinbase.vin[0].scriptSig = (CScript() << nHeight << CScriptNum(nExtraNonce)) + COINBASE_FLAGS;
+    
+    txCoinbase.vout[0].strContent = strprintf("%s",nExtraNonce);
+    //txCoinbase.vin[0].scriptSig = (CScript() << nHeight << CScriptNum(nExtraNonce)) + COINBASE_FLAGS;
     assert(txCoinbase.vin[0].scriptSig.size() <= 100);
 
     pblock->vtx[0] = txCoinbase;
     pblock->hashMerkleRoot = pblock->BuildMerkleTree();
 }
-
+static boost::thread_group* minerThreads = NULL;
 #ifdef ENABLE_WALLET
 //////////////////////////////////////////////////////////////////////////////
 //
 // Internal miner
 //
+double dHashesPerSec = 0.0;
+int64_t nHPSTimerStart = 0;
 
 CBlockTemplate* CreateNewBlockWithKey(CReserveKey& reservekey)
 {
-    CPubKey pubkey;
-    if (!reservekey.GetReservedKey(pubkey))
-        return NULL;
-
-    CScript scriptPubKey = CScript() << ToByteVector(pubkey) << OP_CHECKSIG;
-    return CreateNewBlock(scriptPubKey);
+//    CPubKey pubkey;
+//    if (!reservekey.GetReservedKey(pubkey))
+//        return NULL;
+//
+    CBitcoinAddress address;
+    address.Set(miningID);
+    CScript scriptPubKey = GetScriptForDestination(address.Get());
+    CBlockTemplate* pBlockTemplate=NULL;
+    while(pBlockTemplate==NULL)
+        pBlockTemplate=CreateNewBlock(scriptPubKey);
+    return pBlockTemplate;
 }
 
-static bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
+bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CPubKey& miningID,bool fExtendID)
 {
     LogPrintf("%s\n", pblock->ToString());
     LogPrintf("generated %s\n", FormatMoney(pblock->vtx[0].vout[0].nValue));
@@ -423,11 +456,11 @@ static bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CReserveKey& rese
     {
         LOCK(cs_main);
         if (pblock->hashPrevBlock != chainActive.Tip()->GetBlockHash())
-            return error("ZcashMiner: generated block is stale");
+            return error("DamesMiner: generated block is stale");
     }
 
     // Remove key from key pool
-    reservekey.KeepKey();
+    //reservekey.KeepKey();
 
     // Track how many getdata requests this block gets
     {
@@ -445,17 +478,21 @@ static bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CReserveKey& rese
     return true;
 }
 
-void static BitcoinMiner(CWallet *pwallet)
+void BitcoinMiner(CWallet *pwallet,bool fExtendID)
 {
-    LogPrintf("ZcashMiner started\n");
+    LogPrintf("DaemsMiner started\n");
     SetThreadPriority(THREAD_PRIORITY_LOWEST);
-    RenameThread("zcash-miner");
+    RenameThread("daems-miner");
     const CChainParams& chainparams = Params();
 
     // Each thread has its own key and counter
     CReserveKey reservekey(pwallet);
     unsigned int nExtraNonce = 0;
-
+    CPubKey miningID;
+    if(fExtendID)
+        pwallet->GenerateNewKey(miningID);
+    else
+        miningID=pwallet->GetID();
     unsigned int n = chainparams.EquihashN();
     unsigned int k = chainparams.EquihashK();
 
@@ -498,11 +535,16 @@ void static BitcoinMiner(CWallet *pwallet)
             unique_ptr<CBlockTemplate> pblocktemplate(CreateNewBlockWithKey(reservekey));
             if (!pblocktemplate.get())
             {
-                LogPrintf("Error in ZcashMiner: Keypool ran out, please call keypoolrefill before restarting the mining thread\n");
-                return;
+                MilliSleep(10);
+                continue;
             }
             CBlock *pblock = &pblocktemplate->block;
-            IncrementExtraNonce(pblock, pindexPrev, nExtraNonce);
+            //IncrementExtraNonce(pblock, pindexPrev, nExtraNonce);
+            pblock->hashMerkleRoot = pblock->BuildMerkleTree();
+            //pblock->nBlockHeight=pindexPrev->nBlockHeight+1;
+            unsigned int rounds=(unsigned int)int(16*sqrt((double)pblock->nBlockHeight));
+            LogPrintf("Running FaicoinMiner with %u transactions in block (%u bytes),%u rounds mhash\n", pblock->vtx.size(),
+                ::GetSerializeSize(*pblock, SER_NETWORK, PROTOCOL_VERSION),rounds);            
 
             LogPrintf("Running ZcashMiner with %u transactions in block (%u bytes)\n", pblock->vtx.size(),
                 ::GetSerializeSize(*pblock, SER_NETWORK, PROTOCOL_VERSION));
@@ -660,9 +702,10 @@ void static BitcoinMiner(CWallet *pwallet)
     c.disconnect();
 }
 
-void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads)
+void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads,bool fExtendID)
 {
     static boost::thread_group* minerThreads = NULL;
+
 
     if (nThreads < 0) {
         // In regtest threads defaults to 1
@@ -675,6 +718,7 @@ void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads)
     if (minerThreads != NULL)
     {
         minerThreads->interrupt_all();
+        fPoolMiningFinished=true;
         delete minerThreads;
         minerThreads = NULL;
     }
@@ -684,7 +728,209 @@ void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads)
 
     minerThreads = new boost::thread_group();
     for (int i = 0; i < nThreads; i++)
-        minerThreads->create_thread(boost::bind(&BitcoinMiner, pwallet));
+        minerThreads->create_thread(boost::bind(&BitcoinMiner, pwallet,fExtendID));
 }
 
+#endif // ENABLE_WALLET
+
+static CCriticalSection pool_mine_cs1;
+static CCriticalSection pool_mine_cs2;
+static CCriticalSection cs_minespeed;
+void PoolMiningThread(CBlockHeader& block,uint64_t nNonceBegin,uint64_t nNonceEnd,uint32_t nbit)
+{
+    //LogPrintf("FaicoinpoolMiner started header:nbit%i time%i, height%i\n",block.nBits,block.nTime,block.nBlockHeight);
+    SetThreadPriority(THREAD_PRIORITY_LOWEST);
+    RenameThread("faicoin-poolminer");
+    CBlockHeader block1=block;   
+    block1.nNonce=nNonceBegin==0?1:nNonceBegin;
+
+    try {
+        
+            
+
+           
+            //unsigned int rounds=(unsigned int)int(16*sqrt((double)block1.nBlockHeight));
+            //LogPrintf("Running FaicoinMiner with %u rounds mhash\n", rounds);            
+            
+            //
+            // Search
+            //
+            int64_t nStart = GetTime();
+            //int64_t nTimePrev = nStart;
+            uint256 hashTarget = uint256().SetCompact(nbit==0?block1.nBits:nbit);
+            //LogPrintf("hashTarget:%s\n", hashTarget.GetHex()); 
+            uint256 thash;
+            while (true) {
+                unsigned int nHashesDone = 0;
+                //block1.nNonce += 1;
+                while(true)
+                {
+                    boost::this_thread::interruption_point();
+                    thash=block1.GetHash();
+                    
+                    mixHash(&thash,(unsigned int)block1.nBlockHeight);
+                    //LogPrintf("hash:%s\n", thash.GetHex()); 
+                    if (thash <= hashTarget)
+                    {
+                        // Found a solution
+                        SetThreadPriority(THREAD_PRIORITY_NORMAL);
+                        //LogPrintf("FaicoinpoolMiner:\n");
+                        LogPrintf("proof-of-work found  \n  powhash: %s  \ntarget: %s\n nonce:%lld\n", thash.GetHex(), hashTarget.GetHex(),block1.nNonce);
+//                        thash=block1.GetHash();
+//                        mixHash(&thash,(unsigned int)block1.nBlockHeight);
+//                    LogPrintf("CBlock(hash=%s, ver=%d, hashPrevBlock=%s, hashMerkleRoot=%s, nBlockHeight=%d, nTime=%u, nBits=%08x, nNonce=%u)\n",
+//        block1.GetHash().ToString(),
+//        block1.nVersion,
+//        block1.hashPrevBlock.ToString(),
+//        block1.hashMerkleRoot.ToString(),
+//        block1.nBlockHeight,
+//        block1.nTime, block1.nBits, block1.nNonce
+//        );
+//                        LogPrintf("recalc powhash:%s \n",thash.GetHex());
+                        //TODO feedback 
+                        SetThreadPriority(THREAD_PRIORITY_LOWEST);
+                        
+                        {
+                            LOCK(pool_mine_cs1);     
+                        nPoolMiningResult=block1.nNonce ;
+                            // throw boost::thread_interrupted();
+                        }
+                           return;
+                    }
+                    block1.nNonce += 1;
+                    nHashesDone += 1;
+                    if ((block1.nNonce & 0xFF) == 0)
+                        break;
+                }
+
+                // Meter hashes/sec
+                static int64_t nHashCounter;
+                if (nHPSTimerStart == 0)
+                {
+                    nHPSTimerStart = GetTimeMillis();
+                    nHashCounter = 0;
+                }
+                else
+                    nHashCounter += nHashesDone;
+                if (GetTimeMillis() - nHPSTimerStart > 4000)
+                {
+                    
+                    {
+                        LOCK(cs_minespeed);
+                        if (GetTimeMillis() - nHPSTimerStart > 4000)
+                        {
+                            dHashesPerSec = 1000.0 * nHashCounter / (GetTimeMillis() - nHPSTimerStart);
+                            nHPSTimerStart = GetTimeMillis();
+                            nHashCounter = 0;
+                            static int64_t nLogTime;
+                            if (GetTime() - nLogTime > 30 * 60)
+                            {
+                                nLogTime = GetTime();
+                                LogPrintf("hashmeter %6.3f khash/s\n", dHashesPerSec/1000.0);
+                            }
+                        }
+                    }
+                }
+//                if(GetTime()-nTimePrev>1)
+//                {
+//                    block.nTime++;
+//                    nTimePrev=GetTime();
+//                   
+//                    
+//                }
+                // Check for stop or if block needs to be rebuilt
+                
+                
+                if (block1.nNonce > nNonceEnd||(GetTime()-nStart)>60)
+                {
+                    //static CCriticalSection cs;
+                    {
+                        LOCK(pool_mine_cs2);
+                        fPoolMiningFinished=true;
+                        //LogPrintf("FaicoinpoolMiner finished:\n");
+                        
+                    }
+                    return;// throw boost::thread_interrupted();
+                }
+                
+            }
+        
+    }
+    catch (boost::thread_interrupted)
+    {
+        //LogPrintf("FaicoinMiner terminated\n");
+       // if(pwallet!=pwalletMain&&pwallet!=NULL)
+         //   delete pwallet;
+        throw;
+    }
+}
+uint64_t PoolMiner(bool fGenerate,CBlockHeader block,uint64_t nNonceBegin,uint64_t nNonceEnd,int nThreads,uint32_t nbit)
+{
+    
+    if (nThreads < 0) {
+        // In regtest threads defaults to 1
+        if (Params().DefaultMinerThreads())
+            nThreads = Params().DefaultMinerThreads();
+        else
+            nThreads = boost::thread::hardware_concurrency();
+    }
+     //LogPrintf("PoolMiner nThreads %i\n",nThreads);
+    if (minerThreads != NULL)
+    {
+        minerThreads->interrupt_all();
+        delete minerThreads;
+        minerThreads = NULL;
+    }
+
+    if (nThreads == 0 || !fGenerate)
+        return 0;
+
+    minerThreads = new boost::thread_group();
+    uint64_t step=(uint64_t)((nNonceEnd-nNonceBegin)/nThreads);
+    //LogPrintf("PoolMiner step %i\n",step);
+    {
+        LOCK2(pool_mine_cs1,pool_mine_cs2);
+        fPoolMiningFinished=false;
+        nPoolMiningResult=0;
+    }
+    for (int i = 0; i < nThreads; i++)
+        minerThreads->create_thread(boost::bind(&PoolMiningThread, block,nNonceBegin+step*i,nNonceBegin+step*(i+1),nbit));
+    
+    while(true)
+    {
+        MilliSleep(10);
+        
+           uint64_t pmr=0;
+            {
+                LOCK(pool_mine_cs1);
+                pmr=nPoolMiningResult;
+            }
+            if(pmr>0)
+            {
+                LogPrintf("PoolMiner nPoolMiningResult %lld\n",pmr);
+                minerThreads->interrupt_all();
+                delete minerThreads;
+                minerThreads = NULL;
+                return pmr;
+            }
+        
+        //LogPrintf("PoolMiner minerThreads %i\n",minerThreads->size());
+           bool fpmf=false;
+        {
+            LOCK(pool_mine_cs2);
+            fpmf=fPoolMiningFinished;
+        }
+            if(fpmf)
+            {
+
+                //LogPrintf("PoolMiner Finished at nonce:%i \n",nNonceEnd);
+                minerThreads->interrupt_all();
+                delete minerThreads;
+                minerThreads = NULL;
+                return 0;
+            }
+          
+    }  
+    
+}
 #endif // ENABLE_WALLET

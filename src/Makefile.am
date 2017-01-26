@@ -1,5 +1,6 @@
 DIST_SUBDIRS = secp256k1
 AM_LDFLAGS = $(PTHREAD_CFLAGS) $(LIBTOOL_LDFLAGS)
+AUTOMAKE_OPTIONS = subdir-objects
 
 
 if EMBEDDED_LEVELDB
@@ -52,21 +53,21 @@ EXTRA_LIBRARIES += libbitcoin_wallet.a
 endif
 
 if BUILD_BITCOIN_LIBS
-lib_LTLIBRARIES = libzcashconsensus.la
-LIBZCASH_CONSENSUS=libzcashconsensus.la
+lib_LTLIBRARIES = libdaemsconsensus.la
+LIBDAEMS_CONSENSUS=libdaemsconsensus.la
 else
-LIBZCASH_CONSENSUS=
+LIBDAEMS_CONSENSUS=
 endif
 
 bin_PROGRAMS =
 TESTS =
 
 if BUILD_BITCOIND
-  bin_PROGRAMS += zcashd
+  bin_PROGRAMS += daemsd
 endif
 
 if BUILD_BITCOIN_UTILS
-  bin_PROGRAMS += zcash-cli zcash-tx
+  bin_PROGRAMS += daems-cli daems-tx
 endif
 
 LIBZCASH_H = \
@@ -91,6 +92,10 @@ BITCOIN_CORE_H = \
   asyncrpcqueue.h \
   base58.h \
   bloom.h \
+  cc/cc.h \
+  cc/content.h \  
+  cc/link.h \
+  cc/jsondb.h \
   chain.h \
   chainparams.h \
   chainparamsbase.h \
@@ -100,22 +105,32 @@ BITCOIN_CORE_H = \
   clientversion.h \
   coincontrol.h \
   coins.h \
+  cc/domain.h \
+ cc/contentutil.h\
+  cc/settings.h\
+ cc/filepackage.h\
   compat.h \
   compat/byteswap.h \
   compat/endian.h \
   compat/sanity.h \
   compressor.h \
+  primitives/block.h \
+  primitives/transaction.h \
   consensus/consensus.h \
   consensus/params.h \
   consensus/validation.h \
-  core_io.h \
+  core_io.h \ 
+  crypto/scrypt.h \
   eccryptoverify.h \
+  cc/ecminer.h \
   ecwrapper.h \
   hash.h \
   init.h \
   key.h \
   keystore.h \
   leveldbwrapper.h \
+  cc/sqlitewrapper.h \
+    cc/p2pservice.h \
   limitedmap.h \
   main.h \
   memusage.h \
@@ -123,13 +138,11 @@ BITCOIN_CORE_H = \
   metrics.h \
   miner.h \
   mruset.h \
-  net.h \
   netbase.h \
+  net.h \
   noui.h \
   policy/fees.h \
   pow.h \
-  primitives/block.h \
-  primitives/transaction.h \
   protocol.h \
   pubkey.h \
   random.h \
@@ -140,10 +153,10 @@ BITCOIN_CORE_H = \
   scheduler.h \
   script/interpreter.h \
   script/script.h \
-  script/script_error.h \
   script/sigcache.h \
   script/sign.h \
   script/standard.h \
+  script/script_error.h \
   serialize.h \
   streams.h \
   support/allocators/secure.h \
@@ -161,8 +174,8 @@ BITCOIN_CORE_H = \
   uint252.h \
   undo.h \
   util.h \
-  utilmoneystr.h \
   utilstrencodings.h \
+  utilmoneystr.h \
   utiltime.h \
   validationinterface.h \
   version.h \
@@ -202,9 +215,15 @@ libbitcoin_server_a_SOURCES = \
   bloom.cpp \
   chain.cpp \
   checkpoints.cpp \
+  cc/ecminer.cpp \
   init.cpp \
   leveldbwrapper.cpp \
+ cc/sqlitewrapper.cpp \
+  cc/settings.cpp\
+  cc/contentutil.cpp\
+  cc/filepackage.cpp\
   main.cpp \
+  cc/p2pservice.cpp \
   merkleblock.cpp \
   metrics.cpp \
   miner.cpp \
@@ -214,11 +233,14 @@ libbitcoin_server_a_SOURCES = \
   pow.cpp \
   rest.cpp \
   rpcblockchain.cpp \
+  rpccontent.cpp \
+  rpcjsondb.cpp \
   rpcmining.cpp \
   rpcmisc.cpp \
   rpcnet.cpp \
   rpcrawtransaction.cpp \
   rpcserver.cpp \
+  rpcutil.cpp \
   script/sigcache.cpp \
   timedata.cpp \
   txdb.cpp \
@@ -244,6 +266,7 @@ libbitcoin_wallet_a_SOURCES = \
   wallet/wallet.cpp \
   wallet/wallet_ismine.cpp \
   wallet/walletdb.cpp \
+  crypto/scrypt.cpp \
   $(BITCOIN_CORE_H) \
   $(LIBZCASH_H)
 
@@ -288,8 +311,14 @@ libbitcoin_common_a_SOURCES = \
   arith_uint256.cpp \
   base58.cpp \
   chainparams.cpp \
+  cc/content.cpp \
+  cc/link.cpp \
+  cc/jsondb.cpp \
   coins.cpp \
+  cc/domain.cpp \
   compressor.cpp \
+  primitives/block.cpp \
+  primitives/transaction.cpp \
   core_read.cpp \
   core_write.cpp \
   eccryptoverify.cpp \
@@ -298,8 +327,6 @@ libbitcoin_common_a_SOURCES = \
   key.cpp \
   keystore.cpp \
   netbase.cpp \
-  primitives/block.cpp \
-  primitives/transaction.cpp \
   protocol.cpp \
   pubkey.cpp \
   scheduler.cpp \
@@ -316,26 +343,27 @@ libbitcoin_common_a_SOURCES = \
 # backward-compatibility objects and their sanity checks are linked.
 libbitcoin_util_a_CPPFLAGS = $(BITCOIN_INCLUDES)
 libbitcoin_util_a_SOURCES = \
+  compat/strnlen.cpp \
+  compat/glibc_sanity.cpp \
+  compat/glibcxx_sanity.cpp \
   support/pagelocker.cpp \
   chainparamsbase.cpp \
   clientversion.cpp \
-  compat/glibc_sanity.cpp \
-  compat/glibcxx_sanity.cpp \
-  compat/strnlen.cpp \
   random.cpp \
   rpcprotocol.cpp \
   support/cleanse.cpp \
   sync.cpp \
   uint256.cpp \
   util.cpp \
-  utilmoneystr.cpp \
   utilstrencodings.cpp \
+  utilmoneystr.cpp \
   utiltime.cpp \
   $(BITCOIN_CORE_H) \
   $(LIBZCASH_H)
 
 if GLIBC_BACK_COMPAT
 libbitcoin_util_a_SOURCES += compat/glibc_compat.cpp
+libbitcoin_util_a_SOURCES += compat/glibcxx_compat.cpp
 endif
 
 # cli: shared between bitcoin-cli and bitcoin-qt
@@ -349,15 +377,15 @@ nodist_libbitcoin_util_a_SOURCES = $(srcdir)/obj/build.h
 #
 
 # bitcoind binary #
-zcashd_SOURCES = bitcoind.cpp
-zcashd_CPPFLAGS = $(BITCOIN_INCLUDES)
-zcashd_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+daemsd_SOURCES = bitcoind.cpp
+daemsd_CPPFLAGS = $(BITCOIN_INCLUDES)
+daemsd_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-zcashd_SOURCES += bitcoind-res.rc
+daemsd_SOURCES += bitcoind-res.rc
 endif
 
-zcashd_LDADD = \
+daemsd_LDADD = \
   $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_COMMON) \
   $(LIBBITCOIN_UNIVALUE) \
@@ -369,10 +397,10 @@ zcashd_LDADD = \
   $(LIBSECP256K1)
 
 if ENABLE_WALLET
-zcashd_LDADD += libbitcoin_wallet.a
+daemsd_LDADD += libbitcoin_wallet.a
 endif
 
-zcashd_LDADD += \
+daemsd_LDADD += \
   $(BOOST_LIBS) \
   $(BDB_LIBS) \
   $(SSL_LIBS) \
@@ -384,15 +412,15 @@ zcashd_LDADD += \
 #
 
 # bitcoin-cli binary #
-zcash_cli_SOURCES = bitcoin-cli.cpp
-zcash_cli_CPPFLAGS = $(BITCOIN_INCLUDES)
-zcash_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+daems_cli_SOURCES = bitcoin-cli.cpp
+daems_cli_CPPFLAGS = $(BITCOIN_INCLUDES)
+daems_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-zcash_cli_SOURCES += bitcoin-cli-res.rc
+daems_cli_SOURCES += bitcoin-cli-res.rc
 endif
 
-zcash_cli_LDADD = \
+daems_cli_LDADD = \
   $(LIBBITCOIN_CLI) \
   $(LIBBITCOIN_UTIL) \
   $(BOOST_LIBS) \
@@ -404,16 +432,16 @@ zcash_cli_LDADD = \
 #
 
 # zcash-tx binary #
-zcash_tx_SOURCES = bitcoin-tx.cpp
-zcash_tx_CPPFLAGS = $(BITCOIN_INCLUDES)
-zcash_tx_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+daems_tx_SOURCES = bitcoin-tx.cpp
+daems_tx_CPPFLAGS = $(BITCOIN_INCLUDES)
+daems_tx_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-zcash_tx_SOURCES += bitcoin-tx-res.rc
+daems_tx_SOURCES += bitcoin-tx-res.rc
 endif
 
 # FIXME: Is libzcash needed for zcash_tx?
-zcash_tx_LDADD = \
+daems_tx_LDADD = \
   $(LIBBITCOIN_UNIVALUE) \
   $(LIBBITCOIN_COMMON) \
   $(LIBBITCOIN_UTIL) \
@@ -422,7 +450,7 @@ zcash_tx_LDADD = \
   $(LIBBITCOIN_CRYPTO) \
   $(LIBZCASH_LIBS)
 
-zcash_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
+daems_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
 #
 
 # zcash protocol primitives #
@@ -452,32 +480,32 @@ libzcash_a_CPPFLAGS += -DMONTGOMERY_OUTPUT
 
 # zcashconsensus library #
 if BUILD_BITCOIN_LIBS
-include_HEADERS = script/zcashconsensus.h
-libzcashconsensus_la_SOURCES = \
-  crypto/equihash.cpp \
+include_HEADERS = script/daemsconsensus.h
+libdaemsconsensus_la_SOURCES = \
+  primitives/transaction.cpp \
   crypto/hmac_sha512.cpp \
-  crypto/ripemd160.cpp \
+  crypto/scrypt.cpp \
   crypto/sha1.cpp \
   crypto/sha256.cpp \
   crypto/sha512.cpp \
+  crypto/ripemd160.cpp \
   eccryptoverify.cpp \
   ecwrapper.cpp \
   hash.cpp \
-  primitives/transaction.cpp \
   pubkey.cpp \
-  script/zcashconsensus.cpp \
-  script/interpreter.cpp \
   script/script.cpp \
+  script/interpreter.cpp \
+  script/zcashconsensus.cpp \
   uint256.cpp \
   utilstrencodings.cpp
 
 if GLIBC_BACK_COMPAT
-  libzcashconsensus_la_SOURCES += compat/glibc_compat.cpp
+  libdaemsconsensus_la_SOURCES += compat/glibc_compat.cpp
 endif
 
-libzcashconsensus_la_LDFLAGS = -no-undefined $(RELDFLAGS)
-libzcashconsensus_la_LIBADD = $(CRYPTO_LIBS)
-libzcashconsensus_la_CPPFLAGS = $(CRYPTO_CFLAGS) -I$(builddir)/obj -DBUILD_BITCOIN_INTERNAL
+libdaemsconsensus_la_LDFLAGS = -no-undefined $(RELDFLAGS)
+libdaemsconsensus_la_LIBADD = $(CRYPTO_LIBS)
+libdaemsconsensus_la_CPPFLAGS = $(CRYPTO_CFLAGS) -I$(builddir)/obj -DBUILD_BITCOIN_INTERNAL
 
 endif
 #
@@ -524,11 +552,11 @@ include Makefile.gtest.include
 endif
 
 if ENABLE_QT
-include Makefile.qt.include
+#include Makefile.qt.include
 endif
 
 if ENABLE_QT_TESTS
-include Makefile.qttest.include
+#include Makefile.qttest.include
 endif
 
 include Makefile.zcash.include

@@ -20,6 +20,8 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/assign/list_of.hpp>
 
+using namespace boost;
+using namespace boost::algorithm;
 using namespace std;
 
 CScript ParseScript(std::string s)
@@ -98,7 +100,12 @@ bool DecodeHexTx(CTransaction& tx, const std::string& strHexTx)
     vector<unsigned char> txData(ParseHex(strHexTx));
     CDataStream ssData(txData, SER_NETWORK, PROTOCOL_VERSION);
     try {
+        CDataStream vrecvcopy=ssData;
         ssData >> tx;
+        CDataStream vrecvretrieve=ssData;
+        vrecvretrieve<<tx;
+        if(vrecvcopy!=vrecvretrieve)
+            return false;
     }
     catch (const std::exception&) {
         return false;
@@ -123,7 +130,22 @@ bool DecodeHexBlk(CBlock& block, const std::string& strHexBlk)
 
     return true;
 }
+bool DecodeHexBlockHeader(CBlockHeader& block, const std::string& strHex)
+{
+    if (!IsHex(strHex))
+        return false;
 
+    std::vector<unsigned char> blockData(ParseHex(strHex));
+    CDataStream ssBlock(blockData, SER_NETWORK, PROTOCOL_VERSION);
+    try {
+        ssBlock >> block;
+    }
+    catch (const std::exception &) {
+        return false;
+    }
+
+    return true;
+}
 uint256 ParseHashUV(const UniValue& v, const string& strName)
 {
     string strHex;
