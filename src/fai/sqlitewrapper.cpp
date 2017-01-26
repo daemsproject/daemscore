@@ -327,21 +327,23 @@ bool CSqliteWrapper::Write(const char* sql)
      }
      return true;
 }
-bool CSqliteWrapper::SearchInt(const char* tableName,const char* columnName,const char* columnValue,const char* resultColumnName,int64_t& result)const
+bool CSqliteWrapper::SearchInt(const char* tableName,const char* columnName,string columnValue,const char* resultColumnName,int64_t& result)const
 {
     char sql[2000]; 
-    const char* selectstatement="SELECT %s FROM %s WHERE %s = %s;";    
-     sprintf(sql,selectstatement,resultColumnName,tableName,columnName,columnValue);
+    const char* selectstatement="SELECT %s FROM %s WHERE %s = ?;";    
+     sprintf(sql,selectstatement,resultColumnName,tableName,columnName);
    // LogPrintf("CSqliteWrapper SearchInt sql %s\n",sql); 
     sqlite3_stmt  *stmt = NULL;
     int rc;
     rc = sqlite3_prepare_v2(pdb , sql , strlen(sql) , &stmt , NULL);
+    
     if(rc != SQLITE_OK)
     {
         if(stmt)        
             sqlite3_finalize(stmt);               
         return false;
     }
+    result = sqlite3_bind_blob(stmt, 1,columnValue.c_str(), columnValue.size(), NULL);
     rc = sqlite3_step(stmt);
         if(rc == SQLITE_ROW)
         {            
@@ -375,17 +377,19 @@ bool CSqliteWrapper::SearchInt(const char* tableName,const char* columnName,cons
 //}
 bool CSqliteWrapper::SearchStr(const char* tableName,const char* searchByColumn,const char* searchByValue,const char* searchForColumn,int searchResultFormat,string& searchResult) const
 {
-    //LogPrintf("CSqliteWrapper GetTagID \n");
+    //LogPrintf("CSqliteWrapper SearchStr \n");
     //char* zErrMsg=0;
+    searchResult="";
     char sql[7000]; 
     const char* selectstatement="SELECT %s FROM %s WHERE %s = %s;";    
      sprintf(sql,selectstatement,searchForColumn,tableName,searchByColumn,searchByValue);
-    //LogPrintf("CSqliteWrapper GetTagID sql %s\n",sql); 
+    //LogPrintf("CSqliteWrapper SearchStr sql %s\n",sql); 
     sqlite3_stmt  *stmt = NULL;
     int rc;
     rc = sqlite3_prepare_v2(pdb , sql , strlen(sql) , &stmt , NULL);
     if(rc != SQLITE_OK)
     {
+        LogPrintf("CSqliteWrapper SearchStr  %s error %i\n",sql,rc);
         if(stmt)        
             sqlite3_finalize(stmt);               
         return false;
@@ -396,13 +400,17 @@ bool CSqliteWrapper::SearchStr(const char* tableName,const char* searchByColumn,
         switch (searchResultFormat)
         {
             case SQLITEDATATYPE_TEXT:
+            {
                 searchResult=(char*)sqlite3_column_text(stmt,  0);
 
                 break;
+            }
             case SQLITEDATATYPE_BLOB:
+            {
                 searchResult=string((char*)sqlite3_column_blob(stmt,0),(char*)sqlite3_column_blob(stmt,0)+sqlite3_column_bytes(stmt,0));                    
-                //LogPrintf("CSqliteWrapper SearchStr %s result %s\n",tableName,searchResult);
+               // LogPrintf("CSqliteWrapper SearchStr %s result %s\n",tableName,HexStr(searchResult.begin(),searchResult.end()));
                 break;
+            }
             default:
                 return false;              
         }                     
@@ -414,6 +422,7 @@ bool CSqliteWrapper::SearchStr(const char* tableName,const char* searchByColumn,
         if(rc!=101)
             LogPrintf("CSqliteWrapper SearchStr  %s error %i\n",sql,rc);
         sqlite3_finalize(stmt);
+        //LogPrintf("CSqliteWrapper SearchStr  not found \n");
         return false;
     }    
     return false;     
@@ -495,6 +504,7 @@ bool CSqliteWrapper::SearchStrs(const char* tableName,const char* searchByColumn
                     break;
                 case SQLITEDATATYPE_BLOB:
                     str=string((char*)sqlite3_column_blob(stmt,0),(char*)sqlite3_column_blob(stmt,0)+sqlite3_column_bytes(stmt,0));                    
+                    LogPrintf("search strs result %s \n",HexStr(str.begin(),str.end()));
                     break;
                 default:
                     return false;              
@@ -552,6 +562,96 @@ bool CSqliteWrapper::SearchInts(const char* tableName,const char* searchByColumn
     }while(1);   
     return false;     
 }
+
+bool CSqliteWrapper::BatchUpdate(const char* tableName,const char* indexColumnName,const int format1,const char* changedColumnName,const int format2,const vector<pair<string,string> >& vValue)
+    {
+       
+    //LogPrintf("BatchUpdate\n");  
+    char sql[7000]; 
+    sprintf(sql,"UPDATE %s SET %s =? WHERE %s = ?",tableName,changedColumnName,indexColumnName);
+    
+    int result;
+    sqlite3_stmt  *stat;    
+   result=sqlite3_prepare_v2( pdb, sql, -1, &stat, 0 );
+   //LogPrintf("BatchUpdate sql %i\n",result);   
+   for(unsigned int i=0;i<vValue.size();i++)
+   {
+      // LogPrintf("BatchUpdate content %s\n",HexStr(vValue[i].second.begin(),vValue[i].second.end()).c_str());  
+       string str = vValue[i].second;
+                result = sqlite3_bind_blob(stat, 1,str.c_str(), str.size(), NULL);
+                 str = vValue[i].first;
+                result = sqlite3_bind_blob(stat, 2, str.c_str(), str.size(), NULL);
+//       if(!BindValue(stat,2,format1,vValue[i].first))
+//       return false; 
+//       if(!BindValue(stat,1,format2,vValue[i].second))
+//        return false;
+          
+        
+        result=sqlite3_step( stat );
+        
+        if(result!=0&&result!=101)
+            LogPrintf("BatchUpdate failed result %i\n",result);
+        sqlite3_clear_bindings(stat);
+        sqlite3_reset(stat);
+   }
+   sqlite3_finalize( stat );
+   return (result==SQLITE_OK||result==101);
+}
+bool CSqliteWrapper::BatchUpdateInt(const char* tableName,const char* indexColumnName,const char* changedColumnName,const vector<pair<string,int64_t> >& vValue)
+    {
+       
+    //LogPrintf("BatchUpdate\n");  
+    char sql[7000]; 
+    sprintf(sql,"UPDATE %s SET %s =? WHERE %s = ?",tableName,changedColumnName,indexColumnName);
+    
+    int result;
+    sqlite3_stmt  *stat;    
+   result=sqlite3_prepare_v2( pdb, sql, -1, &stat, 0 );
+   //LogPrintf("BatchUpdate sql %i\n",result);   
+   for(unsigned int i=0;i<vValue.size();i++)
+   {
+      // LogPrintf("BatchUpdate content %s\n",HexStr(vValue[i].second.begin(),vValue[i].second.end()).c_str());  
+       
+        result = sqlite3_bind_int64(stat, 1,vValue[i].second);
+        string str = vValue[i].first;
+        result = sqlite3_bind_blob(stat, 2, str.c_str(), str.size(), NULL);
+        result=sqlite3_step( stat );
+        
+        if(result!=0&&result!=101)
+            LogPrintf("BatchUpdate failed result %i\n",result);
+        sqlite3_clear_bindings(stat);
+        sqlite3_reset(stat);
+   }
+   sqlite3_finalize( stat );
+   return (result==SQLITE_OK||result==101);
+}
+bool CSqliteWrapper::BatchInsert(const char* tableName, const char* columnName1, const char* columnName2, const vector<pair<string, string> >& vValue, const bool fReplace) 
+       {
+        {
+            //LogPrintf("InsertBatch2\n");  
+            char sql[4000];
+            const char* insertstatement = "INSERT OR %s INTO %s(%s,%s) VALUES (?,?);";
+            sprintf(sql, insertstatement, fReplace ? "REPLACE" : "IGNORE", tableName, columnName1, columnName2);
+            int result;
+            sqlite3_stmt *stat;
+            result = sqlite3_prepare_v2(pdb, sql, -1, &stat, 0);
+            //LogPrintf("GetInsertSql1 %i\n",result);   
+            for (unsigned int i = 0; i < vValue.size(); i++) {
+                string str = vValue[i].first;
+                result = sqlite3_bind_blob(stat, 1,str.c_str(), str.size(), NULL);
+                str = vValue[i].second;
+                result = sqlite3_bind_blob(stat, 2,str.c_str(), str.size(), NULL);
+                result = sqlite3_step(stat);
+                if (result != 0 && result != 101)
+                    LogPrintf("Insert2 failed result %i\n", result);
+                sqlite3_clear_bindings(stat);
+                sqlite3_reset(stat);
+            }
+            sqlite3_finalize(stat);
+            return (result == SQLITE_OK || result == 101);
+        }
+    }
+
 bool CSqliteWrapper::Insert(const uint256 blockHash,const CDataStream& sBlockDomains)
 {
     //LogPrintf("InsertCheque\n");    
@@ -660,32 +760,7 @@ bool CSqliteWrapper::Insert(const CDomain& domain,const int64_t ownerID)
        sqlite3_finalize( stat );
        return (result==SQLITE_OK);
 }
-bool CSqliteWrapper::BatchUpdate(const char* tableName,const char* indexColumnName,const int format1,const char* changedColumnName,const int format2,const vector<pair<string,string> >& vValue)
-    {
-       
-    //LogPrintf("BatchUpdate\n");  
-    char sql[7000]; 
-    sprintf(sql,"UPDATE %s SET %s =? WHERE %s = ?",tableName,changedColumnName,indexColumnName);
-    
-    int result;
-    sqlite3_stmt  *stat;    
-   result=sqlite3_prepare_v2( pdb, sql, -1, &stat, 0 );
-   //LogPrintf("BatchUpdate sql %i\n",result);   
-   for(unsigned int i=0;i<vValue.size();i++)
-   {
-       if(!BindValue(stat,1,format2,vValue[i].second))
-        return false;
-       if(!BindValue(stat,2,format1,vValue[i].first))
-       return false;        
-        result=sqlite3_step( stat );
-        if(result!=0&&result!=101)
-            LogPrintf("BatchUpdate failed result %i\n",result);
-        sqlite3_clear_bindings(stat);
-        sqlite3_reset(stat);
-   }
-   sqlite3_finalize( stat );
-   return (result==SQLITE_OK||result==101);
-}
+
 bool CSqliteWrapper::Update(const CDomain& domain,const int64_t ownerID)
 {  
    // LogPrintf("CSqliteWrapper::Update domain\n");
@@ -767,6 +842,29 @@ bool CSqliteWrapper::Delete(const char* tableName,const char* searchColumn,const
          return false;
      }
      return true;
+}
+bool CSqliteWrapper::BatchDelete(const char* tableName,const char* searchColumn,std::vector<string> vSearchValue,const char* chOperator)
+{
+    //LogPrintf("GetdeleteSql\n");    
+    char sql[2000];    
+    sprintf(sql,"DELETE FROM %s WHERE %s %s ?;",tableName,searchColumn,chOperator);
+    int result;
+    sqlite3_stmt  *stat;    
+   result=sqlite3_prepare_v2( pdb, sql, -1, &stat, 0 );
+   //LogPrintf("BatchUpdate sql %i\n",result);   
+   for(unsigned int i=0;i<vSearchValue.size();i++)
+   {
+      // LogPrintf("BatchUpdate content %s\n",HexStr(vValue[i].second.begin(),vValue[i].second.end()).c_str());  
+        string str = vSearchValue[i];
+        result = sqlite3_bind_blob(stat, 1, str.c_str(), str.size(), NULL);
+        result = sqlite3_step(stat);
+        if(result!=0&&result!=101)
+            LogPrintf("BatchDelete failed result %i\n",result);
+        sqlite3_clear_bindings(stat);
+        sqlite3_reset(stat);
+   }
+   sqlite3_finalize( stat );
+   return (result==SQLITE_OK||result==101);
 }
 bool CSqliteWrapper::GetDomain(const char* tableName,const char* searchColumn,const char* searchOperator,const char* searchValue,std::vector<CDomain>& vDomain,const int nMaxResult,bool fGetTags) const
 {
@@ -1512,6 +1610,24 @@ bool CSqliteWrapper::InsertTxIndice(const map<uint256, int64_t>& mapTxIndex)
    return true;
    //return GetTxIndex(txid,txIndex);   
 }
+bool CSqliteWrapper::RemoveTxIndice(const map<uint256, int64_t>& mapTxIndex)
+{
+    string statement="DELETE FROM txindextable WHERE txindex=?;";
+    int result;
+    sqlite3_stmt  *stat;    
+   result=sqlite3_prepare_v2( pdb, statement.c_str(), -1, &stat, 0 );
+   for(map<uint256, int64_t>::const_iterator it=mapTxIndex.begin();it!=mapTxIndex.end();it++)
+   {
+        result=sqlite3_bind_int64( stat, 1, it->second);   
+        result = sqlite3_step(stat);
+        if(result!=0&&result!=101)
+            LogPrintf("RemoveTxIndice failed result %i\n",result);
+        sqlite3_clear_bindings(stat);
+        sqlite3_reset(stat);
+   }
+   sqlite3_finalize( stat );
+   return (result==SQLITE_OK||result==101);
+}
 bool CSqliteWrapper::GetTxIndex(const uint256 txid,int64_t& txIndex) const
 {
     //LogPrintf("CSqliteWrapper GetTxIndex \n");
@@ -1791,6 +1907,34 @@ bool CSqliteWrapper::GetBlockPosItem(const int64_t nPosDB,uint256& hashBlock,int
         sqlite3_finalize(stmt);        
     return false;      
 }
+bool CSqliteWrapper::InsertBatchStrInt(const char* tableName, const char* columnName1, const int format1, const char* columnName2, const int format2, const vector<pair<string, int64_t> >& vValue, const bool fReplace)
+ {
+        {
+            //LogPrintf("InsertBatch2\n");  
+            char sql[4000];
+            const char* insertstatement = "INSERT OR %s INTO %s(%s,%s) VALUES (?,?);";
+            sprintf(sql, insertstatement, fReplace ? "REPLACE" : "IGNORE", tableName, columnName1, columnName2);
+            int result;
+            sqlite3_stmt *stat;
+            result = sqlite3_prepare_v2(pdb, sql, -1, &stat, 0);
+            //LogPrintf("GetInsertSql1 %i\n",result);   
+            for (unsigned int i = 0; i < vValue.size(); i++) {
+                if (!BindValue(stat, 1, format1, vValue[i].first))
+                    return false;
+                result=sqlite3_bind_int64( stat, 2, (int64_t)vValue[i].second);  
+                if (result != SQLITE_OK)
+                    return false;
+                result = sqlite3_step(stat);
+                if (result != 0 && result != 101)
+                    LogPrintf("Insert2 failed result %i\n", result);
+                sqlite3_clear_bindings(stat);
+                sqlite3_reset(stat);
+            }
+            sqlite3_finalize(stat);
+            return (result == SQLITE_OK || result == 101);
+        }
+    }
+
 bool CSqliteWrapper::WriteBlockPos(const int64_t nPosDB,const uint256& hashBlock,const int& nHeight)
 {
     //LogPrintf("WriteBlockPos\n");  

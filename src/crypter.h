@@ -118,7 +118,7 @@ private:
     
     //! keeps track of whether Unlock has run a thorough check before
     bool fDecryptionThoroughlyChecked;
-    bool GetDecryptedKey(const CPubKey &address, CKey &keyOut) const;
+    bool GetDecryptedKey(const CKeyID &address, CKey &keyOut) const;
 protected:
     bool SetCrypted();
     
@@ -192,7 +192,7 @@ public:
 }
     
     
-    bool HaveKey(const CPubKey &address) const
+    bool HaveKey(const CKeyID &address) const
     {
         {
             LOCK(cs_KeyStore);            
@@ -201,14 +201,14 @@ public:
         }
         return false;
     }
-    bool GetKey(const CPubKey &address, CKey& keyOut) const;
+    bool GetKey(const CKeyID &address, CKey& keyOut) const;
     bool GetBaseKey(CKey& keyOut)const;
     bool GetStepKey(CKey& keyOut)const;
     bool GetPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const;    
     //bool GetPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const;
-    void GetKeys(std::set<CPubKey> &setAddress) const
+    void GetKeyIDs(std::set<CKeyID> &setAddress) const
     {        
-            CBasicKeyStore::GetKeys(setAddress);
+            CBasicKeyStore::GetKeyIDs(setAddress);
             return;        
     }
     //decrypt sharedkey

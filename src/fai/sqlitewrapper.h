@@ -236,9 +236,9 @@ public:
    return (result==SQLITE_OK||result==101);
 }
     }
+    bool InsertBatchStrInt(const char* tableName, const char* columnName1, const int format1, const char* columnName2, const int format2, const vector<pair<std::string, int64_t> >& vValue, const bool fReplace = true);
     template <typename V1>
-    bool InsertBatch(const char* tableName,const char* columnName1,const int format1,const vector<V1>& vValue,const bool fReplace=true)
-    {
+    bool InsertBatch(const char* tableName, const char* columnName1, const int format1, const vector<V1>& vValue, const bool fReplace = true) {
         
         //LogPrintf("InsertBatch1\n");  
         char sql[2000]; 
@@ -291,9 +291,11 @@ public:
    return (result==SQLITE_OK||result==101);
 }
     }
-    bool BatchUpdate(const char* tableName,const char* indexColumnName,const int format1,const char* changedColumnName,const int format2,const vector<pair<string,string> >& vValue);
-
-    bool SearchStr(const char* tableName,const char* searchByColumn,const char* searchByValue,const char* searchForColumn,int searchResultFormat,string& searchResult) const;
+    bool BatchUpdate(const char* tableName, const char* indexColumnName, const int format1, const char* changedColumnName, const int format2, const vector<pair<string, string> >& vValue);
+    bool BatchUpdateInt(const char* tableName,const char* indexColumnName,const char* changedColumnName,const vector<pair<string,int64_t> >& vValue);
+    bool BatchInsert(const char* tableName, const char* columnName1, const char* columnName2, const vector<pair<string, string> >& vValue, const bool fReplace = true) ;
+    bool BatchDelete(const char* tableName,const char* searchColumn,std::vector<string> vSearchValue,const char* chOperator);
+    bool SearchStr(const char* tableName, const char* searchByColumn, const char* searchByValue, const char* searchForColumn, int searchResultFormat, string& searchResult) const;
     //bool SearchStrsIn(const char* tableName,const char* searchByColumn,const char* searchByValue,const char* searchForColumn,int searchResultFormat,vector<string>& searchResult,int nMax=1000) const;
     bool SearchStrs(const char* tableName,const char* searchByColumn,const char* searchByValue,const char* searchForColumn,int searchResultFormat,vector<string>& searchResult,const char* chOperator="=",int nMax=1000) const;
     bool SearchInts(const char* tableName,const char* searchByColumn,const char* searchByValue,const char* searchForColumn,vector<int64_t>& searchResult,const char* chOperator="=") const;
@@ -333,7 +335,8 @@ public:
     bool GetScriptIndex(const CScript script,int64_t& scriptIndex) const;
     bool InsertTxIndex(const uint256 txid,const int64_t& txIndex);
     bool InsertTxIndice(const map<uint256, int64_t>& mapTxIndex);
-    bool GetTxIndex(const uint256 txid,int64_t& txIndex) const;
+    bool RemoveTxIndice(const map<uint256, int64_t>& mapTxIndex);
+    bool GetTxIndex(const uint256 txid, int64_t& txIndex) const;
     bool GetTxidByTxIndex(const int64_t txIndex, uint256& txid) const;
     bool InsertCheque(int64_t scriptIndex,int64_t nLink, int64_t nValue,uint32_t nLockTime);
     bool BatchInsertCheque(vector<CCheque>& vCheque,const map<CScript,int64_t>& mapScriptIndex);

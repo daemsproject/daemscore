@@ -232,7 +232,7 @@ bool CCryptoKeyStore::VerifyPassword(SecureString strWalletPassphrase){
     
     return true;
 }
-bool CCryptoKeyStore::GetKey(const CPubKey &address, CKey &keyOut) const
+bool CCryptoKeyStore::GetKey(const CKeyID &address, CKey &keyOut) const
     {
     //LogPrintf("CCryptoKeyStore::GetKey iscrypted:%b,pub:%s\n",IsCrypted(),HexStr(address.begin(),address.end()));
     if (IsCrypted())
@@ -299,7 +299,7 @@ bool CCryptoKeyStore::GetStepKey(CKey& keyOut) const
     keyOut=key1;
     return true;   
 }
-bool CCryptoKeyStore::GetDecryptedKey(const CPubKey &address, CKey &keyOut) const
+bool CCryptoKeyStore::GetDecryptedKey(const CKeyID &address, CKey &keyOut) const
 {
     uint64_t nSteps;
     KeyMap::const_iterator mi = mapKeys.find(address);

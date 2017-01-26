@@ -29,14 +29,14 @@ public:
     virtual bool AddKey(const CKey &key){return false;};
 
     //! Check whether a key corresponding to a given address is present in the store.
-    virtual bool HaveKey(const CPubKey &address) const =0;
-    virtual bool GetKey(const CPubKey &address, CKey& keyOut) const 
+    virtual bool HaveKey(const CKeyID &address) const =0;
+    virtual bool GetKey(const CKeyID &address, CKey& keyOut) const 
     {
         LogPrintf("CKeyStore::virtual GetKey called\n");
         return false;
     }
-    virtual void GetKeys(std::set<CPubKey> &setAddress) const =0;
-    //virtual bool GetPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const;
+    virtual void GetKeyIDs(std::set<CKeyID> &setAddress) const =0; 
+    virtual bool GetPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const;
 
     //! Support for BIP 0013 : see https://github.com/bitcoin/bips/blob/master/bip-0013.mediawiki
     virtual bool AddCScript(const CScript& redeemScript) =0;
@@ -45,8 +45,8 @@ public:
     
 };
 
-typedef std::map<CPubKey, uint64_t>  KeyMap;//uint64_t is step
-typedef std::map<CPubKey,std::map<CPubKey, CKey> > SharedKeyMap;
+typedef std::map<CKeyID, uint64_t>  KeyMap;//uint64_t is step
+typedef std::map<CKeyID,std::map<CPubKey, CKey> > SharedKeyMap;
 typedef std::map<CScriptID, CScript > ScriptMap;
 
 /** Basic key store, that keeps keys in an address->secret map */

@@ -58,6 +58,7 @@ void EcMiner(CWallet* pwallet,const std::vector<std::string> vstrTarget,const CP
         if (vstrTarget[i].size()>nMaxLen)
             nMaxLen=vstrTarget[i].size();    
     }
+    nMaxLen++;
     try {
         //int64_t nStart = GetTime();
         while(true)
@@ -68,7 +69,7 @@ void EcMiner(CWallet* pwallet,const std::vector<std::string> vstrTarget,const CP
                     pub.AddSteps(stepPub,1);
                     nSteps++;
                     nHashesDone += 1;
-                    string strB32=CBitcoinAddress(pub).GetHeader(nMaxLen);                    
+                    string strB58=CBitcoinAddress(pub.GetID()).GetHeader(nMaxLen);                    
 //                    CKey tempstep=stepKey.GetMultipliedTo(nSteps);
 //                    CKey tempstep2=stepKey.GetMultipliedTo(1);
 //                    CPubKey tempbasepub=pubKey;
@@ -80,13 +81,13 @@ void EcMiner(CWallet* pwallet,const std::vector<std::string> vstrTarget,const CP
 //                    LogPrintf("ecminer add1:%s\n multi:%s\n,addmulti:%s\n",CBitcoinAddress(pub).ToString(),CBitcoinAddress(tempbasepub2).ToString(),CBitcoinAddress(tempbasepub).ToString());
                     for(unsigned int i=0;i<vstrTarget.size();i++)  
                     {
-                        //LogPrintf("ecminer result:%s\n",strB32.substr(0,vstrTarget[i].size()));
-                        if (B32Equal(strB32.substr(0,vstrTarget[i].size()), vstrTarget[i]))
+                        //LogPrintf("ecminer result:%s\n",strB58.substr(0,vstrTarget[i].size()));
+                        if (strB58.substr(0,vstrTarget[i].size())== vstrTarget[i])
                         {
                         // Found a solution
                         fEcHeaderFound=true;
                         SetThreadPriority(THREAD_PRIORITY_NORMAL);
-                        LogPrintf("ecMiner:header found: %s pub:%s\n", vstrTarget[i],CBitcoinAddress(pub).ToString());  
+                            LogPrintf("ecMiner:header found: %s address:%s\n", vstrTarget[i],CBitcoinAddress(pub.GetID()).ToString());  
                         CKey resultStepKey;
                         stepKey.GetMultipliedTo(nSteps,resultStepKey);
                         pwallet-> NotifyEcMinerResult(pubKey,resultStepKey,vstrTarget[i]);
