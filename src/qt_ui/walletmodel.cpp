@@ -20,6 +20,7 @@
 #include "sync.h"
 #include "ui_interface.h"
 #include "wallet.h"
+#include "miner.h"
 #include "walletdb.h" // for BackupWallet
 #include "rpcserver.h"
 #include "core_io.h"
@@ -102,7 +103,13 @@ bool WalletModel::setWalletEncrypted(bool encrypted, const SecureString &passphr
         // Encrypt
         return wallet->EncryptWallet(passphrase);   
     else
-        return wallet->DecryptWallet(passphrase);        
+        if(wallet->DecryptWallet(passphrase))
+            return true;
+        else
+        {
+            QMessageBox::critical(gui, tr("Decrypt Wallet Fail"), tr("Decrypt wallet failed,wrong password"), QMessageBox::Ok, QMessageBox::Ok);
+            return false;
+        }
    
 }
 
@@ -111,13 +118,15 @@ bool WalletModel::setWalletLocked(bool locked, const SecureString &passPhrase,in
     if(locked)   
         // Lock
         return wallet->Lock();
-   
-    //else
         // Unlock
+    if(wallet->Unlock(passPhrase))
     {        
+        if(nUnlockTime>0)
         QTimer::singleShot(nUnlockTime, this, SLOT(unlockTimeOut()));
-        return wallet->Unlock(passPhrase);   
+        return true;
     }
+     QMessageBox::critical(gui, tr("Unlock Wallet Failure"), tr("Unlock wallet failed,wrong password"), QMessageBox::Ok, QMessageBox::Ok);
+    return false;
 }
 void WalletModel::unlockTimeOut()
 {
@@ -131,6 +140,9 @@ bool WalletModel::changePassphrase(const SecureString &oldPass, const SecureStri
         wallet->Lock(); // Make sure wallet is locked before attempting pass change
         retval = wallet->ChangeWalletPassphrase(oldPass, newPass);
     }
+    if(!retval)
+          QMessageBox::critical(gui, tr("Change Passphrase Fail"), tr("Change Passphrase Fail,wrong original password"), QMessageBox::Ok, QMessageBox::Ok);
+
     return retval;
 }
 
@@ -294,7 +306,7 @@ bool WalletModel::createNewAccount(const QString header,const SecureString &pass
         //LogPrintf("WalletModel createNewAccount6 \n"); 
         //CKey baseKey;
         //wallet2->GetBaseKey(baseKey);
-        CPubKey basePub=wallet2->GetID();
+        CPubKey basePub=wallet2->baseKey.pubKey;
         //LogPrintf("WalletModel createNewAccount7 \n"); 
          return VanityGen(true,wallet2,vstr,basePub);        
          //LogPrintf("WalletModel createNewAccount8 \n"); 
@@ -313,7 +325,7 @@ bool WalletModel::createNewAccount(const QString header,const SecureString &pass
 bool WalletModel::stopVanityGen(){
     if(wallet2)
     {
-        CPubKey pub=wallet2->GetID();
+        CPubKey pub=wallet2->baseKey.pubKey;
         VanityGen(false,wallet2,std::vector<std::string>(0),pub);
         delete wallet2;
         wallet2=NULL;
@@ -321,9 +333,9 @@ bool WalletModel::stopVanityGen(){
 }
 void WalletModel::notifyEcMinerResult(const CPubKey basePub,const CKey stepKey,const std::string strHeader)
 {
-    LogPrintf("WalletModel notifyEcMinerResult basepub:%s,wallet2id:%s,strHeader:%s,target:%s \n",CBitcoinAddress(basePub).ToString(),CBitcoinAddress(wallet2->GetID()).ToString(),strHeader,strHeaderTarget);    
-    LogPrintf("WalletModel notifyEcMinerResult basepubvs wallet2id:%b,strHeader vs target:%b \n",wallet2->GetID()==basePub,B32Equal(strHeader,strHeaderTarget));
-    if(wallet2->GetID()==basePub&&B32Equal(strHeader,strHeaderTarget))
+    //LogPrintf("WalletModel notifyEcMinerResult basepub:%s,wallet2id:%s,strHeader:%s,target:%s \n",CBitcoinAddress(basePub).ToString(),CBitcoinAddress(wallet2->GetID()).ToString(),strHeader,strHeaderTarget);    
+    //LogPrintf("WalletModel notifyEcMinerResult basepubvs wallet2id:%b,strHeader vs target:%b \n",wallet2->GetID()==basePub,B32Equal(strHeader,strHeaderTarget));
+    if(wallet2->baseKey.pubKey==basePub&&(strHeader==strHeaderTarget))
     {
         CKey resultKey;
         CKey baseKey;
@@ -334,7 +346,7 @@ void WalletModel::notifyEcMinerResult(const CPubKey basePub,const CKey stepKey,c
         CPubKey resultPub;
         resultKey.GetPubKey(resultPub);
         std::string add=CBitcoinAddress(resultPub).ToString();        
-        if(B32Equal(add.substr(0,strHeaderTarget.size()),strHeaderTarget))
+        if(add.substr(0,strHeaderTarget.size())==strHeaderTarget)
         { 
             std::string resultAdd=strHeaderTarget.append(add.substr(strHeaderTarget.size()));
             LogPrintf("WalletModel notifyEcMinerResult4 result:%s\n",resultAdd);
@@ -369,7 +381,7 @@ QStringList WalletModel::GetAccountList()
 }
 bool WalletModel::switchToAccount(QString ID)
 {
-    if(CompareBase32(ID.toStdString(),CBitcoinAddress(wallet->GetID()).ToString())==0)
+    if(ID.toStdString()==CBitcoinAddress(wallet->GetID()).ToString())
         return false;
     CPubKey pub;
     if(!CBitcoinAddress(ID.toStdString()).GetKey(pub))
@@ -389,9 +401,12 @@ bool WalletModel::exportAccount(QString ID)
     
     QString fileName = QFileDialog::getSaveFileName(gui, tr("Export Account"),defaultFileName);
         if (!fileName.isEmpty()) {
-            return wallet->ExportAccount(ID.toStdString(),fileName.toStdString());
-            
+            if(wallet->ExportAccount(ID.toStdString(),fileName.toStdString()))
+                return true;            
+            QMessageBox::critical(gui, tr("Export Account Failed"), tr("Export account failed,file path error"), QMessageBox::Ok, QMessageBox::Ok); 
+            return false;
         }
+       QMessageBox::critical(gui, tr("Export Account Failed"), tr("Export account failed,user cancelled"), QMessageBox::Ok, QMessageBox::Ok); 
      
      return false;
 }
@@ -419,13 +434,17 @@ bool WalletModel::importAccount()
     QString defaultLocation = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
     QString downloadDirectory = settings.value(QLatin1String("downloadDirectory"), defaultLocation).toString();
    
-    QString fileName = QFileDialog::getOpenFileName(gui, tr("Export Account"),downloadDirectory);
+    QString fileName = QFileDialog::getOpenFileName(gui, tr("Import Account"),downloadDirectory);
         if (!fileName.isEmpty()) {
             CWallet* pwallet= new CWallet();
-            bool rt= pwallet->ImportAccount(fileName.toStdString());
+            if(pwallet->ImportAccount(fileName.toStdString()))
+            {
             delete pwallet;
-            return rt;
+                return true;
         }
+             QMessageBox::critical(gui, tr("Import Account Failed"), tr("Import account failed, file format error"), QMessageBox::Ok, QMessageBox::Ok); 
+        }
+     QMessageBox::critical(gui, tr("Import Account Failed"), tr("Import account failed, user cancelled"), QMessageBox::Ok, QMessageBox::Ok); 
     return false;
 }
 void WalletModel::notifyAccountSwitched(const std::string id)
@@ -452,7 +471,6 @@ QString WalletModel::DoPayment(const CPaymentOrder& pr,const int nPageIndex)
     pub.GetKey(id);
     //memcpy(&id, &pr.vFrom[0][1], 20);
     CWallet* pwallet;
-    //LogPrintf("jsinterface:hadlepaymentrequest:id,pwalletmain id:%i",HexSQString().fromStdString(id.begin(),id.end()),HexStr(wallet->id.begin(),wallet->id.end()));
     if(id==wallet->GetID())
         pwallet=wallet;
     else
@@ -757,7 +775,6 @@ QString WalletModel::getPublishContentMessage(const CWalletTx& tx, const CPaymen
     //questionString.arg();
     return questionString;
 }
-
 QString WalletModel::getPaymentAlertMessage(const CWalletTx& tx)
 {
     

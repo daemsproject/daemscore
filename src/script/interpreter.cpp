@@ -16,6 +16,9 @@
 #include "utilstrencodings.h"
 #include "ecwrapper.h"
 #include "util.h"
+#include "chainparams.h"
+#include "base58.h"
+#include "standard.h"
 #include <boost/foreach.hpp>
 using namespace std;
 
@@ -1009,7 +1012,9 @@ public:
     template<typename S>
     void Serialize(S &s, int nType, int nVersion) const {
         // Serialize nVersion
-        ::Serialize(s, txTo.nVersion, nType, nVersion);
+        ::Serialize(s, VARINT(txTo.nVersion), nType, nVersion);
+        // Serialize nFlags
+        ::Serialize(s, VARINT(txTo.nFlags), nType, nVersion);
         // Serialize vin
         unsigned int nInputs = fAnyoneCanPay ? 1 : txTo.vin.size();
         ::WriteCompactSize(s, nInputs);

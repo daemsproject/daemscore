@@ -72,7 +72,7 @@ void WalletTxToJSON(const CWalletTx& wtx, Object& entry)
     entry.push_back(Pair(item.first, item.second));
 }
 
-CPubKey AccountFromValue(const Value& value)
+CKeyID AccountFromValue(const Value& value)
 {
     string strAccount = value.get_str();
     if (strAccount == "*")
@@ -80,10 +80,22 @@ CPubKey AccountFromValue(const Value& value)
     CBitcoinAddress add;
     if (!add.SetString(strAccount))
         throw JSONRPCError(RPC_WALLET_INVALID_ACCOUNT_NAME, "Invalid account id");
-    CPubKey pub;
-    if (!add.GetKey(pub))
-        throw JSONRPCError(RPC_WALLET_INVALID_ACCOUNT_NAME, "Account id is not pubkey");
-    return pub;
+    CKeyID id;
+    if (!add.GetKeyID(id))
+        throw JSONRPCError(RPC_WALLET_INVALID_ACCOUNT_NAME, "Account id is not pubkeyhash");
+    return id;
+}
+CPubKey PubKeyFromValue(const Value& value)
+{
+    string strPub = value.get_str();
+    if (strPub == "*")
+        throw JSONRPCError(RPC_WALLET_INVALID_ACCOUNT_NAME, "Invalid pubkey");
+    CBitcoinPubKey pub;
+    if (!pub.SetString(strPub))
+        throw JSONRPCError(RPC_WALLET_INVALID_ACCOUNT_NAME, "Invalid pubkey");
+    if(!pub.IsValid())
+        throw JSONRPCError(RPC_WALLET_INVALID_ACCOUNT_NAME, "Invalid pubkey");
+    return pub.GetKey();    
 }
 
 Value getnewid(const Array& params, bool fHelp)//original getnewaddress
@@ -108,7 +120,7 @@ Value getnewid(const Array& params, bool fHelp)//original getnewaddress
     CPubKey keyID;
     if (params.size() == 1)
     {
-        CPubKey id = AccountFromValue(params[0]);
+        CPubKey id = PubkeyFromValue(params[0]);
         CWallet* pwallet;
         if (id == pwalletMain->GetID())
             pwallet = pwalletMain;
@@ -196,7 +208,7 @@ Value getidstep(const json_spirit::Array& params, bool fHelp)
         throw runtime_error("getidstep");
     if (!pwalletMain->CanExtendKeys())
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "id file is not enough for extend keys");
-    CPubKey pubkey=AccountFromValue(params[0]);
+    CPubKey pubkey=PubkeyFromValue(params[0]);
     KeyMap::iterator it=pwalletMain->mapKeys.find(pubkey);
     if(it==pwalletMain->mapKeys.end())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "id not found");
@@ -242,6 +254,7 @@ Value getrawchangeaddress(const Array& params, bool fHelp)
      pwalletMain->GenerateNewKey(keyID);
     return CBitcoinAddress(keyID).ToString();
 }
+
 
 Value setaccount(const Array& params, bool fHelp)
 {
@@ -333,7 +346,7 @@ Value getidlist(const Array& params, bool fHelp)
     //TODO if main id is provided, get id list from that id
     if (params.size() == 1)
     {
-        CPubKey id = AccountFromValue(params[0]);
+        CPubKey id = PubkeyFromValue(params[0]);
         LogPrintf("getidlist:mainid:%s\n", params[0].get_str());
         CWallet* pwallet;
         if (id == pwalletMain->GetID())
@@ -634,7 +647,7 @@ Value getreceivedbyaccount(const Array& params, bool fHelp)
             "1. \"account\"      (string, required) The selected account, may be the default account using \"\".\n"
             "2. minconf          (numeric, optional, default=1) Only include transactions confirmed at least this many times.\n"
             "\nResult:\n"
-            "amount              (numeric) The total amount in ltc received for this account.\n"
+            "amount              (numeric) The total amount in dmc received for this account.\n"
             "\nExamples:\n"
             "\nAmount received by the default account with at least 1 confirmation\n"
             + HelpExampleCli("getreceivedbyaccount", "\"\"") +
@@ -652,7 +665,7 @@ Value getreceivedbyaccount(const Array& params, bool fHelp)
         nMinDepth = params[1].get_int();
 
     // Get the set of pub keys assigned to account
-    CPubKey id = AccountFromValue(params[0]);
+    CPubKey id = PubkeyFromValue(params[0]);
     CWallet wallet(id);
     wallet.LoadTxs();
     // Tally
@@ -818,9 +831,9 @@ Value movecmd(const Array& params, bool fHelp)
             "\nResult:\n"
             "true|false           (boolean) true if successfull.\n"
             "\nExamples:\n"
-            "\nMove 0.01 ltc from the default account to the account named tabby\n"
+            "\nMove 0.01 dmc from the default account to the account named tabby\n"
             + HelpExampleCli("move", "\"\" \"tabby\" 0.01") +
-            "\nMove 0.01 ltc timotei to akiko with a comment and funds have 6 confirmations\n"
+            "\nMove 0.01 dmc timotei to akiko with a comment and funds have 6 confirmations\n"
             + HelpExampleCli("move", "\"timotei\" \"akiko\" 0.01 6 \"happy birthday!\"") +
             "\nAs a json rpc call\n"
             + HelpExampleRpc("move", "\"timotei\", \"akiko\", 0.01, 6, \"happy birthday!\"")
@@ -897,7 +910,7 @@ Value sendfrom(const Array& params, bool fHelp)
             + HelpExampleRpc("sendfrom", "\"tabby\", \"Ler4HNAEfwYhBmGXcFP2Po1NpRUEiK8km2\", 0.01, 6, \"donation\", \"seans outpost\"")
             );
 
-    CPubKey id = AccountFromValue(params[0]);
+    CPubKey id = PubkeyFromValue(params[0]);
     CBitcoinAddress address(params[1].get_str());
     if (!address.IsValid())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Faicoin address");
@@ -955,7 +968,7 @@ Value sendmany(const Array& params, bool fHelp)
             + HelpExampleRpc("sendmany", "\"tabby\", \"{\\\"Ler4HNAEfwYhBmGXcFP2Po1NpRUEiK8km2\\\":0.01,\\\"LbhhnRHHVfP1eUJp1tDNiyeeVsNhFN9Fcw\\\":0.02}\", 6, \"testing\"")
             );
 
-    CPubKey id = AccountFromValue(params[0]);
+    CPubKey id = PubkeyFromValue(params[0]);
     Object sendTo = params[1].get_obj();
     int nMinDepth = 1;
     if (params.size() > 2)
@@ -2290,7 +2303,7 @@ Value addcontacts(const json_spirit::Array& params, bool fHelp)
         throw runtime_error("addcontacts Wrong number of parameters");
     if (params[0].type() != str_type)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter1, expected string");
-    CPubKey ID = AccountFromValue(params[0].get_str());
+    CPubKey ID = PubkeyFromValue(params[0].get_str());
     LogPrintf("addcontacts 1\n");
     if (params[1].type() != array_type)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter2, expected array");

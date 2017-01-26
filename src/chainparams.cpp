@@ -5,9 +5,11 @@
 
 #include "chainparams.h"
 #include "random.h"
+#include "base58.h"
 #include "util.h"
 #include "utilstrencodings.h"
 #include "core_io.h"
+#include <stdio.h>
 #include <assert.h>
 
 #include <boost/assign/list_of.hpp>
@@ -54,18 +56,7 @@ static void convertSeed6(std::vector<CAddress> &vSeedsOut, const SeedSpec6 *data
 static Checkpoints::MapCheckpoints mapCheckpoints =
         boost::assign::map_list_of
         (  0, uint256("f4223192597ffb0964962c959302355ca1b278b644b9ec65e5c7453345bae2d4"))
-        (  1000, uint256("fb40901f112de425d73978f06120304670af3ba51e9fbf4d2ae7f83253a37c45"))
-        (  2000, uint256("6cfab7a51fec44b814d795de9a3221b6d2408bc2627b40a855c3bb2ab382a2df"))
-(  3000, uint256("c3228974e6af31018ab8a960057c83cd6e5283378d31ac6b8ecedf134d5f8b45"))
-(  4000, uint256("2bc641e4d2ef9ec771d5af334b8da5cf801e497fcd037b4c503c6c63b6baa2eb"))
-(  5000, uint256("93053cc70b31a1af52ebea48a37be37830203e0ec1e05207cd419de0ba75c53a"))
-(  6000, uint256("2b860d72398a554dc968975eb56843abb43f75626a6872f92d8d320efeef3f68"))
-(  7000, uint256("8d42b11025990981ceeaa67053a79254136621ed445d3ec8d2a844315834c517"))
-(  8000, uint256("be0c32496b80329cb2745f963151a8ae9f2b8d14ab4141eb8ffd179bb76ab529"))
-(  9000, uint256("4c4cf03d136df8c0c95492ba58f0c6f111d6cd68a9881ac5b892059e5044f8d7"))
-        (  10000, uint256("90ceb12d27059bcf50126c7cae93ca580fb022ff160fb8893ba3968e1ea97f9b"))
-        (  20000, uint256("7c1d0fa458897898f6f4d8c91a4fed8c1f9d52356ad5275bdbb89993b17d4f80"))
-(  32513, uint256("44e0be4f4f387d376761280bf217ceb31ce7e9e1dde5c4a33f5866b016ef0dbc"))
+       
         ;
 static const Checkpoints::CCheckpointData data = {
         &mapCheckpoints,
@@ -112,7 +103,7 @@ public:
         pchMessageStart[2] = 0xdd;
         pchMessageStart[3] = 0xde;
         vAlertPubKey = ParseHex("040184710fa689ad5023690c80f3a49c8f13f8d45b8c857fbcbc8bc4a8e4d3eb4b10f4d4604fa08dce601aaf0f470216fe1b51850b4acf21b179c45070ac7b03a9");
-        nDefaultPort = 7333;
+        nDefaultPort = 7892;
         bnProofOfWorkLimit = ~uint256(0) >> 8;
         nSubsidyHalvingInterval =  480;
         nEnforceBlockUpgradeMajority = 750;
@@ -134,6 +125,7 @@ public:
          */
         const string pszTimestamp = "2015-07-22 WSJ: Gold Falls to Five-Year Low as Traders Continue to Exit";
         CMutableTransaction txNew;
+        txNew.nFlags=TX_FLAGS_COINBASE;
         txNew.vin.resize(1);
         txNew.vout.resize(2);
         txNew.vin[0].scriptSig = CScript() << (int)0;
@@ -163,10 +155,11 @@ public:
 //            if (++genesis.nNonce==0) break;
 //            powHash = genesis.GetPoWHash();
 //        }
-//        std::cout << "nonce: " << genesis.nNonce << "\n";
+       // std::cout << "nonce: " << genesis.nNonce << "\n";
+//        
         hashGenesisBlock = genesis.GetHash();
         
-//        CTransaction gtx;
+//                CTransaction gtx;
 //        gtx = genesis.vtx.front();
 //        std::cout << "g rtx: \n" << EncodeHexTx(gtx) << "\n";
 //        std::cout << "g tx: \n" << gtx.ToString() << "\n";
@@ -183,14 +176,18 @@ public:
         vSeeds.push_back(CDNSSeedData("dns2.f-a-i.net", "dns2.f-a-i.net"));
         vSeeds.push_back(CDNSSeedData("dns3.f-a-i.net", "dns3.f-a-i.net"));
 
-        base32Prefixes[PUBKEY_ADDRESS_2]    = list_of(0x02);    //  (51 bytes)(AE/AF/QE/QF)(7 bytes)
-        base32Prefixes[PUBKEY_ADDRESS_3]    = list_of(0x03);    //  (51 bytes)(AG/AH/QG/QH)(7 bytes)
-        base32Prefixes[SCRIPT_ADDRESS]      = list_of(0x90);    //  (n bytes)(S)(7 bytes)
-        base32Prefixes[SCRIPTHASH_ADDRESS]  = list_of(0x38);    //  (32 bytes)(H)(7 bytes)
-        base32Prefixes[SECRET_KEY]          = list_of(0x48);
-        base32Prefixes[EXT_PUBLIC_KEY]      = list_of(0x04)(0x88)(0xB2)(0x1E);
-        base32Prefixes[EXT_SECRET_KEY]      = list_of(0x04)(0x88)(0xAD)(0xE4);
+                base58Prefixes[PUBKEY_ADDRESS] = list_of(0x33);
+        base58Prefixes[SCRIPT_ADDRESS] = list_of(5);
+        base58Prefixes[SECRET_KEY] =     list_of(128);
+        base58Prefixes[PUBLIC_KEY] =     list_of(0x40);
+        base58Prefixes[EXT_PUBLIC_KEY] = list_of(0x04)(0x88)(0xB2)(0x1E);
+        base58Prefixes[EXT_SECRET_KEY] = list_of(0x04)(0x88)(0xAD)(0xE4);
 
+
+        
+        
+        
+        
         convertSeed6(vFixedSeeds, pnSeed6_main, ARRAYLEN(pnSeed6_main));
 
         fRequireRPCPassword = true;
@@ -201,9 +198,6 @@ public:
         fMineBlocksOnDemand = false;
         fSkipProofOfWorkCheck = false;
         fTestnetToBeDeprecatedFieldRPC = false;
-
-        // Faicoin: Mainnet v2 enforced as of block 710k
-       // nEnforceV2AfterHeight = 710000;
     }
 
     const Checkpoints::CCheckpointData& Checkpoints() const 
@@ -245,21 +239,20 @@ public:
         vSeeds.clear();
         vSeeds.push_back(CDNSSeedData("dns.f", "dnsseed.f"));
 
-        base32Prefixes[PUBKEY_ADDRESS_2]    = list_of(111);
-        base32Prefixes[PUBKEY_ADDRESS_3]    = list_of(112);
-        base32Prefixes[SCRIPT_ADDRESS]      = list_of(196);
-        base32Prefixes[SCRIPTHASH_ADDRESS]  = list_of(197);
-        base32Prefixes[SECRET_KEY]          = list_of(239);    
-        base32Prefixes[EXT_PUBLIC_KEY]      = list_of(0x04)(0x88)(0xB2)(0x1E);
-        base32Prefixes[EXT_SECRET_KEY]      = list_of(0x04)(0x88)(0xAD)(0xE4);
+        base58Prefixes[PUBKEY_ADDRESS] = list_of(0x33);
+        base58Prefixes[SCRIPT_ADDRESS] = list_of(196);
+        base58Prefixes[SECRET_KEY]     = list_of(128);
+        base58Prefixes[PUBLIC_KEY] =     list_of(0x40);
+        base58Prefixes[EXT_PUBLIC_KEY] = list_of(0x04)(0x35)(0x87)(0xCF);
+        base58Prefixes[EXT_SECRET_KEY] = list_of(0x04)(0x35)(0x83)(0x94);
 
         convertSeed6(vFixedSeeds, pnSeed6_test, ARRAYLEN(pnSeed6_test));
 
         fRequireRPCPassword = true;
-        fMiningRequiresPeers = true;
+        fMiningRequiresPeers = false;
         fAllowMinDifficultyBlocks = true;
         fDefaultConsistencyChecks = false;
-        fRequireStandard = false;
+        fRequireStandard = true;
         fMineBlocksOnDemand = false;
         fTestnetToBeDeprecatedFieldRPC = true;
 

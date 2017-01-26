@@ -33,9 +33,6 @@ class Notificator;
 class MainView;
 class WebView;
 class WalletModel;
-//class PaymentRequest;
-//class CWalletTx;
-//class CWallet;
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -60,6 +57,7 @@ class CookieJar;
 class HistoryManager;
 class AutoSaver;
 class BookmarksToolBar;
+
 
 class BitcoinGUI : public QMainWindow
 {
@@ -304,7 +302,6 @@ private slots:
     
 
     
-
     /** Show open dialog */
     void openClicked();
 #endif // ENABLE_WALLET
@@ -405,34 +402,5 @@ private slots:
     void geometryChangeRequested(const QRect &geometry);
     void updateBookmarksToolbarActionText(bool visible);
 };
-
-//class UnitDisplayStatusBarControl : public QLabel
-//{
-//    Q_OBJECT
-//
-//public:
-//    explicit UnitDisplayStatusBarControl();
-//    /** Lets the control know about the Options Model (and its signals) */
-//    //void setOptionsModel(OptionsModel *optionsModel);
-//
-//protected:
-//    /** So that it responds to left-button clicks */
-//    void mousePressEvent(QMouseEvent *event);
-//
-//private:
-//    //OptionsModel *optionsModel;
-//    QMenu* menu;
-//
-//    /** Shows context menu with Display Unit options by the mouse coordinates */
-//    void onDisplayUnitsClicked(const QPoint& point);
-//    /** Creates context menu, its actions, and wires up all the relevant signals for mouse events. */
-//    void createContextMenu();
-//
-//private slots:
-//    /** When Display Units are changed on OptionsModel it will refresh the display text of the control on the status bar */
-//    void updateDisplayUnit(int newUnits);
-//    /** Tells underlying optionsModel to update its current display unit. */
-//    void onMenuSelection(QAction* action);
-//};
 
 #endif // BITCOIN_QT_BITCOINGUI_H

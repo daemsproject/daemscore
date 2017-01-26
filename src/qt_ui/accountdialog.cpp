@@ -246,7 +246,7 @@ void AccountDialog::textChanged()
     switch(mode)
     {
     case Encrypt: // New passphrase x2
-        acceptable = !ui->passEdit2->text().isEmpty() && !ui->passEdit3->text().isEmpty();
+        acceptable = !ui->passEdit2->text().isEmpty() && !ui->passEdit3->text().isEmpty()&&(ui->passEdit2->text()==ui->passEdit3->text());
         break;
     case Unlock: // Old passphrase x1    
         acceptable = (!ui->passEdit1->text().isEmpty())&&(!ui->headerEdit->text().isEmpty()&&ui->headerEdit->text().toInt()>0);
@@ -259,7 +259,8 @@ void AccountDialog::textChanged()
         break;
     case CreateNew:
             //LogPrintf("checkboxencrypt checkstate:%i \n",ui->checkBoxEncrypt->checkState());
-            acceptable=(ui->checkBoxEncrypt->checkState()==Qt::Unchecked)||(!ui->passEdit2->text().isEmpty() && !ui->passEdit3->text().isEmpty()&&(ui->passEdit2->text()==ui->passEdit3->text()));            
+            //acceptable=(ui->checkBoxEncrypt->checkState()==Qt::Unchecked)||(!ui->passEdit2->text().isEmpty() && !ui->passEdit3->text().isEmpty()&&(ui->passEdit2->text()==ui->passEdit3->text()));            
+             acceptable=(!ui->passEdit2->text().isEmpty() && !ui->passEdit3->text().isEmpty()&&(ui->passEdit2->text()==ui->passEdit3->text()));            
         break;
     case Switch:
     case Lock:
@@ -275,9 +276,11 @@ void AccountDialog::headerTextChanged(QString header)
 {
     if(eccSpeed==0)
         return;
-    double eccTime=(double)(1<<(header.size()*5))/eccSpeed;
+    double eccTime=(double)(1<<(header.size()*6-6))/eccSpeed;
+    if(header.size()<=1)
+        eccTime=0;
     if(header.size()>6)
-        eccTime=(double)(1<<30)/eccSpeed*(1<<((header.size()-6)*5));
+        eccTime=(double)(1<<30)/eccSpeed*(1<<((header.size()-6)*6));
     std::string strTime;
     if(eccTime<60)
         strTime=num2str(eccTime)+"s";
@@ -410,8 +413,10 @@ void AccountDialog::DoAccountAction(bool fSwitchTo)
          case ChangePass:
              oldpass.assign(ui->passEdit1->text().toStdString().c_str());
              newpass1.assign(ui->passEdit2->text().toStdString().c_str());
-             walletModel->changePassphrase(oldpass,newpass1);
+             if(walletModel->changePassphrase(oldpass,newpass1))                
               QDialog::accept(); 
+             else
+                 ui->passEdit1->clear();
          default:
              break;
     }

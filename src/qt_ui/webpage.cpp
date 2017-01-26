@@ -14,7 +14,6 @@
 //#include "walletmodel.h"
 #include "ui_passworddialog.h"
 #include "ui_proxy.h"
-
 #include "featurepermissionbar.h"
 #include "downloadmanager.h"
 #include "networkaccessmanager.h"

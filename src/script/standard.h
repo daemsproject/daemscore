@@ -59,6 +59,7 @@ enum txnouttype
     TX_NONSTANDARD,
     // 'standard' transaction types:
     TX_PUBKEY,
+    TX_PUBKEYHASH,
     TX_SCRIPTHASH,
     TX_SCRIPT,
     TX_MULTISIG,
@@ -77,7 +78,7 @@ public:
  *  * CScriptID: TX_SCRIPTHASH destination
  *  A CTxDestination is the internal data type encoded in a CBitcoinAddress
  */
-typedef boost::variant<CNoDestination, CPubKey, CScriptID, CScript> CTxDestination;
+typedef boost::variant<CNoDestination, CKeyID,CPubKey, CScriptID, CScript> CTxDestination;
 
 const char* GetTxnOutputType(txnouttype t);
 

@@ -10,12 +10,7 @@
 #include "guiutil.h"
 #include "networkstyle.h"
 #include "notificator.h"
-//#include "openuridialog.h"
-//#include "optionsdialog.h"
-//#include "optionsmodel.h"
-//#include "rpcconsole.h"
 #include "utilitydialog.h"
-//#include "rpcserver.h"
 #include "userconfirmdialog.h"
 #include "ui_userconfirmdialog.h"
 #include "accountdialog.h"
@@ -1226,32 +1221,7 @@ void BitcoinGUI::changePassphrase()
         if(dlg.exec()){
         }
 }
-//enum pageid
-//{
-//    WALLETPAGE_ID=1,
-//    BROWSERPAGE_ID=2,
-//    PUBLISHERPAGE_ID=3,
-//    MESSENGERPAGE_ID=4,
-//    MINERPAGE_ID=5,
-//    DOMAINPAGE_ID=6,
-//    SETTINGPAGE_ID=7,
-//    SERVICEPAGE_ID=8,
-//    SHOPPAGE_ID=9,
-//    TOOLSPAGE_ID=10,
-//    DOWNLOADERPAGE_ID=11
-//};
-//static std::map<int,std::string> mapPageNames=boost::assign::map_list_of
-//(WALLETPAGE_ID,"wallet")
-//(BROWSERPAGE_ID,"browser")
-//(PUBLISHERPAGE_ID,"publisher")
-//(MESSENGERPAGE_ID,"messenger")
-//(DOMAINPAGE_ID,"domain")
-//(SETTINGPAGE_ID,"settings")
-//(SERVICEPAGE_ID,"service")
-//(SHOPPAGE_ID,"shop")
-//(TOOLSPAGE_ID,"tools")
-//(DOWNLOADERPAGE_ID,"downloader")
-//;
+
 void BitcoinGUI::gotoWalletPage()
 {
 
@@ -1462,7 +1432,9 @@ void BitcoinGUI::message(const QString &title, const QString &message, unsigned 
     // Default to information icon
     int nMBoxIcon = QMessageBox::Information;
     int nNotifyIcon = Notificator::Information;
-
+    QString msg=message;
+    if(msg.indexOf("Cannot obtain")!=-1)
+        msg=tr("Daems Core is probably already running.");
     QString msgType;
 
     // Prefer supplied title over style based title
@@ -1726,6 +1698,7 @@ static bool ThreadSafeMessageBox(BitcoinGUI *gui, const std::string& message, co
      bool secure = (style & CClientUIInterface::SECURE);
     style &= ~CClientUIInterface::SECURE;
     bool ret = false;
+    
     // In case of modal message, use blocking connection to wait for user to click a button
     QMetaObject::invokeMethod(gui, "message",
                                modal ? GUIUtil::blockingGUIThreadConnection() : Qt::QueuedConnection,
@@ -1748,69 +1721,7 @@ void BitcoinGUI::unsubscribeFromCoreSignals()
     uiInterface.ThreadSafeMessageBox.disconnect(boost::bind(ThreadSafeMessageBox, this, _1, _2, _3));
 }
 
-//UnitDisplayStatusBarControl::UnitDisplayStatusBarControl() :
-//    //optionsModel(0),
-//    menu(0)
-//{
-//    createContextMenu();
-//    setToolTip(tr("Unit to show amounts in. Click to select another unit."));
-//}
-//
-///** So that it responds to button clicks */
-//void UnitDisplayStatusBarControl::mousePressEvent(QMouseEvent *event)
-//{
-//    onDisplayUnitsClicked(event->pos());
-//}
-//
-///** Creates context menu, its actions, and wires up all the relevant signals for mouse events. */
-//void UnitDisplayStatusBarControl::createContextMenu()
-//{
-//    menu = new QMenu();
-//    foreach(BitcoinUnits::Unit u, BitcoinUnits::availableUnits())
-//    {
-//        QAction *menuAction = new QAction(QString(BitcoinUnits::name(u)), this);
-//        menuAction->setData(QVariant(u));
-//        menu->addAction(menuAction);
-//    }
-//    connect(menu,SIGNAL(triggered(QAction*)),this,SLOT(onMenuSelection(QAction*)));
-//}
 
-/** Lets the control know about the Options Model (and its signals) */
-//void UnitDisplayStatusBarControl::setOptionsModel(OptionsModel *optionsModel)
-//{
-//    if (optionsModel)
-//    {
-//        this->optionsModel = optionsModel;
-//
-//        // be aware of a display unit change reported by the OptionsModel object.
-//        connect(optionsModel,SIGNAL(displayUnitChanged(int)),this,SLOT(updateDisplayUnit(int)));
-//
-//        // initialize the display units label with the current value in the model.
-//        updateDisplayUnit(optionsModel->getDisplayUnit());
-//    }
-//}
-
-/** When Display Units are changed on OptionsModel it will refresh the display text of the control on the status bar */
-//void UnitDisplayStatusBarControl::updateDisplayUnit(int newUnits)
-//{
-//    setPixmap(QIcon(":/icons/unit_" + BitcoinUnits::id(newUnits)).pixmap(31,STATUSBAR_ICONSIZE));
-//}
-//
-///** Shows context menu with Display Unit options by the mouse coordinates */
-//void UnitDisplayStatusBarControl::onDisplayUnitsClicked(const QPoint& point)
-//{
-//    QPoint globalPos = mapToGlobal(point);
-//    menu->exec(globalPos);
-//}
-//
-///** Tells underlying optionsModel to update its current display unit. */
-//void UnitDisplayStatusBarControl::onMenuSelection(QAction* action)
-//{
-//    if (action)
-//    {
-//        //optionsModel->setDisplayUnit(action->data());
-//    }
-//}
 bool BitcoinGUI::handleUserConfirm(QString title,QString message,int nOP,string& strError,SecureString& ssInput,const int nPageIndex){
     //LogPrintf("bitcoingui handleUserConfirm received: \n");    
         UserConfirmDialog *dlg=new UserConfirmDialog(this,nPageIndex);
@@ -2005,7 +1916,6 @@ void BitcoinGUI::saveSession()
         return;
 #endif
 
-    //clean();
 
     QSettings settings;
     settings.beginGroup(QLatin1String("sessions"));
@@ -2472,6 +2382,7 @@ void BitcoinGUI::handleFindTextResult(bool found)
 void BitcoinGUI::save()
 {
     saveSession();
+
 
     QSettings settings;
     settings.beginGroup(QLatin1String("BrowserMainWindow"));

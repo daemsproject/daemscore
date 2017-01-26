@@ -32,14 +32,15 @@ class CChainParams
 {
 public:
     enum Base32Type {
-        PUBKEY_ADDRESS_2=2,
-        PUBKEY_ADDRESS_3=3,
+        PUBKEY_ADDRESS,
         SCRIPT_ADDRESS,
         SCRIPTHASH_ADDRESS,
         SECRET_KEY,
+        PUBLIC_KEY,
         EXT_PUBLIC_KEY,
         EXT_SECRET_KEY,
-        MAX_BASE32_TYPES
+        
+        MAX_BASE58_TYPES
     };
 
     const uint256& HashGenesisBlock() const { return hashGenesisBlock; }
@@ -77,7 +78,7 @@ public:
     /** Return the BIP70 network string (main, test or regtest) */
     std::string NetworkIDString() const { return strNetworkID; }
     const std::vector<CDNSSeedData>& DNSSeeds() const { return vSeeds; }
-    const std::vector<unsigned char>& Base32Prefix(Base32Type type) const { return base32Prefixes[type]; }
+    const std::vector<unsigned char>& Base58Prefix(Base58Type type) const { return base58Prefixes[type]; }
     const std::vector<CAddress>& FixedSeeds() const { return vFixedSeeds; }
     virtual const Checkpoints::CCheckpointData& Checkpoints() const = 0;
 
@@ -100,7 +101,7 @@ protected:
     int64_t nTargetSpacing;
     int nMinerThreads;
     std::vector<CDNSSeedData> vSeeds;
-    std::vector<unsigned char> base32Prefixes[MAX_BASE32_TYPES];
+    std::vector<unsigned char> base58Prefixes[MAX_BASE58_TYPES];
     CBaseChainParams::Network networkID;
     std::string strNetworkID;
     CBlock genesis;

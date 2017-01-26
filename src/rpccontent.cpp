@@ -278,7 +278,6 @@ Value getlinkbytxidout(const Array& params, bool fHelp) // TO DO: Help msg
     }
     result.push_back(Pair("link", clink.ToString(LINK_FORMAT_DEC)));
     result.push_back(Pair("linkHex", clink.ToString(LINK_FORMAT_HEX)));
-    result.push_back(Pair("linkB32", clink.ToString(LINK_FORMAT_B32)));
     return result;
 }
 

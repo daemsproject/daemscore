@@ -24,12 +24,12 @@
  */
 
 /** A reference to a CKey: the Hash160 of its serialized public key */
-//class CKeyID : public uint160
-//{
-//public:
-//    CKeyID() : uint160(0) {}
-//    CKeyID(const uint160& in) : uint160(in) {}
-//};
+class CKeyID : public uint160
+{
+public:
+    CKeyID() : uint160(0) {}
+    CKeyID(const uint160& in) : uint160(in) {}
+};
     
 /** An encapsulated public key. */
 class CPubKey
@@ -139,10 +139,10 @@ public:
     }
 
     //! Get the KeyID of this public key (hash of its serialization)
-//    CKeyID GetID() const
-//    {
-//        return CKeyID(Hash160(vch, vch + size()));
-//    }
+    CKeyID GetID() const
+    {
+        return CKeyID(Hash160(vch, vch + size()));
+    }
 
     std::vector<unsigned char> GetChar() const;
     //! Get the 256-bit hash of this public key.
@@ -158,7 +158,7 @@ public:
      */
     bool IsValid() const
     {
-        return size() > 0;
+        return (size() == 33)|(size()==65);
     }
 
     //! fully validate whether this is a valid public key (more expensive than IsValid())

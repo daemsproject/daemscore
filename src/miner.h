@@ -15,6 +15,7 @@ class CReserveKey;
 class CScript;
 class CWallet;
 class CPubKey;
+class CKeyID;
 
 struct CBlockTemplate;
 

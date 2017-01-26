@@ -383,13 +383,13 @@ CPaymentOrder ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJso
     valtmp=find_value(obj, "ids");
     bool fHasIDs=false;    
     if(valtmp.type()==str_type){ 
-        LogPrintf("rpcmist processpayment id %s\n",valtmp.get_str());
+       // LogPrintf("rpcmisc processpayment id %s\n",valtmp.get_str());
         CScript scriptPubKey;        
         if(!StringToScriptPubKey(valtmp.get_str(),scriptPubKey)){
                 strError="id is not valid format";
                 throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
         }
-        LogPrintf("rpcmist processpayment script %s\n",scriptPubKey.ToString());
+       // LogPrintf("rpcmisc processpayment script %s\n",scriptPubKey.ToString());
         pr.vFrom.push_back(scriptPubKey);
         fHasIDs=true;
     }else if (valtmp.type()==array_type){
@@ -399,13 +399,13 @@ CPaymentOrder ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJso
                 strError="id is not string type";
                 throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
             }
-            LogPrintf("rpcmist processpayment id %s\n",adds[i].get_str());
+           // LogPrintf("rpcmisc processpayment id %s\n",adds[i].get_str());
             CScript scriptPubKey;
             if(!StringToScriptPubKey(adds[i].get_str(),scriptPubKey)){
                 strError="id is not valid fromat";
                 throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
             }
-            LogPrintf("rpcmist processpayment script %s\n",scriptPubKey.ToString());
+           // LogPrintf("rpcmist processpayment script %s\n",scriptPubKey.ToString());
             pr.vFrom.push_back(scriptPubKey);
             fHasIDs=true;
         }
@@ -443,8 +443,10 @@ CPaymentOrder ParseJsonPaymentRequest(const json_spirit::Value paymentRequestJso
                 strError="out id is not valid format";
                 throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
         }
-        LogPrintf("rpcmist processpayment vout scriptpubkey:%s\n",scriptPubKey.ToString());
+        //LogPrintf("rpcmisc processpayment vout scriptpubkey:%s\n",scriptPubKey.ToString());
         valtmp=find_value(objvout, "amount");
+       // LogPrintf("rpcmisc processpayment valtmp type:%i\n",valtmp.type());
+        
         CAmount amount;
         try{
             amount=AmountFromValue(valtmp);

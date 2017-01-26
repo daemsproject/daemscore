@@ -85,76 +85,56 @@ Value getmaturetime(const Array& params, bool fHelp)
     return obj;
 }
 
-Value encodebase32(const Array& params, bool fHelp) // TO DO: Help msg
+Value encodebase58(const Array& params, bool fHelp) // TO DO: Help msg
 {
     if (fHelp || params.size() > 1)
         throw runtime_error("encodebase32");
 
     std::vector<unsigned char> raw = ParseHexV(params[0], "parameter 1");
-    return EncodeBase32(raw);
+    return EncodeBase58(raw);
 }
 
-Value encodebase32check(const Array& params, bool fHelp) // TO DO: Help msg
+Value encodebase58check(const Array& params, bool fHelp) // TO DO: Help msg
 {
     if (fHelp || params.size() > 1)
         throw runtime_error("encodebase32check");
 
     std::vector<unsigned char> raw = ParseHexV(params[0], "parameter 1");
-    return EncodeBase32Check(raw);
+    return EncodeBase58Check(raw);
 }
 
-Value decodebase32(const Array& params, bool fHelp) // TO DO: Help msg
+Value decodebase58(const Array& params, bool fHelp) // TO DO: Help msg
 {
     if (fHelp || params.size() > 1)
         throw runtime_error("decodebase32");
-    std::string b32 = params[0].get_str();
+    std::string b58 = params[0].get_str();
     std::vector<unsigned char> raw;
-    if (DecodeBase32(b32, raw))
+    if (DecodeBase58(b58, raw))
         return HexStr(raw.begin(), raw.end());
     else
         throw JSONRPCError(RPC_MISC_ERROR, "Decoding failed");
 }
 
-Value decodebase32check(const Array& params, bool fHelp) // TO DO: Help msg
+Value decodebase58check(const Array& params, bool fHelp) // TO DO: Help msg
 {
     if (fHelp || params.size() > 1)
         throw runtime_error("decodebase32check");
-    std::string b32 = params[0].get_str();
+    std::string b58 = params[0].get_str();
     std::vector<unsigned char> raw;
-    if (DecodeBase32Check(b32, raw))
+    if (DecodeBase58Check(b58, raw))
         return HexStr(raw.begin(), raw.end());
     else
         throw JSONRPCError(RPC_MISC_ERROR, "Decoding failed");
 }
 
-Value standardizebase32(const Array& params, bool fHelp) // TO DO: Help msg
-{
-    if (fHelp || params.size() > 1)
-        throw runtime_error("standardizebase32");
-    std::string b32 = params[0].get_str();
-    std::vector<unsigned char> raw;
-    if (DecodeBase32(b32, raw))
-        return EncodeBase32(raw);
-    else
-        throw JSONRPCError(RPC_MISC_ERROR, "Decoding failed");
-}
-
-Value comparebase32(const Array& params, bool fHelp) // TO DO: Help msg
-{
-    if (fHelp || params.size() < 2 )
-        throw runtime_error("comparebase32");
-    std::string s1 = params[0].get_str();
-    std::string s2 = params[1].get_str();
-    return CompareBase32(s1,s2);
-}
 Value isvalidpubkeyaddress(const Array& params, bool fHelp) // TO DO: Help msg
 {
     if (fHelp || params.size() > 1)
         throw runtime_error("isvalidpubkeyaddress");
-    std::string b32 = params[0].get_str();
+    std::string b58 = params[0].get_str();
     std::vector<unsigned char> raw;
     CPubKey pub;
-    if (!CBitcoinAddress(b32).GetKey(pub))
+    if (!CBitcoinAddress(b38).GetKey(pub))
         return Value(false);
     return Value(true);
 }
@@ -187,15 +167,14 @@ Value getextpubkey(const Array& params, bool fHelp) // TO DO: Help msg
 {
     if (fHelp || params.size() !=3)
         throw runtime_error("getextpubkey");
-    CPubKey basepub = AccountFromValue(params[0]);
-    CPubKey steppub = AccountFromValue(params[1]);
+    CPubKey basepub = PubKeyFromValue(params[0]);
+    CPubKey steppub = PubKeyFromValue(params[1]);
     uint64_t nStep = params[2].get_int64();
     CPubKey extpub;
     if (nStep==0)
         return Value(params[0]);
     basepub.AddSteps(steppub,Hash(&nStep,&nStep+1),extpub);
-    
-    return Value(CBitcoinAddress(extpub).ToString());
+    return Value(CBitcoinPubKey(extpub).ToString());
 }
 Value decodemultisigaddress(const json_spirit::Array& params, bool fHelp){
     if (fHelp || params.size() <1)

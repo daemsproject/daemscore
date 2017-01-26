@@ -8,7 +8,7 @@
 
 
 #include "browser.h"
-
+#include "accountdialog.h"
 #include "guiconstants.h"
 #include "guiutil.h"
 #include "intro.h"
@@ -389,6 +389,11 @@ void BitcoinApplication::initializeResult(int retval)
         //                 paymentServer, SLOT(handleURIOrFile(QString)));
         
         //QTimer::singleShot(100, paymentServer, SLOT(uiReady()));
+        if(walletModel->getEncryptionStatus()==0)
+        {
+            AccountDialog dlg(AccountDialog::Encrypt,window, walletModel); 
+            dlg.exec();
+        }
 #endif
     } else {
         quit(); // Exit main loop

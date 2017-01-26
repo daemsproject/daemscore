@@ -116,9 +116,9 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn,const int nHeightIn
     // -blockversion=N to test forking scenarios
     if (Params().MineBlocksOnDemand())
         pblock->nVersion = GetArg("-blockversion", pblock->nVersion);
-
     // Create coinbase tx
     CMutableTransaction txNew;
+    txNew.nFlags=TX_FLAGS_COINBASE;
     txNew.vin.resize(1);
     txNew.vin[0].prevout.SetNull();
     txNew.vin[0].prevout.n=nHeight;    
@@ -156,6 +156,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn,const int nHeightIn
     int nBlockSigOps = 100;
     {
         LOCK2(cs_main, mempool.cs);
+        
         if(nHeightIn<=0)
         {
             CCoinsViewCache view(pcoinsTip);
@@ -164,7 +165,6 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn,const int nHeightIn
             list<COrphan> vOrphan; // list memory doesn't move
             map<uint256, vector<COrphan*> > mapDependers;
             // Collect transactions into block
-
             for (int i=0;i<(int)mempool.queue.size();i++)
             {
                 const CTransaction& tx = mempool.mapTx[mempool.queue[i]].GetTx();
@@ -220,35 +220,6 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn,const int nHeightIn
                 // Size limits
                 unsigned int nTxSize = ::GetSerializeSize(tx, SER_NETWORK, PROTOCOL_VERSION);
                 if (nBlockSize + nTxSize >= nBlockMaxSize){
-    //                //judge if to remove smaller txs before ,or remove this one                
-    //                if(mempool.getQueueSizeAfter(i)<(nBlockMaxSize-nBlockSize)){
-    //                    //remove txs before this big tx
-    //                    unsigned int spaceLeft=nBlockMaxSize-nBlockSize;
-    //                    bool fHasSpace=false;
-    //                    int j=0;                    
-    //                    for(j=pblock->vtx.size()-1;j>=0;j--){                        
-    //                        if(pblock->vtx[j].GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION)<nTxSize){
-    //                            spaceLeft+=pblock->vtx[j].GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION);                            
-    //                            if (spaceLeft>nTxSize){
-    //                                fHasSpace=true;
-    //                                break;
-    //                            }
-    //                        }else
-    //                            break;
-    //                    }
-    //                    if (fHasSpace){
-    //                        for(int k=pblock->vtx.size()-1;k>=j;k--){
-    //                            nBlockSigOps -= pblocktemplate->vTxSigOps[k];
-    //                            nFees -= pblocktemplate->vTxFees[k];                        
-    //                            pblock->vtx.pop_back();//.erase(pblock->vtx[k]*);
-    //                            pblocktemplate->vTxFees.pop_back();//.erase(k);
-    //                            pblocktemplate->vTxSigOps.pop_back();//.erase(k);
-    //                            --nBlockTx;
-    //                        }
-    //                        nBlockSize=nBlockMaxSize-spaceLeft;
-    //                    }else
-    //                        continue;
-    //                }else
                     continue;
                 }
 
@@ -256,7 +227,6 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn,const int nHeightIn
                 unsigned int nTxSigOps = GetLegacySigOpCount(tx);
                 if (nBlockSigOps + nTxSigOps >= MAX_BLOCK_SIGOPS)
                     continue;
-
                 if (!view.HaveInputs(tx))
                     continue;
                 CAmount nTxFees = tx.GetFee();
@@ -289,7 +259,6 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn,const int nHeightIn
         nLastBlockTx = nBlockTx;
         nLastBlockSize = nBlockSize;
     //        LogPrintf("CreateNewBlock(): total size %u\n", nBlockSize);
-
         // Compute final coinbase transaction.
         CAmount coinbaseInput=GetBlockValue(nHeight, nFees)+prevCoinbaseFee;        
         txNew.vin[0].prevout.nValue = coinbaseInput;        

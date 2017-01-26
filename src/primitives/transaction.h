@@ -141,7 +141,10 @@ public:
     {
         return (nValue == -1);
     }
-
+    bool IsEmpty() const
+    {
+        return nValue==0&&scriptPubKey.size()==0&&strContent.size()==0&&nLockTime==0;
+    }
     uint256 GetHash() const;
 
     bool IsDust(CFeeRate minRelayTxFee) const
@@ -172,6 +175,12 @@ public:
 };
 
 struct CMutableTransaction;
+enum txFlags{
+    TX_FLAGS_NORMAL=0
+    ,TX_FLAGS_COINBASE=1    
+    ,TX_FLAGS_DOMAIN=8
+    
+};
 
 /** The basic transaction that is broadcasted on the network and contained in
  * blocks.  A transaction can contain multiple inputs and outputs.
@@ -192,6 +201,7 @@ public:
     // and bypass the constness. This is safe, as they update the entire
     // structure, including the hash.
     const int32_t nVersion;
+    const int32_t nFlags;
     const std::vector<CTxIn> vin;
     const std::vector<CTxOut> vout;
     //const uint32_t nLockTime;
@@ -210,6 +220,8 @@ public:
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
         READWRITE(VARINT(this->nVersion));
         nVersion = this->nVersion;
+        READWRITE(VARINT(this->nFlags));
+        //nType=this->nFlags;
         READWRITE(*const_cast<std::vector<CTxIn>*>(&vin));
         READWRITE(*const_cast<std::vector<CTxOut>*>(&vout));
         //READWRITE(VARINT(nLockTime));
@@ -240,7 +252,8 @@ public:
 
     bool IsCoinBase() const
     {
-        return (vin.size() == 1 && vin[0].prevout.hash==uint256(0));
+        return nFlags&TX_FLAGS_COINBASE;
+        //return (vin.size() == 1 && vin[0].prevout.hash==uint256(0));
     }
 
     friend bool operator==(const CTransaction& a, const CTransaction& b)
@@ -260,6 +273,7 @@ public:
 struct CMutableTransaction
 {
     int32_t nVersion;
+    int32_t nFlags;
     std::vector<CTxIn> vin;
     std::vector<CTxOut> vout;
     //uint32_t nLockTime;
@@ -273,6 +287,8 @@ struct CMutableTransaction
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
         READWRITE(VARINT(this->nVersion));
         nVersion = this->nVersion;
+        READWRITE(VARINT(this->nFlags));
+        nType=this->nFlags;
         READWRITE(vin);
         READWRITE(vout);
         //READWRITE(VARINT(nLockTime));

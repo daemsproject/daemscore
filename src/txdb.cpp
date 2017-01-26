@@ -6,6 +6,7 @@
 #include "txdb.h"
 #include "rpcserver.h"
 #include "pow.h"
+#include "base58.h"
 #include "uint256.h"
 #include "timedata.h"
 #include "fai/domain.h"
@@ -336,7 +337,7 @@ bool CScript2TxPosDB::BatchInsert(const std::map<CScript, std::vector<CTxPosItem
         vListNew.push_back(make_pair(strScriptPubKey, strVTxPos));
         //LogPrintf("CScript2TxPosDB::BatchInsert script %s,vtxpos %i \n", it->first.ToString(), strVTxPos.size());
     }
-    return db->InsertBatch("table_script2txpos", "script", SQLITEDATATYPE_BLOB, "vtxpos", SQLITEDATATYPE_BLOB, vListNew, true);
+    return db->BatchInsert("table_script2txpos", "script", "vtxpos", vListNew, true);
 }
 
 bool CScript2TxPosDB::BatchUpdate(const std::map<CScript, std::vector<CTxPosItem> > &mapScriptTxPosList)
@@ -1043,6 +1044,7 @@ bool CScriptCoinDB::Insert(const CCheque cheque)
     if (!db->GetScriptIndex(cheque.scriptPubKey, scriptPubKeyIndex))
     {
         LogPrintf("CScriptCoinDB insertscriptindex failed \n");
+        return false;
     }
     //    int txIndex=0;
     //    if(!db->InsertTxIndex(cheque.txid,txIndex))
@@ -1133,6 +1135,7 @@ bool UpdateSqliteDB(const CBlock& block, const vector<pair<uint256, CDiskTxPos> 
     {
         //LogPrintf("UpdateSqliteDB11 \n");
         pScript2TxPosDB->RemoveTxs(mapScript2TxPos);
+         psqliteDB->RemoveTxIndice(mapTxIndex);
         //LogPrintf("UpdateSqliteDB12 \n");
     } else
     {

@@ -55,7 +55,7 @@ private:
 public:
     CPubKey pubKey;
     //! Construct an invalid private key.
-    CKey() : fValid(false), fCompressed(false),fEncrypted(false)
+    CKey() : fValid(false), fCompressed(true),fEncrypted(false)
     {
         LockObject(vch);
     }
@@ -81,14 +81,18 @@ public:
 
     //! Initialize using begin and end iterators to byte data.
     template <typename T>
-    void Set(const T pbegin, const T pend, bool fCompressedIn)    { 
+    void Set(const T pbegin, const T pend, bool fCompressedIn){ 
         int len=pend - pbegin;
-        if (len != 32&&len != 48)
+        if (len != 32&&!(len==33&&pbegin[32]==1)&&len != 48&&!(len==49&&pbegin[48]==1))
         {//TODO changed hardcoded encryption length
-            LogPrintf("CKey::Set:length is not 32 or 48\n");
+            LogPrintf("CKey::Set:length is not 32,33 or 48,49:%i\n",len);
             fValid = false;
             return;
         }
+         if (len==33)
+            len=32;
+        if(len==49)
+            len=48;
         if(len== 32)   
         {
             if (!Check(&pbegin[0])) {            
@@ -96,9 +100,9 @@ public:
                 fValid = false;
                 return;
             }
-        
             fEncrypted=false;
         }        
+       
         memcpy(vch, (unsigned char*)&pbegin[0], len);
         fValid = true;
         fCompressed = fCompressedIn;
@@ -106,7 +110,6 @@ public:
             fEncrypted=true;
         else
                 GetPubKey(pubKey);
-        
         
     }
 //    template <typename T>

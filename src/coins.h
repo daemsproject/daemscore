@@ -132,7 +132,6 @@ public:
         std::swap(to.fCoinBase, fCoinBase);
         to.vout.swap(vout);
         std::swap(to.nHeight, nHeight);
-        //std::swap(to.nLockTime, nLockTime);
         std::swap(to.nVersion, nVersion);
     }
 
@@ -177,8 +176,6 @@ public:
                 nSize += ::GetSerializeSize(CTxOutCompressor(REF(vout[i])), nType, nVersion);
         // height
         nSize += ::GetSerializeSize(VARINT(nHeight), nType, nVersion);
-        //locktime
-        //nSize += ::GetSerializeSize(VARINT(nLockTime), nType, nVersion);
         return nSize;
     }
 
@@ -209,8 +206,6 @@ public:
         }
         // coinbase height
         ::Serialize(s, VARINT(nHeight), nType, nVersion);
-        //locktime
-        //::Serialize(s, VARINT(nLockTime), nType, nVersion);
     }
 
     template<typename Stream>
@@ -244,7 +239,6 @@ public:
         }
         // coinbase height
         ::Unserialize(s, VARINT(nHeight), nType, nVersion);
-        //::Unserialize(s, VARINT(nLockTime), nType, nVersion);
         Cleanup();
     }
 
@@ -258,8 +252,6 @@ public:
     bool IsAvailable(unsigned int nPos) const {
         return (nPos < vout.size() && !vout[nPos].IsNull());
     }
-    //faicoin:check whether a particular output is still in locktime
-    //bool IsFrozen(unsigned int nPos) const;
 
     //! check whether the entire CCoins is spent
     //! note that only !IsPruned() CCoins can be serialized

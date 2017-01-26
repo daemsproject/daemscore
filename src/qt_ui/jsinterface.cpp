@@ -118,8 +118,6 @@ void JsInterface::notifyBlockHeight(const uint256 blockHash)
 void JsInterface::notifyTransactionChanged(const uint256 txid,const uint256 hashBlock)
 {
     //LogPrintf("jsinterface:notifytx\n");
-    //CCoinsViewCache view(pcoinsTip);
-    //LogPrintf("jsinterface:notifytx1\n");
     Array arrAddresses;
     CTransaction tx;
     if(hashBlock==0){
@@ -135,7 +133,6 @@ void JsInterface::notifyTransactionChanged(const uint256 txid,const uint256 hash
     }
     //LogPrintf("jsinterface:notifytx3\n");
     
-    //LogPrintf("jsinterface:notifytx5\n");
     Object txJson;
     try{
         TxToJSON(tx, hashBlock, txJson);
@@ -186,18 +183,8 @@ QString JsInterface::relayInternalMessage(const Array arr)
     emit notify(QString().fromStdString(write_string(Value(notifyObj),false)));
     return QString("OK");
 }
-//enum pageid
-//{
-//    WALLETPAGE_ID=1,
-//    BROWSERPAGE_ID=2,
-//    PUBLISHERPAGE_ID=3,
-//    MESSENGERPAGE_ID=4,
-//    MINERPAGE_ID=5,
-//    DOMAINPAGE_ID=6,
-//    SETTINGPAGE_ID=7,
-//    SERVICEPAGE_ID=8
-//};
-//static const std::string appNames[9]={"null","wallet","browser","publisher","messenger","miner","domainname","setting","service"};
+
+
 QString JsInterface::jscall(const QString command,const QString dataJson,const int nPageID,const int nPageIndex){
     json_spirit::Value valData;
     json_spirit::Array arrData;
@@ -240,7 +227,8 @@ QString JsInterface::jscall(const QString command,const QString dataJson,const i
             if (strCmd==string("publishpackage"))
                 return walletModel->PublishPackage(arrData,nPageIndex);
             if (strCmd==string("signmessage"))
-                return walletModel->SignMessage(arrData,nPageIndex);
+                return walletModel->HandleSignMessageRequest(arrData,nPageIndex);
+               // return walletModel->SignMessage(arrData,nPageIndex);
              if (strCmd==string("writefile2")&&nPageID<=HELPPAGE_ID)
                 return walletModel->saveFileUserConfirm(arrData);
             if (strCmd==string("gotocustompage"))

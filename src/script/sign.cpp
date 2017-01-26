@@ -87,15 +87,29 @@ bool Solver(const CKeyStore& keystore, const CScript& scriptPubKey, uint256 hash
     if (!Solver(scriptPubKey, whichTypeRet, vSolutions))
         return false;
     
-    CPubKey keyID;
+    CKeyID keyID;
     switch (whichTypeRet)
     {
     case TX_NONSTANDARD:
     case TX_NULL_DATA:
         return false;
     case TX_PUBKEY:
-        keyID = CPubKey(vSolutions[0]);
+        keyID = CPubKey(vSolutions[0]).GetID();
         return Sign1(keyID, keystore, hash, nHashType, scriptSigRet);
+    case TX_PUBKEYHASH:
+       // 
+        keyID = CKeyID(uint160(vSolutions[0]));
+      //  LogPrintf("\n Sign Solver:tx_pubkeyhash %s\n",keyID.GetHex());
+        if (!Sign1(keyID, keystore, hash, nHashType, scriptSigRet))
+            return false;
+        else
+        {
+            CPubKey vch;
+            keystore.GetPubKey(keyID, vch);
+           // LogPrintf("Sign Solver:pubkey %s size:%i\n",HexStr(vch.begin(),vch.end()),vch.size());
+            scriptSigRet << ToByteVector(vch);
+        }
+        return true;
     case TX_SCRIPTHASH:
         return keystore.GetCScript(uint160(vSolutions[0]), scriptSigRet);
     case TX_SCRIPT:
@@ -282,6 +296,7 @@ static CScript CombineSignatures(const CScript& scriptPubKey, const CTransaction
                 return PushAll(sigs1);
             return PushAll(sigs2);
         case TX_PUBKEY:
+    case TX_PUBKEYHASH:
             // Signatures are bigger than placeholders or empty scripts:
             if (sigs1.empty() || sigs1[0].empty())
                 return PushAll(sigs2);

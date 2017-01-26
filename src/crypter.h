@@ -82,7 +82,7 @@ public:
         OPENSSL_cleanse(chIV, sizeof(chIV));
         fKeySet = false;
     }
-    //CCrypter(unsigned char chKey,unsigned char chIV);
+
     CCrypter()
     {
         fKeySet = false;
@@ -204,7 +204,7 @@ public:
     bool GetKey(const CPubKey &address, CKey& keyOut) const;
     bool GetBaseKey(CKey& keyOut)const;
     bool GetStepKey(CKey& keyOut)const;
-        
+    bool GetPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const;    
     //bool GetPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const;
     void GetKeys(std::set<CPubKey> &setAddress) const
     {        

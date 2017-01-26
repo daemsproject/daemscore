@@ -101,22 +101,13 @@ bool CCrypter::Encrypt(const CKeyingMaterial& vchPlaintext, std::vector<unsigned
 
     vchCiphertext.resize(nCLen + nFLen);
     return true;
-//     AES_KEY enc_key, dec_key;
-//    AES_set_encrypt_key(aes_key, keylength, &enc_key);
-//    AES_cbc_encrypt(aes_input, enc_out, inputslength, &enc_key, iv_enc, AES_ENCRYPT);
-//
-//    AES_set_decrypt_key(aes_key, keylength, &dec_key);
-//    AES_cbc_encrypt(enc_out, dec_out, encslength, &dec_key, iv_dec, AES_DECRYPT);
 }
 
 bool CCrypter::Decrypt(const std::vector<unsigned char>& vchCiphertext, CKeyingMaterial& vchPlaintext)
 {
-    //LogPrintf("crypter.cpp:DECRYPT iv:%s,SIZE:%i\n",HexStr(&chIV[0],&chIV[0]+sizeof chIV),sizeof chIV);        
-    //LogPrintf("crypter.cpp:chkey:%s,size:%i \n",HexStr(&chKey[0],&chKey[0]+sizeof chKey),sizeof chKey);  
-    //LogPrintf("CCrypter::Decrypt1\n");
     if (!fKeySet)
         return false;
-//LogPrintf("CCrypter::Decrypt2\n");
+
     // plaintext will always be equal to or lesser than length of ciphertext
     int nLen = vchCiphertext.size();
     int nPLen = nLen, nFLen = 0;
@@ -129,15 +120,12 @@ bool CCrypter::Decrypt(const std::vector<unsigned char>& vchCiphertext, CKeyingM
 
     EVP_CIPHER_CTX_init(&ctx);
     if (fOk) fOk = EVP_DecryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL, chKey, chIV) != 0;
-    //LogPrintf("CCrypter::Decrypt3\n");
     if (fOk) fOk = EVP_DecryptUpdate(&ctx, &vchPlaintext[0], &nPLen, &vchCiphertext[0], nLen) != 0;
-    //LogPrintf("CCrypter::Decrypt4\n");
     if (fOk) fOk = EVP_DecryptFinal_ex(&ctx, (&vchPlaintext[0]) + nPLen, &nFLen) != 0;
-    //LogPrintf("CCrypter::Decrypt5\n");
     EVP_CIPHER_CTX_cleanup(&ctx);
 
     if (!fOk) return false;
-//LogPrintf("CCrypter::Decrypt6\n");
+
     vchPlaintext.resize(nPLen + nFLen);
     return true;
 }
@@ -172,7 +160,6 @@ bool CCryptoKeyStore::Decrypt(CCrypter& crypter)
                     return false;
                
             }
-            //LogPrintf("crypter.cpp:decrypted basekey:%s,size:%i\n",HexStr(vchSecret.begin(),vchSecret.end()),vchSecret.size());        
             if (vchSecret.size() != 32)            
                     return false;            
             CKey key;
@@ -265,6 +252,7 @@ bool CCryptoKeyStore::GetKey(const CPubKey &address, CKey &keyOut) const
     }   
 bool CCryptoKeyStore::GetBaseKey(CKey& keyOut)const
 {
+        LOCK(cs_KeyStore);
     if (!IsCrypted())
     {
         keyOut= baseKey;
@@ -351,20 +339,17 @@ bool CCryptoKeyStore::GetDecryptedKey(const CPubKey &address, CKey &keyOut) cons
             key.AddSteps(key1,Hash(&nSteps,&nSteps+1),keyOut);                
         return true; 
 }
-//bool CCryptoKeyStore::GetPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const
-//{
-//    {
-//        LOCK(cs_KeyStore);
-//        vchPubKeyOut=mapKeys.find(address)->second.second;
-//        return true;
-//    }
-//    return false;
-//}
+bool CCryptoKeyStore::GetPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const
+{    
+        LOCK(cs_KeyStore);
+        CKey key;
+        GetKey(address, key);        
+        return  key.GetPubKey(vchPubKeyOut);        
+}
 
 bool CCryptoKeyStore::Encrypt(CCrypter& crypter)
 {
     {
-        //LogPrintf("CCryptoKeyStore::Encrypt1\n");
         LOCK(cs_KeyStore);
         if (IsCrypted())
             return false;             
@@ -389,9 +374,9 @@ bool CCryptoKeyStore::Encrypt(CCrypter& crypter)
         //check if encryption succeeded        
         if(!crypter.Decrypt(vchCryptedStep,vchSecretRecovered)||vchSecretRecovered!=vchSecret2)
             return false;
-        LogPrintf("CCryptoKeyStore::basepub:%i\n",baseKey.pubKey.size());
+        //LogPrintf("CCryptoKeyStore::basepub:%i\n",baseKey.pubKey.size());
         baseKey.Set(vchCryptedSecret.begin(), vchCryptedSecret.end(), true); 
-        LogPrintf("CCryptoKeyStore::basepub after set:%i\n",baseKey.pubKey.size());
+        //LogPrintf("CCryptoKeyStore::basepub after set:%i\n",baseKey.pubKey.size());
         stepKey.Set(vchCryptedStep.begin(), vchCryptedStep.end(), true); 
         //LogPrintf("CCryptoKeyStore::Encrypt7\n");
         fUseCrypto = true; 

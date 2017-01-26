@@ -24,6 +24,7 @@
 #include "ui_interface.h"
 #include "util.h"
 #include "utilmoneystr.h"
+#include "base58.h"
 
 #include <sstream>
 
@@ -507,7 +508,7 @@ void FindNextBlocksToDownload(NodeId nodeid, unsigned int count, std::vector<CBl
 } // anon namespace
 
 bool GetNodeStateStats(NodeId nodeid, CNodeStateStats &stats) {
-    //LOCK(cs_main);
+    LOCK(cs_main);
     CNodeState *state = State(nodeid);
     if (state == NULL)
         return false;
@@ -710,7 +711,7 @@ bool IsStandardTx(const CTransaction& tx, string& reason)
 
     txnouttype whichType;
     BOOST_FOREACH(const CTxOut& txout, tx.vout) {
-        if (!::IsStandard(txout.scriptPubKey, whichType)) {
+        if (!::IsStandard(txout.scriptPubKey, whichType)&&txout.scriptPubKey.size()>0) {
             reason = "nonstandard-scriptpubkey";
             return false;
         }
@@ -1033,7 +1034,6 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
 
     if (!CheckTransaction(tx, state))
         return error("AcceptToMemoryPool: : CheckTransaction failed");
-
     // Coinbase is only valid in a block, not as a loose transaction
     if (tx.IsCoinBase())
         return state.DoS(100, error("AcceptToMemoryPool: : coinbase as individual tx"),
@@ -1054,7 +1054,6 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
     }
         
         
-
     bool fTxOverride=false;
     CTxMemPoolEntry entryOverrided;
     CTransaction tx4CheckVins;
@@ -1091,7 +1090,6 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
         // do we already have it?
         if (view.HaveCoins(hash))
             return false;
-
         // do all inputs exist?
         // Note that this does not check for the presence of actual outputs (see the next check for that),
         // only helps filling in pfMissingInputs (to determine missing vs spent).
@@ -1102,12 +1100,7 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
                 LogPrintf("AcceptToMemoryPool: : missing inputs");
                 return false;
             }
-            
-//            if(pool.exists(txin.prevout.hash))
-//                LogPrintf("AcceptToMemoryPool: : mempool-based vin");
-//                return error("AcceptToMemoryPool: : mempool-based vin");
         }
-
         // are the actual inputs available?
         if (!view.HaveInputs(tx4CheckVins))           
             return state.Invalid(error("AcceptToMemoryPool : inputs already spent"),
@@ -1119,7 +1112,6 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
         // we have all inputs cached now, so switch back to dummy, so we don't need to keep lock on mempool
         view.SetBackend(dummy);
         }
-
         // Check for non-standard pay-to-script-hash in inputs
         if (Params().RequireStandard() && !AreInputsStandard(tx, view))
             return error("AcceptToMemoryPool: : nonstandard transaction input");
@@ -1158,7 +1150,6 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
         }
         CTxMemPoolEntry entry(tx, nFees, GetTime(), 0, chainActive.Height(),vaddr);
         unsigned int nSize = entry.GetTxSize();
-
         // Don't accept it if it can't get into a block
         CAmount txMinFee = ::minRelayTxFee.GetFee(nSize);
         if (nFees < txMinFee)
@@ -1976,7 +1967,17 @@ bool DisconnectBlock(CBlock& block, CValidationState& state, CBlockIndex* pindex
                     //coins->nLockTime = undo.nLockTime;
                 } else {
                     if (coins->IsPruned())
+                    {
+                        if(!undo.fCoinBase)
+                        {
+                            LogPrintf("blockheight:%i,ntx %i,tx:%s \n",block.nBlockHeight,i,tx.ToString());
                         fClean = fClean && error("DisconnectBlock() : undo data adding output to missing transaction");
+                }
+                        coins->Clear();
+                        coins->fCoinBase = undo.fCoinBase;
+                        coins->nHeight = undo.nHeight;
+                        coins->nVersion = undo.nVersion;                        
+                    }
                 }
                 if (coins->IsAvailable(out.n))
                     fClean = fClean && error("DisconnectBlock() : undo data overwriting existing output");
@@ -2064,13 +2065,13 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
    //LogPrintf("connectblock:block%i,chainactive:%i \n",block.GetBlockHeader().nBlockHeight,chainActive.Height());
     assert(hashPrevBlock == view.GetBestBlock());
 
-    // Special case for the genesis block, skipping connection of its transactions
+    // disableded--Special case for the genesis block, skipping connection of its transactions
     // (its coinbase is unspendable)
-    if (block.GetHash() == Params().HashGenesisBlock()) {
-         //LogPrintf("connect block set best block1 %s \n",pindex->GetBlockHash().GetHex());
-        view.SetBestBlock(pindex->GetBlockHash());
-        return true;
-    }
+//    if (block.GetHash() == Params().HashGenesisBlock()) {
+//         //LogPrintf("connect block set best block1 %s \n",pindex->GetBlockHash().GetHex());
+//        view.SetBestBlock(pindex->GetBlockHash());
+//        return true;
+//    }
 
     bool fScriptChecks = pindex->nHeight >= Checkpoints::GetTotalBlocksEstimate();
 
@@ -2094,7 +2095,6 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
                                  REJECT_INVALID, "bad-txns-BIP30");
         }
     }
-
     // BIP16 didn't become active until Oct 1 2012
     int64_t nBIP16SwitchTime = 1349049600;
     bool fStrictPayToScriptHash = (pindex->GetBlockTime() >= nBIP16SwitchTime);
@@ -2105,7 +2105,6 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     if (block.nVersion >= 3 && CBlockIndex::IsSuperMajority(3, pindex->pprev, Params().EnforceBlockUpgradeMajority())) {
         flags |= SCRIPT_VERIFY_DERSIG;
     }
-
     CBlockUndo blockundo;
 
     CCheckQueueControl<CScriptCheck> control(fScriptChecks && nScriptCheckThreads ? &scriptcheckqueue : NULL);
@@ -2201,7 +2200,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
         return true;
 
     // Write undo information to disk
-    if (pindex->GetUndoPos().IsNull() || !pindex->IsValid(BLOCK_VALID_SCRIPTS))
+    if (pindex->pprev != NULL&&(pindex->GetUndoPos().IsNull() || !pindex->IsValid(BLOCK_VALID_SCRIPTS)))
     {
         if (pindex->GetUndoPos().IsNull()) {
             CDiskBlockPos pos;
@@ -2218,14 +2217,12 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
         pindex->RaiseValidity(BLOCK_VALID_SCRIPTS);
         setDirtyBlockIndex.insert(pindex);
     }
-    
     if (fTxIndex)
         if (!pblocktree->WriteTxIndex(vPos))
             return state.Abort("Failed to write transaction index");
 // if(!fJustCheck)      
         UpdateSqliteDB(block,vPos,vPrevouts,false);
     // add this block to the view's block chain
-     //LogPrintf("connect blcok set best block2 %s \n",pindex->GetBlockHash().GetHex());
     view.SetBestBlock(pindex->GetBlockHash());
 
     int64_t nTime3 = GetTimeMicros(); nTimeIndex += nTime3 - nTime2;
@@ -2235,7 +2232,6 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     static uint256 hashPrevBestCoinBase;
     g_signals.UpdatedTransaction(hashPrevBestCoinBase);
     hashPrevBestCoinBase = block.vtx[0].GetHash();
-    
     int64_t nTime4 = GetTimeMicros(); nTimeCallbacks += nTime4 - nTime3;
     LogPrint("bench", "    - Callbacks: %.2fms [%.2fs]\n", 0.001 * (nTime4 - nTime3), nTimeCallbacks * 0.000001);
     //LogPrintf("connect block: done \n");
@@ -2975,6 +2971,7 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
     assert(pindexPrev);
 
     int nHeight = pindexPrev->nHeight+1;
+    
     if((int)block.nBlockHeight!=nHeight)
     {
         LogPrintf("wrong header:chain height %i,header height:%i \n",nHeight,block.nBlockHeight);
@@ -3278,7 +3275,6 @@ bool TestBlockValidity(CValidationState &state, const CBlock& block, CBlockIndex
     CBlockIndex indexDummy(block);
     indexDummy.pprev = pindexPrev;
     indexDummy.nHeight = pindexPrev->nHeight + 1;
-
     // NOTE: CheckBlockHeader is called by CheckBlock
     if (!ContextualCheckBlockHeader(block, state, pindexPrev))
         return false;
@@ -4707,35 +4703,14 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
     else if (strCommand == "block" && !fImporting && !fReindex) // Ignore blocks received while importing
     {
         CBlock block;
-        //  CDataStream vrecvcopy=vRecv;
-        //if(chainActive.Height()==621||chainActive.Height()==620)
-           // LogPrintf("block datastream len:%i,data:%s \n",vRecv.size(),HexStr(vRecv.begin(),vRecv.end()));
         vRecv >> block;
-        //these lines for full node plus test
-//        if(!vRecv.empty())
-//        {
-//            map<CScript,string> mapBlockDomains;
-//            vRecv>>mapBlockDomains;
-//            for(map<CScript,string>::const_iterator it=mapBlockDomains.begin();it!=mapBlockDomains.end();it++)
-//                LogPrintf("map block domain:%s,script %s \n",it->second,it->first.ToString());
-//        }
-        //CDataStream vrecvretrieve=vRecv;
         
-        //vrecvretrieve<<block;
-
         CInv inv(MSG_BLOCK, block.GetHash());
         LogPrint("net", "received block %s peer=%d\n", inv.hash.ToString(), pfrom->id);
-        //LogPrintf("received block %s peer=%d\n", inv.hash.ToString(), pfrom->id);
+
         pfrom->AddInventoryKnown(inv);
         
         CValidationState state;
-        //note this kind of block check is dangerous, because block domain map is added
-//        if(vrecvcopy!=vrecvretrieve)
-//        {
-//            state.DoS(100, error("Checkblock() : unserialize mismatch"),
-//                         REJECT_INVALID, "bad-block-unserialize");
-//        }
-//        else
         ProcessNewBlock(state, pfrom, &block);
         int nDoS;
         if (state.IsInvalid(nDoS)) {

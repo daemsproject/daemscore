@@ -61,7 +61,7 @@ std::string CTxOut::ToString() const
 }
 
 CMutableTransaction::CMutableTransaction() : nVersion(CTransaction::CURRENT_VERSION) {}
-CMutableTransaction::CMutableTransaction(const CTransaction& tx) : nVersion(tx.nVersion), vin(tx.vin), vout(tx.vout) {}
+CMutableTransaction::CMutableTransaction(const CTransaction& tx) : nVersion(tx.nVersion), nFlags(tx.nFlags),vin(tx.vin), vout(tx.vout) {}
 
 uint256 CMutableTransaction::GetHash() const
 {
@@ -73,14 +73,15 @@ void CTransaction::UpdateHash() const
     *const_cast<uint256*>(&hash) = SerializeHash(*this);
 }
 
-CTransaction::CTransaction() : hash(0), nVersion(CTransaction::CURRENT_VERSION), vin(), vout(){ }
+CTransaction::CTransaction() : hash(0), nVersion(CTransaction::CURRENT_VERSION), nFlags(0),vin(), vout(){ }
 
-CTransaction::CTransaction(const CMutableTransaction &tx) : nVersion(tx.nVersion), vin(tx.vin), vout(tx.vout) {
+CTransaction::CTransaction(const CMutableTransaction &tx) : nVersion(tx.nVersion),nFlags(tx.nFlags), vin(tx.vin), vout(tx.vout) {
     UpdateHash();
 }
 
 CTransaction& CTransaction::operator=(const CTransaction &tx) {
     *const_cast<int*>(&nVersion) = tx.nVersion;
+    *const_cast<int*>(&nFlags) = tx.nFlags;
     *const_cast<std::vector<CTxIn>*>(&vin) = tx.vin;
     *const_cast<std::vector<CTxOut>*>(&vout) = tx.vout;
     //*const_cast<unsigned int*>(&nLockTime) = tx.nLockTime;
@@ -118,9 +119,10 @@ CAmount CTransaction::GetFee() const
 std::string CTransaction::ToString() const
 {
     std::string str;
-    str += strprintf("CTransaction(hash=%s, ver=%d, vin.size=%u, vout.size=%u)\n",
+    str += strprintf("CTransaction(hash=%s, ver=%d, flags=%i,vin.size=%u, vout.size=%u)\n",
         GetHash().ToString().substr(0,10),
         nVersion,
+        nFlags,
         vin.size(),
         vout.size());
     for (unsigned int i = 0; i < vin.size(); i++)
@@ -135,6 +137,7 @@ double  CTransaction::GetFeeRate() const{
 void CTransaction::ClearContent(CTransaction& newTx) const{
     CMutableTransaction mtx;
     mtx.nVersion=nVersion;
+    mtx.nFlags=nFlags;
     mtx.vin=vin;
     mtx.vout=vout;
     for(unsigned int i = 0; i < mtx.vout.size(); i++)
@@ -147,6 +150,7 @@ int CTransaction::GetOutPos(int nOut)const
     CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
     //LogPrintf("CTransaction::GetOutPos ss.size:%i \n",ss.size());
     ss<<VARINT(this->nVersion);
+    ss<<VARINT(this->nFlags);
     //LogPrintf("CTransaction::GetOutPos ss.size:%i \n",ss.size());
     ss<<vin;    
     //LogPrintf("CTransaction::GetOutPos ss.size:%i \n",ss.size());

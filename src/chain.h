@@ -203,6 +203,9 @@ public:
     //! (memory only) Total amount of work (expected number of hashes) in the chain up to and including this block
     uint256 nChainWork;
 
+    
+    
+    
     //! Number of transactions in this block.
     //! Note: in a potential headers-first mode, this number cannot be relied upon
     unsigned int nTx;

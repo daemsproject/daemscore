@@ -116,7 +116,7 @@ private:
     void AddToSpends(const uint256& wtxid);
 
     void SyncMetaData(std::pair<TxSpends::iterator, TxSpends::iterator>);
-    CPubKey id;
+    CKeyID id;
 public:
     /*
      * Main wallet lock.
@@ -129,7 +129,7 @@ public:
     
     
     
-    std::map<CPubKey, CKeyMetadata> mapKeyMetadata;    
+    std::map<CKeyID, CKeyMetadata> mapKeyMetadata;    
 
     CWallet()
     {
@@ -138,10 +138,18 @@ public:
         pwalletdb=new CWalletDB();
                 
     }
-    CWallet(CPubKey idIn,bool fLoadTxs=true)
+        CWallet(CKeyID idIn,bool fLoadTxs=true)
     {
         SetNull();
         id=idIn;
+        pwalletdb=new CWalletDB();
+        bool fFirstRunRet;        
+        LoadWallet(fFirstRunRet,fLoadTxs);
+    }
+    CWallet(CPubKey idIn,bool fLoadTxs=true)
+    {
+        SetNull();
+        id=idIn.GetID();
         pwalletdb=new CWalletDB();
         bool fFirstRunRet;        
         LoadWallet(fFirstRunRet,fLoadTxs);
@@ -151,7 +159,7 @@ public:
     {
         SetNull();
         pwalletdb=new CWalletDB();
-        if(CBitcoinAddress(strID).GetKey(id)) {
+        if(CBitcoinAddress(strID).GetKeyID(id)) {
             bool fFirstRunRet;
             LoadWallet(fFirstRunRet,fLoadTxs);
         }
@@ -167,18 +175,18 @@ public:
     bool LoadAddressBook(){return true;};
     bool LoadTxs();
     bool LoadScripts(){return true;};
-    std::map<uint256, CWalletTx> GetWalletTxs(std::vector<CPubKey> vIds)const ;
+    std::map<uint256, CWalletTx> GetWalletTxs(std::vector<CKeyID> vIds)const ;
     //create a new wallet ,optional  writing to disk
     bool CreateNew(const SecureString& strKeyData="",bool fWriteToDisk=true);
     bool Set(const CKey& baseKeyIn,const CKey& stepKeyIn,const SecureString& strKeyData="",std::string prettyAddress="",bool fWriteToDisk=true);
-    CPubKey GetID(){return id;};
+    CKeyID GetID(){return id;};
     std::string GetAddress();
-    bool SwitchToAccount(CPubKey idIn,bool fSetDefault=false);
+    bool SwitchToAccount(CKeyID idIn,bool fSetDefault=false);
          
     bool SwitchToAccount(CKey keyIn);
     bool ImportAccount(string fileName);
     bool ExportAccount(string id,string fileName);
-    bool IsWalletExists(const CPubKey& id)const{return pwalletdb->IsWalletExists(id);}
+    bool IsWalletExists(const CKeyID& id)const{return pwalletdb->IsWalletExists(id);}
     void SetNull()
     {
         nWalletVersion = FEATURE_BASE;
@@ -222,7 +230,7 @@ public:
      * keystore implementation
      * Generate a new key
      */
-    bool GenerateNewKey(CPubKey& pubkey);    
+    bool GenerateNewKey(CKeyID& keyID);    
     
     //! Load metadata (used by LoadWallet)
     bool LoadKeyMetadata(const CPubKey &pubkey, const CKeyMetadata &metadata);
@@ -274,7 +282,7 @@ public:
     void ReacceptWalletTransactions();
     void ResendWalletTransactions();
     bool addUnconfirmedTx(const CWalletTx& wtx);
-    CAmount GetBalance(std::vector<CPubKey> vIds=std::vector<CPubKey>(0)) const;
+    CAmount GetBalance(std::vector<CKeyID> vIds=std::vector<CKeyID>(0)) const;
     CAmount GetBalance(bool fRefresh=true) ;
     CAmount GetUnconfirmedBalance(bool fRefresh=true) ;
     CAmount GetImmatureBalance(bool fRefresh=true);

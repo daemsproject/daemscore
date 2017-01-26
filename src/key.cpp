@@ -70,8 +70,9 @@ bool CKey::GetPubKey(CPubKey& result) const {
     if(fEncrypted)
         return false;
     
-    int clen = 65;
-    int ret = secp256k1_ec_pubkey_create((unsigned char*)result.begin(), &clen, begin(), true);
+    int clen = 33;    
+    int ret = secp256k1_ec_pubkey_create((unsigned char*)result.begin(), &clen, begin(), fCompressed);
+    
     assert((int)result.size() == clen);
     assert(ret);
     assert(result.IsValid());

@@ -278,7 +278,7 @@ static const CRPCCommand vRPCCommands[] =
 
     /* Block chain and UTXO */
     { "blockchain",         "getblockchaininfo",      &getblockchaininfo,      true,      false,      false },
-    { "blockchain",         "getbestheader",       &getbestheader,              true,      false,      false },
+    { "blockchain",         "getbestheader",          &getbestheader,          true,      false,      false },
     { "blockchain",         "getblockcount",          &getblockcount,          true,      false,      false },
     { "blockchain",         "getblock",               &getblock,               true,      false,      false },
     { "blockchain",         "getblockhash",           &getblockhash,           true,      false,      false },
@@ -367,12 +367,10 @@ static const CRPCCommand vRPCCommands[] =
     { "util",               "estimatefee",            &estimatefee,            true,      true,       false },
     { "util",               "estimatepriority",       &estimatepriority,       true,      true,       false },
     { "util",               "getmaturetime",          &getmaturetime,          false,     false,      false },
-    { "util",               "encodebase32",           &encodebase32,           true,      true,       false },
-    { "util",               "decodebase32",           &decodebase32,           true,      true,       false },
-    { "util",               "encodebase32check",      &encodebase32check,      true,      true,       false },
-    { "util",               "decodebase32check",      &decodebase32check,      true,      true,       false },
-    { "util",               "standardizebase32",      &standardizebase32,      true,      true,       false },
-    { "util",               "comparebase32",          &comparebase32,          true,      true,       false },
+    { "util",               "encodebase58",           &encodebase58,           true,      true,       false },
+    { "util",               "decodebase58",           &decodebase58,           true,      true,       false },
+    { "util",               "encodebase58check",      &encodebase58check,      true,      true,       false },
+    { "util",               "decodebase58check",      &decodebase58check,      true,      true,       false },
     { "util",               "isvalidpubkeyaddress",   &isvalidpubkeyaddress,   true,      true,       false },
     { "util",               "getextkey",              &getextkey,              true,      true,       false },
     { "util",               "getextpubkey",           &getextpubkey,           true,      true,       false },
@@ -672,7 +670,7 @@ void StartRPCThreads()
               "It is also recommended to set alertnotify so you are notified of problems;\n"
               "for example: alertnotify=echo %%s | mail -s \"Faicoin Alert\" admin@foo.com\n"),
                 GetConfigFile().string(),
-                EncodeBase32(&rand_pwd[0],&rand_pwd[0]+32)),
+                EncodeBase58(&rand_pwd[0],&rand_pwd[0]+32)),
                 "", CClientUIInterface::MSG_ERROR | CClientUIInterface::SECURE);
         StartShutdown();
         return;
@@ -733,7 +731,7 @@ void StartRPCThreads()
         vEndpoints.push_back(ip::tcp::endpoint(asio::ip::address_v6::any(), defaultPort));
         vEndpoints.push_back(ip::tcp::endpoint(asio::ip::address_v4::any(), defaultPort));
         // Prefer making the socket dual IPv6/IPv4 instead of binding
-        // to both addresses seperately.
+        // to both addresses separately.
         bBindAny = true;
     }
 
@@ -1116,7 +1114,7 @@ std::string HelpExampleCli(string methodname, string args){
 
 std::string HelpExampleRpc(string methodname, string args){
     return "> curl --user myusername --data-binary '{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", "
-        "\"method\": \"" + methodname + "\", \"params\": [" + args + "] }' -H 'content-type: text/plain;' http://127.0.0.1:7332/\n";
+        "\"method\": \"" + methodname + "\", \"params\": [" + args + "] }' -H 'content-type: text/plain;' http://127.0.0.1:7893/\n";
 }
 
 const CRPCTable tableRPC;

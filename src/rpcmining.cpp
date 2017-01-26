@@ -499,8 +499,8 @@ Value getblocktemplate(const Array& params, bool fHelp)
     if (strMode != "template")
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid mode");
 
-    if (nHeight<=0&&vNodes.empty())
-        throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "Faicoin is not connected!");
+    if (nHeight<=0&&vNodes.empty()&&Params().MiningRequiresPeers())
+        throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "Daems is not connected!");
     //if (IsInitialBlockDownload())
     //    throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "Faicoin is downloading blocks...");
 
@@ -574,7 +574,7 @@ Value getblocktemplate(const Array& params, bool fHelp)
         nTransactionsUpdatedLast = mempool.GetTransactionsUpdated();
        // LogPrintf("rpcmining4 \n");
         CBlockIndex* pindexPrevNew = chainActive.Tip();
-        if(nHeight>0)
+        if((nHeight>0)&&(nHeight<=chainActive.Height()+1))
                pindexPrevNew = chainActive[nHeight-1];
 
         nStart = GetTime();

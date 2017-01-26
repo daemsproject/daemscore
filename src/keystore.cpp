@@ -13,16 +13,26 @@
 
 #include <boost/foreach.hpp>
 
-//bool CKeyStore::GetPubKey(const CKeyID &address, CPubKey &vchPubKeyOut) const
-//{
-//    CKey key;
-//    if (!GetKey(address, key))
-//        return false;
-//    vchPubKeyOut = key.GetPubKey();
-//    return true;
-//}
+bool CKeyStore::GetPubKey(const CKeyID &address, CPubKey &vchPubKeyOut) const
+{
+    CKey key;
+    if (!GetKey(address, key))
+        return false;
+    //LogPrintf("CKeyStore::GetPubKey \n");
+    return key.GetPubKey(vchPubKeyOut);     
+}
 
-
+bool CBasicKeyStore::AddKey(const CKey &key)
+{
+    baseKey=key;
+    fHasPriv=true;
+    CPubKey pub;
+    if(!key.GetPubKey(pub))
+        return false;    
+    fHasPub=true;
+    mapKeys[pub]=0;
+    return true;
+}
 
 bool CBasicKeyStore::AddCScript(const CScript& redeemScript)
 {

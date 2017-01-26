@@ -21,8 +21,8 @@ unsigned int HaveKeys(const vector<valtype>& pubkeys, const CKeyStore& keystore)
     unsigned int nResult = 0;
     BOOST_FOREACH(const valtype& pubkey, pubkeys)
     {
-        //CKeyID keyID = CPubKey(pubkey).GetID();
-        if (keystore.HaveKey(pubkey))
+        CKeyID keyID = CPubKey(pubkey).GetID();
+        if (keystore.HaveKey(keyID))
             ++nResult;
     }
     return nResult;
@@ -45,14 +45,19 @@ isminetype IsMine(const CKeyStore &keystore, const CScript& scriptPubKey)
         return ISMINE_NO;
     }
 
-    CPubKey keyID;
+    CKeyID keyID;
     switch (whichType)
     {
     case TX_NONSTANDARD:
     case TX_NULL_DATA:
         break;
     case TX_PUBKEY:
-        keyID = CPubKey(vSolutions[0]);
+        keyID = CPubKey(vSolutions[0]).GetID();
+        if (keystore.HaveKey(keyID))
+            return ISMINE_SPENDABLE;
+        break;
+    case TX_PUBKEYHASH:
+        keyID = CKeyID(uint160(vSolutions[0]));
         if (keystore.HaveKey(keyID))
             return ISMINE_SPENDABLE;
         break;

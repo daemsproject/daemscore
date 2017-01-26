@@ -134,9 +134,6 @@ public:
 
 static CCoinsViewDB *pcoinsdbview = NULL;
 static CCoinsViewErrorCatcher *pcoinscatcher = NULL;
-//static CScript2TxPosViewDB *pScript2TxPosDBView = NULL;
-//static CDomainViewDB *pDomainDBView = NULL;
-
 
 void Shutdown()
 {
@@ -199,6 +196,7 @@ void Shutdown()
         pBlockPosDB=NULL;
         delete psqliteDB;
         psqliteDB = NULL;
+        
     }
 #ifdef ENABLE_WALLET
     //if (pwalletMain)
@@ -301,7 +299,7 @@ std::string HelpMessage(HelpMessageMode mode)
     strUsage += "  -onion=<ip:port>       " + strprintf(_("Use separate SOCKS5 proxy to reach peers via Tor hidden services (default: %s)"), "-proxy") + "\n";
     strUsage += "  -onlynet=<net>         " + _("Only connect to nodes in network <net> (ipv4, ipv6 or onion)") + "\n";
     strUsage += "  -permitbaremultisig    " + strprintf(_("Relay non-P2SH multisig (default: %u)"), 1) + "\n";
-    strUsage += "  -port=<port>           " + strprintf(_("Listen for connections on <port> (default: %u or testnet: %u)"), 7333, 17333) + "\n";
+    strUsage += "  -port=<port>           " + strprintf(_("Listen for connections on <port> (default: %u or testnet: %u)"), 7892, 17892) + "\n";
     strUsage += "  -proxy=<ip:port>       " + _("Connect through SOCKS5 proxy") + "\n";
     strUsage += "  -seednode=<ip>         " + _("Connect to a node to retrieve peer addresses, and disconnect") + "\n";
     strUsage += "  -timeout=<n>           " + strprintf(_("Specify connection timeout in milliseconds (minimum: 1, default: %d)"), DEFAULT_CONNECT_TIMEOUT) + "\n";
@@ -1144,17 +1142,8 @@ bool AppInit2(boost::thread_group& threadGroup)
     if (!est_filein.IsNull())
         mempool.ReadFeeEstimates(est_filein);
     fFeeEstimatesInitialized = true;
-    //added codes to ensure nLastBlockFile is pointing to the last block file
-//    while(true)
-//    {
-//        CDiskBlockPos pos(nLastBlockFile+1, 0);
-//        if (!boost::filesystem::exists(GetBlockPosFilename(pos, "blk")))
-//            break;
-//        nLastBlockFile++;
-//    }
     
     // ********************************************************* Step 8: load wallet
-    
 #ifdef ENABLE_WALLET
     if (fDisableWallet) {
         pwalletMain = NULL;

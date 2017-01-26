@@ -18,14 +18,14 @@
 #include "json/json_spirit_utils.h"
 //#include "json/json_spirit_writer_template.h"
 //class OptionsModel;
-
+#include <boost/assign.hpp>
+#include <map>
 
 //class CCoinControl;
-
+class CKeyID;
 class COutPoint;
 class COutput;
-
-//class CKey;
+class CPubKey;
 class CWallet;
 class uint256;
 class BitcoinGUI;
@@ -103,6 +103,7 @@ public:
     QString HandlePaymentRequest2(const json_spirit::Array arrData,const int nPageIndex=-1);
     QString HandleOverrideRequest(const json_spirit::Array arrData,const int nPageIndex=-1);   
     QString DoPayment(const CPaymentOrder& pr,const int nPageIndex=-1);
+    QString HandleSignMessageRequest(const Array arrData,const int nPageIndex);
     QString EncryptMessages(json_spirit::Array params,const int nPageIndex=-1);
     //bool handlePaymentRequest(CWalletTx tx,int nOP,string strError,SecureString& ssInput);
     QString getOverrideAlertMessage(const CTransaction& txOriginal,const CWalletTx& txOverride, const int64_t nLockTime=-1);

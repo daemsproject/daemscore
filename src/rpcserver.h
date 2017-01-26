@@ -138,7 +138,8 @@ extern void ShutdownRPCMining();
 extern int64_t nWalletUnlockTime;
 extern CAmount AmountFromValue(const json_spirit::Value& value);
 extern json_spirit::Value ValueFromAmount(const CAmount& amount);
-extern CPubKey AccountFromValue(const Value& value);
+extern CKeyID AccountFromValue(const Value& value);
+extern CPubKey PubKeyFromValue(const Value& value);
 extern double GetDifficulty(const CBlockIndex* blockindex = NULL);
 extern std::string HelpRequiringPassphrase();
 extern std::string HelpExampleCli(std::string methodname, std::string args);
@@ -294,12 +295,10 @@ extern Value getsettings(const Array& params, bool fHelp);
 extern Value updatesettings(const Array& params, bool fHelp);
 
 
-extern json_spirit::Value encodebase32(const json_spirit::Array& params, bool fHelp);//rpc util
-extern json_spirit::Value decodebase32(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value encodebase32check(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value decodebase32check(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value standardizebase32(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value comparebase32(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value encodebase58(const json_spirit::Array& params, bool fHelp);//rpc util
+extern json_spirit::Value decodebase58(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value encodebase58check(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value decodebase58check(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value isvalidpubkeyaddress(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getextkey(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getextpubkey(const json_spirit::Array& params, bool fHelp);
@@ -317,12 +316,6 @@ extern CContent _create_content(const json_spirit::Array& params);
 extern json_spirit::Object _decode_content(const json_spirit::Array& params);
 extern bool GetTxFromBlock(const CBlock& block, const int nTx, CTransaction& txOut);
 extern bool GetVoutFromTx(const CTransaction& tx, const int nVout, CTxOut& vout);
-//extern bool GetContentFromVout(const CTransaction& tx, const int nVout, CContent& content);
-//extern json_spirit::Object _voutToJson(const CTxOut& txout);
-//extern json_spirit::Object _output_content(const CContent& cttIn, const int& cformat, const unsigned char& cttf, const CLink& clinkIn, const std::vector<CBitcoinAddress>& posters, const CAmount nValue, const CScript& scriptPubKey);
-//extern json_spirit::Array _get_posters(const CTransaction&tx);
-////extern bool _parse_getcontents_params(const json_spirit::Array& params, int& fbh, int& maxc, int& maxb, int& blkc, json_spirit::Array& withcc, json_spirit::Array& withoutcc, json_spirit::Array& firstcc, int& fContentFormat, unsigned char& cflag, int& mincsize, json_spirit::Array& addrs, bool& fAsc);
-//extern bool _check_cc(const CContent& ctt, const json_spirit::Array& withcc, const json_spirit::Array& withoutcc, const json_spirit::Array& firstcc);
 
 
 // in rest.cpp

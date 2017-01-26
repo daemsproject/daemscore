@@ -67,7 +67,7 @@ bool AppInit(int argc, char* argv[])
     ParseParameters(argc, argv);
 
     // Process help and version before taking care about datadir
-    if (mapArgs.count("-?") || mapArgs.count("-help") || mapArgs.count("-version"))
+    if (mapArgs.count("-?") || mapArgs.count("-h") ||  mapArgs.count("-help") || mapArgs.count("-version"))
     {
         std::string strUsage = _("Faicoin Core Daemon") + " " + _("version") + " " + FormatFullVersion() + "\n";
 
@@ -78,7 +78,7 @@ bool AppInit(int argc, char* argv[])
         else
         {
             strUsage += "\n" + _("Usage:") + "\n" +
-                  "  faicoind [options]                     " + _("Start Liteocin Core Daemon") + "\n";
+                  "  faicoind [options]                     " + _("Start faicoin Core Daemon") + "\n";
 
             strUsage += "\n" + HelpMessage(HMM_BITCOIND);
         }
