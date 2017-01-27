@@ -175,6 +175,7 @@ extern json_spirit::Value estimatepriority(const json_spirit::Array& params, boo
 extern json_spirit::Value poolmine(const Array& params, bool fHelp);
 extern json_spirit::Value mhash(const Array& params, bool fHelp);
 
+
 extern json_spirit::Value getnewid(const json_spirit::Array& params, bool fHelp); // in rpcwallet.cpp
 extern json_spirit::Value getmainid(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getidstep(const json_spirit::Array& params, bool fHelp);
@@ -222,6 +223,7 @@ extern json_spirit::Value getcontacts(const json_spirit::Array& params, bool fHe
 extern json_spirit::Value addcontacts(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value getsimplesig(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value publishpackage(const json_spirit::Array& params, bool fHelp);
+
 
 extern json_spirit::Value getrawtransaction(const json_spirit::Array& params, bool fHelp); // in rcprawtransaction.cpp
 extern json_spirit::Value encoderawtransaction(const json_spirit::Array& params, bool fHelp); 
@@ -340,6 +342,7 @@ extern CPaymentOrder GetPublishPackagetPaymentRequest(const Array arr);
 extern CWalletTx CreateRawTransaction(CPaymentOrder pr,bool& fRequestPassword,CWallet*& pwallet);
 extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, json_spirit::Object& entry,const int nContentLenLimit=1024,std::map<int,CScript>* pmapPrevoutScriptPubKey=NULL,int nTx=-1);
 extern Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDetails = false);
+extern CMutableTransaction TxSetJSON(Value objTx);
 extern void GetMessagesFromTx(std::vector<CMessage>& vMessages, const CTransaction& tx, const int nBlockHeight,const int nTx,const int nTime, const std::vector<CScript>& vIDsLocal,
         const std::vector<CScript>& vIDsForeign,const int nDirectionFilter,const bool fLinkonly, int& nPos,const int nOffset,const int nCount);
 //extern int GetBlocksToMaturity(const unsigned int nLockTime);
@@ -347,5 +350,4 @@ extern void GetMessagesFromTx(std::vector<CMessage>& vMessages, const CTransacti
 //extern uint32_t LockTimeToTime(uint32_t nLockTime);
 extern void SortMessages(std::vector<CMessage>& vMsg,std::vector<CScript> vIDsLocal);
 extern Value gettxmessages(const json_spirit::Array& params, bool fHelp);
-
 #endif // BITCOIN_RPCSERVER_H

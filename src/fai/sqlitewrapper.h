@@ -299,7 +299,7 @@ public:
     //bool SearchStrsIn(const char* tableName,const char* searchByColumn,const char* searchByValue,const char* searchForColumn,int searchResultFormat,vector<string>& searchResult,int nMax=1000) const;
     bool SearchStrs(const char* tableName,const char* searchByColumn,const char* searchByValue,const char* searchForColumn,int searchResultFormat,vector<string>& searchResult,const char* chOperator="=",int nMax=1000) const;
     bool SearchInts(const char* tableName,const char* searchByColumn,const char* searchByValue,const char* searchForColumn,vector<int64_t>& searchResult,const char* chOperator="=") const;
-    bool SearchInt(const char* tableName,const char* columnName,const char* columnValue,const char* resultColumnName,int64_t& result)const;
+    bool SearchInt(const char* tableName,const char* columnName,string columnValue,const char* resultColumnName,int64_t& result)const;
     bool Delete(const char* tableName,const char* searchColumn,const char* searchValue,const char* chOperator);
 
     bool Write(const char* sql);

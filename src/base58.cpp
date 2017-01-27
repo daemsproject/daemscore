@@ -230,19 +230,23 @@ private:
 
 public:
     CBitcoinAddressVisitor(CBitcoinAddress* addrIn) : addr(addrIn) {}
-
+     bool operator()(const CPubKey& id) const{return addr->Set(id);}
+     bool operator()(const CScript& script) const {return addr->Set(script);}
     bool operator()(const CKeyID& id) const { return addr->Set(id); }
     bool operator()(const CScriptID& id) const { return addr->Set(id); }
     bool operator()(const CNoDestination& no) const { return false; }
 };
-
 } // anon namespace
 
-bool CBitcoinAddress::Set(const CKeyID& id)
+bool CBitcoinAddress::Set(const CPubKey& id)
 {
-    SetData(Params().Base58Prefix(CChainParams::PUBKEY_ADDRESS), &id, 20);
+    if(!id.IsValid())
+        return false;
+    SetData(Params().Base58Prefix(CChainParams::PUBLIC_KEY), id.begin(), id.size());
     return true;
 }
+
+
 
 bool CBitcoinAddress::Set(const CScriptID& id)
 {
@@ -250,22 +254,37 @@ bool CBitcoinAddress::Set(const CScriptID& id)
     return true;
 }
 
+bool CBitcoinAddress::Set(const CScript& script)
+{
+    if(script.size()==0)
+        return false;
+    SetData(Params().Base58Prefix(CChainParams::SCRIPT), (void*)&script[0], script.size());
+    return true;
+}
+
 bool CBitcoinAddress::Set(const CTxDestination& dest)
 {
     return boost::apply_visitor(CBitcoinAddressVisitor(this), dest);
 }
-
+bool CBitcoinAddress::Set(const CKeyID& id)
+{
+    SetData(Params().Base58Prefix(CChainParams::PUBKEY_ADDRESS), &id, 20);
+    return true;
+}
 bool CBitcoinAddress::IsValid() const
 {
     return IsValid(Params());
 }
 
 bool CBitcoinAddress::IsValid(const CChainParams& params) const
-{
-    bool fCorrectSize = vchData.size() == 20;
+{  
+    bool fCorrectSize = vchData.size() == (vchVersion == params.Base58Prefix(CChainParams::PUBLIC_KEY)?33:20);
     bool fKnownVersion = vchVersion == params.Base58Prefix(CChainParams::PUBKEY_ADDRESS) ||
+                        vchVersion == params.Base58Prefix(CChainParams::PUBLIC_KEY) ||
                          vchVersion == params.Base58Prefix(CChainParams::SCRIPT_ADDRESS);
-    return fCorrectSize && fKnownVersion;
+     bool fCorrectScript = vchVersion == params.Base58Prefix(CChainParams::SCRIPT);
+    return (fCorrectSize && fKnownVersion)|| fCorrectScript;
+    
 }
 
 std::string CBitcoinAddress::ToString() const
@@ -277,10 +296,23 @@ CTxDestination CBitcoinAddress::Get() const
 {
     if (!IsValid())
         return CNoDestination();
+    if (vchVersion == Params().Base58Prefix(CChainParams::SCRIPT)) {
+        std::vector<unsigned char> s;
+
+        BOOST_FOREACH(const unsigned char & ch, vchData)
+        {
+            s.push_back(ch);
+        }
+        return CScript(s.begin(), s.end());
+    }
+    if (vchVersion == Params().Base58Prefix(CChainParams::PUBLIC_KEY)) {
+        return CPubKey(vchData.begin(), vchData.end());
+    }
     uint160 id;
     memcpy(&id, &vchData[0], 20);
     if (vchVersion == Params().Base58Prefix(CChainParams::PUBKEY_ADDRESS))
         return CKeyID(id);
+    
     else if (vchVersion == Params().Base58Prefix(CChainParams::SCRIPT_ADDRESS))
         return CScriptID(id);
     else
@@ -296,10 +328,17 @@ bool CBitcoinAddress::GetKeyID(CKeyID& keyID) const
     keyID = CKeyID(id);
     return true;
 }
-
+bool CBitcoinAddress::GetPubKey(CPubKey& pub) const
+{
+    //LogPrintf("CBitcoinAddress::GetKey vchVersion %i,size %u \n",(int)vchVersion[0],vchVersion.size());
+    if (!IsValid() || (vchVersion != Params().Base58Prefix(CChainParams::PUBLIC_KEY)))
+        return false;    
+    pub.Set(vchData.begin(), vchData.end());
+    return true;
+}
 bool CBitcoinAddress::IsScript() const
 {
-    return IsValid() && vchVersion == Params().Base58Prefix(CChainParams::SCRIPT_ADDRESS);
+    return IsValid() && vchVersion == Params().Base58Prefix(CChainParams::SCRIPT);
 }
 
 void CBitcoinSecret::SetKey(const CKey& vchSecret)
@@ -337,38 +376,38 @@ bool CBitcoinSecret::SetString(const std::string& strSecret)
     return SetString(strSecret.c_str());
 }
 
-void CBitcoinPubKey::SetKey(const CPubKey& pubkey)
-{
-    assert(pubkey.IsValid());
-    SetData(Params().Base58Prefix(CChainParams::PUBLIC_KEY), pubkey.begin(), pubkey.size());    
-}
-
-CPubKey CBitcoinPubKey::GetKey()
-{
-    CPubKey ret;
-    assert(vchData.size() >= 33);
-    ret.Set(vchData.begin(), vchData.end());
-    //LogPrintf("vchVersion:%s",HexStr(vchVersion));
-    return ret;
-}
-
-bool CBitcoinPubKey::IsValid() const
-{
-    // LogPrintf("CBitcoinPubKey:isvalid:size:%i\n",vchData.size());
-    bool fExpectedFormat = vchData.size() == 33;
-    bool fCorrectVersion = vchVersion == Params().Base58Prefix(CChainParams::PUBLIC_KEY);
-    return fExpectedFormat && fCorrectVersion;
-}
-
-bool CBitcoinPubKey::SetString(const char* pszSecret)
-{
-    return CBase58Data::SetString(pszSecret) && IsValid();
-}
-
-bool CBitcoinPubKey::SetString(const std::string& strSecret)
-{
-    return SetString(strSecret.c_str());
-}
+//void CBitcoinPubKey::SetKey(const CPubKey& pubkey)
+//{
+//    assert(pubkey.IsValid());
+//    SetData(Params().Base58Prefix(CChainParams::PUBLIC_KEY), pubkey.begin(), pubkey.size());    
+//}
+//
+//CPubKey CBitcoinPubKey::GetKey()
+//{
+//    CPubKey ret;
+//    assert(vchData.size() >= 33);
+//    ret.Set(vchData.begin(), vchData.end());
+//    //LogPrintf("vchVersion:%s",HexStr(vchVersion));
+//    return ret;
+//}
+//
+//bool CBitcoinPubKey::IsValid() const
+//{
+//    // LogPrintf("CBitcoinPubKey:isvalid:size:%i\n",vchData.size());
+//    bool fExpectedFormat = vchData.size() == 33;
+//    bool fCorrectVersion = vchVersion == Params().Base58Prefix(CChainParams::PUBLIC_KEY);
+//    return fExpectedFormat && fCorrectVersion;
+//}
+//
+//bool CBitcoinPubKey::SetString(const char* pszSecret)
+//{
+//    return CBase58Data::SetString(pszSecret) && IsValid();
+//}
+//
+//bool CBitcoinPubKey::SetString(const std::string& strSecret)
+//{
+//    return SetString(strSecret.c_str());
+//}
 
 bool StringToScriptPubKey(const string& str, CScript& script)
 {
@@ -385,17 +424,19 @@ bool ScriptPubKeyToString(const CScript& script, string& str)
 {
     txnouttype type;
     vector<CTxDestination> addresses;
-    int nRequired;
+    unsigned int nRequired;
     ExtractDestinations(script, type, addresses, nRequired);
      //LogPrintf("ScriptPubKeyToString addresses:%i type %i\n",addresses.size(),type);
     if (addresses.size() == 0)
         return false;
     switch((int)type)
     {
+        case TX_PUBKEY:
         case TX_PUBKEYHASH:
         case TX_SCRIPTHASH:
             str = CBitcoinAddress(addresses[0]).ToString();
             break;        
+        case TX_SCRIPT:
         case TX_MULTISIG:
         {
 //            txnouttype type;

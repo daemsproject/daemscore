@@ -250,11 +250,11 @@ std::string CLink::ToString(const linkformat linkFormat)const
             nHeightS += IntToHexString(nHeight);
             nTxS = IntToHexString(nTx);
             break;
-        case LINK_FORMAT_B32:
-            nHeightS = URI_B32_HEADER;
-            nHeightS += EncodeBase32(nHeight);
-            nTxS = EncodeBase32(nTx);
-            break;
+//        case LINK_FORMAT_B32:
+//            nHeightS = URI_B32_HEADER;
+//            nHeightS += EncodeBase32(nHeight);
+//            nTxS = EncodeBase32(nTx);
+//            break;
     }
     r += nHeightS;
     r += URI_SEPERATOR;
@@ -269,9 +269,9 @@ std::string CLink::ToString(const linkformat linkFormat)const
             case LINK_FORMAT_HEX:
                 r += IntToHexString(nVout);
                 break;
-            case LINK_FORMAT_B32:
-                r += EncodeBase32(nVout);
-                break;
+//            case LINK_FORMAT_B32:
+//                r += EncodeBase32(nVout);
+//                break;
         }
     }
     return r;
@@ -474,11 +474,11 @@ std::string CLinkUni::ToStringBlockChain(const linkformat linkFormat)const
             nHeightS += IntToHexString(nHeight);
             nTxS = IntToHexString(nTx);
             break;
-        case LINK_FORMAT_B32:
-            nHeightS = URI_B32_HEADER;
-            nHeightS += EncodeBase32(nHeight);
-            nTxS = EncodeBase32(nTx);
-            break;
+//        case LINK_FORMAT_B32:
+//            nHeightS = URI_B32_HEADER;
+//            nHeightS += EncodeBase32(nHeight);
+//            nTxS = EncodeBase32(nTx);
+//            break;
     }
     r += nHeightS;
     r += URI_SEPERATOR;
@@ -493,9 +493,9 @@ std::string CLinkUni::ToStringBlockChain(const linkformat linkFormat)const
             case LINK_FORMAT_HEX:
                 r += IntToHexString(nVout);
                 break;
-            case LINK_FORMAT_B32:
-                r += EncodeBase32(nVout);
-                break;
+//            case LINK_FORMAT_B32:
+//                r += EncodeBase32(nVout);
+//                break;
             
         }
     }

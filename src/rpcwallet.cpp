@@ -90,12 +90,14 @@ CPubKey PubKeyFromValue(const Value& value)
     string strPub = value.get_str();
     if (strPub == "*")
         throw JSONRPCError(RPC_WALLET_INVALID_ACCOUNT_NAME, "Invalid pubkey");
-    CBitcoinPubKey pub;
-    if (!pub.SetString(strPub))
+    CBitcoinAddress pubadd;
+    if (!pubadd.SetString(strPub))
         throw JSONRPCError(RPC_WALLET_INVALID_ACCOUNT_NAME, "Invalid pubkey");
-    if(!pub.IsValid())
+    if(!pubadd.IsValid())
         throw JSONRPCError(RPC_WALLET_INVALID_ACCOUNT_NAME, "Invalid pubkey");
-    return pub.GetKey();    
+    CPubKey pub;
+    pubadd.GetPubKey(pub);
+    return pub;    
 }
 
 Value getnewid(const Array& params, bool fHelp)//original getnewaddress
@@ -117,10 +119,10 @@ Value getnewid(const Array& params, bool fHelp)//original getnewaddress
             + HelpExampleRpc("getnewid", "\"mainid\"")
             );
     //TODO if main id is provided, derive from the main id    
-    CPubKey keyID;
+    CKeyID keyID;
     if (params.size() == 1)
     {
-        CPubKey id = PubkeyFromValue(params[0]);
+        CKeyID id = AccountFromValue(params[0]);
         CWallet* pwallet;
         if (id == pwalletMain->GetID())
             pwallet = pwalletMain;
@@ -141,7 +143,7 @@ Value getnewid(const Array& params, bool fHelp)//original getnewaddress
     return ret;
 }
 
-CBitcoinAddress GetAccountAddresses(CPubKey id, bool bForceNew = false)
+CBitcoinAddress GetAccountAddresses(CKeyID id, bool bForceNew = false)
 {
     //    CWalletDB walletdb(pwalletMain->strWalletFile);
     //
@@ -208,11 +210,11 @@ Value getidstep(const json_spirit::Array& params, bool fHelp)
         throw runtime_error("getidstep");
     if (!pwalletMain->CanExtendKeys())
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "id file is not enough for extend keys");
-    CPubKey pubkey=PubkeyFromValue(params[0]);
-    KeyMap::iterator it=pwalletMain->mapKeys.find(pubkey);
+    CKeyID id=AccountFromValue(params[0]);
+    KeyMap::iterator it=pwalletMain->mapKeys.find(id);
     if(it==pwalletMain->mapKeys.end())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "id not found");
-    return Value(pwalletMain->mapKeys[pubkey]);
+    return Value(pwalletMain->mapKeys[id]);
 }
 Value getidbystep(const json_spirit::Array& params, bool fHelp)
 {
@@ -222,7 +224,7 @@ Value getidbystep(const json_spirit::Array& params, bool fHelp)
     CPubKey pub;
     if(!pwalletMain->GetExtendPubKey((uint64_t)params[0].get_int64(), pub))
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "id file is not enough for extend keys");
-    return Value(CBitcoinAddress(pub).ToString());
+    return Value(CBitcoinAddress(pub.GetID()).ToString());
     
     
 }
@@ -250,7 +252,7 @@ Value getrawchangeaddress(const Array& params, bool fHelp)
 
     //reservekey.KeepKey();
 
-    CPubKey keyID;
+    CKeyID keyID;
      pwalletMain->GenerateNewKey(keyID);
     return CBitcoinAddress(keyID).ToString();
 }
@@ -346,7 +348,7 @@ Value getidlist(const Array& params, bool fHelp)
     //TODO if main id is provided, get id list from that id
     if (params.size() == 1)
     {
-        CPubKey id = PubkeyFromValue(params[0]);
+        CKeyID id = AccountFromValue(params[0]);
         LogPrintf("getidlist:mainid:%s\n", params[0].get_str());
         CWallet* pwallet;
         if (id == pwalletMain->GetID())
@@ -360,7 +362,7 @@ Value getidlist(const Array& params, bool fHelp)
         //pwallet->SwitchToAccount(id);
         LogPrintf("getidlist:ids:%u\n", pwallet->mapKeys.size());
 
-        BOOST_FOREACH(const PAIRTYPE(CPubKey, uint64_t) & item, pwallet->mapKeys)
+        BOOST_FOREACH(const PAIRTYPE(CKeyID, uint64_t) & item, pwallet->mapKeys)
         {
             CBitcoinAddress address;
             address.Set(item.first);
@@ -376,7 +378,7 @@ Value getidlist(const Array& params, bool fHelp)
     {
         LogPrintf("getidlist:no parmas\n");
 
-        BOOST_FOREACH(const PAIRTYPE(CPubKey, uint64_t) & item, pwalletMain->mapKeys)
+        BOOST_FOREACH(const PAIRTYPE(CKeyID, uint64_t) & item, pwalletMain->mapKeys)
         {
             CBitcoinAddress address;
             address.Set(item.first);
@@ -549,8 +551,8 @@ Value signmessage(const Array& params, bool fHelp)
     if (!addr.IsValid())
         throw JSONRPCError(RPC_TYPE_ERROR, "Invalid address");
 
-    CPubKey keyID;
-    if (!addr.GetKey(keyID))
+    CKeyID keyID;
+    if (!addr.GetKeyID(keyID))
         throw JSONRPCError(RPC_TYPE_ERROR, "Invalid address");
     CKey key;
     //    if (!pwalletMain->HaveKey(keyID))
@@ -615,9 +617,9 @@ Value getreceivedbyaddress(const Array& params, bool fHelp)
 
     // Tally
     CAmount nAmount = 0;
-    std::vector<CPubKey> vIds;
-    CPubKey id;
-    if (!address.GetKey(id))
+    std::vector<CKeyID> vIds;
+    CKeyID id;
+    if (!address.GetKeyID(id))
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Faicoin address");
     vIds.push_back(id);
     map<uint256, CWalletTx> mapTxs = pwalletMain->GetWalletTxs(vIds);
@@ -665,7 +667,7 @@ Value getreceivedbyaccount(const Array& params, bool fHelp)
         nMinDepth = params[1].get_int();
 
     // Get the set of pub keys assigned to account
-    CPubKey id = PubkeyFromValue(params[0]);
+    CKeyID id = AccountFromValue(params[0]);
     CWallet wallet(id);
     wallet.LoadTxs();
     // Tally
@@ -714,7 +716,7 @@ Value getreceivedbyaccount(const Array& params, bool fHelp)
 //    return nBalance;
 //}
 
-CAmount GetAccountBalance(const CPubKey& id, int nMinDepth, const isminefilter& filter)
+CAmount GetAccountBalance(const CKeyID& id, int nMinDepth, const isminefilter& filter)
 {
     //CBitcoinAddress add;
     //if (!add.SetString(strAccount))
@@ -910,7 +912,7 @@ Value sendfrom(const Array& params, bool fHelp)
             + HelpExampleRpc("sendfrom", "\"tabby\", \"Ler4HNAEfwYhBmGXcFP2Po1NpRUEiK8km2\", 0.01, 6, \"donation\", \"seans outpost\"")
             );
 
-    CPubKey id = PubkeyFromValue(params[0]);
+    CKeyID id = AccountFromValue(params[0]);
     CBitcoinAddress address(params[1].get_str());
     if (!address.IsValid())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Faicoin address");
@@ -968,7 +970,7 @@ Value sendmany(const Array& params, bool fHelp)
             + HelpExampleRpc("sendmany", "\"tabby\", \"{\\\"Ler4HNAEfwYhBmGXcFP2Po1NpRUEiK8km2\\\":0.01,\\\"LbhhnRHHVfP1eUJp1tDNiyeeVsNhFN9Fcw\\\":0.02}\", 6, \"testing\"")
             );
 
-    CPubKey id = PubkeyFromValue(params[0]);
+    CKeyID account = AccountFromValue(params[0]);
     Object sendTo = params[1].get_obj();
     int nMinDepth = 1;
     if (params.size() > 2)
@@ -976,7 +978,7 @@ Value sendmany(const Array& params, bool fHelp)
 
     CWalletTx wtx;
     CBitcoinAddress address0;
-    address0.Set(id);
+    address0.Set(account);
     wtx.strFromAccount = address0.ToString();
     if (params.size() > 3 && params[3].type() != null_type && !params[3].get_str().empty())
         wtx.mapValue["comment"] = params[3].get_str();
@@ -1006,7 +1008,7 @@ Value sendmany(const Array& params, bool fHelp)
     EnsureWalletIsUnlocked();
 
     // Check funds
-    CAmount nBalance = GetAccountBalance(id, nMinDepth, ISMINE_SPENDABLE);
+    CAmount nBalance = GetAccountBalance(account, nMinDepth, ISMINE_SPENDABLE);
     if (totalAmount > nBalance)
         throw JSONRPCError(RPC_WALLET_INSUFFICIENT_FUNDS, "Account has insufficient funds");
 
@@ -1439,7 +1441,7 @@ Value listtransactions(const Array& params, bool fHelp)
             //pwalletMain->LoadTxs();
         } else
         {
-            CPubKey id;
+            CKeyID id;
             id = AccountFromValue(params[0]);
             if (id == pwalletMain->GetID())
                 pwallet = pwalletMain;
@@ -2303,7 +2305,7 @@ Value addcontacts(const json_spirit::Array& params, bool fHelp)
         throw runtime_error("addcontacts Wrong number of parameters");
     if (params[0].type() != str_type)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter1, expected string");
-    CPubKey ID = PubkeyFromValue(params[0].get_str());
+    CKeyID ID = AccountFromValue(params[0].get_str());
     LogPrintf("addcontacts 1\n");
     if (params[1].type() != array_type)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter2, expected array");
@@ -2374,10 +2376,10 @@ Value getsimplesig(const json_spirit::Array& params, bool fHelp)
         throw runtime_error("getsimplesig Wrong number of parameters");
     if (params[0].type() != str_type)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter1, expected string");
-    CPubKey IDLocal = AccountFromValue(params[0].get_str());
+    CKeyID IDLocal = AccountFromValue(params[0].get_str());
     if (params[1].type() != str_type)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter2, expected string");
-    CPubKey IDForeign = AccountFromValue(params[1].get_str());
+    CPubKey PubForeign = PubKeyFromValue(params[1].get_str());
     if (params[2].type() != str_type)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter3, expected string");
     std::vector<unsigned char> msg = ParseHexV(params[2], "message for sig");
@@ -2390,7 +2392,7 @@ Value getsimplesig(const json_spirit::Array& params, bool fHelp)
         pwallet = new CWallet(IDLocal, false);
     }
     CKey sharedKey;
-    if (!pwallet->GetSharedKey(IDLocal, IDForeign, sharedKey)&&!pwallet->MakeSharedKey(IDLocal, IDForeign, sharedKey, true))
+    if (!pwallet->GetSharedKey(IDLocal, PubForeign, sharedKey)&&!pwallet->MakeSharedKey(IDLocal, PubForeign, sharedKey, true))
     {
         throw JSONRPCError(RPC_INVALID_PARAMETER, "ID is not available for making simple sig");
     }

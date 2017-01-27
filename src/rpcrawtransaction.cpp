@@ -659,7 +659,6 @@ CMutableTransaction TxSetJSON(Value txJson)
 {
     Object objTx=txJson.get_obj();
     CMutableTransaction rawTx;
-    Object objTx=params[0].get_obj();
     rawTx.nVersion=find_value(objTx, "version").get_int();
     Array inputs = find_value(objTx, "vin").get_array();
     Array sendTo = find_value(objTx, "vout").get_array(); 
@@ -749,7 +748,7 @@ CMutableTransaction TxSetJSON(Value txJson)
         CTxOut out(nAmount, scriptPubKey, strContent,nLocktime);
         rawTx.vout.push_back(out);
     }
-    return EncodeHexTx(rawTx);
+    return rawTx;
 }
 Value decodescript(const Array& params, bool fHelp)
 {
@@ -1124,13 +1123,13 @@ Value sendrawtransaction(const Array& params, bool fHelp)
 }
 CWalletTx CreateRawTransaction(CPaymentOrder pr,bool& fRequestPassword,CWallet*& pwallet){
     //LogPrintf("rpcrawtransaction %s:%s\n",__func__,pr.vFrom[0].ToString());
-    CPubKey id;
+    CKeyID id;
     CTxDestination address;
     if(!ExtractDestination(pr.vFrom[0],address))
         throw JSONRPCError(RPC_TRANSACTION_ERROR, "wrong idfrom");
-    CBitcoinAddress pub;
-    pub.Set(address);
-    if(!pub.GetKey(id))
+    CBitcoinAddress add;
+    add.Set(address);
+    if(!add.GetKeyID(id))
         throw JSONRPCError(RPC_TRANSACTION_ERROR, "wrong idfrom");
     
     pwallet=new CWallet(id);

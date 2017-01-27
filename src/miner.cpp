@@ -323,7 +323,7 @@ static boost::thread_group* minerThreads = NULL;
 double dHashesPerSec = 0.0;
 int64_t nHPSTimerStart = 0;
 
-CBlockTemplate* CreateNewBlockWithKey(CPubKey& miningID)
+CBlockTemplate* CreateNewBlockWithKey(CKeyID& miningID)
 {
 //    CPubKey pubkey;
 //    if (!reservekey.GetReservedKey(pubkey))
@@ -338,7 +338,7 @@ CBlockTemplate* CreateNewBlockWithKey(CPubKey& miningID)
     return pBlockTemplate;
 }
 
-bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CPubKey& miningID,bool fExtendID)
+bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CKeyID& miningID,bool fExtendID)
 {
     LogPrintf("%s\n", pblock->ToString());
     LogPrintf("generated %s\n", FormatMoney(pblock->vtx[0].vout[0].nValue));
@@ -377,7 +377,7 @@ void BitcoinMiner(CWallet *pwallet,bool fExtendID)
     // Each thread has its own key and counter
     
     //CReserveKey reservekey(pwallet);
-    CPubKey miningID;
+    CKeyID miningID;
     if(fExtendID)
         pwallet->GenerateNewKey(miningID);
     else

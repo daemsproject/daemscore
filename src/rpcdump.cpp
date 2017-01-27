@@ -257,8 +257,8 @@ Value importwallet(const Array& params, bool fHelp)
         CPubKey pubkey ;
          key.GetPubKey(pubkey);
         assert(key.VerifyPubKey(pubkey));
-        //CKeyID keyid = pubkey.GetID();
-        if (pwalletMain->HaveKey(pubkey)) {
+        CKeyID keyid = pubkey.GetID();
+        if (pwalletMain->HaveKey(keyid)) {
             LogPrintf("Skipping import of %s (key already present)\n", CBitcoinAddress(pubkey).ToString());
             continue;
         }
@@ -330,8 +330,8 @@ Value dumpprivkey(const Array& params, bool fHelp)
     CBitcoinAddress address;
     if (!address.SetString(strAddress))
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Faicoin address");
-    CPubKey keyID;
-    if(!address.GetKey(keyID))
+    CKeyID keyID;
+    if (!address.GetKeyID(keyID))
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Faicoin address");
     ///////if (!address.GetKeyID(keyID))
         //throw JSONRPCError(RPC_TYPE_ERROR, "Address does not refer to a key");
@@ -362,14 +362,14 @@ Value dumpwallet(const Array& params, bool fHelp)
     if (!file.is_open())
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Cannot open wallet dump file");
 
-    std::map<CPubKey, int64_t> mapKeyBirth;
-    std::set<CPubKey> setKeyPool;
+    std::map<CKeyID, int64_t> mapKeyBirth;
+    std::set<CKeyID> setKeyPool;
     //pwalletMain->GetKeyBirthTimes(mapKeyBirth);
     //pwalletMain->GetAllReserveKeys(setKeyPool);
 
     // sort time/key pairs
-    std::vector<std::pair<int64_t, CPubKey> > vKeyBirth;
-    for (std::map<CPubKey, int64_t>::const_iterator it = mapKeyBirth.begin(); it != mapKeyBirth.end(); it++) {
+    std::vector<std::pair<int64_t, CKeyID> > vKeyBirth;
+    for (std::map<CKeyID, int64_t>::const_iterator it = mapKeyBirth.begin(); it != mapKeyBirth.end(); it++) {
         vKeyBirth.push_back(std::make_pair(it->second, it->first));
     }
     mapKeyBirth.clear();
@@ -381,8 +381,8 @@ Value dumpwallet(const Array& params, bool fHelp)
     file << strprintf("# * Best block at time of backup was %i (%s),\n", chainActive.Height(), chainActive.Tip()->GetBlockHash().ToString());
     file << strprintf("#   mined on %s\n", EncodeDumpTime(chainActive.Tip()->GetBlockTime()));
     file << "\n";
-    for (std::vector<std::pair<int64_t, CPubKey> >::const_iterator it = vKeyBirth.begin(); it != vKeyBirth.end(); it++) {
-        const CPubKey &keyid = it->second;
+    for (std::vector<std::pair<int64_t, CKeyID> >::const_iterator it = vKeyBirth.begin(); it != vKeyBirth.end(); it++) {
+        const CKeyID &keyid = it->second;
         std::string strTime = EncodeDumpTime(it->first);
         std::string strAddr = CBitcoinAddress(keyid).ToString();
         CKey key;

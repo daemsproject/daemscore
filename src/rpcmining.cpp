@@ -160,7 +160,7 @@ Value setgenerate(const Array& params, bool fHelp)
         int nHeight = 0;
         int nGenerate = (nGenProcLimit > 0 ? nGenProcLimit : 1);
         //CReserveKey reservekey(pwalletMain);
-        CPubKey miningID;
+        CKeyID miningID;
         pwalletMain->GenerateNewKey(miningID);
         {   // Don't keep cs_main locked
             LOCK(cs_main);
@@ -207,8 +207,8 @@ Value setgenerate(const Array& params, bool fHelp)
                 if(!add.SetString(params[2].get_str()))
                     throw JSONRPCError(RPC_INTERNAL_ERROR, "ID format error");            
                 LogPrintf("setgenerate address setstring:%s\n",add.ToString());
-                CPubKey miningID;
-                if(!add.GetKey(miningID))
+                CKeyID miningID;
+                if(!add.GetKeyID(miningID))
                     throw JSONRPCError(RPC_INTERNAL_ERROR, "ID format error2");    
                 if (miningID!=pwalletMining->GetID())
                     pwalletMining=new CWallet(miningID);

@@ -233,7 +233,7 @@ CScript _createmultisig_redeemScript(const Array& params)
     unsigned int nTotalWeight=0;
     BOOST_FOREACH(const Pair& s, sendTo) {
         CBitcoinAddress address(s.name_);
-        if (!address.IsValid()||!address.GetKey(pub))
+        if (!address.IsValid()||!address.GetPubKey(pub))
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, string("Invalid Faicoin address: ")+s.name_);
 
         //        if (setDest. .count(address))
@@ -330,9 +330,9 @@ Value verifymessage(const Array& params, bool fHelp)
     if (!addr.IsValid())
         throw JSONRPCError(RPC_TYPE_ERROR, "Invalid address");
 
-    CPubKey keyID;
-    if(!addr.GetKey(keyID))
-        throw JSONRPCError(RPC_TYPE_ERROR, "Invalid address");
+    CKeyID keyID;
+    if (!addr.GetKeyID(keyID))
+        throw JSONRPCError(RPC_TYPE_ERROR, "Address does not refer to key");
 
     bool fInvalid = false;
     vector<unsigned char> vchSig = DecodeBase64(strSign.c_str(), &fInvalid);
@@ -346,8 +346,17 @@ Value verifymessage(const Array& params, bool fHelp)
     CPubKey pubkey;
     if (!pubkey.RecoverCompact(ss.GetHash(), vchSig))
         return false;
+  //  LogPrintf("rpcmisc verifymessage 2\n");
+    if(pubkey.GetID() == keyID)
+        return true;
+  //  LogPrintf("rpcmisc verifymessage 3\n");
+    if(pubkey.IsCompressed())
+        pubkey.Compress();
+    else
+        pubkey.Decompress();
+  //  LogPrintf("rpcmisc verifymessage 4\n");
+    return Value(pubkey.GetID() == keyID);        
 
-    return (pubkey == keyID);
 }
 
 Value setmocktime(const Array& params, bool fHelp)

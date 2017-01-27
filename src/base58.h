@@ -104,18 +104,23 @@ public:
 class CBitcoinAddress : public CBase58Data {
 public:
     bool Set(const CKeyID &id);
+    bool Set(const CPubKey &id);
     bool Set(const CScriptID &id);
     bool Set(const CTxDestination &dest);
+    bool Set(const CScript &script);
     bool IsValid() const;
     bool IsValid(const CChainParams &params) const;
 
     CBitcoinAddress() {}
     CBitcoinAddress(const CTxDestination &dest) { Set(dest); }
+    CBitcoinAddress(const CPubKey& id) { Set(id); }
+    CBitcoinAddress(const CScript &script) { Set(script); }
     CBitcoinAddress(const std::string& strAddress) { SetString(strAddress); }
     CBitcoinAddress(const char* pszAddress) { SetString(pszAddress); }
 
     CTxDestination Get() const;
     bool GetKeyID(CKeyID &keyID) const;
+    bool GetPubKey(CPubKey &pub) const;
     bool IsScript() const;
     std::string ToString() const;
 };
@@ -136,22 +141,22 @@ public:
     CBitcoinSecret() {}
 };
 
-/**
- * A base58-encoded pubkey
- */
-class CBitcoinPubKey : public CBase58Data
-{
-public:
-    void SetKey(const CPubKey& pubkey);
-    CPubKey GetKey();
-    bool IsValid() const;
-    bool SetString(const char* pszSecret);
-    bool SetString(const std::string& strSecret);
-
-    CBitcoinPubKey(const CPubKey& pubkey) { SetKey(pubkey); }
-    //CBitcoinPubKey(const std::string& strAddress) { SetString(strAddress); }
-    CBitcoinPubKey() {}
-};
+///**
+// * A base58-encoded pubkey
+// */
+//class CBitcoinPubKey : public CBase58Data
+//{
+//public:
+//    void SetKey(const CPubKey& pubkey);
+//    CPubKey GetKey();
+//    bool IsValid() const;
+//    bool SetString(const char* pszSecret);
+//    bool SetString(const std::string& strSecret);
+//
+//    CBitcoinPubKey(const CPubKey& pubkey) { SetKey(pubkey); }
+//    //CBitcoinPubKey(const std::string& strAddress) { SetString(strAddress); }
+//    CBitcoinPubKey() {}
+//};
 
 template<typename K, int Size, CChainParams::Base58Type Type> class CBitcoinExtKeyBase : public CBase58Data
 {

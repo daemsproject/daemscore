@@ -401,10 +401,9 @@ bool CWalletDB::ReadKeyStore(CCryptoKeyStore* keyStore){
         if(valTemp.type()==json_spirit::str_type){
                 //std::vector<unsigned char> vchTmp;
                 std::string str=valTemp.get_str();
-                CBitcoinPubKey pub;
-                if(pub.SetString(str))
+                CBitcoinAddress pub;
+                if(pub.SetString(str)&&pub.GetPubKey(keyStore->baseKey.pubKey))
                 {
-                    keyStore->baseKey.pubKey=pub.GetKey();
                     //LogPrintf("walletdb.cpp:readkeysotre basepub:%s,size:%i \n",HexStr(keyStore->baseKey.pubKey.begin(),keyStore->baseKey.pubKey.end()),keyStore->baseKey.pubKey.size());
                     keyStore->fHasPub=true;                    
                 }              
@@ -414,10 +413,9 @@ bool CWalletDB::ReadKeyStore(CCryptoKeyStore* keyStore){
         if(valTemp.type()==json_spirit::str_type){
                 //std::vector<unsigned char> vchTmp;
                 std::string str=valTemp.get_str();               
-                CBitcoinPubKey pub;
-                if(pub.SetString(str))
-                {
-                    keyStore->stepKey.pubKey=pub.GetKey();
+                CBitcoinAddress pub;
+                if(pub.SetString(str)&pub.GetPubKey(keyStore->stepKey.pubKey))
+                {                    
                     //LogPrintf("walletdb.cpp:readkeysotre steppub:%s,size:%i \n",HexStr(keyStore->stepKey.pubKey.begin(),keyStore->stepKey.pubKey.end()),keyStore->stepKey.pubKey.size());
                     keyStore->fHasStepPub=true;                
                 }
@@ -507,7 +505,7 @@ bool CWalletDB::WriteKeyStore(CCryptoKeyStore* keyStore){
     }    
     if(keyStore->fHasStepPub){
         //LogPrintf("walletdb.cpp:WriteKeyStore steppub:%s,size:%i\n",HexStr(keyStore->stepKey.pubKey.begin(),keyStore->stepKey.pubKey.end()),keyStore->stepKey.pubKey.size());
-        objId.push_back(Pair("steppub", json_spirit::Value(CBitcoinPubKey(keyStore->stepKey.pubKey).ToString())));
+        objId.push_back(Pair("steppub", json_spirit::Value(CBitcoinAddress(keyStore->stepKey.pubKey).ToString())));
     }
     //LogPrintf("walletdb.cpp:WriteKeyStore%4\n");
     objId.push_back(Pair("maxsteps", json_spirit::Value(keyStore->nMaxSteps)));

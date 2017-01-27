@@ -25,7 +25,7 @@ using namespace std;
 
 typedef vector<unsigned char> valtype;
 
-bool Sign1(const CPubKey& address, const CKeyStore& keystore, uint256 hash, int nHashType, CScript& scriptSigRet)
+bool Sign1(const CKeyID& address, const CKeyStore& keystore, uint256 hash, int nHashType, CScript& scriptSigRet)
 {
     CKey key;
     //LogPrintf("sign.cpp sign1,keyIn:%s \n",HexStr(address.begin(),address.end()));
@@ -53,7 +53,7 @@ bool SignN(const vector<valtype>& multisigdata, const CKeyStore& keystore, uint2
     for (unsigned int i = 1; i < multisigdata.size()-1 && wSigned < wRequired; i++)
     {
         const valtype& pubkey = multisigdata[i];
-        CPubKey keyID=CPubKey(pubkey);
+        CKeyID keyID = CPubKey(pubkey).GetID();
         i++;
         if (Sign1(keyID, keystore, hash, nHashType, scriptSigRet))
         {

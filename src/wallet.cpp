@@ -283,7 +283,7 @@ bool CWallet::GetContactPubKey(const std::string strContact, CPubKey& pubKey) {
     val = find_value(objInfo, "pubkey");
     if (val.type() != json_spirit::str_type)
         return false;
-    return CBitcoinAddress(val.get_str()).GetKey(pubKey);
+    return CBitcoinAddress(val.get_str()).GetPubKey(pubKey);
 
 }
 //bool CWallet::GetSharedKeyFromAdb(const std::string strContact,CKey& sharedKey)
@@ -306,14 +306,14 @@ bool CWallet::GetContactPubKey(const std::string strContact, CPubKey& pubKey) {
 //    return true;
 //}
 
-bool CWallet::MakeSharedKey(const CPubKey& IDLocal, const CPubKey& IDForeign, CKey& sharedKey, bool fStore) {
+bool CWallet::MakeSharedKey(const CKeyID& IDLocal, const CPubKey& PubForeign, CKey& sharedKey, bool fStore) {
     CKey decryptedKey;
     if (!CCryptoKeyStore::GetKey(IDLocal, decryptedKey))
         return false;
-    if (!decryptedKey.MakeSharedKey(IDForeign, sharedKey))
+    if (!decryptedKey.MakeSharedKey(PubForeign, sharedKey))
         return false;
     if (fStore)
-        StoreSharedKey(IDLocal, IDForeign, sharedKey);
+        StoreSharedKey(IDLocal, PubForeign, sharedKey);
     return true;
 }
 
@@ -321,7 +321,7 @@ bool CWallet::EncryptMessages(const std::map<string, std::vector<string> >& mapM
     for (std::map<string, std::vector<string> > ::const_iterator it = mapMessagesIn.begin(); it != mapMessagesIn.end(); it++)
     {
         CPubKey pub;
-        CBitcoinAddress(it->first).GetKey(pub);
+        CBitcoinAddress(it->first).GetPubKey(pub);
         //LogPrintf("CWallet::EncryptMessages pub\n");       
         CKey sharedKey;
         if (!GetSharedKey(id, pub, sharedKey))
@@ -2470,11 +2470,11 @@ void CWallet::ListLockedCoins(std::vector<COutPoint>& vOutpts) {
 class CAffectedKeysVisitor : public boost::static_visitor<void> {
 private:
     const CKeyStore &keystore;
-    std::vector<CPubKey> &vKeys;
+    std::vector<CKeyID> &vKeys;
 
 public:
 
-    CAffectedKeysVisitor(const CKeyStore &keystoreIn, std::vector<CPubKey> &vKeysIn) : keystore(keystoreIn), vKeys(vKeysIn) {
+    CAffectedKeysVisitor(const CKeyStore &keystoreIn, std::vector<CKeyID> &vKeysIn) : keystore(keystoreIn), vKeys(vKeysIn) {
     }
 
     void Process(const CScript &script) {
@@ -2487,10 +2487,13 @@ public:
             boost::apply_visitor(*this, dest);
         }
     }
-
-    void operator()(const CPubKey &keyId) {
+     void operator()(const CKeyID &keyId) {
         if (keystore.HaveKey(keyId))
             vKeys.push_back(keyId);
+    }
+    void operator()(const CPubKey &pub) {
+        if (keystore.HaveKey(pub.GetID()))
+            vKeys.push_back(pub.GetID());
     }
 
     void operator()(const CScript &script) {

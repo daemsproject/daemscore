@@ -30,7 +30,7 @@ bool CBasicKeyStore::AddKey(const CKey &key)
     if(!key.GetPubKey(pub))
         return false;    
     fHasPub=true;
-    mapKeys[pub]=0;
+    mapKeys[pub.GetID()]=0;
     return true;
 }
 
@@ -61,45 +61,45 @@ bool CBasicKeyStore::GetCScript(const CScriptID &hash, CScript& redeemScriptOut)
     }
     return false;
 }
-bool CBasicKeyStore::GetSharedKey(const CPubKey IDLocal,const CPubKey IDForeign,CKey& sharedKey)
+bool CBasicKeyStore::GetSharedKey(const CKeyID IDLocal,const CPubKey PubForeign,CKey& sharedKey)
 {
-    if(!HasSharedKey(IDLocal,IDForeign))
+    if(!HasSharedKey(IDLocal,PubForeign))
         return false;        
-    sharedKey=mapSharedKeys[IDLocal][IDForeign];
+    sharedKey=mapSharedKeys[IDLocal][PubForeign];
     return true;
 }
-bool CBasicKeyStore::HasSharedKey(const CPubKey IDLocal,const CPubKey IDForeign)const
+bool CBasicKeyStore::HasSharedKey(const CKeyID IDLocal,const CPubKey PubForeign)const
 {
     SharedKeyMap::const_iterator it=mapSharedKeys.find(IDLocal);
     if(it==mapSharedKeys.end())
         return false;
-    std::map<CPubKey, CKey>::const_iterator it2=it->second.find(IDForeign);
+    std::map<CPubKey, CKey>::const_iterator it2=it->second.find(PubForeign);
     if(it2==it->second.end())
         return false;    
     return true;
 }
-void CBasicKeyStore::ClearSharedKey(const CPubKey IDLocal,const CPubKey IDForeign)
+void CBasicKeyStore::ClearSharedKey(const CKeyID IDLocal,const CPubKey PubForeign)
 {
-    if (IDLocal==CPubKey())
+    if (IDLocal==CKeyID())
         mapSharedKeys.clear();
-    else if(IDForeign==CPubKey())
+    else if(PubForeign==CPubKey())
         mapSharedKeys.erase(IDLocal);
     else        
         if(mapSharedKeys.find(IDLocal)!=mapSharedKeys.end())
-              mapSharedKeys[IDLocal].erase(IDForeign);
+              mapSharedKeys[IDLocal].erase(PubForeign);
 }
-void CBasicKeyStore::StoreSharedKey(const CPubKey IDLocal,const CPubKey IDForeign,const CKey& sharedKey)
+void CBasicKeyStore::StoreSharedKey(const CKeyID IDLocal,const CPubKey PubForeign,const CKey& sharedKey)
 {
     if(mapSharedKeys.find(IDLocal)!=mapSharedKeys.end())
-        mapSharedKeys[IDLocal][IDForeign]=sharedKey;
+        mapSharedKeys[IDLocal][PubForeign]=sharedKey;
     else
     {
          std::map<CPubKey, CKey> mapkey;
-         mapkey[IDForeign]=sharedKey;
+         mapkey[PubForeign]=sharedKey;
          mapSharedKeys[IDLocal]=mapkey;
     }
 }
-bool CBasicKeyStore::GetKey(const CPubKey &address, CKey& keyOut) const
+bool CBasicKeyStore::GetKey(const CKeyID &address, CKey& keyOut) const
 {
     //LogPrintf("CBasicKeyStore::GetKey \n");
    {

@@ -77,18 +77,20 @@ public:
         fHasStepPub=false;
         fHasStepPriv=false;
     }
-    bool GetSharedKey(const CPubKey IDLocal,const CPubKey IDForeign,CKey& sharedKey);
-    bool HasSharedKey(const CPubKey IDLocal,const CPubKey IDForeign)const;
     
-    void ClearSharedKey(const CPubKey IDLocal=CPubKey(),const CPubKey IDForeign=CPubKey());
+    
+    bool GetSharedKey(const CKeyID IDLocal,const CPubKey PubForeign,CKey& sharedKey);
+    bool HasSharedKey(const CKeyID IDLocal,const CPubKey PubForeign)const;
+    
+    void ClearSharedKey(const CKeyID IDLocal=CKeyID(),const CPubKey PubForeign=CPubKey());
 
     
-    void StoreSharedKey(const CPubKey IDLocal,const CPubKey IDForeign,const CKey& sharedKey);
-    
+    void StoreSharedKey(const CKeyID IDLocal,const CPubKey PubForeign,const CKey& sharedKey);
+   bool AddKey(const CKey &key); 
     bool HavePriv()const{return fHasPriv;};
     bool HavePub()const{return fHasPub;};
     bool CanExtendKeys()const{return fHasPub&&fHasStepPub;};
-    bool HaveKey(const CPubKey &address) const
+    bool HaveKey(const CKeyID &address) const
     {
         bool result;
         {
@@ -97,7 +99,7 @@ public:
         }
         return result;
     }
-    void GetKeys(std::set<CPubKey> &setAddress) const
+    void GetKeyIDs(std::set<CKeyID> &setAddress) const
     {
         setAddress.clear();
         {
@@ -110,7 +112,7 @@ public:
             }
         }
     }
-    bool GetKey(const CPubKey &address, CKey& keyOut) const;
+        bool GetKey(const CKeyID &address, CKey& keyOut) const;
     bool GetExtendPubKey(const uint64_t nStep,CPubKey& pub)const;
     virtual bool AddCScript(const CScript& redeemScript);
     virtual bool HaveCScript(const CScriptID &hash) const;

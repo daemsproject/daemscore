@@ -31,10 +31,10 @@ struct CDNSSeedData {
 class CChainParams
 {
 public:
-    enum Base32Type {
+    enum Base58Type {
         PUBKEY_ADDRESS,
         SCRIPT_ADDRESS,
-        SCRIPTHASH_ADDRESS,
+        SCRIPT,
         SECRET_KEY,
         PUBLIC_KEY,
         EXT_PUBLIC_KEY,

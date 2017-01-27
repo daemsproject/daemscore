@@ -133,8 +133,8 @@ Value isvalidpubkeyaddress(const Array& params, bool fHelp) // TO DO: Help msg
         throw runtime_error("isvalidpubkeyaddress");
     std::string b58 = params[0].get_str();
     std::vector<unsigned char> raw;
-    CPubKey pub;
-    if (!CBitcoinAddress(b38).GetKey(pub))
+    CKeyID id;
+    if (!CBitcoinAddress(b58).GetKeyID(id))
         return Value(false);
     return Value(true);
 }
@@ -174,7 +174,7 @@ Value getextpubkey(const Array& params, bool fHelp) // TO DO: Help msg
     if (nStep==0)
         return Value(params[0]);
     basepub.AddSteps(steppub,Hash(&nStep,&nStep+1),extpub);
-    return Value(CBitcoinPubKey(extpub).ToString());
+    return Value(CBitcoinAddress(extpub).ToString());
 }
 Value decodemultisigaddress(const json_spirit::Array& params, bool fHelp){
     if (fHelp || params.size() <1)
