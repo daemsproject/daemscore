@@ -1013,6 +1013,8 @@ public:
     void Serialize(S &s, int nType, int nVersion) const {
         // Serialize nVersion
         ::Serialize(s, VARINT(txTo.nVersion), nType, nVersion);
+        // Serialize nLayer
+        ::Serialize(s, VARINT(txTo.nLayer), nType, nVersion);
         // Serialize nFlags
         ::Serialize(s, VARINT(txTo.nFlags), nType, nVersion);
         // Serialize vin

@@ -55,7 +55,7 @@ static void convertSeed6(std::vector<CAddress> &vSeedsOut, const SeedSpec6 *data
  */
 static Checkpoints::MapCheckpoints mapCheckpoints =
         boost::assign::map_list_of
-        (  0, uint256("f4223192597ffb0964962c959302355ca1b278b644b9ec65e5c7453345bae2d4"))
+        (  0, uint256("aea351784cf078fec8574f08f7707109105d6ef484ed3a0bc100b5fad8be46ce"))
        
         ;
 static const Checkpoints::CCheckpointData data = {
@@ -103,7 +103,7 @@ public:
         pchMessageStart[2] = 0xdd;
         pchMessageStart[3] = 0xde;
         vAlertPubKey = ParseHex("040184710fa689ad5023690c80f3a49c8f13f8d45b8c857fbcbc8bc4a8e4d3eb4b10f4d4604fa08dce601aaf0f470216fe1b51850b4acf21b179c45070ac7b03a9");
-        nDefaultPort = 7892;
+        nDefaultPort = 7893;
         bnProofOfWorkLimit = ~uint256(0) >> 8;
         nSubsidyHalvingInterval =  480;
         nEnforceBlockUpgradeMajority = 750;
@@ -126,6 +126,7 @@ public:
         const string pszTimestamp = "2015-07-22 WSJ: Gold Falls to Five-Year Low as Traders Continue to Exit";
         CMutableTransaction txNew;
         txNew.nFlags=TX_FLAGS_COINBASE;
+        txNew.nLayer=0;
         txNew.vin.resize(1);
         txNew.vout.resize(2);
         txNew.vin[0].scriptSig = CScript() << (int)0;
@@ -147,7 +148,9 @@ public:
         genesis.nBlockHeight = 0;
         genesis.nTime    = 1437548320;
         genesis.nBits    = 0x2000ffff;
-        genesis.nNonce   = 917120;
+        genesis.nNonce   = 2674922;
+        
+        // test codes
 //        std::cout << "tx size: " << txNew.GetSerializeSize(SER_NETWORK, PROTOCOL_VERSION) << "\n";        
 //        uint256 powHash;
 //        powHash = genesis.GetPoWHash();
@@ -155,11 +158,12 @@ public:
 //            if (++genesis.nNonce==0) break;
 //            powHash = genesis.GetPoWHash();
 //        }
-       // std::cout << "nonce: " << genesis.nNonce << "\n";
+//        std::cout << "nonce: " << genesis.nNonce << "\n";
 //        
         hashGenesisBlock = genesis.GetHash();
         
-//                CTransaction gtx;
+        // test codes
+//        CTransaction gtx;
 //        gtx = genesis.vtx.front();
 //        std::cout << "g rtx: \n" << EncodeHexTx(gtx) << "\n";
 //        std::cout << "g tx: \n" << gtx.ToString() << "\n";
@@ -168,9 +172,10 @@ public:
 //        std::cout << "g hash: \n" << hashGenesisBlock.ToString() << "\n";
 //        std::cout << "g powh: \n" << genesis.GetPoWHash().ToString() << "\n";
 //        std::cout << "g mroot: \n" << genesis.hashMerkleRoot.ToString() << "\n";
+        //
         
-        assert(hashGenesisBlock == uint256("f4223192597ffb0964962c959302355ca1b278b644b9ec65e5c7453345bae2d4"));
-        assert(genesis.hashMerkleRoot == uint256("3ce17a884bd5e0133fe6f4a234bc66c459ef6075e6acd64a7f72634d3e20a9ca"));
+        assert(hashGenesisBlock == uint256("0bada3e368725d788f3c98928b30c2b46cb853feb898cae4631cd340eee10c73"));
+        assert(genesis.hashMerkleRoot == uint256("f7d98b4d9538a8357d173cb8b3ac6f3ee3f6f191ee21b87eb871807c521714cd"));
         
         vSeeds.push_back(CDNSSeedData("dns1.f-a-i.net", "dns1.f-a-i.net"));
         vSeeds.push_back(CDNSSeedData("dns2.f-a-i.net", "dns2.f-a-i.net"));
@@ -220,7 +225,7 @@ public:
         pchMessageStart[2] = 0xdd;
         pchMessageStart[3] = 0xde;
         vAlertPubKey = ParseHex("03968502fe538a31c883493c47ed169bc74a68b7051c85afeeb05783163b6c173e");
-        nDefaultPort = 17333;
+        nDefaultPort = 17893;
         nEnforceBlockUpgradeMajority = 51;
         nRejectBlockOutdatedMajority = 75;
         nToCheckBlockUpgradeMajority = 100;
@@ -232,8 +237,10 @@ public:
         genesis.nTime = 1427227400;
         genesis.nNonce = 607439;
         hashGenesisBlock = genesis.GetHash();
+        
         //std::cout << "t g hash: \n" << hashGenesisBlock.ToString() << "\n";
-        assert(hashGenesisBlock == uint256("989b51695bad6b5472abac667c2f4db90414ae1d427b4f3cde5a138e11f47025"));
+        
+        assert(hashGenesisBlock == uint256("04086bd7ffa8af9cc664ea58a4a457fb7b9a154864f55c5789b44f4f60a93c61"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
@@ -292,7 +299,7 @@ public:
         hashGenesisBlock = genesis.GetHash();
         nDefaultPort = 19444;
         //std::cout << "rt g hash: \n" << hashGenesisBlock.ToString() << "\n";
-        assert(hashGenesisBlock == uint256("77904d441aba42002100c9a41620323540b4901d1c0881ad492b89a50ba42689"));
+        assert(hashGenesisBlock == uint256("2ba3ad58be4581430cd9b92edf3f9a667578d5932b290594de11465fe0b0279c"));
 
         vFixedSeeds.clear(); //! Regtest mode doesn't have any fixed seeds.
         vSeeds.clear();  //! Regtest mode doesn't have any DNS seeds.

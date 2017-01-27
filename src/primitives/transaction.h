@@ -177,7 +177,8 @@ public:
 struct CMutableTransaction;
 enum txFlags{
     TX_FLAGS_NORMAL=0
-    ,TX_FLAGS_COINBASE=1    
+    ,TX_FLAGS_COINBASE=1  
+    ,TX_FLAGS_JOINSPLIT=2  
     ,TX_FLAGS_DOMAIN=8
     
 };
@@ -201,6 +202,7 @@ public:
     // and bypass the constness. This is safe, as they update the entire
     // structure, including the hash.
     const int32_t nVersion;
+    const int64_t nLayer;
     const int32_t nFlags;
     const std::vector<CTxIn> vin;
     const std::vector<CTxOut> vout;
@@ -220,6 +222,7 @@ public:
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
         READWRITE(VARINT(this->nVersion));
         nVersion = this->nVersion;
+        READWRITE(VARINT(this->nLayer));
         READWRITE(VARINT(this->nFlags));
         //nType=this->nFlags;
         READWRITE(*const_cast<std::vector<CTxIn>*>(&vin));
@@ -273,6 +276,7 @@ public:
 struct CMutableTransaction
 {
     int32_t nVersion;
+    int64_t nLayer;
     int32_t nFlags;
     std::vector<CTxIn> vin;
     std::vector<CTxOut> vout;
@@ -287,6 +291,7 @@ struct CMutableTransaction
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
         READWRITE(VARINT(this->nVersion));
         nVersion = this->nVersion;
+        READWRITE(VARINT(this->nLayer));
         READWRITE(VARINT(this->nFlags));
         nType=this->nFlags;
         READWRITE(vin);

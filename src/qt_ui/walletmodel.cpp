@@ -383,10 +383,10 @@ bool WalletModel::switchToAccount(QString ID)
 {
     if(ID.toStdString()==CBitcoinAddress(wallet->GetID()).ToString())
         return false;
-    CPubKey pub;
-    if(!CBitcoinAddress(ID.toStdString()).GetKey(pub))
+    CKeyID id;
+    if(!CBitcoinAddress(ID.toStdString()).GetKeyID(id))
         return false;
-     wallet->SwitchToAccount(pub,true);
+     wallet->SwitchToAccount(id,true);
      
      return true;
 }
@@ -462,13 +462,13 @@ QString WalletModel::DoPayment(const CPaymentOrder& pr,const int nPageIndex)
 {
     CWalletTx tx;
     string strError;    
-    CPubKey id;    
+    CKeyID id;    
     CTxDestination address;
     if(!ExtractDestination(pr.vFrom[0],address))        
             return QString().fromStdString("{\"error\":\"wrong idfrom\"}");
-    CBitcoinAddress pub;
-    pub.Set(address);
-    pub.GetKey(id);
+    CBitcoinAddress add;
+    add.Set(address);
+    add.GetKeyID(id);
     //memcpy(&id, &pr.vFrom[0][1], 20);
     CWallet* pwallet;
     if(id==wallet->GetID())
@@ -581,8 +581,8 @@ QString WalletModel::HandleOverrideRequest(const Array arrData,const int nPageIn
         return ("{\"error\":\"param0 is not obj type\"}");  
     CWalletTx tx;
     string strError;    
-    CPubKey pub;
-    if(!CBitcoinAddress(arrData[0].get_str()).GetKey(pub))    
+    CKeyID id;
+    if(!CBitcoinAddress(arrData[0].get_str()).GetKeyID(id))    
         return ("{\"error\":\"wrong id\"}");
     uint256 txid = ParseHashV(arrData[1], "parameter 1");
     Object obj=arrData[2].get_obj();
@@ -615,13 +615,13 @@ QString WalletModel::HandleOverrideRequest(const Array arrData,const int nPageIn
     }
     bool fIsWalletMain;
     CWallet* pwallet;
-    if(wallet->HaveKey(pub))
+    if(wallet->HaveKey(id))
     {
         pwallet=wallet;
         fIsWalletMain=true;
     }
     else
-        pwallet=new CWallet(pub,false);    
+        pwallet=new CWallet(id,false);    
     int nOP=0;//0::unencrypted,1::encrypted,2::offline
     SecureString ssInput;
     if (!pwallet->HavePriv())
@@ -948,7 +948,7 @@ QString WalletModel::EncryptMessages(Array params,const int nPageIndex)
         throw runtime_error("Wrong number of parameters");
     if (params[0].type() != str_type)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter1, expected string");
-    CPubKey IDLocal=AccountFromValue(params[0]);
+    CKeyID IDLocal=AccountFromValue(params[0]);
     //string strIDLocal=params[0].get_str();
     if (params[1].type() != array_type)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter2, expected array");    
@@ -985,7 +985,7 @@ QString WalletModel::EncryptMessages(Array params,const int nPageIndex)
         vstrIDsForeign.push_back(tmp.get_str());
         //CPubKey IDForeign=AccountFromValue(tmp.get_str());
         string IDForeign=tmp.get_str();
-        CPubKey pubForeign=AccountFromValue(tmp);
+        CPubKey pubForeign=PubKeyFromValue(tmp);
         fHasAllSharedKeys=pwallet->HasSharedKey(IDLocal,pubForeign);        
         tmp=find_value(obj, "messages");
         if (tmp.type()!=array_type)
@@ -1086,22 +1086,22 @@ QString WalletModel::SendMessage(Array arrData,const int nPageIndex)
     CPaymentOrder pr=MessageRequestToPaymentRequest(idLocal,idForeign,msg,feerate);
     CWalletTx tx;
     string strError;    
-    CPubKey pub;
-    if(!CBitcoinAddress(idLocal).GetKey(pub))    
+    CKeyID id;
+    if(!CBitcoinAddress(idLocal).GetKeyID(id))    
         return QString().fromStdString("{\"error\":\"wrong idlocal\"}");
     CPubKey pubForeign;         
-    if(!CBitcoinAddress(idForeign).GetKey(pubForeign))    
+    if(!CBitcoinAddress(idForeign).GetPubKey(pubForeign))    
         return QString().fromStdString("{\"error\":\"invalid idforeign\"}");
     bool fIsWalletMain;
     CWallet* pwallet;
     //LogPrintf("jsinterface:hadlepaymentrequest:id%s,pwalletmain id:%s size:%i\n",HexStr(id.begin(),id.end()),HexStr(wallet->GetID().begin(),wallet->GetID().end()),wallet->GetID().size());
-    if(wallet->HaveKey(pub))
+    if(wallet->HaveKey(id))
     {
         pwallet=wallet;
         fIsWalletMain=true;
     }
     else
-        pwallet=new CWallet(pub,false);    
+        pwallet=new CWallet(id,false);    
     int nOP=0;//0::unencrypted,1::encrypted,2::offline
     SecureString ssInput;
     if (!pwallet->HavePriv())
@@ -1113,7 +1113,7 @@ QString WalletModel::SendMessage(Array arrData,const int nPageIndex)
     }
         else if (pwallet->IsLocked())
             nOP=1;
-    if(!pwallet->HasSharedKey(pub,pubForeign)||nOP>0||msg.size()>1000)
+    if(!pwallet->HasSharedKey(id,pubForeign)||nOP>0||msg.size()>1000)
     {
         QString alert=getSMSAlertMessage(pr);  
         QString title=QString(tr("Request Send Message"));
@@ -1204,19 +1204,19 @@ QString WalletModel::SignMessage(Array arrData,const int nPageIndex)
     string id=arrData[0].get_str();    
     string msg=arrData[1].get_str();
     string strError;    
-    CPubKey pub;
-    if(!CBitcoinAddress(id).GetKey(pub))    
+    CKeyID keyID;
+    if(!CBitcoinAddress(id).GetKeyID(keyID))    
         return QString().fromStdString("{\"error\":\"wrong idlocal\"}");    
     bool fIsWalletMain=false;
     CWallet* pwallet;
     //LogPrintf("jsinterface:hadlepaymentrequest:id%s,pwalletmain id:%s size:%i\n",HexStr(id.begin(),id.end()),HexStr(wallet->GetID().begin(),wallet->GetID().end()),wallet->GetID().size());
-    if(wallet->HaveKey(pub))
+    if(wallet->HaveKey(keyID))
     {
         pwallet=wallet;
         fIsWalletMain=true;
     }
     else
-        pwallet=new CWallet(pub,false);    
+        pwallet=new CWallet(keyID,false);    
     int nOP=0;//0::unencrypted,1::encrypted,2::offline
     SecureString ssInput;
     if (!pwallet->HavePriv())
@@ -1244,7 +1244,7 @@ QString WalletModel::SignMessage(Array arrData,const int nPageIndex)
             return QString().fromStdString("{\"error\":\"wrong password\"}");
         }
     CKey key;
-    if (!pwallet->GetKey(pub, key))
+    if (!pwallet->GetKey(keyID, key))
     {
         if(!fIsWalletMain)
             delete pwallet;
@@ -1266,6 +1266,28 @@ QString WalletModel::SignMessage(Array arrData,const int nPageIndex)
             pwallet->ClearPassword();
     return QString().fromStdString("{\"signature\":\""+EncodeBase64(&vchSig[0], vchSig.size())+"\"}");
 }
+ QString WalletModel::HandleSignMessageRequest(const Array arrData,const int nPageIndex)
+ {
+     if(wallet->IsLocked())
+     {
+        int nOP=1;
+        SecureString ssInput;
+        QString title;    
+        QString questionString = tr("Please input password to sign message.");
+        title=QString(tr("Request Signing"));
+        string strError;    
+         if (!gui->handleUserConfirm(title,questionString,nOP,strError,ssInput,nPageIndex))
+        {      
+            return QString().fromStdString("{\"error\":\"user canceled\"}");             
+        } 
+        if(!setWalletLocked(false, ssInput,1))
+            return QString().fromStdString("{\"error\":\"wrong password\"}");             
+     }
+     Value valResult=signmessage(arrData,false);
+     string str=json_spirit::write_string(valResult,false);    
+     QString result=QString::fromStdString(str);    
+     return result;
+ }
 QString WalletModel::getSMSAlertMessage(const CPaymentOrder& pr)
 {    
     // Format confirmation message
@@ -1316,7 +1338,7 @@ QString WalletModel::RegisterDomain(json_spirit::Array arrData,const int nPageIn
     LogPrintf("walletmodel:RegisterDomain");
     if ( arrData.size() <5)
         throw runtime_error("wrong array size");
-    CPubKey id=AccountFromValue(arrData[0]);
+    CKeyID id=AccountFromValue(arrData[0]);
     CScript scriptPubKey;
     StringToScriptPubKey(arrData[0].get_str(),scriptPubKey);
     string strDomain=arrData[1].get_str();
@@ -1358,7 +1380,7 @@ QString WalletModel::UpdateDomain(json_spirit::Array arrData,const int nPageInde
     LogPrintf("walletmodel:UpdateDomain \n");
     if ( arrData.size() <3)
         throw runtime_error("wrong array size");
-    CPubKey id=AccountFromValue(arrData[0]);
+    CKeyID id=AccountFromValue(arrData[0]);
     CScript scriptPubKey;
     StringToScriptPubKey(arrData[0].get_str(),scriptPubKey);
     LogPrintf("walletmodel:UpdateDomain scriptPubkey:s% \n",scriptPubKey.ToString());
@@ -1389,7 +1411,7 @@ QString WalletModel::RenewDomain(json_spirit::Array arrData,const int nPageIndex
       LogPrintf("walletmodel:RenewDomain \n");
     if ( arrData.size() <3)
         throw runtime_error("wrong array size");
-    CPubKey id=AccountFromValue(arrData[0]);
+    CKeyID id=AccountFromValue(arrData[0]);
     CScript scriptPubKey;
     StringToScriptPubKey(arrData[0].get_str(),scriptPubKey);    
     LogPrintf("walletmodel:RenewDomain scriptPubkey:s% \n",scriptPubKey.ToString());

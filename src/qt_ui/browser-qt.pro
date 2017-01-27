@@ -5,10 +5,10 @@ QT       += webkitwidgets concurrent widgets printsupport
 qtHaveModule(uitools):!embedded: QT += uitools
 else: DEFINES += QT_NO_UITOOLS
 win32{
-TARGET = FAI
+TARGET = DAEMS
 }
 unix{
-TARGET = fai
+TARGET = daems-qt
 }
 TEMPLATE = app
 DEFINES += ENABLE_WALLET=1

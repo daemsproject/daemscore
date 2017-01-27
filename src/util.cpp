@@ -382,7 +382,7 @@ boost::filesystem::path GetDefaultDataDir()
     // Unix: ~/.fai
 #ifdef WIN32
     // Windows
-    return GetSpecialFolderPath(CSIDL_APPDATA) / "Fai";
+    return GetSpecialFolderPath(CSIDL_APPDATA) / "Daems";
 #else
     fs::path pathRet;
     char* pszHome = getenv("HOME");
@@ -394,11 +394,11 @@ boost::filesystem::path GetDefaultDataDir()
     // Mac
     pathRet /= "Library/Application Support";
     TryCreateDirectory(pathRet);
-    return pathRet / "Fai";
+    return pathRet / "Daems";
 #else
     // Unix
     //LogPrintf("GetDefaultDataDir \n");
-    return pathRet / ".fai";
+    return pathRet / ".daems";
 #endif
 #endif
 }

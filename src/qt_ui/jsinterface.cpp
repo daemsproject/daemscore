@@ -227,8 +227,8 @@ QString JsInterface::jscall(const QString command,const QString dataJson,const i
             if (strCmd==string("publishpackage"))
                 return walletModel->PublishPackage(arrData,nPageIndex);
             if (strCmd==string("signmessage"))
-                return walletModel->HandleSignMessageRequest(arrData,nPageIndex);
-               // return walletModel->SignMessage(arrData,nPageIndex);
+               // return walletModel->HandleSignMessageRequest(arrData,nPageIndex);
+                return walletModel->SignMessage(arrData,nPageIndex);
              if (strCmd==string("writefile2")&&nPageID<=HELPPAGE_ID)
                 return walletModel->saveFileUserConfirm(arrData);
             if (strCmd==string("gotocustompage"))
