@@ -182,4 +182,40 @@ void GetBlockSenderDomains(const CBlock& block,const vector<vector<pair<CScript,
 void GetBlockChequeUpdates(const CBlock& block,const vector<vector<pair<CScript,uint32_t> > >& vPrevouts,vector<CCheque>& vChequeAdd,vector<int64_t>& vChequeErase,bool fReverse);
 bool SearchPromotedContents(const vector<CScript>& vSenders,const vector<int>& vCCs,const vector<string>& vTags,vector<CContentDBItem>& vContents,const int nMaxResults,const int nOffset);
 
+
+
+
+//the db to store flowcoin txs
+class CFlowCoinTxDB
+{
+    protected:
+        CSqliteWrapper* db;        
+    public:
+        CFlowCoinTxDB(CSqliteWrapper* dbIn, bool fWipe = false);
+        //txid, blockheight,level,tx data,prevouts
+        bool Insert(const CTransaction tx,const unsigned int nlevel);
+        bool BatchInsert(const vector<pair<CTransaction,unsigned int> > vTxs);
+        bool Erase(const uint256 txid);
+        bool BatchErase(const vector<uint256> vTxid);
+        bool Exists(const uint256 txid);
+};
+//the db to store the outputs of txs 
+class CFlowCoinChequeDB
+{
+    protected:
+        CSqliteWrapper* db;        
+    public:
+    //scriptpubkey,txid,nout, value,locktime,fspent,spenttxid,spentnvin
+        CFlowCoinChequeDB(CSqliteWrapper* dbIn, bool fWipe = false);
+    
+     bool Search(const vector<CScript>& vScriptPubKey,vector<CCheque> & vCheques,int nMaxResults=1000,int nOffset=0)const ;    
+     bool Insert(const CCheque cheque);
+      //bool BatchInsert(vector<CCheque> vCheque);
+     //bool BatchErase(vector<pair<uint256,uint32_t> >vChequeErase);
+     bool Erase(const uint256 txid, const uint32_t nOut);
+     bool Spend(const uint256 outTxid, const uint32_t nOut,const uint256 inTxid, const uint32_t nIn);
+     bool Reactivate(const uint256 txid, const uint32_t nOut);
+    bool ClearTables();
+};
+
 #endif // BITCOIN_TXDB_H

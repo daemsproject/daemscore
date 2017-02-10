@@ -60,8 +60,8 @@ std::string CTxOut::ToString() const
     return strprintf("CTxOut(nValue=%d.%06d, scriptPubKey=%s,strContent=%s, nLockTime=%u)", nValue / COIN, nValue % COIN, scriptPubKey.ToString().substr(0,30),HexStr(strContent.length()>100? strContent.substr(0,100):strContent),nLockTime);
 }
 
-CMutableTransaction::CMutableTransaction() : nVersion(CTransaction::CURRENT_VERSION), nLayer(0),nFlags(0) {}
-CMutableTransaction::CMutableTransaction(const CTransaction& tx) : nVersion(tx.nVersion), nLayer(tx.nLayer),nFlags(tx.nFlags),vin(tx.vin), vout(tx.vout) {}
+CMutableTransaction::CMutableTransaction() : nVersion(CTransaction::CURRENT_VERSION), nLayer(0),nFlags(0),nBlockHash(uint256(0)) {}
+CMutableTransaction::CMutableTransaction(const CTransaction& tx) : nVersion(tx.nVersion), nLayer(tx.nLayer),nFlags(tx.nFlags),vin(tx.vin), vout(tx.vout),nBlockHash(tx.nBlockHash) {}
 
 uint256 CMutableTransaction::GetHash() const
 {
@@ -73,9 +73,9 @@ void CTransaction::UpdateHash() const
     *const_cast<uint256*>(&hash) = SerializeHash(*this);
 }
 
-CTransaction::CTransaction() : hash(0), nVersion(CTransaction::CURRENT_VERSION), nLayer(0),nFlags(0),vin(), vout(){ }
+CTransaction::CTransaction() : hash(0), nVersion(CTransaction::CURRENT_VERSION), nLayer(0),nFlags(0),vin(), vout(),nBlockHash(uint256(0)){ }
 
-CTransaction::CTransaction(const CMutableTransaction &tx) : nVersion(tx.nVersion),nLayer(tx.nLayer),nFlags(tx.nFlags), vin(tx.vin), vout(tx.vout) {
+CTransaction::CTransaction(const CMutableTransaction &tx) : nVersion(tx.nVersion),nLayer(tx.nLayer),nFlags(tx.nFlags), vin(tx.vin), vout(tx.vout),nBlockHash(tx.nBlockHash) {
     UpdateHash();
 }
 
@@ -85,7 +85,7 @@ CTransaction& CTransaction::operator=(const CTransaction &tx) {
     *const_cast<int*>(&nFlags) = tx.nFlags;
     *const_cast<std::vector<CTxIn>*>(&vin) = tx.vin;
     *const_cast<std::vector<CTxOut>*>(&vout) = tx.vout;
-    //*const_cast<unsigned int*>(&nLockTime) = tx.nLockTime;
+    *const_cast<uint256*>(&nBlockHash) = tx.nBlockHash;
     *const_cast<uint256*>(&hash) = tx.hash;
     return *this;
 }
@@ -120,17 +120,19 @@ CAmount CTransaction::GetFee() const
 std::string CTransaction::ToString() const
 {
     std::string str;
-    str += strprintf("CTransaction(hash=%s, ver=%d,layer=%d, flags=%i,vin.size=%u, vout.size=%u)\n",
+    str += strprintf("CTransaction(hash=%s, ver=%d,layer=%d, flags=%i,vin.size=%u, vout.size=%u,blockhash=%s)\n",
         GetHash().ToString().substr(0,10),
         nVersion,
         nLayer,
         nFlags,
         vin.size(),
-        vout.size());
+        vout.size()
+        ,nBlockHash.ToString().substr(0,10));
     for (unsigned int i = 0; i < vin.size(); i++)
         str += "    " + vin[i].ToString() + "\n";
     for (unsigned int i = 0; i < vout.size(); i++)
         str += "    " + vout[i].ToString() + "\n";
+    
     return str;
 }
 double  CTransaction::GetFeeRate() const{
@@ -147,6 +149,7 @@ void CTransaction::ClearContent(CTransaction& newTx) const{
         mtx.vout[i].strContent="";
     newTx=CTransaction(mtx);
 }
+//Daems: to quickly locate the txout in the blockchain db
 int CTransaction::GetOutPos(int nOut)const
 {
     int pos=0;

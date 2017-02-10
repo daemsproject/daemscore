@@ -206,7 +206,10 @@ public:
     const int32_t nFlags;
     const std::vector<CTxIn> vin;
     const std::vector<CTxOut> vout;
-    //const uint32_t nLockTime;
+    //layer1 variables
+    //the timestamp to show that the tx is created after this block. 
+    //3-6 blocks before the latest block, to avoid problems caused by fallback
+    const uint256 nBlockHash;
 
     /** Construct a CTransaction that qualifies as IsNull() */
     CTransaction();
@@ -227,7 +230,8 @@ public:
         //nType=this->nFlags;
         READWRITE(*const_cast<std::vector<CTxIn>*>(&vin));
         READWRITE(*const_cast<std::vector<CTxOut>*>(&vout));
-        //READWRITE(VARINT(nLockTime));
+        if(nLayer==1)
+            READWRITE(*const_cast<uint256*>(&this->nBlockHash));
         if (ser_action.ForRead())
             UpdateHash();
     }
@@ -280,7 +284,7 @@ struct CMutableTransaction
     int32_t nFlags;
     std::vector<CTxIn> vin;
     std::vector<CTxOut> vout;
-    //uint32_t nLockTime;
+    uint256 nBlockHash;
 
     CMutableTransaction();
     CMutableTransaction(const CTransaction& tx);
@@ -296,7 +300,8 @@ struct CMutableTransaction
         nType=this->nFlags;
         READWRITE(vin);
         READWRITE(vout);
-        //READWRITE(VARINT(nLockTime));
+        if(nLayer==1)
+            READWRITE(nBlockHash);
     }
 
     /** Compute the hash of this CMutableTransaction. This is computed on the
@@ -316,11 +321,13 @@ enum CPaymentOrderType
     PR_DOMAIN_RENEW,
     PR_COMMENT,
     PR_SHOP_BUY
+   ,PR_LAYER1_MESSAGE
+   ,PR_LAYER1_TRANSFER
 };
 class CPaymentOrder :public CMutableTransaction
 {
     public:
-    CPaymentOrder(){
+    CPaymentOrder(){        
         nSigType=1;//non-anyonecanpay
         dFeeRate=1000;    
         fIsValid=false;    
@@ -328,7 +335,7 @@ class CPaymentOrder :public CMutableTransaction
         CMutableTransaction();
         nRequestType=PR_NORMAL;
     }
-    int nRequestType;
+    int nRequestType;    
     bool fIsValid;
     std::vector<CScript> vFrom;
     int nSigType;

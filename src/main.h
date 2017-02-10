@@ -584,5 +584,9 @@ protected:
     friend void ::UnregisterValidationInterface(CValidationInterface*);
     friend void ::UnregisterAllValidationInterfaces();
 };
-
+// flowcoin part
+extern CFlowCoinTxDB *pFlowCoinTxDB;
+extern CFlowCoinChequeDB *pFlowCoinChequeDB;
+bool AcceptToLayer1Pool(CValidationState &state, const CTransaction &tx, bool fLimitFree,
+                        bool* pfMissingInputs, bool fRejectInsaneFee=false);
 #endif // BITCOIN_MAIN_H

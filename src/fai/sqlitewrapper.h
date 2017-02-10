@@ -191,50 +191,50 @@ public:
     template <typename V1,typename V2>
     bool InsertBatch(const char* tableName,const char* columnName1,const int format1,const char* columnName2,const int format2,const vector<pair<V1,V2> >& vValue,const bool fReplace=true)
     {
-        {
-    //LogPrintf("InsertBatch2\n");  
-    char sql[4000]; 
-    const char* insertstatement="INSERT OR %s INTO %s(%s,%s) VALUES (?,?);";    
-     sprintf(sql,insertstatement,fReplace?"REPLACE":"IGNORE",tableName,columnName1,columnName2);
-    int result;
-    sqlite3_stmt  *stat;    
-   result=sqlite3_prepare_v2( pdb, sql, -1, &stat, 0 );
-   //LogPrintf("GetInsertSql1 %i\n",result);   
-   for(unsigned int i=0;i<vValue.size();i++)
-   {
-       if(!BindValue(stat,1,format1,vValue[i].first))
-       return false;
-        if(!BindValue(stat,2,format2,vValue[i].second))
-        return false;
-//        switch (format1)
-//            {
-//                case SQLITEDATATYPE_BLOB:
-//                    result=sqlite3_bind_blob( stat, 1, (const char*)&vValue[i]->first[0], vValue[i]->first.size(), NULL );
-//                    
-//                    break;                 
-//                default:
-//                    return false;              
-//            }
-//        LogPrintf("GetInsertSql2 %i\n",result); 
-//        switch (format2)
-//            {
-//                case SQLITEDATATYPE_BLOB:
-//                    result=sqlite3_bind_blob( stat, 2, (const char*)&vValue[i]->second[0], vValue[i]->second.size(), NULL );
-//                    
-//                    break;                 
-//                default:
-//                    return false;              
-//            }  
-       // LogPrintf("GetInsertSql2 %i\n",result); 
-        result=sqlite3_step( stat );
-        if(result!=0&&result!=101)
-            LogPrintf("Insert2 failed result %i\n",result);
-        sqlite3_clear_bindings(stat);
-        sqlite3_reset(stat);
-   }
-   sqlite3_finalize( stat );
-   return (result==SQLITE_OK||result==101);
-}
+        
+        //LogPrintf("InsertBatch2\n");  
+        char sql[4000]; 
+        const char* insertstatement="INSERT OR %s INTO %s(%s,%s) VALUES (?,?);";    
+         sprintf(sql,insertstatement,fReplace?"REPLACE":"IGNORE",tableName,columnName1,columnName2);
+        int result;
+        sqlite3_stmt  *stat;    
+       result=sqlite3_prepare_v2( pdb, sql, -1, &stat, 0 );
+       //LogPrintf("GetInsertSql1 %i\n",result);   
+       for(unsigned int i=0;i<vValue.size();i++)
+       {
+           if(!BindValue(stat,1,format1,vValue[i].first))
+           return false;
+            if(!BindValue(stat,2,format2,vValue[i].second))
+            return false;
+    //        switch (format1)
+    //            {
+    //                case SQLITEDATATYPE_BLOB:
+    //                    result=sqlite3_bind_blob( stat, 1, (const char*)&vValue[i]->first[0], vValue[i]->first.size(), NULL );
+    //                    
+    //                    break;                 
+    //                default:
+    //                    return false;              
+    //            }
+    //        LogPrintf("GetInsertSql2 %i\n",result); 
+    //        switch (format2)
+    //            {
+    //                case SQLITEDATATYPE_BLOB:
+    //                    result=sqlite3_bind_blob( stat, 2, (const char*)&vValue[i]->second[0], vValue[i]->second.size(), NULL );
+    //                    
+    //                    break;                 
+    //                default:
+    //                    return false;              
+    //            }  
+           // LogPrintf("GetInsertSql2 %i\n",result); 
+            result=sqlite3_step( stat );
+            if(result!=0&&result!=101)
+                LogPrintf("Insert2 failed result %i\n",result);
+            sqlite3_clear_bindings(stat);
+            sqlite3_reset(stat);
+       }
+       sqlite3_finalize( stat );
+       return (result==SQLITE_OK||result==101);
+
     }
     bool InsertBatchStrInt(const char* tableName, const char* columnName1, const int format1, const char* columnName2, const int format2, const vector<pair<std::string, int64_t> >& vValue, const bool fReplace = true);
     template <typename V1>
@@ -269,27 +269,27 @@ public:
         const char*columnName2,const int format2,const V2& value2,
         const char*columnName3,const int format3,const V3& value3,const bool fReplace)
     {
-        {
-  //  LogPrintf("Insert3\n");  
-    char sql[2000]; 
-    const char* insertstatement="INSERT OR %s INTO %s(%s,%s,%s) VALUES (?,?,?);";    
-     sprintf(sql,insertstatement,fReplace?"REPLACE":"IGNORE",tableName,columnName1,columnName2,columnName3);
-    int result;
-    sqlite3_stmt  *stat;    
-   result=sqlite3_prepare_v2( pdb, sql, -1, &stat, 0 );
-  // LogPrintf("GetInsertSql1 %i\n",result);   
-   if(!BindValue(stat,1,format1,value1))
-       return false;
-   if(!BindValue(stat,2,format2,value2))
-       return false;
-   if(!BindValue(stat,3,format3,value3))
-       return false;   
-    result=sqlite3_step( stat );
-    if(result!=0&&result!=101)
-        LogPrintf("Insert2 failed result %i\n",result);
-   sqlite3_finalize( stat );
-   return (result==SQLITE_OK||result==101);
-}
+        
+      //  LogPrintf("Insert3\n");  
+        char sql[2000]; 
+        const char* insertstatement="INSERT OR %s INTO %s(%s,%s,%s) VALUES (?,?,?);";    
+         sprintf(sql,insertstatement,fReplace?"REPLACE":"IGNORE",tableName,columnName1,columnName2,columnName3);
+        int result;
+        sqlite3_stmt  *stat;    
+       result=sqlite3_prepare_v2( pdb, sql, -1, &stat, 0 );
+      // LogPrintf("GetInsertSql1 %i\n",result);   
+       if(!BindValue(stat,1,format1,value1))
+           return false;
+       if(!BindValue(stat,2,format2,value2))
+           return false;
+       if(!BindValue(stat,3,format3,value3))
+           return false;   
+        result=sqlite3_step( stat );
+        if(result!=0&&result!=101)
+            LogPrintf("Insert2 failed result %i\n",result);
+       sqlite3_finalize( stat );
+       return (result==SQLITE_OK||result==101);
+
     }
     bool BatchUpdate(const char* tableName, const char* indexColumnName, const int format1, const char* changedColumnName, const int format2, const vector<pair<string, string> >& vValue);
     bool BatchUpdateInt(const char* tableName,const char* indexColumnName,const char* changedColumnName,const vector<pair<string,int64_t> >& vValue);
@@ -346,6 +346,11 @@ public:
             
     bool GetBlockPosItem(const int64_t nPosDB,uint256& hashBlock,int& nHeight);
     bool WriteBlockPos(const int64_t nPosDB,const uint256& hashBlock,const int& nHeight);
+    
+    
+    // layer1 part
+    bool CreateFlowCoinChequeTable();
+    bool CreateFlowCoinTxTable();
 };
 
 #endif // BITCOIN_LEVELDBWRAPPER_H

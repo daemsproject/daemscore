@@ -101,7 +101,10 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry,con
     entry.push_back(Pair("txid", txid.GetHex()));
     //LogPrintf("TxToJSON3\n");
     entry.push_back(Pair("version", tx.nVersion));
+    entry.push_back(Pair("layer", tx.nLayer));
     entry.push_back(Pair("flags", tx.nFlags));
+    if(tx.nLayer==1)
+        entry.push_back(Pair("blockhash", tx.nBlockHash.GetHex()));
     tx.IsCoinBase()?
         entry.push_back(Pair("iscoinbase", true)): entry.push_back(Pair("iscoinbase", false));
 
@@ -660,6 +663,10 @@ CMutableTransaction TxSetJSON(Value txJson)
     Object objTx=txJson.get_obj();
     CMutableTransaction rawTx;
     rawTx.nVersion=find_value(objTx, "version").get_int();
+    rawTx.nLayer=find_value(objTx, "layer").get_int64();
+    rawTx.nFlags=find_value(objTx, "flags").get_int();
+    if(rawTx.nLayer==1)
+        rawTx.nBlockHash= ParseHashO(objTx, "blockHash");
     Array inputs = find_value(objTx, "vin").get_array();
     Array sendTo = find_value(objTx, "vout").get_array(); 
     BOOST_FOREACH(const Value& input, inputs)

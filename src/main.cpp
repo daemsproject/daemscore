@@ -4542,6 +4542,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         
             
         CInv inv(MSG_TX, tx.GetHash());
+        //TODO if necessary to add another inv for layer0?
         pfrom->AddInventoryKnown(inv);
 
         LOCK(cs_main);
@@ -4554,83 +4555,91 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
                          REJECT_INVALID, "bad-tx-unserialize");
         }
         mapAlreadyAskedFor.erase(inv);
-
-        if (AcceptToMemoryPool(mempool, state, tx, true, &fMissingInputs))
+        if(tx.nLayer==0)
         {
-            mempool.check(pcoinsTip);
-            RelayTransaction(tx);
-            vWorkQueue.push_back(inv.hash);
-            vEraseQueue.push_back(inv.hash);
-
-            LogPrint("mempool", "AcceptToMemoryPool: peer=%d %s : accepted %s (poolsz %u)\n",
-                pfrom->id, pfrom->cleanSubVer,
-                tx.GetHash().ToString(),
-                mempool.mapTx.size());
-
-            // Recursively process any orphan transactions that depended on this one
-            set<NodeId> setMisbehaving;
-            for (unsigned int i = 0; i < vWorkQueue.size(); i++)
+            if (AcceptToMemoryPool(mempool, state, tx, true, &fMissingInputs))
             {
-                map<uint256, set<uint256> >::iterator itByPrev = mapOrphanTransactionsByPrev.find(vWorkQueue[i]);
-                if (itByPrev == mapOrphanTransactionsByPrev.end())
-                    continue;
-                for (set<uint256>::iterator mi = itByPrev->second.begin();
-                     mi != itByPrev->second.end();
-                     ++mi)
+                mempool.check(pcoinsTip);
+                RelayTransaction(tx);
+                vWorkQueue.push_back(inv.hash);
+                vEraseQueue.push_back(inv.hash);
+
+                LogPrint("mempool", "AcceptToMemoryPool: peer=%d %s : accepted %s (poolsz %u)\n",
+                    pfrom->id, pfrom->cleanSubVer,
+                    tx.GetHash().ToString(),
+                    mempool.mapTx.size());
+
+                // Recursively process any orphan transactions that depended on this one
+                set<NodeId> setMisbehaving;
+                for (unsigned int i = 0; i < vWorkQueue.size(); i++)
                 {
-                    const uint256& orphanHash = *mi;
-                    const CTransaction& orphanTx = mapOrphanTransactions[orphanHash].tx;
-                    NodeId fromPeer = mapOrphanTransactions[orphanHash].fromPeer;
-                    bool fMissingInputs2 = false;
-                    // Use a dummy CValidationState so someone can't setup nodes to counter-DoS based on orphan
-                    // resolution (that is, feeding people an invalid transaction based on LegitTxX in order to get
-                    // anyone relaying LegitTxX banned)
-                    CValidationState stateDummy;
-
-                    vEraseQueue.push_back(orphanHash);
-
-                    if (setMisbehaving.count(fromPeer))
+                    map<uint256, set<uint256> >::iterator itByPrev = mapOrphanTransactionsByPrev.find(vWorkQueue[i]);
+                    if (itByPrev == mapOrphanTransactionsByPrev.end())
                         continue;
-                    if (AcceptToMemoryPool(mempool, stateDummy, orphanTx, true, &fMissingInputs2))
+                    for (set<uint256>::iterator mi = itByPrev->second.begin();
+                         mi != itByPrev->second.end();
+                         ++mi)
                     {
-                        LogPrint("mempool", "   accepted orphan tx %s\n", orphanHash.ToString());
-                        RelayTransaction(orphanTx);
-                        vWorkQueue.push_back(orphanHash);
-                    }
-                    else if (!fMissingInputs2)
-                    {
-                        int nDos = 0;
-                        if (stateDummy.IsInvalid(nDos) && nDos > 0)
+                        const uint256& orphanHash = *mi;
+                        const CTransaction& orphanTx = mapOrphanTransactions[orphanHash].tx;
+                        NodeId fromPeer = mapOrphanTransactions[orphanHash].fromPeer;
+                        bool fMissingInputs2 = false;
+                        // Use a dummy CValidationState so someone can't setup nodes to counter-DoS based on orphan
+                        // resolution (that is, feeding people an invalid transaction based on LegitTxX in order to get
+                        // anyone relaying LegitTxX banned)
+                        CValidationState stateDummy;
+
+                        vEraseQueue.push_back(orphanHash);
+
+                        if (setMisbehaving.count(fromPeer))
+                            continue;
+                        if (AcceptToMemoryPool(mempool, stateDummy, orphanTx, true, &fMissingInputs2))
                         {
-                            // Punish peer that gave us an invalid orphan tx
-                            Misbehaving(fromPeer, nDos);
-                            setMisbehaving.insert(fromPeer);
-                            LogPrint("mempool", "   invalid orphan tx %s\n", orphanHash.ToString());
+                            LogPrint("mempool", "   accepted orphan tx %s\n", orphanHash.ToString());
+                            RelayTransaction(orphanTx);
+                            vWorkQueue.push_back(orphanHash);
                         }
-                        // too-little-fee orphan
-                        LogPrint("mempool", "   removed orphan tx %s\n", orphanHash.ToString());
+                        else if (!fMissingInputs2)
+                        {
+                            int nDos = 0;
+                            if (stateDummy.IsInvalid(nDos) && nDos > 0)
+                            {
+                                // Punish peer that gave us an invalid orphan tx
+                                Misbehaving(fromPeer, nDos);
+                                setMisbehaving.insert(fromPeer);
+                                LogPrint("mempool", "   invalid orphan tx %s\n", orphanHash.ToString());
+                            }
+                            // too-little-fee orphan
+                            LogPrint("mempool", "   removed orphan tx %s\n", orphanHash.ToString());
+                        }
+                        mempool.check(pcoinsTip);
                     }
-                    mempool.check(pcoinsTip);
                 }
+
+                BOOST_FOREACH(uint256 hash, vEraseQueue)
+                    EraseOrphanTx(hash);
             }
+            else if (fMissingInputs)
+            {
+                AddOrphanTx(tx, pfrom->GetId());
 
-            BOOST_FOREACH(uint256 hash, vEraseQueue)
-                EraseOrphanTx(hash);
-        }
-        else if (fMissingInputs)
+                // DoS prevention: do not allow mapOrphanTransactions to grow unbounded
+                unsigned int nMaxOrphanTx = (unsigned int)std::max((int64_t)0, GetArg("-maxorphantx", DEFAULT_MAX_ORPHAN_TRANSACTIONS));
+                unsigned int nEvicted = LimitOrphanTxSize(nMaxOrphanTx);
+                if (nEvicted > 0)
+                    LogPrint("mempool", "mapOrphan overflow, removed %u tx\n", nEvicted);
+            } else if (pfrom->fWhitelisted) {
+                // Always relay transactions received from whitelisted peers, even
+                // if they are already in the mempool (allowing the node to function
+                // as a gateway for nodes hidden behind it).
+                RelayTransaction(tx);
+            }
+        }else if (tx.nLayer==1)//flow coin layer
         {
-            AddOrphanTx(tx, pfrom->GetId());
-
-            // DoS prevention: do not allow mapOrphanTransactions to grow unbounded
-            unsigned int nMaxOrphanTx = (unsigned int)std::max((int64_t)0, GetArg("-maxorphantx", DEFAULT_MAX_ORPHAN_TRANSACTIONS));
-            unsigned int nEvicted = LimitOrphanTxSize(nMaxOrphanTx);
-            if (nEvicted > 0)
-                LogPrint("mempool", "mapOrphan overflow, removed %u tx\n", nEvicted);
-        } else if (pfrom->fWhitelisted) {
-            // Always relay transactions received from whitelisted peers, even
-            // if they are already in the mempool (allowing the node to function
-            // as a gateway for nodes hidden behind it).
-            RelayTransaction(tx);
+            if (AcceptToLayer1Pool(state, tx, true, &fMissingInputs))
+            {
+                
+            }
         }
         int nDoS = 0;
         if (state.IsInvalid(nDoS))
@@ -5411,3 +5420,161 @@ public:
         mapOrphanTransactionsByPrev.clear();
     }
 } instance_of_cmaincleanup;
+
+// layer1 part
+bool AcceptToLayer1Pool(CValidationState &state, const CTransaction &tx, bool fLimitFree,
+                        bool* pfMissingInputs, bool fRejectInsaneFee)
+{
+    AssertLockHeld(cs_main);
+    //LogPrintf("accepttomemepool tx:%s \n",tx.ToString());
+    if (pfMissingInputs)
+        *pfMissingInputs = false;
+
+    if (!CheckTransaction(tx, state))
+        return error("AcceptToLayer1Pool: : CheckTransaction failed");
+        
+
+    // is it already in the memory pool?
+    uint256 hash = tx.GetHash();
+    if (pFlowCoinTxDB->Exists(hash)){
+        LogPrintf("AcceptToLayer1Pool: : tx already exists");
+        return false;
+    }
+        
+        
+    bool fTxOverride=false;
+    // Check for conflicts with in-memory transactions
+    {
+        for (unsigned int i = 0; i < tx.vin.size(); i++)
+        {
+            COutPoint outpoint = tx.vin[i].prevout;
+            if (pool.mapNextTx.count(outpoint))
+            {           
+                    return state.DoS(5, error("AcceptToMemoryPool: : invalid tx override"),
+                         REJECT_INVALID, "txoverride");
+
+            }
+        }
+        
+    }
+
+    {
+        CCoinsView dummy;
+        CCoinsViewCache view(&dummy);
+
+        CAmount nValueIn = 0;
+        {
+        LOCK(pool.cs);
+        CCoinsViewMemPool viewMemPool(pcoinsTip, pool);
+        view.SetBackend(viewMemPool);
+
+        // do we already have it?
+        if (view.HaveCoins(hash))
+            return false;
+        // do all inputs exist?
+        // Note that this does not check for the presence of actual outputs (see the next check for that),
+        // only helps filling in pfMissingInputs (to determine missing vs spent).
+        BOOST_FOREACH(const CTxIn txin, tx.vin) {
+            if (!view.HaveCoins(txin.prevout.hash)) {
+                if (pfMissingInputs)
+                    *pfMissingInputs = true;
+                LogPrintf("AcceptToMemoryPool: : missing inputs");
+                return false;
+            }
+        }
+        // are the actual inputs available?
+        if (!view.HaveInputs(tx4CheckVins))           
+            return state.Invalid(error("AcceptToMemoryPool : inputs already spent"),
+                                 REJECT_DUPLICATE, "bad-txns-inputs-spent");
+
+        // Bring the best block into scope
+        view.GetBestBlock();
+        nValueIn = view.GetValueIn(tx);
+        // we have all inputs cached now, so switch back to dummy, so we don't need to keep lock on mempool
+        view.SetBackend(dummy);
+        }
+        // Check for non-standard pay-to-script-hash in inputs
+        if (Params().RequireStandard() && !AreInputsStandard(tx, view))
+            return error("AcceptToMemoryPool: : nonstandard transaction input");
+
+        // Check that the transaction doesn't have an excessive number of
+        // sigops, making it impossible to mine. Since the coinbase transaction
+        // itself can contain sigops MAX_TX_SIGOPS is less than
+        // MAX_BLOCK_SIGOPS; we still consider this an invalid rather than
+        // merely non-standard transaction.
+        unsigned int nSigOps = GetLegacySigOpCount(tx);
+        nSigOps += GetP2SHSigOpCount(tx, view);
+        if (nSigOps > MAX_TX_SIGOPS)
+            return state.DoS(0,
+                             error("AcceptToMemoryPool : too many sigops %s, %d > %d",
+                                   hash.ToString(), nSigOps, MAX_TX_SIGOPS),
+                             REJECT_NONSTANDARD, "bad-txns-too-many-sigops");
+
+        CAmount nValueOut = tx.GetValueOut();
+        CAmount nFees = nValueIn-nValueOut;
+        //double dPriority = view.GetPriority(tx, chainActive.Height());
+        //add address list to txmempoolentry for later query
+        std::vector<CScript> vaddr;        
+        uint256 hash1;
+        BOOST_FOREACH(const CTxIn &txin, tx.vin) {                  
+            CTransaction prevTx;
+            if(GetTransaction(txin.prevout.hash, prevTx,hash1, true))
+                vaddr.push_back(prevTx.vout[txin.prevout.n].scriptPubKey);
+        }    
+        BOOST_FOREACH(const CTxOut &txout, tx.vout) {
+        //if address is empty don't record it
+            if (txout.scriptPubKey.size()==0)
+                continue;        
+            if (find(vaddr.begin(),vaddr.end(),txout.scriptPubKey)==vaddr.end())
+                vaddr.push_back(txout.scriptPubKey);
+                    
+        }
+        CTxMemPoolEntry entry(tx, nFees, GetTime(), 0, chainActive.Height(),vaddr);
+        unsigned int nSize = entry.GetTxSize();
+        // Don't accept it if it can't get into a block
+        CAmount txMinFee = ::minRelayTxFee.GetFee(nSize);
+        if (nFees < txMinFee)
+            return state.DoS(0, error("AcceptToMemoryPool : not enough fees %s, %d < %d",
+                                      hash.ToString(), nFees, txMinFee),
+                             REJECT_INSUFFICIENTFEE, "insufficient fee");
+
+       
+
+        if (fRejectInsaneFee && nFees > ::minRelayTxFee.GetFee(nSize) * 10000)
+            return state.Invalid(error("AcceptToMemoryPool: : insane fees %s, %d > %d",hash.ToString(),nFees, ::minRelayTxFee.GetFee(nSize) * 10000),
+                    REJECT_INVALID, "insane fees");
+        if (pool.getEntranceFeeRate(MEMPOOL_ENTRANCE_THRESHOLD)-1>=tx.GetFeeRate())
+            return state.Invalid(error("AcceptToMemoryPool: : feerate lower than threshould %s,threshould %i, fee rate %d",hash.ToString(),pool.getEntranceFeeRate(MEMPOOL_ENTRANCE_THRESHOLD),tx.GetFeeRate()),
+                    REJECT_INVALID, "insufficient fees");
+        // Check against previous transactions
+        // This is done last to help prevent CPU exhaustion denial-of-service attacks.
+        //LogPrintf("AcceptToMemoryPool: : feerate threshould %i, fee rate %d",pool.getEntranceFeeRate(MEMPOOL_ENTRANCE_THRESHOLD),tx.GetFeeRate());
+        if (!CheckInputs(tx,tx4CheckVins, state, view, 0,true, STANDARD_SCRIPT_VERIFY_FLAGS, true))
+        {
+            return error("AcceptToMemoryPool: : ConnectInputs failed %s", hash.ToString());
+        }
+
+        // Check again against just the consensus-critical mandatory script
+        // verification flags, in case of bugs in the standard flags that cause
+        // transactions to pass as valid when they're actually invalid. For
+        // instance the STRICTENC flag was incorrectly allowing certain
+        // CHECKSIG NOT scripts to pass, even though they were invalid.
+        //
+        // There is a similar check in CreateNewBlock() to prevent creating
+        // invalid blocks, however allowing such transactions into the mempool
+        // can be exploited as a DoS attack.
+        if (!CheckInputs(tx,tx4CheckVins, state, view, 0,true, MANDATORY_SCRIPT_VERIFY_FLAGS, true))
+        {
+            return error("AcceptToMemoryPool: : BUG! PLEASE REPORT THIS! ConnectInputs failed against MANDATORY but not STANDARD flags %s", hash.ToString());
+        }
+        // Store transaction in memory
+        //delete the overidedTx 
+        if (fTxOverride){
+            list<CTransaction> removed;
+            pool.remove(entryOverrided.GetTx(),removed,true);
+        }
+        pool.addUnchecked(hash, entry);
+    }
+    SyncWithWallets(tx, NULL);
+    return true;
+}

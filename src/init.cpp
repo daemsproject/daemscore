@@ -194,6 +194,10 @@ void Shutdown()
         pScriptCoinDBView =NULL;
         delete pBlockPosDB;
         pBlockPosDB=NULL;
+        delete pFlowCoinTxDB;
+        pFlowCoinTxDB=NULL;
+        delete pFlowCoinChequeDB;
+        pFlowCoinChequeDB=NULL;
         delete psqliteDB;
         psqliteDB = NULL;
         
@@ -1066,7 +1070,9 @@ bool AppInit2(boost::thread_group& threadGroup)
                // LogPrintf("init:create dbs 4.\n");
                 pScriptCoinDBView = new CScriptCoinDB(psqliteDB,fReindex); 
                // LogPrintf("init:create dbs 5.\n");
-                
+                //flow coin dbs
+                pFlowCoinChequeDB= new CFlowCoinChequeDB(psqliteDB,fReindex);
+                pFlowCoinTxDB= new CFlowCoinTxDB(psqliteDB,fReindex);
                 if (fReindex)
                     pblocktree->WriteReindexing(true);
 
