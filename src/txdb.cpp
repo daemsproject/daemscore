@@ -1639,3 +1639,97 @@ bool SearchPromotedContents(const vector<CScript>& vSenders, const vector<int>& 
     // LogPrintf("SearchPromotedContents vtagids:%i \n",vTagIDs.size());
     return psqliteDB->SearchContents(vSenderIDs, vCCs, vTagIDs, vContents, nMaxResults, nOffset);
 }
+
+
+
+
+// layer1 part
+CFlowCoinTxDB::CFlowCoinTxDB(CSqliteWrapper* dbIn, bool fWipe) : db(dbIn)
+{
+    if (fWipe)
+        db->ClearTable("table_flowcointx");
+}
+bool CFlowCoinTxDB::Insert(const CTransaction tx,const unsigned int nLevel)
+{
+    CDataStream ss;
+    ss<<tx;
+    uint32_t nBlockHeight=chainActive[tx.nBlockHash]->nBlockHeight;    
+    return db->InsertFlowCoinTx(tx.GetHash(),nBlockHeight,nLevel,ss);
+}
+bool CFlowCoinTxDB::Erase(const uint256 txid)
+{
+    char txidstr[67];
+    sprintf(txidstr, "x'%s'", txid.GetHex());
+    return db->Delete("table_flowcointx", "txid", txidstr, "=");
+}
+bool CFlowCoinTxDB::Exists(const uint256 txid)
+{
+    char txidstr[67];
+    sprintf(txidstr, "x'%s'", txid.GetHex());
+    vector<string> searchResult;
+    return db->SearchStrs("table_flowcointx","txid",txidstr,"txid",SQLITEDATATYPE_BLOB,searchResult,"=",1);
+}
+vector<uint256> CFlowCoinTxDB::GetTxidsByLevel(const uint32_t nLevel,const uint32_t nMaxResults)
+{
+    char nLevelStr[10];
+    sprintf(nLevelStr, "%i",nLevel);
+    vector<string> searchResult;
+    vector<uint256> vTxids;
+    uint256 txid;
+    if(db->SearchStrs("table_flowcointx","level",nLevelStr,"txid",SQLITEDATATYPE_BLOB,searchResult,"=",nMaxResults))
+    {
+           for (std::vector<string>::const_iterator it = searchResult.begin();it != searchResult.end(); it++) 
+           {            
+                memcpy(txid.begin(),(unsigned char*)it,32);
+                vTxids.push_back(txid);
+            }
+    };
+    return vTxids;
+}
+ vector<CDataStream> CFlowCoinTxDB::GetByTxids(const vector<uint256> vTxids)
+ {
+     vector<CDataStream> vTxData;
+     for (std::vector<uint256>::const_iterator it = vTxids.begin();it != vTxids.end(); it++) 
+     {
+         CDataStream ss;
+         if(db->GetFlowCoinTx(*it,ss))
+             vTxData.push_back(ss);
+     }
+     return vTxData;
+ }
+ 
+ CFlowCoinChequeDB::CFlowCoinChequeDB(CSqliteWrapper* dbIn, bool fWipe) : db(dbIn)
+{
+    if (fWipe)
+        db->ClearTable("table_flowcoincheque");
+}
+ bool CFlowCoinChequeDB::Insert(const CFlowCoinCheque cheque)
+{    
+    return db->InsertFlowCoinCheque(cheque);
+}
+ 
+ bool CFlowCoinChequeDB::Erase(const uint256 txid, const uint32_t nOut)
+{    
+    return db->DeleteFlowCoinCheque(txid,nOut);
+}
+ 
+  bool CFlowCoinChequeDB::Erase(const uint256 txid)
+{    
+    return db->DeleteFlowCoinCheque(txid);
+}
+  
+bool CFlowCoinChequeDB::Spend(const uint256 txid, const unsigned short nOut,const uint256 spentTxid, const unsigned short nIn,const uint32_t nSpentLockTime)
+{
+    return db->SpendFlowCoinCheque(txid,nOut,spentTxid,nIn,nSpentLockTime);
+}
+
+bool CFlowCoinChequeDB::Spend(const CTransaction tx)
+{    
+    vector<pair<uint256,unsigned short> > outs;
+    uint32_t nMaxLockTime;
+    return db->SpendFlowCoinCheques(outs, tx.GetHash(),nMaxLockTime);
+}
+bool CFlowCoinChequeDB::Disable(const uint256 txid, const unsigned short nOut)
+{
+    return db->DisableFlowCoinCheque(txid,nOut);
+}

@@ -115,6 +115,46 @@ public:
         READWRITE(VARINT(nLockTime));
     }
 };
+class CFlowCoinCheque
+{
+public:
+    CScript scriptPubKey;
+    uint256 txid; 
+    unsigned short nOut;
+    CAmount nValue;
+    uint32_t nLockTime;
+    uint32_t nBlockHeight;
+    bool fSpent;
+    uint256 spentTxid; 
+    unsigned short nSpentIn;
+    uint32_t nSpentLockTime;
+    CFlowCoinCheque(){
+        txid=uint256(0);
+       nOut=0;
+        nValue=0;
+        nLockTime=0;
+        nBlockHeight=0;
+        fSpent=false;
+        spentTxid=uint256(0);
+        nSpentIn=0;
+        nSpentLockTime=0;
+    }
+    ADD_SERIALIZE_METHODS;   
+
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {        
+        READWRITE(scriptPubKey);
+        READWRITE(txid);       
+        READWRITE(VARINT(nOut));
+        READWRITE(VARINT(nValue));
+        READWRITE(VARINT(nLockTime));
+        READWRITE(VARINT(nBlockHeight));
+        READWRITE(fSpent);    
+        READWRITE(spentTxid);       
+        READWRITE(VARINT(nSpentIn));
+        READWRITE(VARINT(nSpentLockTime));
+    }
+};
 class CSqliteWrapper
 {
 private:
@@ -351,6 +391,14 @@ public:
     // layer1 part
     bool CreateFlowCoinChequeTable();
     bool CreateFlowCoinTxTable();
+    bool InsertFlowCoinTx(const uint256 txid,const uint32_t nBlockHeight,const uint32_t nLevel,const CDataStream txData);
+    bool GetFlowCoinTx(const uint256 txid,CDataStream& txData);
+    bool InsertFlowCoinCheque(const CFlowCoinCheque cheque);
+    bool DeleteFlowCoinCheque(const uint256 txid,const unsigned short nOut);
+    bool DeleteFlowCoinCheque(const uint256 txid);
+    bool SpendFlowCoinCheque(const uint256 txid,unsigned short nOut,const uint256 spentTxid, const unsigned short nIn,const uint32_t nSpentLockTime);
+    bool SpendFlowCoinCheques(const vector<pair<uint256,unsigned short> > outs,const uint256 spentTxid,const uint32_t nSpentLockTime);
+    bool DisableFlowCoinCheque(const uint256 txid,unsigned short nOut);
 };
 
 #endif // BITCOIN_LEVELDBWRAPPER_H

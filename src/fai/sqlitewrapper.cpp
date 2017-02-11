@@ -67,6 +67,9 @@ bool CSqliteWrapper::CreateTables()
     CreateBlockDomainTable();
     CreateScript2TxPosTable();
     CreateBlockPosTable();
+    // layer1 part
+    CreateFlowCoinChequeTable();
+    CreateFlowCoinTxTable();
     return true;
 }
 bool CSqliteWrapper::CreateDomainTable(const char* tableName)
@@ -675,7 +678,7 @@ bool CSqliteWrapper::GetBlockDomains(const uint256 blockHash,CDataStream& sBlock
 {
     //LogPrintf("CSqliteWrapper GetBlockDomains \n");
     //char* zErrMsg=0;
-    char sql[2000]; 
+    //char sql[2000]; 
     const char* selectstatement="SELECT mapdomains FROM blockdomaintable WHERE blockhash = ?;";
     //sprintf(sql,selectstatement,blockHash.GetHex().c_str());
     
@@ -1957,3 +1960,256 @@ bool CSqliteWrapper::WriteBlockPos(const int64_t nPosDB,const uint256& hashBlock
    sqlite3_finalize( stat );
    return (result==SQLITE_OK||result==101);
 }
+
+
+
+  // layer1 part
+bool CSqliteWrapper::CreateFlowCoinTxTable()
+{    
+    char* zErrMsg=0;    
+    string tableName="table_flowcointx";
+    char sql[2000];
+    const string createtablestatement="CREATE TABLE IF NOT EXISTS %s( txid BLOB(32) PRIMARY KEY, blockheight INTEGER, level INTEGER,txdata BLOB);";    
+    sprintf(sql,createtablestatement.c_str(),tableName.c_str());
+   // LogPrintf("CSqliteWrapper CreateScript2TxPosTable statement %s \n",sql);
+    sqlite3_exec(pdb,sql,0,0,&zErrMsg);
+   // LogPrintf("CSqliteWrapper CreateScript2TxPosTable done %s \n",zErrMsg);
+    const string createindexstatement="CREATE INDEX IF NOT EXISTS %s on %s(%s)";    
+    sprintf(sql,createindexstatement.c_str(),"index_table_flowcointx_blockheight",tableName.c_str(),"blockheight");  
+  //  LogPrintf("CSqliteWrapper CreateScript2TxPosTable createindexstatement %s \n",sql);
+    sqlite3_exec(pdb,sql,0,0,&zErrMsg);
+  //  LogPrintf("CSqliteWrapper CreateScript2TxPosTable createindex done %s\n",zErrMsg);
+    memset(sql,0,sizeof(sql)/sizeof(char));
+    sprintf(sql,createindexstatement.c_str(),"index_table_flowcointx_level",tableName.c_str(),"level");  
+  //  LogPrintf("CSqliteWrapper CreateScript2TxPosTable createindexstatement %s \n",sql);
+    sqlite3_exec(pdb,sql,0,0,&zErrMsg);
+    return true;
+}
+bool CSqliteWrapper::CreateFlowCoinChequeTable()
+{
+    //LogPrintf("CSqliteWrapper _CreateTable %s \n",tableName);
+    char* zErrMsg=0;
+    string tableName="table_flowcoincheque";
+    char sql[2000];
+    //scriptpubkey,txid,nout, value,locktime,fspent,spenttxid,spentnvin,spentlocktime
+    const string createtablestatement="CREATE TABLE IF NOT EXISTS %s ( \
+        txid BLOB(32), \
+        nout INTEGER, \
+        scriptpubkey BLOB, \
+        value INTEGER, \
+        locktime INTEGER, \
+        isspent BOOL, \
+        spenttxid BLOB(32), \
+        spentnin INTEGER, \
+        spentlocktime INTEGER);";    
+    sprintf(sql,createtablestatement.c_str(),tableName.c_str());
+  //  LogPrintf("CSqliteWrapper Createtable_unspent statement %s \n",sql);
+    sqlite3_exec(pdb,sql,0,0,&zErrMsg); 
+  //  LogPrintf("CSqliteWrapper Createtable_unspent done %s\n",zErrMsg);
+    const string createindexstatement="CREATE INDEX IF NOT EXISTS %s on %s(%s)";    
+    sprintf(sql,createindexstatement.c_str(),"table_flowcoincheque_txid",tableName.c_str(),"txid");  
+  //  LogPrintf("CSqliteWrapper Createtable_unspent createindexstatement %s \n",sql);
+    sqlite3_exec(pdb,sql,0,0,&zErrMsg); 
+ //   LogPrintf("CSqliteWrapper table_unspent createindex done %s \n",zErrMsg);
+    memset(sql,0,sizeof(sql)/sizeof(char));
+    sprintf(sql,createindexstatement.c_str(),"table_flowcoincheque_spenttxid",tableName.c_str(),"spenttxid");  
+  //  LogPrintf("CSqliteWrapper Createtable_unspent createindexstatement %s \n",sql);
+    sqlite3_exec(pdb,sql,0,0,&zErrMsg); 
+    memset(sql,0,sizeof(sql)/sizeof(char));
+    sprintf(sql,createindexstatement.c_str(),"table_flowcoincheque_scriptpubkey",tableName.c_str(),"scriptpubkey");  
+  //  LogPrintf("CSqliteWrapper Createtable_unspent createindexstatement %s \n",sql);
+    sqlite3_exec(pdb,sql,0,0,&zErrMsg); 
+    return true;
+}
+bool CSqliteWrapper::InsertFlowCoinTx(const uint256 txid,const uint32_t nBlockHeight,const uint32_t nLevel,const CDataStream txData)
+{
+    //LogPrintf("InsertCheque\n");    
+    string insertstatement="INSERT OR IGNORE INTO table_flowcointx VALUES (?,?,?,?);";
+    //LogPrintf("GetInsertSql %s\n",insertstatement);
+    int result;
+    sqlite3_stmt  *stat;    
+   result=sqlite3_prepare_v2( pdb, insertstatement.c_str(), -1, &stat, 0 );
+   //LogPrintf("GetInsertSql1 %i\n",result);   
+   result=sqlite3_bind_blob( stat, 1, (char*)txid.begin(), 32, NULL );   
+   result=sqlite3_bind_int( stat, 2, nBlockHeight);   
+   result=sqlite3_bind_int( stat, 3, nLevel);   
+   //LogPrintf("GetInsertSql2 %i\n",result); 
+   result=sqlite3_bind_blob( stat, 4, (const char*)&txData[0], txData.size(), NULL );   
+   //LogPrintf("GetInsertSql3 %i\n",result);   
+    result=sqlite3_step( stat );
+    if(result!=0&&result!=101)
+        LogPrintf("InsertFlowCoinTx failed result %i\n",result);
+   sqlite3_finalize( stat );
+   return (result==SQLITE_OK);
+}
+bool CSqliteWrapper::GetFlowCoinTx(const uint256 txid,CDataStream& txData)
+{
+    //LogPrintf("CSqliteWrapper GetBlockDomains \n");
+    //char* zErrMsg=0;
+    //char sql[2000]; 
+    const char* selectstatement="SELECT txdata FROM table_flowcointx WHERE txid = ?;";
+    //sprintf(sql,selectstatement,blockHash.GetHex().c_str());
+    
+    //LogPrintf("CSqliteWrapper GetBlockDomains sql %s\n",sql); 
+    sqlite3_stmt  *stmt = NULL;
+    int rc;
+    rc = sqlite3_prepare_v2(pdb , selectstatement , strlen(selectstatement) , &stmt , NULL);
+    rc= sqlite3_bind_blob( stmt, 1, (char*)txid.begin(), 32, NULL );   
+    if(rc != SQLITE_OK)
+    {
+        if(stmt)        
+            sqlite3_finalize(stmt);               
+        return false;
+    }
+    rc = sqlite3_step(stmt);
+        if(rc == SQLITE_ROW)
+        {
+           txData.write((char*)sqlite3_column_blob(stmt,0),sqlite3_column_bytes(stmt,0));            
+           sqlite3_finalize(stmt);
+            return true;
+        }
+        else
+        {
+            sqlite3_finalize(stmt);
+            return false;
+        }    
+    return false;     
+}
+bool CSqliteWrapper::InsertFlowCoinCheque(const CFlowCoinCheque cheque)
+{
+    
+    //LogPrintf("InsertCheque\n");    
+    string insertstatement="INSERT OR IGNORE INTO table_flowcoincheque VALUES (?,?,?,?,?,?,?,?,?);";
+    //LogPrintf("GetInsertSql %s\n",insertstatement);
+    int result;
+    sqlite3_stmt  *stat;    
+   result=sqlite3_prepare_v2( pdb, insertstatement.c_str(), -1, &stat, 0 );
+   //LogPrintf("GetInsertSql1 %i\n",result);   
+   result=sqlite3_bind_blob( stat, 1, (char*)cheque.txid.begin(), 32, NULL );   
+   result=sqlite3_bind_int(stat,2, cheque.nOut);   
+  // LogPrintf("GetInsertSql2 %i\n",result);   
+   result=sqlite3_bind_blob(stat,3, &cheque.scriptPubKey[0], cheque.scriptPubKey.size(), NULL );   
+  // LogPrintf("GetInsertSql3 %i\n",result);
+   result=sqlite3_bind_int64(stat,4, cheque.nValue); 
+   //LogPrintf("GetInsertSql4 %i\n",result);
+   result=sqlite3_bind_int64(stat,5, (int64_t)cheque.nLockTime);  
+   result=sqlite3_bind_int(stat,6,cheque.fSpent );  
+   result=sqlite3_bind_blob( stat, 7, (char*)cheque.spentTxid.begin(), 32, NULL );   
+   result=sqlite3_bind_int(stat,8, cheque.nSpentIn);   
+   result=sqlite3_bind_int64(stat,9, (int64_t)cheque.nSpentLockTime);  
+  // LogPrintf("GetInsertSql5 %i\n",result);   
+    result=sqlite3_step( stat );
+    if(!result==SQLITE_OK&&!result==101)
+        LogPrintf("InsertCheque failed %i\n",result);
+   sqlite3_finalize( stat );
+   return (result==SQLITE_OK||result==101);
+}
+
+bool CSqliteWrapper::DeleteFlowCoinCheque(const uint256 txid,const unsigned short nOut)
+{
+    //LogPrintf("GetdeleteSql\n");
+
+    string deletetatement="DELETE FROM table_flowcoincheque WHERE txid = ? AND nout= ?;";
+    sqlite3_stmt  *stmt = NULL;
+    int rc;
+    rc = sqlite3_prepare_v2(pdb , deletetatement .c_str(), -1 , &stmt , NULL);
+    rc= sqlite3_bind_blob( stmt, 1, (char*)txid.begin(), 32, NULL );   
+    rc=sqlite3_bind_int(stmt,2, nOut);   
+    if(rc != SQLITE_OK)
+    {
+        if(stmt)        
+            sqlite3_finalize(stmt);               
+        return false;
+    }
+    rc = sqlite3_step(stmt);
+   sqlite3_finalize( stmt );
+   return (rc==SQLITE_OK||rc==101);
+}
+bool CSqliteWrapper::DeleteFlowCoinCheque(const uint256 txid)
+{
+    //LogPrintf("GetdeleteSql\n");
+
+    string deletetatement="DELETE FROM table_flowcoincheque WHERE txid = ?;";
+    sqlite3_stmt  *stmt = NULL;
+    int rc;
+    rc = sqlite3_prepare_v2(pdb , deletetatement.c_str(), -1 , &stmt , NULL);
+    rc= sqlite3_bind_blob( stmt, 1, (char*)txid.begin(), 32, NULL );   
+    if(rc != SQLITE_OK)
+    {
+        if(stmt)        
+            sqlite3_finalize(stmt);               
+        return false;
+    }
+    rc = sqlite3_step(stmt);
+   sqlite3_finalize( stmt );
+   return (rc==SQLITE_OK||rc==101);
+}
+bool CSqliteWrapper::SpendFlowCoinCheque(const uint256 txid,unsigned short nOut,const uint256 spentTxid, const unsigned short nIn,const uint32_t nSpentLockTime)
+{  
+   // LogPrintf("CSqliteWrapper::Update domain\n");
+    const char* tableName="table_flowcoincheque";
+    char updatestatement[2000];    
+    sprintf(updatestatement,"UPDATE %s SET spenttxid =?, spentnin= ?, spentlocktime=?\
+        WHERE txid = ? AND nout= ?",tableName);
+    //LogPrintf("CSqliteWrapper::Update domain%s\n",updatestatement);
+    int result;
+    sqlite3_stmt  *stat;    
+   result=sqlite3_prepare_v2( pdb, updatestatement, -1, &stat, 0 );
+   //LogPrintf("Updatedomain1 %i\n",result); 
+   result= sqlite3_bind_blob( stat, 1, (char*)spentTxid.begin(), 32, NULL );
+   result=sqlite3_bind_int(stat,2, nIn);
+   result=sqlite3_bind_int64(stat,3, (int64_t)nSpentLockTime);
+   result= sqlite3_bind_blob( stat, 4, (char*)txid.begin(), 32, NULL );
+   result=sqlite3_bind_int(stat,5, nOut);  
+    result=sqlite3_step( stat );
+    //LogPrintf("CSqliteWrapper::Update domain%i\n",result);
+   sqlite3_finalize( stat );
+   if(result!=0&&result!=101)
+    LogPrintf("CSqliteWrapper::SpendFlowCoinCheque failed %i\n",result);
+   return (result==SQLITE_OK||result==101);
+}
+bool CSqliteWrapper::SpendFlowCoinCheques(const vector<pair<uint256,unsigned short> > outs,const uint256 spentTxid, const uint32_t nSpentLockTime)
+{
+    const char* tableName="table_flowcoincheque";
+    char updatestatement[2000];    
+    sprintf(updatestatement,"UPDATE %s SET isspent= 1, spenttxid =?, spentnin= ?, spentlocktime=?\
+        WHERE txid = ? AND nout= ?",tableName);
+    //LogPrintf("CSqliteWrapper::Update domain%s\n",updatestatement);
+    int result;
+    sqlite3_stmt  *stat;    
+   result=sqlite3_prepare_v2( pdb, updatestatement, -1, &stat, 0 );
+   for (unsigned int i = 0; i < outs.size(); i++) 
+   {
+   result= sqlite3_bind_blob( stat, 1, (char*)spentTxid.begin(), 32, NULL );
+   result=sqlite3_bind_int(stat,2, i);
+   result=sqlite3_bind_int64(stat,3, (int64_t)nSpentLockTime);
+   result= sqlite3_bind_blob( stat, 4, (char*)outs[i].first.begin(), 32, NULL );
+   result=sqlite3_bind_int(stat,5, outs[i].second);  
+    result=sqlite3_step( stat );
+    sqlite3_clear_bindings(stat);
+    sqlite3_reset(stat);
+   }
+   sqlite3_finalize( stat );
+   if(result!=0&&result!=101)
+        LogPrintf("CSqliteWrapper::SpendFlowCoinCheque failed %i\n",result);
+   return (result==SQLITE_OK||result==101);   
+}
+
+  bool CSqliteWrapper::DisableFlowCoinCheque(const uint256 txid,unsigned short nOut)
+  {
+      const char* tableName="table_flowcoincheque";
+    char updatestatement[2000];    
+    sprintf(updatestatement,"UPDATE %s SET value = 0 WHERE txid = ? AND nout= ?",tableName);
+    //LogPrintf("CSqliteWrapper::Update domain%s\n",updatestatement);
+    int result;
+    sqlite3_stmt  *stat;    
+   result=sqlite3_prepare_v2( pdb, updatestatement, -1, &stat, 0 );
+   result= sqlite3_bind_blob( stat, 1, (char*)txid.begin(), 32, NULL );
+   result=sqlite3_bind_int(stat,2, nOut);  
+    result=sqlite3_step( stat );
+    //LogPrintf("CSqliteWrapper::Update domain%i\n",result);
+   sqlite3_finalize( stat );
+   if(result!=0&&result!=101)
+    LogPrintf("CSqliteWrapper::DisableFlowCoinCheque failed %i\n",result);
+   return (result==SQLITE_OK||result==101);
+  }

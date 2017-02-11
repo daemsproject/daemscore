@@ -585,6 +585,8 @@ protected:
     friend void ::UnregisterAllValidationInterfaces();
 };
 // flowcoin part
+class CFlowCoinTxDB;
+class CFlowCoinChequeDB;
 extern CFlowCoinTxDB *pFlowCoinTxDB;
 extern CFlowCoinChequeDB *pFlowCoinChequeDB;
 bool AcceptToLayer1Pool(CValidationState &state, const CTransaction &tx, bool fLimitFree,

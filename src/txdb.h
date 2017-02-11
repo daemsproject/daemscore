@@ -186,6 +186,12 @@ bool SearchPromotedContents(const vector<CScript>& vSenders,const vector<int>& v
 
 
 //the db to store flowcoin txs
+//class CFlowCoinTx
+//{
+//    CTransaction tx;
+//    unsigned int nLevel;
+//    vector<COutPoint> vPrevouts;
+//};
 class CFlowCoinTxDB
 {
     protected:
@@ -193,11 +199,16 @@ class CFlowCoinTxDB
     public:
         CFlowCoinTxDB(CSqliteWrapper* dbIn, bool fWipe = false);
         //txid, blockheight,level,tx data,prevouts
-        bool Insert(const CTransaction tx,const unsigned int nlevel);
+//        bool Insert(const CFlowCoinTx tx){Insert(tx.tx,tx.nLevel,tx.vPrevouts);};
+//        bool Insert(const CTransaction tx,const unsigned int nLevel,vector<COutPoint> vPrevouts);
+//        bool BatchInsert(const vector<CFlowCoinTx> vTxs);
+        bool Insert(const CTransaction tx,const unsigned int nLevel);
         bool BatchInsert(const vector<pair<CTransaction,unsigned int> > vTxs);
         bool Erase(const uint256 txid);
         bool BatchErase(const vector<uint256> vTxid);
         bool Exists(const uint256 txid);
+        vector<uint256> GetTxidsByLevel(const uint32_t nLevel,const uint32_t nMaxResults=1000);
+        vector<CDataStream> GetByTxids(const vector<uint256> vTxids);
 };
 //the db to store the outputs of txs 
 class CFlowCoinChequeDB
@@ -208,13 +219,18 @@ class CFlowCoinChequeDB
     //scriptpubkey,txid,nout, value,locktime,fspent,spenttxid,spentnvin
         CFlowCoinChequeDB(CSqliteWrapper* dbIn, bool fWipe = false);
     
-     bool Search(const vector<CScript>& vScriptPubKey,vector<CCheque> & vCheques,int nMaxResults=1000,int nOffset=0)const ;    
-     bool Insert(const CCheque cheque);
+     bool GetByScriptPubKeys(const vector<CScript>& vScriptPubKey,vector<CFlowCoinCheque> & vCheques,int nMaxResults=1000,int nOffset=0)const ;    
+     bool Insert(const CFlowCoinCheque cheque);
       //bool BatchInsert(vector<CCheque> vCheque);
      //bool BatchErase(vector<pair<uint256,uint32_t> >vChequeErase);
-     bool Erase(const uint256 txid, const uint32_t nOut);
-     bool Spend(const uint256 outTxid, const uint32_t nOut,const uint256 inTxid, const uint32_t nIn);
-     bool Reactivate(const uint256 txid, const uint32_t nOut);
+     bool Erase(const uint256 txid, const unsigned short nOut);
+     bool Erase(const uint256 txid);
+     bool Spend(const uint256 txid, const unsigned short nOut,const uint256 spentTxid, const unsigned short nIn,const uint32_t nSpentLockTime);
+     bool Spend(const CTransaction tx);
+     bool Resume(const uint256 txid, const unsigned short nOut);
+     //if conflict of child txs using the same cheque is found, disable the cheque by setting value to 0
+     // Or ,simply delete it??
+     bool Disable(const uint256 txid, const unsigned short nOut);
     bool ClearTables();
 };
 
