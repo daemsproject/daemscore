@@ -2042,7 +2042,7 @@ bool CSqliteWrapper::InsertFlowCoinTx(const uint256 txid,const uint32_t nBlockHe
    sqlite3_finalize( stat );
    return (result==SQLITE_OK);
 }
-bool CSqliteWrapper::GetFlowCoinTx(const uint256 txid,CDataStream& txData)
+bool CSqliteWrapper::GetFlowCoinTx(const uint256 txid,CDataStream& txData)const
 {
     //LogPrintf("CSqliteWrapper GetBlockDomains \n");
     //char* zErrMsg=0;
@@ -2074,6 +2074,91 @@ bool CSqliteWrapper::GetFlowCoinTx(const uint256 txid,CDataStream& txData)
             return false;
         }    
     return false;     
+}
+
+uint32_t CSqliteWrapper::GetFlowCoinHeight()const
+{
+    uint32_t h=0;
+    const char* selectstatement="SELECT blockheight FROM table_flowcointx ORDER BY blockheight DESC LIMIT = 1;";
+    sqlite3_stmt  *stmt = NULL;
+    int rc;
+    rc = sqlite3_prepare_v2(pdb , selectstatement , strlen(selectstatement) , &stmt , NULL);
+    if(rc != SQLITE_OK)
+    {
+        LogPrintf("GetFlowCoinHeight err %i\n",rc); 
+    }
+    rc = sqlite3_step(stmt);
+        if(rc == SQLITE_ROW)
+        {
+            h=(uint32_t)sqlite3_column_int64(stmt,0);
+        }
+    sqlite3_finalize(stmt);
+    //minus 3 blocks to ensure safe
+        return max(0,h-3); 
+}
+uint32_t CSqliteWrapper::GetFlowCoinHeight()const
+{
+    uint32_t h=0;
+    const char* selectstatement="SELECT blockheight FROM table_flowcointx ORDER BY blockheight DESC LIMIT = 1;";
+    sqlite3_stmt  *stmt = NULL;
+    int rc;
+    rc = sqlite3_prepare_v2(pdb , selectstatement , strlen(selectstatement) , &stmt , NULL);
+    if(rc != SQLITE_OK)
+    {
+        LogPrintf("GetFlowCoinHeight err %i\n",rc); 
+    }
+    rc = sqlite3_step(stmt);
+        if(rc == SQLITE_ROW)
+        {
+            h=(uint32_t)sqlite3_column_int64(stmt,0);
+        }
+    sqlite3_finalize(stmt);
+    //minus 3 blocks to ensure safe
+        return max(0,h-3); 
+}
+map<uint32_t,vector<uint256> > CSqliteWrapper::GetFlowCoinTxidsByHeight(const uint32_t nBeginHeight,const uint32_t nEndHeight,const uint32_t nMaxResults)const
+{
+    const char* selectstatement="SELECT txid,blockheight FROM table_flowcointx ORDER BY blockheight WHERE blockheight BETWEEN ? AND ? ASC LIMIT = ?;";
+    sqlite3_stmt  *stmt = NULL;
+    int rc;
+    rc = sqlite3_prepare_v2(pdb , selectstatement , strlen(selectstatement) , &stmt , NULL);     
+    rc=sqlite3_bind_int64( stmt, 1, nBeginHeight);   
+    rc=sqlite3_bind_int64( stmt, 2, nEndHeight);   
+    rc=sqlite3_bind_int64( stmt, 3, nMaxResults);
+    map<uint32_t,vector<uint256> >mapTxids;
+    uint32_t nCurrentHeight=0;
+    vector<uint256> vTxids;
+    do{ 
+        rc = sqlite3_step(stmt);   
+        uint256 txid;
+        if(rc == SQLITE_ROW)
+        {
+            memcpy(txid.begin(),(unsigned char*)sqlite3_column_blob(stmt,  0),32);
+            uint32_t h=(uint32_t)sqlite3_column_int64(stmt,  1);
+            if(nCurrentHeight!=h)
+            {
+                if(vTxids.size()!=0)
+                {
+                    mapTxids[nCurrentHeight]=vTxids;
+                    vTxids.clear();
+                }
+                nCurrentHeight=h;
+            }
+            vTxids.push_back(txid);
+        }
+        else if(rc == SQLITE_DONE)
+        {   
+            mapTxids[nCurrentHeight]=vTxids;
+            sqlite3_finalize(stmt);
+            break;
+        }
+        else
+        {
+            sqlite3_finalize(stmt);
+            break;
+        }    
+    }while(1);
+    return mapTxids;
 }
 bool CSqliteWrapper::InsertFlowCoinCheque(const CFlowCoinCheque cheque)
 {
@@ -2213,3 +2298,98 @@ bool CSqliteWrapper::SpendFlowCoinCheques(const vector<pair<uint256,unsigned sho
     LogPrintf("CSqliteWrapper::DisableFlowCoinCheque failed %i\n",result);
    return (result==SQLITE_OK||result==101);
   }
+  
+  bool CSqliteWrapper::GetFlowCoinCheque(const uint256 txid, const unsigned short nOut,CFlowCoinCheque& cheque) const
+{
+    //LogPrintf("CSqliteWrapper GetDomain \n");
+    //char* zErrMsg=0;
+    const char* sql="SELECT value,locktime,isspent,spenttxid,spentnin,spentlocktime \
+        FROM table_flowcoincheque WHERE txid = ? AND nout = ?;";    
+    
+    sqlite3_stmt  *stmt = NULL;
+    int rc;
+    rc = sqlite3_prepare_v2(pdb , sql , strlen(sql) , &stmt , NULL);
+    //LogPrintf("CSqliteWrapper::GetDomain sql %s rx:%i\n",sql,rc); 
+    if(rc != SQLITE_OK)
+    {
+        if(stmt)
+        {
+            sqlite3_finalize(stmt);
+        }        
+        return false;
+    }    
+        rc = sqlite3_step(stmt);
+        if(rc == SQLITE_ROW)
+        {
+           cheque.nValue=sqlite3_column_int64(stmt,  0);
+           cheque.nLockTime=(uint32_t)sqlite3_column_int64(stmt,  1);
+           cheque.fSpent=sqlite3_column_int(stmt,  2)==0?false:true;
+           if(cheque.fSpent)
+           {
+                memcpy(cheque.spentTxid.begin(),(unsigned char*)sqlite3_column_blob(stmt,  3),32);
+                cheque.nSpentIn=sqlite3_column_int(stmt,  4);
+                cheque.nSpentLockTime=(uint32_t)sqlite3_column_int64(stmt,  5);
+           }         
+           return true;
+               
+        }
+        return false;     
+}
+  
+    bool CSqliteWrapper::GetFlowCoinCheques(const CScript& scriptPubKey,vector<CFlowCoinCheque> & vCheques,bool fUnspentOnly,int nMaxResults,int nOffset)const
+{
+    //LogPrintf("CSqliteWrapper GetDomain \n");
+    //char* zErrMsg=0;
+        char updatestatement[2000];   
+        
+    sprintf(updatestatement,"SELECT value,locktime,isspent,spenttxid,spentnin,spentlocktime \
+        FROM table_flowcoincheque WHERE scriptpubkey = ?%s ORDER BY locktime DESC LIMIT %i OFFSET %i;",
+            fUnspentOnly?" AND isspent = 0":"",nMaxResults,nOffset);    
+    
+    sqlite3_stmt  *stmt = NULL;
+    int rc;
+    rc = sqlite3_prepare_v2(pdb , updatestatement , strlen(updatestatement) , &stmt , NULL);
+    
+    //LogPrintf("CSqliteWrapper::GetDomain sql %s rx:%i\n",sql,rc); 
+    if(rc != SQLITE_OK)
+    {
+        if(stmt)
+        {
+            sqlite3_finalize(stmt);
+        }        
+        return false;
+    }
+    rc= sqlite3_bind_blob( stmt, 1, &scriptPubKey[0], scriptPubKey.size(), NULL );
+    //int nColumn = sqlite3_column_count(stmt);
+    do{ 
+        rc = sqlite3_step(stmt);
+        CFlowCoinCheque cheque;
+        if(rc == SQLITE_ROW)
+        {
+           cheque.nValue=sqlite3_column_int64(stmt,  0);
+           cheque.nLockTime=(uint32_t)sqlite3_column_int64(stmt,  1);
+           cheque.fSpent=sqlite3_column_int(stmt,  2)==0?false:true;
+           if(cheque.fSpent)
+           {
+                memcpy(cheque.spentTxid.begin(),(unsigned char*)sqlite3_column_blob(stmt,  3),32);
+                cheque.nSpentIn=sqlite3_column_int(stmt,  4);
+                cheque.nSpentLockTime=(uint32_t)sqlite3_column_int64(stmt,  5);
+           }         
+              vCheques.push_back(cheque); 
+        }
+        else if(rc == SQLITE_DONE)
+        {            
+            sqlite3_finalize(stmt);
+            return true;
+        }
+        else
+        {
+            sqlite3_finalize(stmt);
+            return false;
+        }
+     
+         
+    }while(1);
+    return false;
+     
+}

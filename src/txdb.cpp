@@ -1648,12 +1648,17 @@ CFlowCoinTxDB::CFlowCoinTxDB(CSqliteWrapper* dbIn, bool fWipe) : db(dbIn)
 {
     if (fWipe)
         db->ClearTable("table_flowcointx");
+    fUpToDate=false;
+    nLatestBlockHeight=GetLatestBlockHeight();    
+    nTxidListHeight=nLatestBlockHeight;
 }
 bool CFlowCoinTxDB::Insert(const CTransaction tx,const unsigned int nLevel)
 {
-    CDataStream ss;
+    CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
     ss<<tx;
-    uint32_t nBlockHeight=chainActive[tx.nBlockHash]->nBlockHeight;    
+    if (mapBlockIndex.count(tx.nBlockHash) == 0)
+        return false;
+    uint32_t nBlockHeight=mapBlockIndex[tx.nBlockHash]->nBlockHeight;
     return db->InsertFlowCoinTx(tx.GetHash(),nBlockHeight,nLevel,ss);
 }
 bool CFlowCoinTxDB::Erase(const uint256 txid)
@@ -1686,18 +1691,40 @@ vector<uint256> CFlowCoinTxDB::GetTxidsByLevel(const uint32_t nLevel,const uint3
     };
     return vTxids;
 }
+map<uint32_t,vector<uint256> > CFlowCoinTxDB::GetTxidsByHeight(const uint32_t nBeginHeight,const uint32_t nEndHeight,const uint32_t nMaxResults)
+{
+    map<uint32_t,vector<uint256> >mapTxids= db->GetFlowCoinTxidsByHeight(nBeginHeight,nEndHeight,nMaxResults);
+    if(mapTxids.size()==nMaxResults)
+    {
+        uint32_t h=mapTxids.rbegin()->first;
+        map<uint32_t,vector<uint256> >mapTxids1= db->GetFlowCoinTxidsByHeight(h,h,10000);
+        mapTxids[h]=mapTxids1[h];
+    }    
+    return mapTxids;
+}
  vector<CDataStream> CFlowCoinTxDB::GetByTxids(const vector<uint256> vTxids)
  {
      vector<CDataStream> vTxData;
      for (std::vector<uint256>::const_iterator it = vTxids.begin();it != vTxids.end(); it++) 
      {
-         CDataStream ss;
+         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
          if(db->GetFlowCoinTx(*it,ss))
              vTxData.push_back(ss);
      }
      return vTxData;
  }
- 
+   bool CFlowCoinTxDB::GetByTxid(const uint256 txid,CDataStream& tx)
+ {
+         return db->GetFlowCoinTx(txid,tx);
+ }
+   
+   
+   
+   uint32_t CFlowCoinTxDB::GetLatestBlockHeight()
+   {
+       return db->GetFlowCoinHeight();
+       
+   }
  CFlowCoinChequeDB::CFlowCoinChequeDB(CSqliteWrapper* dbIn, bool fWipe) : db(dbIn)
 {
     if (fWipe)
@@ -1733,3 +1760,15 @@ bool CFlowCoinChequeDB::Disable(const uint256 txid, const unsigned short nOut)
 {
     return db->DisableFlowCoinCheque(txid,nOut);
 }
+
+ bool CFlowCoinChequeDB::GetByTxidNOut(const uint256 txid, const unsigned short nOut,CFlowCoinCheque& cheque)const
+ {
+     return db->GetFlowCoinCheque(txid, nOut,cheque);
+ }
+ 
+ bool CFlowCoinChequeDB::GetByScriptPubKeys(const vector<CScript>& vScriptPubKey,vector<CFlowCoinCheque> & vCheques,bool fUnspentOnly=false,int nMaxResults=1000,int nOffset=0)const    
+ {
+     for(unsigned int i=0;i<vScriptPubKey.size();i++)
+        db->GetFlowCoinCheques(vScriptPubKey[i],vCheques,fUnspentOnly,nMaxResults,nOffset);
+     return vCheques.size()>0;
+ }

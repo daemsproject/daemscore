@@ -392,13 +392,17 @@ public:
     bool CreateFlowCoinChequeTable();
     bool CreateFlowCoinTxTable();
     bool InsertFlowCoinTx(const uint256 txid,const uint32_t nBlockHeight,const uint32_t nLevel,const CDataStream txData);
-    bool GetFlowCoinTx(const uint256 txid,CDataStream& txData);
+    bool GetFlowCoinTx(const uint256 txid,CDataStream& txData)const;
+    uint32_t GetFlowCoinHeight()const;
+    map<uint32_t,vector<uint256> > GetFlowCoinTxidsByHeight(const uint32_t nBeginHeight,const uint32_t nEndHeight,const uint32_t nMaxResults)const;
     bool InsertFlowCoinCheque(const CFlowCoinCheque cheque);
     bool DeleteFlowCoinCheque(const uint256 txid,const unsigned short nOut);
     bool DeleteFlowCoinCheque(const uint256 txid);
     bool SpendFlowCoinCheque(const uint256 txid,unsigned short nOut,const uint256 spentTxid, const unsigned short nIn,const uint32_t nSpentLockTime);
     bool SpendFlowCoinCheques(const vector<pair<uint256,unsigned short> > outs,const uint256 spentTxid,const uint32_t nSpentLockTime);
     bool DisableFlowCoinCheque(const uint256 txid,unsigned short nOut);
+    bool GetFlowCoinCheques(const CScript& scriptPubKey,vector<CFlowCoinCheque> & vCheques,bool fUnspentOnly=false,int nMaxResults=1000,int nOffset=0)const;    
+    bool GetFlowCoinCheque(const uint256 txid, const unsigned short nOut,CFlowCoinCheque& cheque)const;
 };
 
 #endif // BITCOIN_LEVELDBWRAPPER_H

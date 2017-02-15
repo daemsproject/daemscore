@@ -915,7 +915,7 @@ unsigned int GetP2SHSigOpCount(const CTransaction& tx, const CCoinsViewCache& in
 
 
 
-
+// this is structural check only
 bool CheckTransaction(const CTransaction& tx, CValidationState &state)
 {
     // Basic checks that don't depend on any context
@@ -4087,6 +4087,13 @@ void static ProcessGetData(CNode* pfrom)
                         pushed = true;
                     }
                 }
+                else if (!pushed && inv.type == MSG_L1TX) {
+                     CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
+                    if (pFlowCoinTxDB->GetByTxid(inv.hash, ss)) {
+                        pfrom->PushMessage("l1oldtx", ss);
+                        pushed = true;
+                    }
+                }
                 if (!pushed) {
                     vNotFound.push_back(inv);
                 }
@@ -4634,12 +4641,6 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
                 // as a gateway for nodes hidden behind it).
                 RelayTransaction(tx);
             }
-        }else if (tx.nLayer==1)//flow coin layer
-        {
-            if (AcceptToLayer1Pool(state, tx, true, &fMissingInputs))
-            {
-                
-            }
         }
         int nDoS = 0;
         if (state.IsInvalid(nDoS))
@@ -4962,7 +4963,91 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
             }
         }
     }
-
+// layer1 commands
+    //request get txids , starting blockheight, end blockheight
+    else if (strCommand == "l1gettxids")
+    {
+        uint32_t nBeginHeight;
+        uint32_t nEndHeight; 
+        uint32_t nMaxResults;
+        vRecv>>nBeginHeight>>nEndHeight>>nMaxResults;
+        map<uint32_t,vector<uint256> > mapTxids=pFlowCoinTxDB->GetTxidsByHeight(nBeginHeight,nEndHeight,nMaxResults);
+        pfrom->PushMessage("l1txids", mapTxids);
+    }
+    //request get txs ,txid list.TODO move to inv
+//    else if (strCommand == "l1gettxs")
+//    {
+//    }
+    //response to "l1gettxs", one package per blockheight
+    else if (strCommand == "l1oldtx")
+    {
+    }
+    //response to "l1gettxids"
+    else if (strCommand == "l1txids")
+    {
+        
+        map<uint32_t,vector<uint256> >mapTxidsIn;
+        //int fDone;
+        vRecv>>mapTxidsIn;        
+        uint32_t nCount=0;
+        uint32_t nBeginHeight=mapTxidsIn.begin()->first;
+        uint32_t nEndHeight=mapTxidsIn.rbegin()->first;
+        map<uint32_t,vector<uint256> >mapTxids=pFlowCoinTxDB->GetTxidsByHeight(nBeginHeight,nEndHeight);
+        std::vector<CInv> vToFetch;
+        //if count>=10000, to be continued
+        for(map<uint32_t,vector<uint256> >::iterator it=mapTxidsIn.begin();it!=mapTxidsIn.end();it++)
+        {
+            vector<uint256> vTxidsOut;
+             nCount+=it->second.size();
+            if(mapTxids.find(it->first)!=mapTxids.end())
+            {
+                for(unsigned int i=0;i<it->second.size();i++)
+                {                   
+                    vector<uint256> vTxids=mapTxids[it->first];
+                    bool fExists=false;
+                    for(unsigned int j=0;j<vTxids.size();j++)
+                    {
+                        if(vTxids[j]==it->second[i])
+                        {
+                            fExists=true;
+                            break;                        
+                        }
+                    }
+                    if(!fExists)
+                    {
+                        vTxidsOut[]=it->second[i];
+                       vToFetch.push_back(CInv(MSG_L1TX,it->second[i]));
+                        //pfrom->AskFor(inv);
+                    }
+                }
+                mapUnReceivedTxids[it->first]=vTxidsOut;
+            }
+            else
+            {
+                mapUnReceivedTxids[it->first]=it->second;
+                for(unsigned int i=0;i<it->second.size();i++)
+                    vToFetch.push_back(CInv(MSG_L1TX,it->second[i]));
+            }
+        }
+        if(nCount>=MAX_L1TXID_RESULTS&&!pFlowCoinTxDB->fUpToDate)
+            pfrom->PushMessage("l1gettxids", nEndHeight,chainActive.Height(), MAX_L1TXID_RESULTS);
+         if (!vToFetch.empty())
+            pfrom->PushMessage("getdata", vToFetch);
+    }
+    //new tx broadcast of l1
+    else if (strCommand == "l1newtx")
+   {
+        if(!fL1UpTodate)//only accept new txs after the l1 db is up to date
+        {
+            
+        }
+            else if (AcceptToLayer1Pool(state, tx, true, &fMissingInputs))
+            {
+                
+            }
+        
+    }
+    //end layer1
     else
     {
         // Ignore unknown commands for extensibility
@@ -5443,7 +5528,11 @@ bool AcceptToLayer1Pool(CValidationState &state, const CTransaction &tx, bool fL
         
         
     bool fTxOverride=false;
-    // Check for conflicts with in-memory transactions
+    // Check for conflicts with in-memory transactions.
+    //If conflict found:
+    // check if the exsisting tx is expired. If yes, delete the existing tx, 
+    // then check if the expire date of the cheque is more than +1 days. if yes, accept the new tx
+    // 
     {
         for (unsigned int i = 0; i < tx.vin.size(); i++)
         {

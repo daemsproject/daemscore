@@ -195,7 +195,12 @@ bool SearchPromotedContents(const vector<CScript>& vSenders,const vector<int>& v
 class CFlowCoinTxDB
 {
     protected:
-        CSqliteWrapper* db;        
+        CSqliteWrapper* db;    
+        //memory only
+        bool fUpToDate;
+        uint32_t nLatestBlockHeight;
+        map<uint32_t,vector<uint256> >mapUnReceivedTxids;
+        uint32_t nTxidListHeight;
     public:
         CFlowCoinTxDB(CSqliteWrapper* dbIn, bool fWipe = false);
         //txid, blockheight,level,tx data,prevouts
@@ -207,8 +212,11 @@ class CFlowCoinTxDB
         bool Erase(const uint256 txid);
         bool BatchErase(const vector<uint256> vTxid);
         bool Exists(const uint256 txid);
-        vector<uint256> GetTxidsByLevel(const uint32_t nLevel,const uint32_t nMaxResults=1000);
+        vector<uint256> GetTxidsByLevel(const uint32_t nLevel,const uint32_t nMaxResults=MAX_L1TXID_RESULTS);
+        map<uint32_t,vector<uint256> > GetTxidsByHeight(const uint32_t nBeginHeight,const uint32_t nEndHeight,const uint32_t nMaxResults=MAX_L1TXID_RESULTS);
         vector<CDataStream> GetByTxids(const vector<uint256> vTxids);
+        bool GetByTxid(const uint256 txid,CDataStream& tx);
+        uint32_t GetLatestBlockHeight();
 };
 //the db to store the outputs of txs 
 class CFlowCoinChequeDB
@@ -216,13 +224,12 @@ class CFlowCoinChequeDB
     protected:
         CSqliteWrapper* db;        
     public:
-    //scriptpubkey,txid,nout, value,locktime,fspent,spenttxid,spentnvin
+    //scriptpubkey,txid,nout, value,locktime,fspent,spenttxid,spentnvin,spentlocktime
         CFlowCoinChequeDB(CSqliteWrapper* dbIn, bool fWipe = false);
     
-     bool GetByScriptPubKeys(const vector<CScript>& vScriptPubKey,vector<CFlowCoinCheque> & vCheques,int nMaxResults=1000,int nOffset=0)const ;    
+     bool GetByScriptPubKeys(const vector<CScript>& vScriptPubKey,vector<CFlowCoinCheque> & vCheques,bool fUnspentOnly=false,int nMaxResults=1000,int nOffset=0)const ;    
+     bool GetByTxidNOut(const uint256 txid, const unsigned short nOut,CFlowCoinCheque& cheque) const;
      bool Insert(const CFlowCoinCheque cheque);
-      //bool BatchInsert(vector<CCheque> vCheque);
-     //bool BatchErase(vector<pair<uint256,uint32_t> >vChequeErase);
      bool Erase(const uint256 txid, const unsigned short nOut);
      bool Erase(const uint256 txid);
      bool Spend(const uint256 txid, const unsigned short nOut,const uint256 spentTxid, const unsigned short nIn,const uint32_t nSpentLockTime);
@@ -231,7 +238,6 @@ class CFlowCoinChequeDB
      //if conflict of child txs using the same cheque is found, disable the cheque by setting value to 0
      // Or ,simply delete it??
      bool Disable(const uint256 txid, const unsigned short nOut);
-    bool ClearTables();
 };
 
 #endif // BITCOIN_TXDB_H
